@@ -14,18 +14,12 @@ class HomeToolbarButton extends StatefulWidget {
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
-  /// 按钮是否处于选中状态
-  ///
-  /// 选中状态下，按钮会显示特定的背景色和图标颜色。
-  final bool isSelected;
-
   /// 构造函数
   const HomeToolbarButton({
     super.key,
     required this.icon,
     required this.onPressed,
     this.label,
-    this.isSelected = false,
   });
 
   @override
@@ -53,7 +47,10 @@ class _HomeToolbarButtonState extends State<HomeToolbarButton> {
         onTap: widget.onPressed,
         // 使用 AnimatedContainer 实现背景颜色的平滑过渡动画
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          // 移入时显示动画(200ms)，移出时立即恢复(0ms)，避免拖泥带水的感觉
+          duration: _isHovering
+              ? const Duration(milliseconds: 200)
+              : Duration.zero,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(), // 根据当前状态获取背景颜色
@@ -97,22 +94,17 @@ class _HomeToolbarButtonState extends State<HomeToolbarButton> {
 
   /// 获取按钮背景颜色
   ///
-  /// 根据按钮的当前状态（按下、悬停、选中）返回对应的颜色。
-  /// 优先级：按下 > 悬停 > 选中 > 默认（透明）。
+  /// 根据按钮的当前状态（按下、悬停）返回对应的颜色。
+  /// 优先级：按下 > 悬停 > 默认（透明）。
   Color _getBackgroundColor() {
     if (_isPressed) return const Color(0xFFE0E0E0); // 按下时的深灰色
     if (_isHovering) return const Color(0xFFF5F5F5); // 悬停时的浅灰色
-    if (widget.isSelected) {
-      return const Color(0xFFE3F2FD); // 选中时的浅蓝色
-    }
-    return const Color(0x00000000); // 默认透明背景
+    // 使用与悬停色相同的RGB值但透明度为0，避免插值计算时经过黑色(0x00000000)导致的闪烁问题
+    return const Color(0x00F5F5F5);
   }
 
   /// 获取内容（图标和文本）颜色
-  ///
-  /// 根据按钮的选中状态返回对应的颜色。
   Color _getContentColor() {
-    if (widget.isSelected) return const Color(0xFF2196F3); // 选中时的蓝色
     return const Color(0xFF000000); // 默认黑色
   }
 }
