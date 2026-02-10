@@ -10,8 +10,8 @@ class MyHomePage extends StatelessWidget {
       color: const Color(0xFFFFFFFF),
       child: Column(
         children: [
-          Expanded(child: Center(child: Text('Hello, non-Material App!'))),
           HomeToolbar(),
+          Expanded(child: Center(child: Text('Hello, non-Material App!'))),
         ],
       ),
     );
