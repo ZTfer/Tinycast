@@ -10,22 +10,28 @@ class EpisodeControlBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           EpisodeControlButton(
             icon: const Icon(LucideIcons.gauge, size: 16),
             onPressed: () {},
           ),
-          EpisodeControlButton(
-            icon: const Icon(LucideIcons.skipBack, size: 20),
-            onPressed: () {},
-          ),
-          EpisodeControlButton(
-            icon: const Icon(LucideIcons.play, size: 24),
-            onPressed: () {},
-          ),
-          EpisodeControlButton(
-            icon: const Icon(LucideIcons.skipForward, size: 20),
-            onPressed: () {},
+          Row(
+            spacing: 40,
+            children: [
+              EpisodeControlButton(
+                icon: const Icon(LucideIcons.skipBack, size: 20),
+                onPressed: () {},
+              ),
+              EpisodeControlButton(
+                icon: const Icon(LucideIcons.play, size: 24),
+                onPressed: () {},
+              ),
+              EpisodeControlButton(
+                icon: const Icon(LucideIcons.skipForward, size: 20),
+                onPressed: () {},
+              ),
+            ],
           ),
           EpisodeControlButton(
             icon: const Icon(LucideIcons.volume2, size: 16),
