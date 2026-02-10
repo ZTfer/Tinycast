@@ -18,10 +18,11 @@ class HomeToolbar extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min, // 宽度自适应内容，保持紧凑
         children: [
+          Spacer(), // 占据左侧所有空间
           // 添加按钮
           // 用于快速创建新的任务或项目
           HomeToolbarButton(
-            icon: const Icon(LucideIcons.plus),
+            icon: const Icon(LucideIcons.plus, size: 16),
             // label: 'Add', // 暂时隐藏标签，仅显示图标
             onPressed: () {
               debugPrint('Add pressed');
@@ -31,7 +32,10 @@ class HomeToolbar extends StatelessWidget {
           // 闹钟/专注按钮
           // 用于进入番茄钟或定时器功能
           HomeToolbarButton(
-            icon: const Icon(LucideIcons.alarmClock), // 使用 Lucide 图标库的闹钟图标
+            icon: const Icon(
+              LucideIcons.alarmClock,
+              size: 16,
+            ), // 使用 Lucide 图标库的闹钟图标
             // label: '闹钟', // 暂时隐藏标签
             onPressed: () {
               debugPrint('Timer pressed');
@@ -42,7 +46,10 @@ class HomeToolbar extends StatelessWidget {
           // 侧边栏按钮
           // 用于打开侧边栏或设置页面
           HomeToolbarButton(
-            icon: const Icon(LucideIcons.panelLeftOpen), // 使用 Lucide 图标库的侧边栏图标
+            icon: const Icon(
+              LucideIcons.panelLeftOpen,
+              size: 16,
+            ), // 使用 Lucide 图标库的侧边栏图标
             // label: 'Settings', // 暂时隐藏标签
             onPressed: () {
               debugPrint('Settings pressed');

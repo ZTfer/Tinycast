@@ -51,10 +51,10 @@ class _HomeToolbarButtonState extends State<HomeToolbarButton> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(4.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(), // 根据当前状态获取背景颜色
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(6.0),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min, // 最小化高度以适应内容
