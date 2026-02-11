@@ -11,6 +11,7 @@ class Library extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12,
           children: [
             const LibraryListItem(
               showName: '半拿铁',
