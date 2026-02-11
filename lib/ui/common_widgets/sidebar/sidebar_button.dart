@@ -39,7 +39,9 @@ class _SidebarButtonState extends State<SidebarButton> {
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: _isHovering
+              ? const Duration(milliseconds: 200)
+              : Duration.zero,
           width: width,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
@@ -76,6 +78,6 @@ class _SidebarButtonState extends State<SidebarButton> {
     if (widget.state == SidebarButtonState.iconActive) {
       return const Color(0xFFEEEEEE);
     }
-    return const Color(0x00000000);
+    return const Color(0x00F5F5F5);
   }
 }
