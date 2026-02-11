@@ -28,7 +28,6 @@ class Sidebar extends StatelessWidget {
               children: [
                 _buildMenuButton(
                   icon: LucideIcons.listMusic,
-                  label: '播放列表',
                   state: currentPage == 'queue'
                       ? SidebarButtonState.iconActive
                       : SidebarButtonState.defaultState,
