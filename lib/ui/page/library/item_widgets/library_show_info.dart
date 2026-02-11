@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:tinycast/ui/page/library/library_show_more_button.dart';
+import 'package:tinycast/ui/page/library/atom_widgets/library_show_more_button.dart';
 
 class LibraryShowInfo extends StatelessWidget {
   final String showName;

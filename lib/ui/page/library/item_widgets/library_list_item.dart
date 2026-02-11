@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/library/library_episode_item.dart';
-import 'package:tinycast/ui/page/library/library_show_cover.dart';
-import 'package:tinycast/ui/page/library/library_show_info.dart';
+import 'package:tinycast/ui/page/library/item_widgets/library_episode_item.dart';
+import 'package:tinycast/ui/page/library/atom_widgets/library_show_cover.dart';
+import 'package:tinycast/ui/page/library/item_widgets/library_show_info.dart';
 
 /// Library 列表项组件
 ///

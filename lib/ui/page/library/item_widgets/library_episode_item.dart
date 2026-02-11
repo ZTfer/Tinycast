@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/library/library_episode_play_button.dart';
+import 'package:tinycast/ui/page/library/atom_widgets/library_episode_play_button.dart';
 
 class LibraryEpisodeItem extends StatelessWidget {
   final String title;
