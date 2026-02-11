@@ -11,9 +11,7 @@ class Sidebar extends StatelessWidget {
       width: 56,
       decoration: const BoxDecoration(
         color: Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
       ),
       child: Column(
         children: [
@@ -28,28 +26,16 @@ class Sidebar extends StatelessWidget {
                   onPressed: () {},
                 ),
                 _buildMenuButton(
-                  icon: LucideIcons.clock,
+                  icon: LucideIcons.layoutGrid,
                   onPressed: () {},
                 ),
-                _buildMenuButton(
-                  icon: LucideIcons.download,
-                  onPressed: () {},
-                ),
-                _buildMenuButton(
-                  icon: LucideIcons.heart,
-                  onPressed: () {},
-                ),
-                _buildMenuButton(
-                  icon: LucideIcons.star,
-                  onPressed: () {},
-                ),
+                _buildMenuButton(icon: LucideIcons.star, onPressed: () {}),
+                _buildMenuButton(icon: LucideIcons.download, onPressed: () {}),
+                _buildMenuButton(icon: LucideIcons.plus, onPressed: () {}),
               ],
             ),
           ),
-          _buildMenuButton(
-            icon: LucideIcons.settings,
-            onPressed: () {},
-          ),
+          _buildMenuButton(icon: LucideIcons.settings, onPressed: () {}),
           const SizedBox(height: 10),
         ],
       ),
