@@ -3,7 +3,14 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/sidebar/sidebar_button.dart';
 
 class Sidebar extends StatelessWidget {
-  const Sidebar({super.key});
+  final String currentPage;
+  final Function(String) onPageChanged;
+
+  const Sidebar({
+    super.key,
+    required this.currentPage,
+    required this.onPageChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +29,17 @@ class Sidebar extends StatelessWidget {
                 _buildMenuButton(
                   icon: LucideIcons.listMusic,
                   label: '播放列表',
-                  state: SidebarButtonState.iconActive,
-                  onPressed: () {},
+                  state: currentPage == 'queue'
+                      ? SidebarButtonState.iconActive
+                      : SidebarButtonState.defaultState,
+                  onPressed: () => onPageChanged('queue'),
                 ),
                 _buildMenuButton(
                   icon: LucideIcons.layoutGrid,
-                  onPressed: () {},
+                  state: currentPage == 'library'
+                      ? SidebarButtonState.iconActive
+                      : SidebarButtonState.defaultState,
+                  onPressed: () => onPageChanged('library'),
                 ),
                 _buildMenuButton(icon: LucideIcons.star, onPressed: () {}),
                 _buildMenuButton(icon: LucideIcons.download, onPressed: () {}),
