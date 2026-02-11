@@ -2,8 +2,13 @@ import 'package:flutter/widgets.dart';
 
 class LibraryShowInfo extends StatelessWidget {
   final String showName;
+  final String timeAgo;
 
-  const LibraryShowInfo({super.key, required this.showName});
+  const LibraryShowInfo({
+    super.key,
+    required this.showName,
+    required this.timeAgo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,7 @@ class LibraryShowInfo extends StatelessWidget {
           ],
         ),
         Text(
-          '1 h ago',
+          timeAgo,
           style: TextStyle(fontSize: 9.75, color: Color(0xD9000000)),
         ),
       ],

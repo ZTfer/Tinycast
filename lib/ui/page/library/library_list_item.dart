@@ -3,7 +3,16 @@ import 'package:tinycast/ui/page/library/library_episode_item.dart';
 import 'package:tinycast/ui/page/library/library_show_info.dart';
 
 class LibraryListItem extends StatelessWidget {
-  const LibraryListItem({super.key});
+  final String showName;
+  final String timeAgo;
+  final List<String> episodeTitles;
+
+  const LibraryListItem({
+    super.key,
+    required this.showName,
+    required this.timeAgo,
+    required this.episodeTitles,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +32,12 @@ class LibraryListItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const LibraryShowInfo(showName: '半拿铁'),
+              LibraryShowInfo(showName: showName, timeAgo: timeAgo),
               const SizedBox(height: 8),
               Column(
-                children: const [
-                  LibraryEpisodeItem(title: 'Vol.107 标题文字，标题文字，标题文...'),
-                  LibraryEpisodeItem(title: 'Vol.107 标题文字，标题文字，标题文...'),
-                  LibraryEpisodeItem(title: 'Vol.107 标题文字，标题文字，标题文...'),
-                ],
+                children: episodeTitles
+                    .map((title) => LibraryEpisodeItem(title: title))
+                    .toList(),
               ),
             ],
           ),
