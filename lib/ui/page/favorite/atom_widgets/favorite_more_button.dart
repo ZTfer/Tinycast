@@ -11,14 +11,18 @@ class FavoriteMoreButton extends StatefulWidget {
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
-  /// 图标大小，默认 20
+  /// 图标大小，默认 12
   final double iconSize;
+
+  /// 内容颜色，默认 0xD9000000
+  final Color contentColor;
 
   const FavoriteMoreButton({
     super.key,
     required this.icon,
     required this.onPressed,
-    this.iconSize = 20,
+    this.iconSize = 12,
+    this.contentColor = const Color(0xD9000000),
   });
 
   @override
@@ -72,6 +76,6 @@ class _FavoriteMoreButtonState extends State<FavoriteMoreButton> {
 
   /// 获取内容颜色
   Color _getContentColor() {
-    return const Color(0xFF000000);
+    return widget.contentColor;
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/buttons/list_play_button.dart';
 import 'package:tinycast/ui/page/favorite/atom_widgets/favorite_more_button.dart';
@@ -17,15 +16,24 @@ class FavoriteControlBar extends StatelessWidget {
           icon: const Icon(LucideIcons.play),
           label: 'Play',
           onPressed: () {},
+          iconSize: 10,
+          fontSize: 10,
+          horizontalPadding: 8,
+          verticalPadding: 4,
+          borderRadius: 10,
         ),
         Spacer(),
         FavoriteActionButton(
           icon: const Icon(LucideIcons.star),
           onPressed: () {},
+          iconSize: 12,
+          contentColor: const Color(0xD9000000),
         ),
         FavoriteMoreButton(
           icon: const Icon(LucideIcons.moreHorizontal),
           onPressed: () {},
+          iconSize: 12,
+          contentColor: const Color(0xD9000000),
         ),
       ],
     );

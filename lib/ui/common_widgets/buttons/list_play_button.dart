@@ -21,6 +21,21 @@ class ListPlayButton extends StatefulWidget {
   /// 图标与文字之间的间距，默认 6.0
   final double spacing;
 
+  /// 图标大小，默认 10
+  final double iconSize;
+
+  /// 文字大小，默认 10
+  final double fontSize;
+
+  /// 水平内边距，默认 8
+  final double horizontalPadding;
+
+  /// 垂直内边距，默认 4
+  final double verticalPadding;
+
+  /// 圆角大小，默认 10
+  final double borderRadius;
+
   const ListPlayButton({
     super.key,
     required this.icon,
@@ -28,6 +43,11 @@ class ListPlayButton extends StatefulWidget {
     required this.onPressed,
     this.labelStyle,
     this.spacing = 6.0,
+    this.iconSize = 10,
+    this.fontSize = 10,
+    this.horizontalPadding = 8,
+    this.verticalPadding = 4,
+    this.borderRadius = 10,
   });
 
   @override
@@ -55,29 +75,33 @@ class _ListPlayButtonState extends State<ListPlayButton> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.horizontalPadding,
+            vertical: widget.verticalPadding,
+          ),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 左侧图标
               IconTheme(
-                data: IconThemeData(color: _getContentColor(), size: 20),
+                data: IconThemeData(
+                  color: _getContentColor(),
+                  size: widget.iconSize,
+                ),
                 child: widget.icon,
               ),
               SizedBox(width: widget.spacing),
-              // 右侧文字
               Text(
                 widget.label,
                 style:
                     widget.labelStyle ??
                     TextStyle(
                       color: _getContentColor(),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: widget.fontSize,
+                      fontWeight: FontWeight.normal,
                     ),
               ),
             ],
