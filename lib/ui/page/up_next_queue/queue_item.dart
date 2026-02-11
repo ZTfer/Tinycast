@@ -6,6 +6,7 @@ class QueueItem extends StatelessWidget {
   final String title;
   final String description;
   final String duration;
+  final bool showDivider;
 
   const QueueItem({
     super.key,
@@ -13,6 +14,7 @@ class QueueItem extends StatelessWidget {
     required this.title,
     required this.description,
     required this.duration,
+    this.showDivider = true,
   });
 
   @override
@@ -46,7 +48,7 @@ class QueueItem extends StatelessWidget {
             ],
           ),
         ),
-        _buildDivider(),
+        if (showDivider) _buildDivider(),
       ],
     );
   }
