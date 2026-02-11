@@ -54,7 +54,7 @@ class _LibraryEpisodePlayButtonState extends State<LibraryEpisodePlayButton> {
           padding: const EdgeInsets.all(4.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(20.0),
           ),
           child: IconTheme(
             data: const IconThemeData(color: Color(0xD9000000), size: 12),
