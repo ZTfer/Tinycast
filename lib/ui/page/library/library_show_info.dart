@@ -1,4 +1,6 @@
 import 'package:flutter/widgets.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:tinycast/ui/page/library/library_show_more_button.dart';
 
 class LibraryShowInfo extends StatelessWidget {
   final String showName;
@@ -26,9 +28,9 @@ class LibraryShowInfo extends StatelessWidget {
                 color: Color(0xFF000000),
               ),
             ),
-            Text(
-              '􀍠',
-              style: TextStyle(fontSize: 12, color: Color(0xD9000000)),
+            LibraryShowMoreButton(
+              icon: const Icon(LucideIcons.moreHorizontal),
+              onPressed: () {},
             ),
           ],
         ),
