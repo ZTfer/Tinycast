@@ -19,7 +19,7 @@ class LibraryEpisodeItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const LibraryEpisodePlayButton(),
+        LibraryEpisodePlayButton(onPressed: () {}),
       ],
     );
   }

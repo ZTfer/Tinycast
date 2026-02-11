@@ -1,7 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class LibraryEpisodePlayButton extends StatefulWidget {
-  const LibraryEpisodePlayButton({super.key});
+  final VoidCallback onPressed;
+
+  const LibraryEpisodePlayButton({super.key, required this.onPressed});
 
   @override
   State<LibraryEpisodePlayButton> createState() =>
@@ -22,21 +25,19 @@ class _LibraryEpisodePlayButtonState extends State<LibraryEpisodePlayButton> {
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
-        onTap: () {},
+        onTap: widget.onPressed,
         child: AnimatedContainer(
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
+          padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(6.0),
           ),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              '􀊄',
-              style: TextStyle(color: Color(0xD9000000), fontSize: 12),
-            ),
+          child: IconTheme(
+            data: const IconThemeData(color: Color(0xD9000000), size: 12),
+            child: const Icon(LucideIcons.play),
           ),
         ),
       ),
