@@ -1,11 +1,24 @@
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:tinycast/ui/page/favorite/item_widgets/favorite_control_bar.dart';
 
+/// Favorite 列表项组件
+///
+/// 用于显示收藏列表中的单个节目项。
+/// 每个列表项包含节目封面、文本信息（时间、标题、描述）和操作区域（播放按钮、更多选项）。
 class FavoriteItem extends StatelessWidget {
+  /// 更新时间（如 "1 h ago"）
   final String timeAgo;
+
+  /// 节目标题
   final String title;
+
+  /// 节目描述
   final String description;
+
+  /// 节目时长（如 "32 min"）
   final String duration;
+
+  /// 是否显示分隔线，默认 true
   final bool showDivider;
 
   const FavoriteItem({
@@ -26,6 +39,7 @@ class FavoriteItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// 节目封面（占位符）
               Container(
                 width: 34,
                 height: 34,
@@ -39,8 +53,11 @@ class FavoriteItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    /// 文本信息区域
                     _buildTextSection(),
                     const SizedBox(height: 6),
+
+                    /// 操作区域（播放按钮、更多选项）
                     _buildActionSection(),
                   ],
                 ),
@@ -48,11 +65,16 @@ class FavoriteItem extends StatelessWidget {
             ],
           ),
         ),
+
+        /// 分隔线
         if (showDivider) _buildDivider(),
       ],
     );
   }
 
+  /// 构建文本信息区域
+  ///
+  /// 包含更新时间、节目标题和节目描述。
   Widget _buildTextSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,41 +111,14 @@ class FavoriteItem extends StatelessWidget {
     );
   }
 
+  /// 构建操作区域
+  ///
+  /// 使用 FavoriteControlBar 组件，包含播放按钮、收藏按钮和更多选项。
   Widget _buildActionSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFDADADA),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(LucideIcons.play, size: 10, color: const Color(0xFF000000)),
-              const SizedBox(width: 4),
-              Text(
-                duration,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Color(0xFF000000),
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Icon(
-          LucideIcons.moreHorizontal,
-          size: 12,
-          color: const Color(0xD9000000),
-        ),
-      ],
-    );
+    return const FavoriteControlBar();
   }
 
+  /// 构建分隔线
   Widget _buildDivider() {
     return Container(height: 1, color: const Color(0xFFE0E0E0));
   }

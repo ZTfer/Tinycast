@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/buttons/list_play_button.dart';
 import 'package:tinycast/ui/page/favorite/atom_widgets/favorite_more_button.dart';
+import 'package:tinycast/ui/page/favorite/atom_widgets/favorite_action_button.dart';
 
 class FavoriteControlBar extends StatelessWidget {
   const FavoriteControlBar({super.key});
@@ -18,6 +19,10 @@ class FavoriteControlBar extends StatelessWidget {
           onPressed: () {},
         ),
         Spacer(),
+        FavoriteActionButton(
+          icon: const Icon(LucideIcons.star),
+          onPressed: () {},
+        ),
         FavoriteMoreButton(
           icon: const Icon(LucideIcons.moreHorizontal),
           onPressed: () {},
