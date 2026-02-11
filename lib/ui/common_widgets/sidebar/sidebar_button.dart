@@ -1,0 +1,81 @@
+import 'package:flutter/widgets.dart';
+
+enum SidebarButtonState { iconActive, defaultState }
+
+class SidebarButton extends StatefulWidget {
+  final IconData icon;
+  final String? label;
+  final SidebarButtonState state;
+  final VoidCallback onPressed;
+
+  const SidebarButton({
+    super.key,
+    required this.icon,
+    this.label,
+    required this.state,
+    required this.onPressed,
+  });
+
+  @override
+  State<SidebarButton> createState() => _SidebarButtonState();
+}
+
+class _SidebarButtonState extends State<SidebarButton> {
+  bool _isHovering = false;
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isIconActive = widget.state == SidebarButtonState.iconActive;
+    final width = isIconActive ? 32.0 : 116.0;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.onPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: width,
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: _getBackgroundColor(),
+            borderRadius: BorderRadius.circular(6.0),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconTheme(
+                data: IconThemeData(color: const Color(0xFF000000), size: 16),
+                child: Icon(widget.icon),
+              ),
+              if (!isIconActive && widget.label != null) ...[
+                const SizedBox(width: 6),
+                Text(
+                  widget.label!,
+                  style: const TextStyle(
+                    color: Color(0xD9000000),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getBackgroundColor() {
+    if (_isPressed) return const Color(0xFFE0E0E0);
+    if (_isHovering) return const Color(0xFFF5F5F5);
+    if (widget.state == SidebarButtonState.iconActive) {
+      return const Color(0xFFEEEEEE);
+    }
+    return const Color(0x00000000);
+  }
+}
