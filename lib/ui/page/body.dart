@@ -29,6 +29,7 @@ class _BodyState extends State<Body> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(12),
+              alignment: Alignment.topLeft,
               child: _buildCurrentPage(),
             ),
           ),
