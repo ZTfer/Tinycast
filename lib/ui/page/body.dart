@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/common_widgets/sidebar/sidebar.dart';
+import 'package:tinycast/ui/page/downloads/downloads.dart';
 import 'package:tinycast/ui/page/favorite/favorite.dart';
 import 'package:tinycast/ui/page/library/library.dart';
 import 'package:tinycast/ui/page/up_next_queue/up_next_queue.dart';
@@ -45,6 +46,8 @@ class _BodyState extends State<Body> {
         return const Library();
       case 'favorite':
         return const Favorite();
+      case 'downloads':
+        return const Downloads();
       default:
         return const UpNextQueue();
     }
