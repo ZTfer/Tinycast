@@ -22,7 +22,8 @@ class HomeToolbar extends StatelessWidget {
           // 添加按钮
           // 用于快速创建新的任务或项目
           HomeToolbarButton(
-            icon: const Icon(LucideIcons.plus, size: 16),
+            icon: const Icon(LucideIcons.search
+, size: 16),
             // label: 'Add', // 暂时隐藏标签，仅显示图标
             onPressed: () {
               debugPrint('Add pressed');
