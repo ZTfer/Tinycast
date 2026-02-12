@@ -63,15 +63,28 @@ class _ListPlayButtonState extends State<ListPlayButton> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
+      /// 鼠标进入时设置悬停状态
       onEnter: (_) => setState(() => _isHovering = true),
+
+      /// 鼠标离开时取消悬停状态
       onExit: (_) => setState(() => _isHovering = false),
+
+      /// 设置鼠标样式为点击手势
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
+        /// 按下时设置按下状态
         onTapDown: (_) => setState(() => _isPressed = true),
+
+        /// 抬起时取消按下状态
         onTapUp: (_) => setState(() => _isPressed = false),
+
+        /// 取消点击时取消按下状态
         onTapCancel: () => setState(() => _isPressed = false),
+
+        /// 触发点击回调
         onTap: widget.onPressed,
         child: AnimatedContainer(
+          /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
@@ -86,6 +99,7 @@ class _ListPlayButtonState extends State<ListPlayButton> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              /// 左侧图标
               IconTheme(
                 data: IconThemeData(
                   color: _getContentColor(),
@@ -94,6 +108,8 @@ class _ListPlayButtonState extends State<ListPlayButton> {
                 child: widget.icon,
               ),
               SizedBox(width: widget.spacing),
+
+              /// 右侧文字
               Text(
                 widget.label,
                 style:
@@ -112,13 +128,21 @@ class _ListPlayButtonState extends State<ListPlayButton> {
   }
 
   /// 获取按钮背景颜色
+  ///
+  /// 根据当前状态返回对应的背景颜色：
+  /// - 按下状态：浅灰色 (0xFFDADADA)
+  /// - 悬停状态：浅灰色 (0xFFE1E1E1)
+  /// - 默认状态：浅灰色 (0xFFEEEEEE)
   Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0xFFE0E0E0);
-    if (_isHovering) return const Color(0xFFF5F5F5);
-    return const Color(0x00F5F5F5);
+    if (_isPressed) return const Color(0xFFDADADA);
+    if (_isHovering) return const Color(0xFFE1E1E1);
+    return const Color(0xFFEEEEEE);
   }
 
   /// 获取内容颜色（图标 + 文字）
+  ///
+  /// 根据当前状态返回对应的内容颜色。
+  /// 目前所有状态都返回黑色 (0xFF000000)。
   Color _getContentColor() {
     return const Color(0xFF000000);
   }
