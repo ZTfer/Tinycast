@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 /// OPML导入组件
 ///
@@ -69,7 +70,7 @@ class _OpmlImportState extends State<OpmlImport> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.cloud_upload_outlined,
+                  LucideIcons.upload,
                   size: 16.0,
                   color: const Color(0xCC000000),
                 ),
