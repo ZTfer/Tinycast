@@ -54,7 +54,10 @@ class Sidebar extends StatelessWidget {
                       : SidebarButtonState.defaultState,
                   onPressed: () => onPageChanged('downloads'),
                 ),
-                _buildMenuButton(icon: LucideIcons.plus, onPressed: () {}),
+                _buildMenuButton(
+                  icon: LucideIcons.plus,
+                  onPressed: () => onPageChanged('subscribe'),
+                ),
               ],
             ),
           ),
