@@ -1,15 +1,12 @@
 import 'package:flutter/widgets.dart';
 
-/// 列表播放按钮
+/// 按钮组件
 ///
-/// 包含左侧图标和右侧文字的按钮组件。
+/// 包含文字的按钮组件。
 /// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
 /// 参照 [EpisodeControlButton] 实现交互逻辑。
 class PrimaryButton extends StatefulWidget {
-  /// 按钮左侧显示的图标
-  final Widget icon;
-
-  /// 按钮右侧显示的文字
+  /// 按钮显示的文字
   final String label;
 
   /// 按钮点击的回调函数
@@ -17,12 +14,6 @@ class PrimaryButton extends StatefulWidget {
 
   /// 文字样式，可选。未提供时使用默认样式。
   final TextStyle? labelStyle;
-
-  /// 图标与文字之间的间距，默认 6.0
-  final double spacing;
-
-  /// 图标大小，默认 10
-  final double iconSize;
 
   /// 文字大小，默认 10
   final double fontSize;
@@ -38,12 +29,9 @@ class PrimaryButton extends StatefulWidget {
 
   const PrimaryButton({
     super.key,
-    required this.icon,
     required this.label,
     required this.onPressed,
     this.labelStyle,
-    this.spacing = 6.0,
-    this.iconSize = 10,
     this.fontSize = 10,
     this.horizontalPadding = 8,
     this.verticalPadding = 4,
@@ -123,7 +111,7 @@ class _ListPlayButtonState extends State<PrimaryButton> {
     return const Color(0xFFEEEEEE);
   }
 
-  /// 获取内容颜色（图标 + 文字）
+  /// 获取内容颜色（文字）
   ///
   /// 根据当前状态返回对应的内容颜色。
   /// 目前所有状态都返回黑色 (0xFF000000)。
