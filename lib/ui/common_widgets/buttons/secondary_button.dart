@@ -96,12 +96,12 @@ class _SecondaryButtonState extends State<SecondaryButton> {
               textAlign: TextAlign.center,
               style:
                   widget.labelStyle ??
-                  TextStyle(
-                    color: _getContentColor(),
-                    fontSize: widget.fontSize,
-                    fontWeight: FontWeight.normal,
-                    height: 1.5,
-                  ),
+                      TextStyle(
+                        color: _getContentColor(),
+                        fontSize: widget.fontSize,
+                        fontWeight: FontWeight.normal,
+                        height: 1.5,
+                      ),
             ),
           ),
         ),

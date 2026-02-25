@@ -112,20 +112,20 @@ class _ListPlayButtonState extends State<PrimaryButton> {
   /// 获取按钮背景颜色
   ///
   /// 根据当前状态返回对应的背景颜色：
-  /// - 按下状态：浅灰色 (0xFFDADADA)
-  /// - 悬停状态：浅灰色 (0xFFE1E1E1)
-  /// - 默认状态：浅灰色 (0xFFEEEEEE)
+  /// - 按下状态：浅灰色 (0xFF111111)
+  /// - 悬停状态：浅灰色 (0xFF1C1C1C)
+  /// - 默认状态：浅灰色 (0xFF1F1F1F)
   Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0xFFDADADA);
-    if (_isHovering) return const Color(0xFFE1E1E1);
-    return const Color(0xFFEEEEEE);
+    if (_isPressed) return const Color(0xFF000000);
+    if (_isHovering) return const Color(0xFF111111);
+    return const Color(0xFF222222);
   }
 
   /// 获取内容颜色（文字）
   ///
   /// 根据当前状态返回对应的内容颜色。
-  /// 目前所有状态都返回黑色 (0xFF000000)。
+  /// 目前所有状态都返回白色 (0xFFFFFFFF)。
   Color _getContentColor() {
-    return const Color(0xFF000000);
+    return const Color(0xFFFFFFFF);
   }
 }
