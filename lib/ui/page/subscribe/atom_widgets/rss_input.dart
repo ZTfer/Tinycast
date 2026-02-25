@@ -115,59 +115,67 @@ class _RssInputState extends State<RssInput> {
           /// 根据输入框是否为空显示不同内容
           child: _isEmpty
               /// 输入框为空时显示占位文字
-              ? Text(
-                  'https://domain.com/podcast.rss',
-                  style: const TextStyle(
-                    /// 字体大小：12px
-                    fontSize: 12.0,
+              ? SizedBox(
+                  /// 填充父容器的宽度
+                  width: double.infinity,
+                  child: Text(
+                    'https://domain.com/podcast.rss',
+                    style: const TextStyle(
+                      /// 字体大小：12px
+                      fontSize: 12.0,
 
-                    /// 文字颜色：黑色30%透明度
-                    color: Color(0x4D000000),
+                      /// 文字颜色：黑色30%透明度
+                      color: Color(0x4D000000),
 
-                    /// 行高：16px（用于垂直居中对齐）
-                    height: 16.0 / 12.0,
+                      /// 行高：16px（用于垂直居中对齐）
+                      height: 16.0 / 12.0,
+                    ),
                   ),
                 )
               /// 输入框不为空时显示可编辑文本框
-              : EditableText(
-                  /// 绑定文本控制器
-                  controller: _controller,
+              : SizedBox(
+                  /// 填充父容器的宽度
+                  width: double.infinity,
+                  child: EditableText(
+                    /// 绑定文本控制器
+                    controller: _controller,
 
-                  /// 绑定焦点节点
-                  focusNode: _focusNode,
+                    /// 绑定焦点节点
+                    focusNode: _focusNode,
 
-                  /// 文本样式
-                  style: const TextStyle(
-                    /// 字体大小：12px
-                    fontSize: 12.0,
+                    /// 文本样式
+                    style: const TextStyle(
+                      /// 字体大小：12px
+                      fontSize: 12.0,
 
-                    /// 文字颜色：黑色
-                    color: Color(0xFF000000),
+                      /// 文字颜色：黑色
+                      color: Color(0xFF000000),
 
-                    /// 行高：16px
-                    height: 16.0 / 12.0,
+                      /// 行高：16px
+                      height: 16.0 / 12.0,
+                    ),
+
+                    /// 光标颜色：黑色
+                    cursorColor: const Color(0xFF000000),
+
+                    /// 光标背景色：黑色
+                    backgroundCursorColor: const Color(0xFF000000),
+
+                    /// 选中文字的背景色：黑色25%透明度
+                    selectionColor: const Color(0x40000000),
+
+                    /// 文本内容变化时的回调
+                    onChanged: widget.onChanged,
+
+                    /// 提交文本时的回调（如按回车键）
+                    onSubmitted: widget.onSubmitted,
+
+                    /// 最大行数：1（单行输入）
+                    maxLines: 1,
+
+                    /// 最小行数：1（确保始终是单行）
+                    minLines: 1,
                   ),
-
-                  /// 光标颜色：黑色
-                  cursorColor: const Color(0xFF000000),
-
-                  /// 光标背景色：黑色
-                  backgroundCursorColor: const Color(0xFF000000),
-
-                  /// 选中文字的背景色：黑色25%透明度
-                  selectionColor: const Color(0x40000000),
-
-                  /// 文本内容变化时的回调
-                  onChanged: widget.onChanged,
-
-                  /// 提交文本时的回调（如按回车键）
-                  onSubmitted: widget.onSubmitted,
-
-                  /// 最大行数：1（单行输入）
-                  maxLines: 1,
-
-                  /// 最小行数：1（确保始终是单行）
-                  minLines: 1,
                 ),
         ),
       ),
