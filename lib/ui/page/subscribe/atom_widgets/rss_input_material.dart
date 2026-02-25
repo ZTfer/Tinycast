@@ -58,12 +58,15 @@ class _RssInputMaterialState extends State<RssInputMaterial> {
       enabled: widget.enabled,
 
       /// 占位文字
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
+        /// 让输入框更紧凑
+        // isDense: true,
+
         /// 占位文字内容
         hintText: 'https://domain.com/podcast.rss',
 
         /// 占位文字样式
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           /// 字体大小：12px
           fontSize: 12.0,
 
@@ -74,11 +77,36 @@ class _RssInputMaterialState extends State<RssInputMaterial> {
           height: 16.0 / 12.0,
         ),
 
-        /// 去除默认的边框
-        border: InputBorder.none,
+        /// 填充背景色
+        filled: true,
+        fillColor: const Color(0xFFF0F0F0),
 
-        /// 去除默认的填充
-        contentPadding: EdgeInsets.zero,
+        /// 圆角边框
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+
+        /// 禁用状态的边框
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+
+        /// 聚焦状态的边框
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+
+        /// 内边距
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 10.0,
+          vertical: 8.0,
+        ),
+
+        /// 最小高度约束
+        constraints: const BoxConstraints(minHeight: 34.0, maxHeight: 40.0),
 
         /// 去除默认的标签
         label: null,

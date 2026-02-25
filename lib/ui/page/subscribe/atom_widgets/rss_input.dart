@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// RSS输入框组件
+/// 自定义的RSS输入框组件，暂时不用了，改用 material design 版本的
 ///
 /// 用于输入RSS订阅链接的文本输入框。
 /// 包含占位文字提示，支持用户输入和焦点状态。
