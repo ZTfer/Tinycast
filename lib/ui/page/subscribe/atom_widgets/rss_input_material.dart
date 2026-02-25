@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 ///
 /// 使用 Material Design 的 TextField 实现的RSS订阅链接输入框。
 /// 包含占位文字提示，支持用户输入和焦点状态。
+/// 
+// TODO： 1. 修改 hover 样式，颜色再淡一点，添加一个缓动动画
+// TODO： 2. 输入的内容为 ip、网址
+
 class RssInputMaterial extends StatefulWidget {
   /// 输入框的初始值
   final String initialValue;
