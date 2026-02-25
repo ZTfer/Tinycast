@@ -76,35 +76,31 @@ class _RssInputState extends State<RssInput> {
                 : null,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 9.0),
-          child: Stack(
-            children: [
-              if (_isEmpty)
-                Positioned.fill(
-                  child: Text(
-                    'https://domain.com/podcast.rss',
-                    style: const TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0x4D000000),
-                      height: 16.0 / 12.0,
-                    ),
+          child: _isEmpty
+              ? Text(
+                  'https://domain.com/podcast.rss',
+                  style: const TextStyle(
+                    fontSize: 12.0,
+                    color: Color(0x4D000000),
+                    height: 16.0 / 12.0,
                   ),
+                )
+              : EditableText(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  style: const TextStyle(
+                    fontSize: 12.0,
+                    color: Color(0xFF000000),
+                    height: 16.0 / 12.0,
+                  ),
+                  cursorColor: const Color(0xFF000000),
+                  backgroundCursorColor: const Color(0xFF000000),
+                  selectionColor: const Color(0x40000000),
+                  onChanged: widget.onChanged,
+                  onSubmitted: widget.onSubmitted,
+                  maxLines: 1,
+                  minLines: 1,
                 ),
-              EditableText(
-                controller: _controller,
-                focusNode: _focusNode,
-                style: const TextStyle(
-                  fontSize: 12.0,
-                  color: Color(0xFF000000),
-                  height: 16.0 / 12.0,
-                ),
-                cursorColor: const Color(0xFF000000),
-                backgroundCursorColor: const Color(0xFF000000),
-                selectionColor: const Color(0x40000000),
-                onChanged: widget.onChanged,
-                onSubmitted: widget.onSubmitted,
-              ),
-            ],
-          ),
         ),
       ),
     );

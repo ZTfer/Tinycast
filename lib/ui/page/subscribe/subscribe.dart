@@ -8,15 +8,20 @@ class Subscribe extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        SubscribeByRss(),
-        SizedBox(height: 24.0),
-        SubscribeByOpml(),
-        SizedBox(height: 24.0),
-        SubscribeActionBar(),
-      ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            SubscribeByRss(),
+            SizedBox(height: 24.0),
+            SubscribeByOpml(),
+            SizedBox(height: 24.0),
+            SubscribeActionBar(),
+          ],
+        ),
+      ),
     );
   }
 }
