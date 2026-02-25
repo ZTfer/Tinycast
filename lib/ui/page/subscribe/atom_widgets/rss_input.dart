@@ -103,14 +103,17 @@ class _RssInputState extends State<RssInput> {
             /// 圆角：8px
             borderRadius: BorderRadius.circular(8.0),
 
-            /// 边框：获得焦点时显示黑色边框
+            /// 边框：获得焦点时显示黑色边框（内边框）
             border: _isFocused
                 ? Border.all(color: const Color(0xFF000000), width: 1.0)
                 : null,
           ),
 
-          /// 内边距：水平12px，垂直9px
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 9.0),
+          /// 内边距：水平12px，垂直9px（边框占据的空间从padding中扣除）
+          padding: EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: _isFocused ? 8.0 : 9.0,
+          ),
 
           /// 根据输入框是否为空显示不同内容
           child: _isEmpty
