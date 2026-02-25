@@ -27,6 +27,9 @@ class SecondaryButton extends StatefulWidget {
   /// 圆角大小，默认 10
   final double borderRadius;
 
+  /// 按钮宽度，默认 80
+  final double width;
+
   const SecondaryButton({
     super.key,
     required this.label,
@@ -36,6 +39,7 @@ class SecondaryButton extends StatefulWidget {
     this.horizontalPadding = 16,
     this.verticalPadding = 6,
     this.borderRadius = 16,
+    this.width = 80,
   });
 
   @override
@@ -71,29 +75,34 @@ class _SecondaryButtonState extends State<SecondaryButton> {
 
         /// 触发点击回调
         onTap: widget.onPressed,
-        child: AnimatedContainer(
-          /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
-          duration: _isHovering
-              ? const Duration(milliseconds: 200)
-              : Duration.zero,
-          padding: EdgeInsets.symmetric(
-            horizontal: widget.horizontalPadding,
-            vertical: widget.verticalPadding,
-          ),
-          decoration: BoxDecoration(
-            color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-          ),
-          child: Text(
-            widget.label,
-            style:
-                widget.labelStyle ??
-                TextStyle(
-                  color: _getContentColor(),
-                  fontSize: widget.fontSize,
-                  fontWeight: FontWeight.normal,
-                  height: 1.5,
-                ),
+        child: SizedBox(
+          /// 按钮宽度：80px
+          width: widget.width,
+          child: AnimatedContainer(
+            /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
+            duration: _isHovering
+                ? const Duration(milliseconds: 200)
+                : Duration.zero,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.horizontalPadding,
+              vertical: widget.verticalPadding,
+            ),
+            decoration: BoxDecoration(
+              color: _getBackgroundColor(),
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+            ),
+            child: Text(
+              widget.label,
+              textAlign: TextAlign.center,
+              style:
+                  widget.labelStyle ??
+                  TextStyle(
+                    color: _getContentColor(),
+                    fontSize: widget.fontSize,
+                    fontWeight: FontWeight.normal,
+                    height: 1.5,
+                  ),
+            ),
           ),
         ),
       ),
