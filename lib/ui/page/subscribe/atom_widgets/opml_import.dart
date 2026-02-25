@@ -102,6 +102,9 @@ class _OpmlImportState extends State<OpmlImport> {
   /// 记录是否正在拖动文件
   bool _isDragging = false;
 
+  /// 记录是否正在悬停
+  bool _isHovering = false;
+
   @override
   Widget build(BuildContext context) {
     return DragTarget<Object>(
@@ -125,6 +128,7 @@ class _OpmlImportState extends State<OpmlImport> {
       onLeave: (_) {
         setState(() {
           _isDragging = false;
+          _isHovering = false;
         });
       },
 
@@ -134,78 +138,98 @@ class _OpmlImportState extends State<OpmlImport> {
         if (!_isDragging) {
           setState(() {
             _isDragging = true;
+            _isHovering = true;
           });
         }
       },
       builder: (context, candidateData, rejectedData) {
-        return GestureDetector(
-          /// 点击区域时触发文件选择
-          onTap: widget.enabled ? _handleTap : null,
-          child: CustomPaint(
-            /// 使用虚线边框绘制器
-            painter: DashedBorderPainter(
-              /// 拖动时显示黑色边框，否则显示灰色边框
-              color: _isDragging
-                  ? const Color(0xFF000000)
-                  : const Color(0xFF999999),
+        return MouseRegion(
+          /// 鼠标进入区域
+          onEnter: (_) {
+            if (widget.enabled) {
+              setState(() {
+                _isHovering = true;
+              });
+            }
+          },
 
-              /// 边框宽度：0.5px
-              strokeWidth: 0.5,
+          /// 鼠标离开区域
+          onExit: (_) {
+            if (!_isDragging) {
+              setState(() {
+                _isHovering = false;
+              });
+            }
+          },
+          child: GestureDetector(
+            /// 点击区域时触发文件选择
+            onTap: widget.enabled ? _handleTap : null,
+            child: CustomPaint(
+              /// 使用虚线边框绘制器
+              painter: DashedBorderPainter(
+                /// 悬停或拖动时显示黑色边框，否则显示灰色边框
+                color: (_isHovering || _isDragging)
+                    ? const Color(0xFF000000)
+                    : const Color(0xFF999999),
 
-              /// 圆角：8px
-              borderRadius: 8.0,
-
-              /// 虚线模式：5px 实线，3px 空白
-              dashPattern: const [5.0, 3.0],
-            ),
-            child: Container(
-              /// 容器装饰样式
-              decoration: BoxDecoration(
-                /// 背景色：浅灰色
-                color: const Color(0xFFF0F0F0),
+                /// 边框宽度：0.5px
+                strokeWidth: 0.5,
 
                 /// 圆角：8px
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: 8.0,
+
+                /// 虚线模式：5px 实线，3px 空白
+                dashPattern: const [5.0, 3.0],
               ),
+              child: Container(
+                /// 容器装饰样式
+                decoration: BoxDecoration(
+                  /// 背景色：浅灰色
+                  color: const Color(0xFFF0F0F0),
 
-              /// 内边距：水平160px，垂直52px
-              padding: const EdgeInsets.symmetric(
-                horizontal: 160.0,
-                vertical: 52.0,
-              ),
-              child: Column(
-                /// 主轴尺寸：最小
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  /// 上传图标
-                  Icon(
-                    /// 使用 Lucide 的 upload 图标
-                    LucideIcons.upload,
+                  /// 圆角：8px
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
 
-                    /// 图标大小：16px
-                    size: 16.0,
+                /// 内边距：水平160px，垂直52px
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 160.0,
+                  vertical: 52.0,
+                ),
+                child: Column(
+                  /// 主轴尺寸：最小
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    /// 上传图标
+                    Icon(
+                      /// 使用 Lucide 的 upload 图标
+                      LucideIcons.upload,
 
-                    /// 图标颜色：黑色80%透明度
-                    color: const Color(0xCC000000),
-                  ),
+                      /// 图标大小：16px
+                      size: 16.0,
 
-                  /// 间距：10px
-                  const SizedBox(height: 10.0),
-
-                  /// 提示文字
-                  Text(
-                    '点击或者拖动文件到这里',
-                    style: TextStyle(
-                      /// 字体大小：10px
-                      fontSize: 10.0,
-
-                      /// 可用时显示黑色50%透明度，禁用时显示黑色25%透明度
-                      color: widget.enabled
-                          ? const Color(0x80000000)
-                          : const Color(0x40000000),
+                      /// 图标颜色：黑色80%透明度
+                      color: const Color(0xCC000000),
                     ),
-                  ),
-                ],
+
+                    /// 间距：10px
+                    const SizedBox(height: 10.0),
+
+                    /// 提示文字
+                    Text(
+                      '点击或者拖动文件到这里',
+                      style: TextStyle(
+                        /// 字体大小：10px
+                        fontSize: 10.0,
+
+                        /// 可用时显示黑色50%透明度，禁用时显示黑色25%透明度
+                        color: widget.enabled
+                            ? const Color(0x80000000)
+                            : const Color(0x40000000),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
