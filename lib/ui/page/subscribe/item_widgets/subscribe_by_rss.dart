@@ -1,5 +1,5 @@
-import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/subscribe/atom_widgets/rss_input.dart';
+import 'package:flutter/material.dart';
+import 'package:tinycast/ui/page/subscribe/atom_widgets/rss_input_material.dart';
 
 class SubscribeByRss extends StatelessWidget {
   const SubscribeByRss({super.key});
@@ -8,8 +8,8 @@ class SubscribeByRss extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
+      children: [
+        const Text(
           '通过RSS订阅',
           style: TextStyle(
             fontSize: 14.0,
@@ -17,8 +17,22 @@ class SubscribeByRss extends StatelessWidget {
             color: Color(0xFF000000),
           ),
         ),
-        SizedBox(height: 12.0),
-        RssInput(),
+        const SizedBox(height: 12.0),
+
+        /// 包裹 Material 组件以支持 TextField
+        Material(
+          color: Colors.transparent,
+
+          /// 添加 Localizations 以提供 MaterialLocalizations
+          child: Localizations(
+            locale: const Locale('en', 'US'),
+            delegates: const <LocalizationsDelegate<dynamic>>[
+              DefaultMaterialLocalizations.delegate,
+              DefaultWidgetsLocalizations.delegate,
+            ],
+            child: const RssInputMaterial(),
+          ),
+        ),
       ],
     );
   }
