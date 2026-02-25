@@ -219,25 +219,22 @@ class _OpmlImportState extends State<OpmlImport> {
                     /// 提示文字
                     Align(
                       alignment: Alignment.center,
-                      child: SizedBox(
-                        /// 文字区域宽度：200px
-                        width: 200.0,
-                        child: Padding(
-                          /// 水平内边距：12px
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Text(
-                            '点击或者拖动文件到这里',
-                            textAlign: TextAlign.center,
-                            maxLines: null,
-                            style: TextStyle(
-                              /// 字体大小：10px
-                              fontSize: 10.0,
 
-                              /// 可用时显示黑色50%透明度，禁用时显示黑色25%透明度
-                              color: widget.enabled
-                                  ? const Color(0x80000000)
-                                  : const Color(0x40000000),
-                            ),
+                      child: Padding(
+                        /// 水平内边距：12px
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Text(
+                          '点击或者拖动文件到这里',
+                          textAlign: TextAlign.center,
+                          maxLines: null,
+                          style: TextStyle(
+                            /// 字体大小：10px
+                            fontSize: 10.0,
+
+                            /// 可用时显示黑色50%透明度，禁用时显示黑色25%透明度
+                            color: widget.enabled
+                                ? const Color(0x80000000)
+                                : const Color(0x40000000),
                           ),
                         ),
                       ),
