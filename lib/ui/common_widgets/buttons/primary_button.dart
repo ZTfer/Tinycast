@@ -32,10 +32,10 @@ class PrimaryButton extends StatefulWidget {
     required this.label,
     required this.onPressed,
     this.labelStyle,
-    this.fontSize = 10,
-    this.horizontalPadding = 8,
-    this.verticalPadding = 4,
-    this.borderRadius = 10,
+    this.fontSize = 12,
+    this.horizontalPadding = 16,
+    this.verticalPadding = 6,
+    this.borderRadius = 16,
   });
 
   @override
@@ -92,6 +92,7 @@ class _ListPlayButtonState extends State<PrimaryButton> {
                   color: _getContentColor(),
                   fontSize: widget.fontSize,
                   fontWeight: FontWeight.normal,
+                  height: 1.5,
                 ),
           ),
         ),
