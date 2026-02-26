@@ -56,6 +56,9 @@ class Sidebar extends StatelessWidget {
                 ),
                 _buildMenuButton(
                   icon: LucideIcons.plus,
+                  state: currentPage == 'subscribe'
+                      ? SidebarButtonState.iconActive
+                      : SidebarButtonState.defaultState,
                   onPressed: () => onPageChanged('subscribe'),
                 ),
               ],
