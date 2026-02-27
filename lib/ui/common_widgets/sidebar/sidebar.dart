@@ -61,6 +61,13 @@ class Sidebar extends StatelessWidget {
                       : SidebarButtonState.defaultState,
                   onPressed: () => onPageChanged('subscribe'),
                 ),
+                _buildMenuButton(
+                  icon: LucideIcons.flaskConical,
+                  state: currentPage == 'testpage'
+                      ? SidebarButtonState.iconActive
+                      : SidebarButtonState.defaultState,
+                  onPressed: () => onPageChanged('testpage'),
+                ),
               ],
             ),
           ),

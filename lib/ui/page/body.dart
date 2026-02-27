@@ -4,6 +4,7 @@ import 'package:tinycast/ui/page/downloads/downloads.dart';
 import 'package:tinycast/ui/page/favorite/favorite.dart';
 import 'package:tinycast/ui/page/library/library.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe.dart';
+import 'package:tinycast/ui/page/test_page/test_page.dart';
 import 'package:tinycast/ui/page/up_next_queue/up_next_queue.dart';
 
 class Body extends StatefulWidget {
@@ -51,6 +52,8 @@ class _BodyState extends State<Body> {
         return const Downloads();
       case 'subscribe':
         return const Subscribe();
+      case 'testpage':
+        return const TestPage();
       default:
         return const UpNextQueue();
     }
