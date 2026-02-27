@@ -92,7 +92,7 @@ class _QueueEpisodeDropdownItemState extends State<QueueEpisodeDropdownItem> {
             color: _getBackgroundColor(),
 
             /// 圆角半径 8
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(6.0),
           ),
 
           /// 子组件：横向排列的图标和文字

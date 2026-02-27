@@ -15,7 +15,7 @@ class QueueEpisodeDropdown extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
           color: Colors.grey.shade300, // 边框颜色
           width: 0.5, // 边框宽度
@@ -29,46 +29,48 @@ class QueueEpisodeDropdown extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 2,
-        children: [
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.copy),
-            text: '拷贝链接',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.heart),
-            text: '收藏',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.share2),
-            text: '分享',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.listStart),
-            text: '插播',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.checkCircle),
-            text: '标记为已播放',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.trash2),
-            text: '移除下载',
-            onPressed: () {},
-          ),
-          QueueEpisodeDropdownItem(
-            icon: Icon(LucideIcons.x),
-            text: '从待播清单移除',
-            onPressed: () {},
-          ),
-        ],
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 2,
+          children: [
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.copy),
+              text: '拷贝链接',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.star),
+              text: '收藏',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.share2),
+              text: '分享',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.listStart),
+              text: '插播',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.checkCircle),
+              text: '标记为已播放',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.trash2),
+              text: '移除下载',
+              onPressed: () {},
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.x),
+              text: '从待播清单移除',
+              onPressed: () {},
+            ),
+          ],
+        ),
       ),
     );
   }
