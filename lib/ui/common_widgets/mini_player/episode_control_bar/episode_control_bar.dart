@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:tinycast/ui/common_widgets/mini_player/episode_control_button.dart';
+import 'package:tinycast/ui/common_widgets/mini_player/episode_control_bar/episode_control_button.dart';
 
 class EpisodeControlBar extends StatelessWidget {
   const EpisodeControlBar({super.key});

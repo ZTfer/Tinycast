@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/common_widgets/mini_player/episode_control_bar.dart';
+import 'package:tinycast/ui/common_widgets/mini_player/episode_control_bar/episode_control_bar.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/episode_info.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/episode_progress.dart';
 
