@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/up_next_queue/item_widgets/queue_item.dart';
+import 'package:tinycast/ui/page/up_next_queue/queue_item/queue_item.dart';
 
 /// 待播放队列页面
 ///
