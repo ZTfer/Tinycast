@@ -1,15 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-/// 队列更多操作按钮
-///
-/// 用于待播放队列列表项中的图标+文字按钮（如更多选项、删除等）。
-/// 参照 [EpisodeControlButton] 实现，支持悬停和点击状态的视觉反馈。
-///
-/// 特性：
-/// - 支持鼠标悬停效果（背景色变化）
-/// - 支持点击按下效果（背景色变化）
-/// - 图标和文字横向排列
-/// - 可自定义图标大小和内容颜色
 class QueueEpisodeDropdownItem extends StatefulWidget {
   /// 按钮显示的图标
   final Widget icon;
