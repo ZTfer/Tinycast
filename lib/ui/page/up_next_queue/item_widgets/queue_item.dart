@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/up_next_queue/item_widgets/queue_control_bar.dart';
+import 'package:tinycast/ui/page/up_next_queue/queue_control_bar/queue_control_bar.dart';
 
 /// Queue 列表项组件
 ///

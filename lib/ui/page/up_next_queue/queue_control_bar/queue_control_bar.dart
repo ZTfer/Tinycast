@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/buttons/list_play_button.dart';
-import 'package:tinycast/ui/page/up_next_queue/atom_widgets/queue_more_button.dart';
-// import 'package:tinycast/ui/page/up_next_queue/item_widgets/queue_episode_dropdown.dart';
+import 'package:tinycast/ui/page/up_next_queue/queue_control_bar/queue_more_button.dart';
+import 'package:tinycast/ui/page/up_next_queue/item_widgets/queue_episode_dropdown.dart';
 
 /// Queue 控制栏组件
 ///
@@ -36,10 +36,7 @@ class QueueControlBar extends StatelessWidget {
           iconSize: 12,
           contentColor: const Color(0xD9000000),
         ),
-        // QueueEpisodeDropdown(
-        //   icon: const Icon(LucideIcons.moreHorizontal),
-        //   onSelected: (value) => {},
-        // ),
+        // QueueEpisodeDropdown(),
       ],
     );
   }
