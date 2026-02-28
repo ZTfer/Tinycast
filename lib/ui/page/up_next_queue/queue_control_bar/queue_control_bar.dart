@@ -72,7 +72,10 @@ class _QueueControlBarState extends State<QueueControlBar> {
                   child: GestureDetector(
                     /// 阻止事件冒泡，点击菜单内部不关闭
                     onTap: () {},
-                    child: const QueueEpisodeDropdown(),
+                    child: QueueEpisodeDropdown(
+                      /// 菜单项选中时关闭下拉菜单
+                      onItemSelected: _hideDropdown,
+                    ),
                   ),
                 ),
               ],

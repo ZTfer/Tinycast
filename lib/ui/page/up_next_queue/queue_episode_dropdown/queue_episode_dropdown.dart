@@ -7,7 +7,10 @@ import 'package:tinycast/ui/page/up_next_queue/queue_episode_dropdown/queue_epis
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
 class QueueEpisodeDropdown extends StatelessWidget {
-  const QueueEpisodeDropdown({super.key});
+  /// 菜单项选中时的回调函数
+  final VoidCallback? onItemSelected;
+
+  const QueueEpisodeDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +20,9 @@ class QueueEpisodeDropdown extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: Colors.grey.shade300, // 边框颜色
-          width: 0.5, // 边框宽度
-          style: BorderStyle.solid, // 实线
+          color: Colors.grey.shade300,
+          width: 0.5,
+          style: BorderStyle.solid,
         ),
         boxShadow: [
           BoxShadow(
@@ -37,41 +40,45 @@ class QueueEpisodeDropdown extends StatelessWidget {
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.star),
               text: '收藏',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.share2),
               text: '分享',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.listStart),
               text: '插播',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.checkCircle),
               text: '标记为已播放',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.trash2),
               text: '移除下载',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.x),
               text: '从待播清单移除',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _handleItemSelected() {
+    onItemSelected?.call();
   }
 }
