@@ -7,7 +7,9 @@ import 'package:tinycast/ui/common_widgets/home_toolbar/sleep_dropdown/sleep_dro
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
 class SleepDropdown extends StatelessWidget {
-  const SleepDropdown({super.key});
+  final VoidCallback? onItemSelected;
+
+  const SleepDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -38,46 +40,50 @@ class SleepDropdown extends StatelessWidget {
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '关闭',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               icon: Icon(LucideIcons.check),
               text: '5 分钟',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '10 分钟',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '15 分钟',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '30 分钟',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '45 分钟',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '1 小时',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SleepDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '单集结束时',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _handleItemSelected() {
+    onItemSelected?.call();
   }
 }
