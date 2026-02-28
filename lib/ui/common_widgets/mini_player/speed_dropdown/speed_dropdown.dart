@@ -7,7 +7,9 @@ import 'package:tinycast/ui/common_widgets/mini_player/speed_dropdown/speed_drop
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
 class SpeedDropdown extends StatelessWidget {
-  const SpeedDropdown({super.key});
+  final VoidCallback? onItemSelected;
+
+  const SpeedDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -38,41 +40,45 @@ class SpeedDropdown extends StatelessWidget {
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '2 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '1.8 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '1.5 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '1.3 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               icon: Icon(LucideIcons.check),
               text: '1 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '0.8 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
             SpeedDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '0.5 x',
-              onPressed: () {},
+              onPressed: () => _handleItemSelected(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _handleItemSelected() {
+    onItemSelected?.call();
   }
 }
