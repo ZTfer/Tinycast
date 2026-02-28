@@ -12,6 +12,7 @@ class EpisodeControlBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // 播放速度控制按钮
           EpisodeControlButton(
             icon: const Icon(LucideIcons.gauge, size: 16),
             onPressed: () {},
@@ -19,20 +20,24 @@ class EpisodeControlBar extends StatelessWidget {
           Row(
             spacing: 40,
             children: [
+              // 后退15秒按钮
               EpisodeControlButton(
                 icon: const Icon(LucideIcons.skipBack, size: 20),
                 onPressed: () {},
               ),
+              // 播放/暂停按钮
               EpisodeControlButton(
                 icon: const Icon(LucideIcons.play, size: 24),
                 onPressed: () {},
               ),
+              // 前进15秒按钮
               EpisodeControlButton(
                 icon: const Icon(LucideIcons.skipForward, size: 20),
                 onPressed: () {},
               ),
             ],
           ),
+          // 音量控制按钮
           EpisodeControlButton(
             icon: const Icon(LucideIcons.volume2, size: 16),
             onPressed: () {},
