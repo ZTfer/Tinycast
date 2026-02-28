@@ -33,6 +33,7 @@ class _QueueControlBarState extends State<QueueControlBar> {
   ///
   /// 获取更多按钮的位置和大小，在按钮下方显示下拉菜单。
   /// 菜单位置：按钮下方 4px 处。
+  /// 自动调整位置，避免菜单超出屏幕边界。
   void _showDropdown() {
     /// 获取更多按钮的 RenderBox
     final RenderBox renderBox =
@@ -43,6 +44,27 @@ class _QueueControlBarState extends State<QueueControlBar> {
 
     /// 获取按钮的尺寸
     final Size size = renderBox.size;
+
+    /// 获取屏幕尺寸
+    final Size screenSize = MediaQuery.of(context).size;
+
+    /// 计算菜单的预估宽度（用于边界检测）
+    const double estimatedMenuWidth = 150.0;
+    const double estimatedMenuHeight = 230.0;
+
+    /// 计算菜单位置
+    double left = offset.dx;
+    double top = offset.dy + size.height + 4;
+
+    /// 如果菜单超出右边界，向左调整
+    if (left + estimatedMenuWidth > screenSize.width) {
+      left = screenSize.width - estimatedMenuWidth - 8;
+    }
+
+    /// 如果菜单超出下边界，向上显示
+    if (top + estimatedMenuHeight > screenSize.height) {
+      top = offset.dy - estimatedMenuHeight - 4;
+    }
 
     /// 创建下拉菜单的 OverlayEntry
     _dropdownOverlay = OverlayEntry(
@@ -67,8 +89,8 @@ class _QueueControlBarState extends State<QueueControlBar> {
               children: [
                 /// 下拉菜单，定位在按钮下方
                 Positioned(
-                  left: offset.dx,
-                  top: offset.dy + size.height + 4,
+                  left: left,
+                  top: top,
                   child: GestureDetector(
                     /// 阻止事件冒泡，点击菜单内部不关闭
                     onTap: () {},
