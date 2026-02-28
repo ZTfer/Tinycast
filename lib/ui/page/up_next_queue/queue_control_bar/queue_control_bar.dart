@@ -47,11 +47,11 @@ class _QueueControlBarState extends State<QueueControlBar> {
     /// 创建下拉菜单的 OverlayEntry
     _dropdownOverlay = OverlayEntry(
       builder: (context) => Positioned(
-        /// 左边距：与按钮左对齐
-        left: offset.dx,
-
-        /// 上边距：按钮底部下方 4px
-        top: offset.dy + size.height + 4,
+        /// 覆盖整个屏幕
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
 
         /// 手势检测器，用于处理点击外部关闭菜单
         child: GestureDetector(
@@ -65,10 +65,15 @@ class _QueueControlBarState extends State<QueueControlBar> {
             /// Stack 用于叠加下拉菜单
             child: Stack(
               children: [
-                /// 下拉菜单本身，阻止事件冒泡
-                GestureDetector(
-                  onTap: () {},
-                  child: const QueueEpisodeDropdown(),
+                /// 下拉菜单，定位在按钮下方
+                Positioned(
+                  left: offset.dx,
+                  top: offset.dy + size.height + 4,
+                  child: GestureDetector(
+                    /// 阻止事件冒泡，点击菜单内部不关闭
+                    onTap: () {},
+                    child: const QueueEpisodeDropdown(),
+                  ),
                 ),
               ],
             ),
