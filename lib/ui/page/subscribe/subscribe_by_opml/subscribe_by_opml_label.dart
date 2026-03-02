@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:tinycast/ui/page/subscribe/atom_widgets/opml_import_question_button.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/opml_import_question_button.dart';
 
 class SubscribeByOpmlLabel extends StatelessWidget {
   const SubscribeByOpmlLabel({super.key});

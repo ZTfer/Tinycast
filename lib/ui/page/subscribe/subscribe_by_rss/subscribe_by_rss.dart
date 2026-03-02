@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tinycast/ui/page/subscribe/atom_widgets/rss_input_material.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_by_rss/rss_input_material.dart';
 
 class SubscribeByRss extends StatelessWidget {
   const SubscribeByRss({super.key});
