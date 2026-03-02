@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/library/item_widgets/library_list_item.dart';
+import 'package:tinycast/ui/page/library/library_list_item/library_list_item.dart';
 
 class Library extends StatelessWidget {
   const Library({super.key});
