@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/downloads/item_widgets/downloads_control_bar.dart';
+import 'package:tinycast/ui/page/downloads/downloads_control_bar/downloads_control_bar.dart';
 
 /// Downloads 列表项组件
 ///

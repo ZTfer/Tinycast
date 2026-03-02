@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/buttons/list_play_button.dart';
-import 'package:tinycast/ui/page/downloads/atom_widgets/downloads_more_button.dart';
+import 'package:tinycast/ui/page/downloads/downloads_control_bar/downloads_more_button.dart';
 
 class DownloadsControlBar extends StatelessWidget {
   const DownloadsControlBar({super.key}); 

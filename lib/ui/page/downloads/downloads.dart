@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/downloads/item_widgets/downloads_item.dart';
+import 'package:tinycast/ui/page/downloads/downloads_list_item/downloads_item.dart';
 
 class Downloads extends StatelessWidget {
   const Downloads({super.key});
