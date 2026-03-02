@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/buttons/list_play_button.dart';
-import 'package:tinycast/ui/page/favorite/atom_widgets/favorite_more_button.dart';
-import 'package:tinycast/ui/page/favorite/atom_widgets/favorite_action_button.dart';
+import 'package:tinycast/ui/page/favorite/favorite_control_bar/favorite_more_button.dart';
+import 'package:tinycast/ui/page/favorite/favorite_control_bar/favorite_action_button.dart';
 
 class FavoriteControlBar extends StatelessWidget {
   const FavoriteControlBar({super.key});

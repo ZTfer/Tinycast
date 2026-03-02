@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/favorite/item_widgets/favorite_item.dart';
+import 'package:tinycast/ui/page/favorite/favorite_list_item/favorite_list_item.dart';
 
 class Favorite extends StatelessWidget {
   const Favorite({super.key});

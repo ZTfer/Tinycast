@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/favorite/item_widgets/favorite_control_bar.dart';
+import 'package:tinycast/ui/page/favorite/favorite_control_bar/favorite_control_bar.dart';
 
 /// Favorite 列表项组件
 ///
