@@ -8,8 +8,10 @@ class QueueEmptyOpmlImportQuestionLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(LucideIcons.helpCircle),
+        Icon(LucideIcons.helpCircle, size: 16),
+        const SizedBox(width: 6.0),
         Text(
           '通过OPML导入',
           style: TextStyle(

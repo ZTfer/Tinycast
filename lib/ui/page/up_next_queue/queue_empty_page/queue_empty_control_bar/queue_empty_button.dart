@@ -35,9 +35,10 @@ class QueueEmptyButton extends StatefulWidget {
     this.labelStyle,
     this.fontSize = 12,
     this.horizontalPadding = 16,
-    this.verticalPadding = 6,
+    this.verticalPadding = 8,
     this.borderRadius = 16,
-    this.width = 80,
+    // 按钮固定宽度可能会导致在不同语言下显示问题，导致内容被截断
+    this.width = 120,
     this.icon,
   });
 
