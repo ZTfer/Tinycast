@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_action_bar/subscribe_action_bar.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/subscribe_by_opml.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_rss/subscribe_by_rss.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tab.dart';
@@ -33,6 +34,11 @@ class _SubscribeState extends State<Subscribe> {
             alignment: Alignment.topLeft,
             child: _buildCurrentPage(),
           ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(12),
+          alignment: Alignment.center,
+          child: const SubscribeActionBar(),
         ),
       ],
     );
