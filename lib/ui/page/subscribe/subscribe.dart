@@ -1,27 +1,51 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe_action_bar/subscribe_action_bar.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/subscribe_by_opml.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_rss/subscribe_by_rss.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tabbar.dart';
 
-class Subscribe extends StatelessWidget {
+class Subscribe extends StatefulWidget {
   const Subscribe({super.key});
 
   @override
+  State<Subscribe> createState() => _SubscribeState();
+}
+
+class _SubscribeState extends State<Subscribe> {
+  String _currentPage = 'rss';
+
+  void _navigateToPage(String page) {
+    setState(() {
+      _currentPage = page;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            SubscribeByRss(),
-            SizedBox(height: 24.0),
-            SubscribeByOpml(),
-            SizedBox(height: 24.0),
-            SubscribeActionBar(),
-          ],
+    return Column(
+      children: [
+        SubscribeTabbar(
+          currentPage: _currentPage,
+          onPageChanged: _navigateToPage,
         ),
-      ),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            alignment: Alignment.topLeft,
+            child: _buildCurrentPage(),
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildCurrentPage() {
+    switch (_currentPage) {
+      case 'rss':
+        return const SubscribeByRss();
+      case 'opml':
+        return const SubscribeByOpml();
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }
