@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tabbar_button.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tab_button.dart';
 
 class SubscribeTabbar extends StatelessWidget {
   final String currentPage;
@@ -29,16 +29,16 @@ class SubscribeTabbar extends StatelessWidget {
                 icon: LucideIcons.listMusic,
                 label: 'RSS',
                 state: currentPage == 'rss'
-                    ? SubscribeTabbarButtonState.iconActive
-                    : SubscribeTabbarButtonState.defaultState,
+                    ? SubscribeTabButtonState.iconActive
+                    : SubscribeTabButtonState.defaultState,
                 onPressed: () => onPageChanged('rss'),
               ),
               _buildTabbarButton(
                 icon: LucideIcons.layoutGrid,
                 label: 'OPML',
                 state: currentPage == 'opml'
-                    ? SubscribeTabbarButtonState.iconActive
-                    : SubscribeTabbarButtonState.defaultState,
+                    ? SubscribeTabButtonState.iconActive
+                    : SubscribeTabButtonState.defaultState,
                 onPressed: () => onPageChanged('opml'),
               ),
             ],
@@ -51,12 +51,12 @@ class SubscribeTabbar extends StatelessWidget {
   Widget _buildTabbarButton({
     required IconData icon,
     String? label,
-    SubscribeTabbarButtonState state = SubscribeTabbarButtonState.defaultState,
+    SubscribeTabButtonState state = SubscribeTabButtonState.defaultState,
     required VoidCallback onPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: SubscribeTabbarButton(
+      child: SubscribeTabButton(
         icon: icon,
         label: label,
         state: state,

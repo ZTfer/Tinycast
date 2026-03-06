@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/subscribe_by_opml.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_rss/subscribe_by_rss.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tabbar.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tab.dart';
 
 class Subscribe extends StatefulWidget {
   const Subscribe({super.key});

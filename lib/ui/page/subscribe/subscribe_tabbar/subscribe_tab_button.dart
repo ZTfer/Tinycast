@@ -1,14 +1,14 @@
 import 'package:flutter/widgets.dart';
 
-enum SubscribeTabbarButtonState { iconActive, defaultState }
+enum SubscribeTabButtonState { iconActive, defaultState }
 
-class SubscribeTabbarButton extends StatefulWidget {
+class SubscribeTabButton extends StatefulWidget {
   final IconData icon;
   final String? label;
-  final SubscribeTabbarButtonState state;
+  final SubscribeTabButtonState state;
   final VoidCallback onPressed;
 
-  const SubscribeTabbarButton({
+  const SubscribeTabButton({
     super.key,
     required this.icon,
     this.label,
@@ -17,16 +17,16 @@ class SubscribeTabbarButton extends StatefulWidget {
   });
 
   @override
-  State<SubscribeTabbarButton> createState() => _SubscribeTabbarButtonState();
+  State<SubscribeTabButton> createState() => _SubscribeTabButtonState();
 }
 
-class _SubscribeTabbarButtonState extends State<SubscribeTabbarButton> {
+class _SubscribeTabButtonState extends State<SubscribeTabButton> {
   bool _isHovering = false;
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final isIconActive = widget.state == SubscribeTabbarButtonState.iconActive;
+    final isIconActive = widget.state == SubscribeTabButtonState.iconActive;
     final width = isIconActive ? 32.0 : 116.0;
 
     return MouseRegion(
@@ -75,7 +75,7 @@ class _SubscribeTabbarButtonState extends State<SubscribeTabbarButton> {
   Color _getBackgroundColor() {
     if (_isPressed) return const Color(0xFFE0E0E0);
     if (_isHovering) return const Color(0xFFF5F5F5);
-    if (widget.state == SubscribeTabbarButtonState.iconActive) {
+    if (widget.state == SubscribeTabButtonState.iconActive) {
       return const Color(0xFFEEEEEE);
     }
     return const Color(0x00F5F5F5);
