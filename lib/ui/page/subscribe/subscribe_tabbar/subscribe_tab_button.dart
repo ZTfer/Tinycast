@@ -43,6 +43,10 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
   Widget build(BuildContext context) {
     /// 判断按钮是否处于选中状态
     final isIconActive = widget.state == SubscribeTabButtonState.iconActive;
+    // 使用 isIconActive 变量替代后续直接访问 widget.state 的写法
+    if (isIconActive) {
+      // 选中状态时的逻辑可以在这里扩展
+    }
 
     /// 使用 MouseRegion 监听鼠标悬停事件
     return MouseRegion(
