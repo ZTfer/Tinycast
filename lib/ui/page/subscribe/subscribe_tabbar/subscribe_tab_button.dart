@@ -27,7 +27,6 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
   @override
   Widget build(BuildContext context) {
     final isIconActive = widget.state == SubscribeTabButtonState.iconActive;
-    final width = isIconActive ? 32.0 : 116.0;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
@@ -42,7 +41,7 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          width: width,
+          width: 116.0,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
@@ -55,7 +54,7 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
                 data: IconThemeData(color: const Color(0xFF000000), size: 16),
                 child: Icon(widget.icon),
               ),
-              if (!isIconActive && widget.label != null) ...[
+              if (widget.label != null) ...[
                 const SizedBox(height: 6),
                 Text(
                   widget.label!,
