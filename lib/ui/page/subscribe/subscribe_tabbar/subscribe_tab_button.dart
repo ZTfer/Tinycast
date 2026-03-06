@@ -124,13 +124,13 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
   ///
   /// 优先级：按下 > 悬停 > 选中 > 默认
   Color _getBackgroundColor() {
-    /// 按下状态：深灰色
-    if (_isPressed) return const Color(0xFFE0E0E0);
+    /// 按下状态：白色
+    if (_isPressed) return const Color(0xFFFFFFFF);
 
-    /// 悬停状态：浅灰色
+    /// 悬停状态：白色
     if (_isHovering) return const Color(0xFFFFFFFF);
 
-    /// 选中状态：中等灰色
+    /// 选中状态：白色
     if (widget.state == SubscribeTabButtonState.iconActive) {
       return const Color(0xFFFFFFFF);
     }

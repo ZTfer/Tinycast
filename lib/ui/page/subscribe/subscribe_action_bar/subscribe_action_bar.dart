@@ -37,7 +37,7 @@ class SubscribeActionBar extends StatelessWidget {
         /// 订阅按钮
         PrimaryButton(
           /// 按钮文字
-          label: '订阅',
+          label: '搜索',
 
           /// 按钮点击的回调函数
           onPressed: () {
