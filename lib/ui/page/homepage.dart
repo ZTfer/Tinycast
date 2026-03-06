@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:tinycast/ui/common_widgets/home_toolbar/home_toolbar.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/mini_player.dart';
 import 'package:tinycast/ui/page/body.dart';
@@ -14,6 +14,8 @@ class MyHomePage extends StatelessWidget {
         children: [
           const HomeToolbar(),
           const MiniPlayer(),
+          const SizedBox(height: 12),
+          Divider(height: 0.5, thickness: 0.5, color: Colors.grey.shade300),
           const Expanded(child: Body()),
         ],
       ),
