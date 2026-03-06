@@ -85,20 +85,20 @@ class DashedBorderPainter extends CustomPainter {
 ///
 /// 用于导入OPML文件的拖放区域。
 /// 支持点击选择文件和拖放文件功能。
-class OpmlImport extends StatefulWidget {
+class OpmlImportForm extends StatefulWidget {
   /// 文件选择完成后的回调函数
   final ValueChanged<File>? onFileSelected;
 
   /// 组件是否可用
   final bool enabled;
 
-  const OpmlImport({super.key, this.onFileSelected, this.enabled = true});
+  const OpmlImportForm({super.key, this.onFileSelected, this.enabled = true});
 
   @override
-  State<OpmlImport> createState() => _OpmlImportState();
+  State<OpmlImportForm> createState() => _OpmlImportFormState();
 }
 
-class _OpmlImportState extends State<OpmlImport> {
+class _OpmlImportFormState extends State<OpmlImportForm> {
   /// 记录是否正在拖动文件
   bool _isDragging = false;
 

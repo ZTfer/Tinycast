@@ -80,6 +80,17 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
 
             /// 圆角
             borderRadius: BorderRadius.circular(6.0),
+
+            /// 选中状态时添加阴影效果
+            boxShadow: widget.state == SubscribeTabButtonState.iconActive
+                ? [
+                    BoxShadow(
+                      color: const Color(0x1A000000),
+                      blurRadius: 8.0,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             /// 列子项最小化
@@ -117,11 +128,11 @@ class _SubscribeTabButtonState extends State<SubscribeTabButton> {
     if (_isPressed) return const Color(0xFFE0E0E0);
 
     /// 悬停状态：浅灰色
-    if (_isHovering) return const Color(0xFFF5F5F5);
+    if (_isHovering) return const Color(0xFFFFFFFF);
 
     /// 选中状态：中等灰色
     if (widget.state == SubscribeTabButtonState.iconActive) {
-      return const Color(0xFFEEEEEE);
+      return const Color(0xFFFFFFFF);
     }
 
     /// 默认状态：透明

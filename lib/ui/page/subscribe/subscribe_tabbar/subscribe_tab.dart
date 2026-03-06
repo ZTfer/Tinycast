@@ -44,7 +44,7 @@ class SubscribeTabbar extends StatelessWidget {
             children: [
               /// RSS 订阅标签按钮
               _buildTabbarButton(
-                icon: LucideIcons.listMusic,
+                icon: LucideIcons.rss,
                 label: 'RSS',
 
                 /// 根据当前页面判断按钮状态

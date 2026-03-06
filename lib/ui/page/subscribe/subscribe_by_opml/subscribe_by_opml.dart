@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/opml_import.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/opml_import_form.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_opml/subscribe_by_opml_label.dart';
 
 class SubscribeByOpml extends StatelessWidget {
@@ -12,7 +12,7 @@ class SubscribeByOpml extends StatelessWidget {
       children: const [
         SubscribeByOpmlLabel(),
         SizedBox(height: 12.0),
-        OpmlImport(),
+        OpmlImportForm(),
       ],
     );
   }
