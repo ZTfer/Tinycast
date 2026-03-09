@@ -58,8 +58,8 @@ class _FavoriteControlBarState extends State<FavoriteControlBar> {
     final Size screenSize = MediaQuery.of(context).size;
 
     /// 计算菜单的预估宽度（用于边界检测）
-    const double estimatedMenuWidth = 150.0;
-    const double estimatedMenuHeight = 230.0;
+    const double estimatedMenuWidth = 140.0;
+    const double estimatedMenuHeight = 280.0;
 
     /// 计算菜单位置
     double left = offset.dx;
