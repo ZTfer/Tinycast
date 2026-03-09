@@ -59,6 +59,6 @@ class Library extends StatelessWidget {
   }
 
   Widget _buildDivider() {
-    return Container(height: 1, color: const Color(0xFFE0E0E0));
+    return Container(height: 0.5, color: const Color(0xFFE0E0E0));
   }
 }

@@ -4,7 +4,7 @@ import 'package:tinycast/ui/common_widgets/toast/vertical_icon_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-// 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产
+// 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatelessWidget {
   const TestPage({super.key});
 

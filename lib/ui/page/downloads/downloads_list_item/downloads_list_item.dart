@@ -122,6 +122,6 @@ class DownloadsItem extends StatelessWidget {
   ///
   /// 用于分隔不同的列表项，默认显示。
   Widget _buildDivider() {
-    return Container(height: 1, color: const Color(0xFFE0E0E0));
+    return Container(height: 0.5, color: const Color(0xFFE0E0E0));
   }
 }
