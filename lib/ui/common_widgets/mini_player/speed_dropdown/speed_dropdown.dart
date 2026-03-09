@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/speed_dropdown/speed_dropdown_item.dart';
 
 /// 队列剧集下拉菜单

@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/up_next_queue/queue_empty_page/queue_empty_page.dart';
 import 'package:tinycast/ui/common_widgets/toast/vertical_icon_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境

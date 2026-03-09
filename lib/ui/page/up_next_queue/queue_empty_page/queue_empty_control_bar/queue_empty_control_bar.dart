@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/up_next_queue/queue_empty_page/queue_empty_control_bar/queue_empty_button.dart';
 
 class QueueEmptyControlBar extends StatelessWidget {

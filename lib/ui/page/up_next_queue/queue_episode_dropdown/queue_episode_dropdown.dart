@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/up_next_queue/queue_episode_dropdown/queue_episode_dropdown_item.dart';
 
 /// 队列剧集下拉菜单
