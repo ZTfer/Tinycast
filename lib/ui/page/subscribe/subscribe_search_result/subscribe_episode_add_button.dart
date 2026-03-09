@@ -22,6 +22,9 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
   /// 按钮宽度，默认 28
   final double width;
 
+  /// 按钮高度，默认 28
+  final double height;
+
   const SubscribeEpisodeAddButton({
     super.key,
     required this.icon,
@@ -29,8 +32,9 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
     this.iconSize = 16,
     this.horizontalPadding = 8,
     this.verticalPadding = 4,
-    this.borderRadius = 10,
+    this.borderRadius = 16,
     this.width = 28,
+    this.height = 28,
   });
 
   @override
@@ -70,6 +74,9 @@ class _SubscribeEpisodeAddButtonState extends State<SubscribeEpisodeAddButton> {
         child: SizedBox(
           /// 按钮宽度：28px
           width: widget.width,
+
+          /// 按钮高度：28px
+          height: widget.height,
           child: AnimatedContainer(
             /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
             duration: _isHovering
