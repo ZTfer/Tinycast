@@ -88,7 +88,11 @@ class _SubscribeEpisodeAddButtonState extends State<SubscribeEpisodeAddButton> {
               borderRadius: BorderRadius.circular(widget.borderRadius),
             ),
             child: Icon(
+              /// 默认状态为加号图标
               LucideIcons.plus,
+              //Todo: 点击后切换为禁用状态的loading图标
+              //Todo: 执行结束后切换回加号图标
+              /// 图标大小：16px
               size: widget.iconSize,
               color: _getContentColor(),
             ),
