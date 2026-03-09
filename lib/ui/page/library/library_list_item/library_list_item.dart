@@ -17,40 +17,55 @@ class LibraryListItem extends StatelessWidget {
   /// 集数标题列表
   final List<String> episodeTitles;
 
+  /// 是否显示分隔线，默认 true
+  final bool showDivider;
+
   const LibraryListItem({
     super.key,
     required this.showName,
     required this.timeAgo,
     required this.episodeTitles,
+    this.showDivider = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        /// 节目封面（占位符）
-        const LibraryShowCover(),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
+        Container(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// 节目信息（名称、时间、更多按钮）
-              LibraryShowInfo(showName: showName, timeAgo: timeAgo),
-              const SizedBox(height: 2),
-
-              /// 集数列表
-              Column(
-                spacing: 1,
-                children: episodeTitles
-                    .map((title) => LibraryEpisodeItem(title: title))
-                    .toList(),
+              const LibraryShowCover(),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LibraryShowInfo(showName: showName, timeAgo: timeAgo),
+                    const SizedBox(height: 2),
+                    Column(
+                      spacing: 1,
+                      children: episodeTitles
+                          .map((title) => LibraryEpisodeItem(title: title))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                    if (showDivider) _buildDivider(),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  /// 构建分隔线
+  Widget _buildDivider() {
+    return Container(height: 0.5, color: const Color(0xFFE0E0E0));
   }
 }

@@ -8,10 +8,9 @@ class Library extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.only(bottom: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 12,
           children: [
             const LibraryListItem(
               showName: '半拿铁',
@@ -22,7 +21,6 @@ class Library extends StatelessWidget {
                 'Vol.107 标题文字，标题文字，标题文...',
               ],
             ),
-            _buildDivider(),
             const LibraryListItem(
               showName: '半拿铁',
               timeAgo: '2 h ago',
@@ -32,7 +30,6 @@ class Library extends StatelessWidget {
                 'Vol.106 标题文字，标题文字，标题文...',
               ],
             ),
-            _buildDivider(),
             const LibraryListItem(
               showName: '半拿铁',
               timeAgo: '3 h ago',
@@ -42,7 +39,6 @@ class Library extends StatelessWidget {
                 'Vol.105 标题文字，标题文字，标题文...',
               ],
             ),
-            _buildDivider(),
             const LibraryListItem(
               showName: '半拿铁',
               timeAgo: '4 h ago',
@@ -51,14 +47,11 @@ class Library extends StatelessWidget {
                 'Vol.104 标题文字，标题文字，标题文...',
                 'Vol.104 标题文字，标题文字，标题文...',
               ],
+              showDivider: false,
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildDivider() {
-    return Container(height: 0.5, color: const Color(0xFFE0E0E0));
   }
 }

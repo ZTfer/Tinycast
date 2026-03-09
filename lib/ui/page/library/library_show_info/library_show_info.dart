@@ -23,7 +23,7 @@ class LibraryShowInfo extends StatelessWidget {
             Text(
               showName,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF000000),
               ),
@@ -34,10 +34,7 @@ class LibraryShowInfo extends StatelessWidget {
             ),
           ],
         ),
-        Text(
-          timeAgo,
-          style: TextStyle(fontSize: 9.75, color: Color(0xD9000000)),
-        ),
+        Text(timeAgo, style: TextStyle(fontSize: 10, color: Color(0xD9000000))),
       ],
     );
   }
