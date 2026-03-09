@@ -22,14 +22,19 @@ class SubscribeSearchListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SubscribeEpisodeInfo(title: title, podcastName: podcastName),
-        SubscribeEpisodeAddButton(
-          icon: LucideIcons.plus,
-          onPressed: onAddPressed,
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: SubscribeEpisodeInfo(title: title, podcastName: podcastName),
+          ),
+          SubscribeEpisodeAddButton(
+            icon: LucideIcons.plus,
+            onPressed: onAddPressed,
+          ),
+        ],
+      ),
     );
   }
 }
