@@ -35,7 +35,7 @@ class QueueItem extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -59,15 +59,16 @@ class QueueItem extends StatelessWidget {
 
                     /// 操作区域（播放按钮、更多选项）
                     _buildActionSection(),
+
+                    /// 分隔线
+                    const SizedBox(height: 12),
+                    if (showDivider) _buildDivider(),
                   ],
                 ),
               ),
             ],
           ),
         ),
-
-        /// 分隔线
-        if (showDivider) _buildDivider(),
       ],
     );
   }
