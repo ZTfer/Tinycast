@@ -1,10 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-/// 按钮组件
-///
-/// 包含文字的按钮组件。
-/// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
-/// 参照 [EpisodeControlButton] 实现交互逻辑。
 class PrimaryButton extends StatefulWidget {
   /// 按钮显示的文字
   final String label;
