@@ -19,7 +19,7 @@ class SubscribeByOpmlLabel extends StatelessWidget {
         ),
         const SizedBox(width: 6.0),
         OpmlImportQuestionButton(
-          icon: const Icon(LucideIcons.helpCircle),
+          icon: const Icon(LucideIcons.info),
           onPressed: () {},
         ),
       ],

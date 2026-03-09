@@ -185,7 +185,8 @@ class _QueueControlBarState extends State<QueueControlBar> {
           key: _moreButtonKey,
 
           /// 更多图标
-          icon: const Icon(LucideIcons.moreHorizontal),
+          icon: const Icon(LucideIcons.ellipsisVertical
+),
 
           /// 点击时显示下拉菜单
           onPressed: _showDropdown,

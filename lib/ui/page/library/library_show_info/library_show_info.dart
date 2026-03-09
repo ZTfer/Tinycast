@@ -29,7 +29,7 @@ class LibraryShowInfo extends StatelessWidget {
               ),
             ),
             LibraryShowMoreButton(
-              icon: const Icon(LucideIcons.moreHorizontal),
+              icon: const Icon(LucideIcons.ellipsisVertical),
               onPressed: () {},
             ),
           ],

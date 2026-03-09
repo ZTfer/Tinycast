@@ -30,7 +30,7 @@ class FavoriteControlBar extends StatelessWidget {
           contentColor: const Color(0xD9000000),
         ),
         FavoriteMoreButton(
-          icon: const Icon(LucideIcons.moreHorizontal),
+          icon: const Icon(LucideIcons.ellipsisVertical),
           onPressed: () {},
           iconSize: 12,
           contentColor: const Color(0xD9000000),

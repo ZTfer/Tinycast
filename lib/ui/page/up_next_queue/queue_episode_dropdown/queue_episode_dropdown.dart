@@ -58,7 +58,7 @@ class QueueEpisodeDropdown extends StatelessWidget {
               onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
-              icon: Icon(LucideIcons.checkCircle),
+              icon: Icon(LucideIcons.circleCheck),
               text: '标记为已播放',
               onPressed: () => _handleItemSelected(),
             ),

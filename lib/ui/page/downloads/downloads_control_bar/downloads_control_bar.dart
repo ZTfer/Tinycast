@@ -23,7 +23,7 @@ class DownloadsControlBar extends StatelessWidget {
         ),
         Spacer(),
         DownloadsMoreButton(
-          icon: const Icon(LucideIcons.moreHorizontal),
+          icon: const Icon(LucideIcons.ellipsisVertical),
           onPressed: () {},
           iconSize: 12,
           contentColor: const Color(0xD9000000),
