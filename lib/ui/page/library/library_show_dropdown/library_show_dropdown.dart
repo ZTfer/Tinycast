@@ -38,10 +38,11 @@ class LibraryShowDropdown extends StatelessWidget {
           spacing: 2,
           children: [
             LibraryShowDropdownItem(
-              icon: Icon(LucideIcons.circleMinus),
-              text: '取消关注',
+              icon: Icon(LucideIcons.info),
+              text: '查看详情',
               onPressed: () => _handleItemSelected(),
             ),
+
             LibraryShowDropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
@@ -52,20 +53,17 @@ class LibraryShowDropdown extends StatelessWidget {
               text: '分享',
               onPressed: () => _handleItemSelected(),
             ),
+            SizedBox(height: 2),
             Divider(
               height: 0.5,
               thickness: 0.5,
               color: const Color(0xFFE0E0E0),
             ),
+            SizedBox(height: 2),
             LibraryShowDropdownItem(
-              icon: Icon(LucideIcons.info),
-              text: '查看详情',
+              icon: Icon(LucideIcons.circleMinus),
+              text: '取消关注',
               onPressed: () => _handleItemSelected(),
-            ),
-            Divider(
-              height: 0.5,
-              thickness: 0.5,
-              color: const Color(0xFFE0E0E0),
             ),
             LibraryShowDropdownItem(
               icon: Icon(LucideIcons.trash2),
