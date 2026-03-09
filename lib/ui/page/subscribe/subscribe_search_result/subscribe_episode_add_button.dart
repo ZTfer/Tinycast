@@ -30,7 +30,7 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
     required this.icon,
     required this.onPressed,
     this.iconSize = 16,
-    this.horizontalPadding = 8,
+    this.horizontalPadding = 4,
     this.verticalPadding = 4,
     this.borderRadius = 16,
     this.width = 28,
