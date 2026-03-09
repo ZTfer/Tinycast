@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_episode_add_button.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_episode_info.dart';
 
@@ -22,16 +21,13 @@ class SubscribeSearchListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: SubscribeEpisodeInfo(title: title, podcastName: podcastName),
-          ),
-          SubscribeEpisodeAddButton(onPressed: onAddPressed),
-        ],
-      ),
+    return Row(
+      children: [
+        Expanded(
+          child: SubscribeEpisodeInfo(title: title, podcastName: podcastName),
+        ),
+        SubscribeEpisodeAddButton(onPressed: onAddPressed),
+      ],
     );
   }
 }
