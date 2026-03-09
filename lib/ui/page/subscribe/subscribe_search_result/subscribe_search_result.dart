@@ -10,8 +10,8 @@ class SubscribeSearchResult extends StatelessWidget {
     return Column(
       children: [
         const SubscribeSearchListTitle(),
-        const SizedBox(height: 12),
-        const SubscribeSearchList(),
+        const SizedBox(height: 120),
+        Expanded(child: const SubscribeSearchList()),
       ],
     );
   }

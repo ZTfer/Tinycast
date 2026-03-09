@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_by_rss/rss_input_material.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result.dart';
 
 class SubscribeByRss extends StatelessWidget {
   const SubscribeByRss({super.key});
@@ -33,6 +34,7 @@ class SubscribeByRss extends StatelessWidget {
             child: const RssInputMaterial(),
           ),
         ),
+        Expanded(child: const SubscribeSearchResult()),
       ],
     );
   }
