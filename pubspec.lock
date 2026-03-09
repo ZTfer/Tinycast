@@ -77,10 +77,10 @@ packages:
     dependency: "direct main"
     description:
       name: dropdown_button2
-      sha256: "8f0d3a1732e352a5b756312241fc7d542d68a16aa4de1270f9c8a1a58aeef612"
+      sha256: fbb9ea9ea81b04e48d27bb181852b7e11e684aa2a32e95aec4c131be1849e33a
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-beta.24"
+    version: "3.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -176,6 +176,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.257.0"
+  lucide_icons_flutter:
+    dependency: "direct main"
+    description:
+      name: lucide_icons_flutter
+      sha256: f9fc191c852901b7f8d0d5739166327bd71a0fc32ae32c1ba07501d16b966a1a
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.10"
   matcher:
     dependency: transitive
     description:
