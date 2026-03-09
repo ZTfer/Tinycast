@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe_tabbar/subscribe_tab_button.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe_tab/subscribe_tab_button.dart';
 
 /// 订阅页面顶部标签栏组件
 ///
