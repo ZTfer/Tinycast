@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SubscribeSearchResultError extends StatelessWidget {
   const SubscribeSearchResultError({super.key});
@@ -11,8 +11,8 @@ class SubscribeSearchResultError extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
-            LucideIcons.alertCircle,
-            size: 48,
+            LucideIcons.circleX200,
+            size: 36,
             color: Color(0xFFD9D9D9),
           ),
           const SizedBox(height: 12),
