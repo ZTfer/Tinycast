@@ -52,9 +52,24 @@ class QueueEpisodeDropdown extends StatelessWidget {
               text: '分享',
               onPressed: () => _handleItemSelected(),
             ),
+
+            // 分割线
+            SizedBox(height: 2),
+            Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: const Color(0xFFE0E0E0),
+            ),
+            SizedBox(height: 2),
+
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.listStart),
               text: '插播',
+              onPressed: () => _handleItemSelected(),
+            ),
+            QueueEpisodeDropdownItem(
+              icon: Icon(LucideIcons.listEnd),
+              text: '添加到队列',
               onPressed: () => _handleItemSelected(),
             ),
             QueueEpisodeDropdownItem(
@@ -62,6 +77,16 @@ class QueueEpisodeDropdown extends StatelessWidget {
               text: '标记为已播放',
               onPressed: () => _handleItemSelected(),
             ),
+
+            // 分割线
+            SizedBox(height: 2),
+            Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: const Color(0xFFE0E0E0),
+            ),
+            SizedBox(height: 2),
+
             QueueEpisodeDropdownItem(
               icon: Icon(LucideIcons.trash2),
               text: '移除下载',
