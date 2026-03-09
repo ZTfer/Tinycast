@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SubscribeEpisodeAddButton extends StatefulWidget {
-  /// 按钮显示的图标
-  final IconData icon;
-
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
   /// 图标大小，默认 16
   final double iconSize;
 
-  /// 水平内边距，默认 8
+  /// 水平内边距，默认 4
   final double horizontalPadding;
 
   /// 垂直内边距，默认 4
   final double verticalPadding;
 
-  /// 圆角大小，默认 10
+  /// 圆角大小，默认 16
   final double borderRadius;
 
   /// 按钮宽度，默认 28
@@ -27,7 +25,6 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
 
   const SubscribeEpisodeAddButton({
     super.key,
-    required this.icon,
     required this.onPressed,
     this.iconSize = 16,
     this.horizontalPadding = 4,
@@ -91,7 +88,7 @@ class _SubscribeEpisodeAddButtonState extends State<SubscribeEpisodeAddButton> {
               borderRadius: BorderRadius.circular(widget.borderRadius),
             ),
             child: Icon(
-              widget.icon,
+              LucideIcons.plus,
               size: widget.iconSize,
               color: _getContentColor(),
             ),

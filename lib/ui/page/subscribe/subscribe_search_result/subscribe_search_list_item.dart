@@ -29,10 +29,7 @@ class SubscribeSearchListItem extends StatelessWidget {
           Expanded(
             child: SubscribeEpisodeInfo(title: title, podcastName: podcastName),
           ),
-          SubscribeEpisodeAddButton(
-            icon: LucideIcons.plus,
-            onPressed: onAddPressed,
-          ),
+          SubscribeEpisodeAddButton(onPressed: onAddPressed),
         ],
       ),
     );
