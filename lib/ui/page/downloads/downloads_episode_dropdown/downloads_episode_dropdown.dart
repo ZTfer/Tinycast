@@ -82,6 +82,7 @@ class DownloadsEpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
+            // Todo: 单集详情打开新窗口
             DownloadsEpisodeDropdownItem(
               icon: Icon(LucideIcons.arrowUpRight),
               text: '单集详情',

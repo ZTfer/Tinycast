@@ -87,6 +87,27 @@ class FavoriteEpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
+            // Todo: 单集详情打开新窗口
+            FavoriteEpisodeDropdownItem(
+              icon: Icon(LucideIcons.arrowUpRight),
+              text: '单集详情',
+              onPressed: () => _handleItemSelected(),
+            ),
+            FavoriteEpisodeDropdownItem(
+              icon: Icon(LucideIcons.info),
+              text: '节目详情',
+              onPressed: () => _handleItemSelected(),
+            ),
+
+            // 分割线
+            SizedBox(height: 2),
+            Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: const Color(0xFFE0E0E0),
+            ),
+            SizedBox(height: 2),
+
             FavoriteEpisodeDropdownItem(
               icon: Icon(LucideIcons.starOff),
               text: '取消收藏',
