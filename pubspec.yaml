@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   lucide_icons: ^0.257.0
   file_picker: ^10.3.10
-  dropdown_button2: ^3.0.0-beta.24
   lucide_icons_flutter: ^3.1.10
 
 dev_dependencies:
