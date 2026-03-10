@@ -126,7 +126,7 @@ class _HomeToolbarState extends State<HomeToolbar> {
 
           /*
           // 侧边栏按钮
-          // 用于打开侧边栏或设置页面
+          // 用于展开收起窗口，让窗口变成紧凑模式或者展开
           // 暂时不开发这个功能，先注释掉
           HomeToolbarButton(
             icon: const Icon(
