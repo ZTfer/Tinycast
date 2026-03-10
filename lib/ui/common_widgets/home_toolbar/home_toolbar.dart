@@ -124,8 +124,10 @@ class _HomeToolbarState extends State<HomeToolbar> {
           ),
           const SizedBox(width: 8),
 
+          /*
           // 侧边栏按钮
           // 用于打开侧边栏或设置页面
+          // 暂时不开发这个功能，先注释掉
           HomeToolbarButton(
             icon: const Icon(
               LucideIcons.panelLeftOpen,
@@ -136,6 +138,7 @@ class _HomeToolbarState extends State<HomeToolbar> {
               debugPrint('Settings pressed');
             },
           ),
+          */
         ],
       ),
     );
