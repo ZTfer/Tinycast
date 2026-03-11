@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/settings/settings_dropdown/settings_dropdown.dart';
+import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_settings_dropdown.dart';
 
 class AutoDownloadSettings extends StatelessWidget {
   const AutoDownloadSettings({super.key});
@@ -10,7 +10,7 @@ class AutoDownloadSettings extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SettingsDropdown(),
+        const AutoDownloadSettingsDropdown(),
         const SizedBox(height: 4.0),
         const Text(
           '自动下载最新单集供离线收听',

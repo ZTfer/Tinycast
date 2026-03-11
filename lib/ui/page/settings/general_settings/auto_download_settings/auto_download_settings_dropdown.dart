@@ -6,10 +6,10 @@ import 'package:tinycast/ui/page/settings/settings_dropdown/settings_dropdown_it
 ///
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
-class SettingsDropdown extends StatelessWidget {
+class AutoDownloadSettingsDropdown extends StatelessWidget {
   final VoidCallback? onItemSelected;
 
-  const SettingsDropdown({super.key, this.onItemSelected});
+  const AutoDownloadSettingsDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
