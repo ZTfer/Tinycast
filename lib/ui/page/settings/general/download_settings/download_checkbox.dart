@@ -30,9 +30,6 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
   /// 鼠标是否悬停在复选框上
   bool _isHovering = false;
 
-  /// 复选框是否被按下
-  bool _isPressed = false;
-
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -40,18 +37,13 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
       onExit: (_) => setState(() => _isHovering = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTapDown: (_) => setState(() => _isPressed = true),
-        onTapUp: (_) => setState(() => _isPressed = false),
-        onTapCancel: () => setState(() => _isPressed = false),
         onTap: () => widget.onChanged(!widget.value),
         child: AnimatedContainer(
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6.0),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.0)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
