@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 ///
 /// 用于显示可点击的复选框和文本标签，支持选中/未选中状态切换。
 /// 包含悬停、按下和选中状态的视觉反馈。
-class DownloadCheckbox extends StatefulWidget {
+class LabelCheckbox extends StatefulWidget {
   /// 复选框是否被选中
   final bool value;
 
@@ -15,7 +15,7 @@ class DownloadCheckbox extends StatefulWidget {
   /// 复选框状态改变时的回调函数
   final ValueChanged<bool> onChanged;
 
-  const DownloadCheckbox({
+  const LabelCheckbox({
     super.key,
     required this.value,
     required this.label,
@@ -23,10 +23,10 @@ class DownloadCheckbox extends StatefulWidget {
   });
 
   @override
-  State<DownloadCheckbox> createState() => _DownloadCheckboxState();
+  State<LabelCheckbox> createState() => _CheckboxState();
 }
 
-class _DownloadCheckboxState extends State<DownloadCheckbox> {
+class _CheckboxState extends State<LabelCheckbox> {
   /// 鼠标是否悬停在复选框上
   bool _isHovering = false;
 
