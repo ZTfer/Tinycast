@@ -50,7 +50,6 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
               : Duration.zero,
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           decoration: BoxDecoration(
-            color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(6.0),
           ),
           child: Row(
@@ -93,11 +92,6 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
           ? const Icon(Icons.check, size: 14.0, color: Color(0xFFFFFFFF))
           : null,
     );
-  }
-
-  /// 根据状态获取背景色
-  Color _getBackgroundColor() {
-    return Colors.transparent;
   }
 
   /// 根据状态获取边框颜色
