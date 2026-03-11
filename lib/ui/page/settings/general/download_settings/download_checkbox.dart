@@ -97,8 +97,6 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
 
   /// 根据状态获取背景色
   Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0x0D000000);
-    if (_isHovering) return const Color(0x0A000000);
     return Colors.transparent;
   }
 
