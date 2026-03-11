@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
 import 'package:tinycast/ui/page/settings/general_settings/general_settings.dart';
 import 'package:tinycast/ui/common_widgets/radio/label_radio.dart';
+import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_dropdown/auto_download_dropdown_button.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -42,6 +43,18 @@ class _TestPageState extends State<TestPage> {
                   _radioValue = newValue;
                 });
               },
+            ),
+            AutoDownloadDropdownButton(
+              label: '自动下载',
+              borderRadius: 10.0,
+              fontSize: 14.0,
+              onPressed: () {},
+              labelStyle: TextStyle(
+                color: const Color(0xD9000000),
+                fontSize: 14,
+                height: 16 / 14,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ],
         ),
