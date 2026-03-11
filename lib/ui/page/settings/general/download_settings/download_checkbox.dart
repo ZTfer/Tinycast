@@ -46,14 +46,16 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(6.0)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildCheckbox(),
-              const SizedBox(width: 8.0),
+              const SizedBox(width: 4.0),
               Text(
                 widget.label,
                 style: TextStyle(
                   color: const Color(0xD9000000),
                   fontSize: 14,
+                  height: 16 / 14,
                   fontWeight: widget.value
                       ? FontWeight.w500
                       : FontWeight.normal,
@@ -70,8 +72,8 @@ class _DownloadCheckboxState extends State<DownloadCheckbox> {
   Widget _buildCheckbox() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      width: 20.0,
-      height: 20.0,
+      width: 16.0,
+      height: 16.0,
       decoration: BoxDecoration(
         color: widget.value ? const Color(0xFF000000) : Colors.transparent,
         border: Border.all(
