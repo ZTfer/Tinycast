@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_dropdown/auto_download_dropdown_item.dart';
+import 'package:tinycast/ui/page/settings/settings_dropdown/settings_dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
-class AutoDownloadDropdown extends StatelessWidget {
+class SettingsDropdown extends StatelessWidget {
   final VoidCallback? onItemSelected;
 
-  const AutoDownloadDropdown({super.key, this.onItemSelected});
+  const SettingsDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -37,32 +37,32 @@ class AutoDownloadDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '关闭',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               icon: Icon(LucideIcons.check),
               text: '每个节目最新单集',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 2 集',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 3 集',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 5 集',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 10 集',
               onPressed: () => _handleItemSelected(),
@@ -77,22 +77,22 @@ class AutoDownloadDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 24 小时',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 7 天',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 14 天',
               onPressed: () => _handleItemSelected(),
             ),
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 30 天',
               onPressed: () => _handleItemSelected(),
@@ -107,7 +107,7 @@ class AutoDownloadDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            AutoDownloadDropdownItem(
+            SettingsDropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '所有单集',
               onPressed: () => _handleItemSelected(),

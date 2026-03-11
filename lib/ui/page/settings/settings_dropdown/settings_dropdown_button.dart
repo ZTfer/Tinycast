@@ -6,26 +6,26 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 /// 包含文字和图标的按钮组件。
 /// 支持悬停（Hover）和点击（Press）状态的视觉反馈。
 
-class AutoDownloadDropdownButton extends StatefulWidget {
+class SettingsDropdownButton extends StatefulWidget {
   /// 按钮显示的文字
   final String label;
 
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
-  const AutoDownloadDropdownButton({
+  const SettingsDropdownButton({
     super.key,
     required this.label,
     required this.onPressed,
   });
 
   @override
-  State<AutoDownloadDropdownButton> createState() =>
-      _AutoDownloadDropdownButtonState();
+  State<SettingsDropdownButton> createState() =>
+      _SettingsDropdownButtonState();
 }
 
-class _AutoDownloadDropdownButtonState
-    extends State<AutoDownloadDropdownButton> {
+class _SettingsDropdownButtonState
+    extends State<SettingsDropdownButton> {
   // 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
   // 记录按钮是否正在被按下
