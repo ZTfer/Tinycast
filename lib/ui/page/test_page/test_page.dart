@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
 import 'package:tinycast/ui/page/settings/general_settings/general_settings.dart';
+import 'package:tinycast/ui/common_widgets/radio/label_radio.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  bool _checkboxValue = false;
+  bool _radioValue = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,15 @@ class _TestPageState extends State<TestPage> {
             ),
             SubscribeSearchResultError(),
             GeneralSettings(),
+            LabelRadio(
+              value: _radioValue,
+              label: '单选框',
+              onChanged: (bool newValue) {
+                setState(() {
+                  _radioValue = newValue;
+                });
+              },
+            ),
           ],
         ),
       ),
