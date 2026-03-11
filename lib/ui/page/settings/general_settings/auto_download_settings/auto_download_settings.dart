@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/settings/general/auto_download_settings/auto_download_dropdown/auto_download_dropdown.dart';
+import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_dropdown/auto_download_dropdown.dart';
 
 class AutoDownloadSettings extends StatelessWidget {
   const AutoDownloadSettings({super.key});

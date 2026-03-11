@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/ui/page/settings/general/auto_download_settings/auto_download_dropdown/auto_download_dropdown_item.dart';
+import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_dropdown/auto_download_dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///

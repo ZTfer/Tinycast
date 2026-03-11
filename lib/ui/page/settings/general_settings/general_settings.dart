@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/ui/page/settings/general/download_settings/download_settings.dart';
-import 'package:tinycast/ui/page/settings/general/auto_download_settings/auto_download_settings.dart';
+import 'package:tinycast/ui/page/settings/general_settings/download_settings/download_settings.dart';
+import 'package:tinycast/ui/page/settings/general_settings/auto_download_settings/auto_download_settings.dart';
 
-class General extends StatelessWidget {
-  const General({super.key});
+class GeneralSettings extends StatelessWidget {
+  const GeneralSettings({super.key});
 
   @override
   Widget build(BuildContext context) {
