@@ -1,16 +1,37 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/settings/general/download_settings/download_settings.dart';
+import 'package:tinycast/ui/page/settings/general/auto_download_settings/auto_download_settings.dart';
 
 class General extends StatelessWidget {
   const General({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+    return Table(
+      columnWidths: const {
+        0: IntrinsicColumnWidth(), // 关键：第一列宽度由内容决定（取最大值）
+        1: FlexColumnWidth(), // 第二列占满剩余空间
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: [
-        const DownloadSettings(),
+        const TableRow(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 8.0),
+              child: Text("下载:", textAlign: TextAlign.right),
+            ),
+            DownloadSettings(),
+          ],
+        ),
+        const TableRow(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 8.0),
+              child: Text("自动下载:", textAlign: TextAlign.right),
+            ),
+            AutoDownloadSettings(),
+          ],
+        ),
       ],
     );
   }
