@@ -34,6 +34,7 @@ class _RemovePlayedDownloadsState extends State<RemovePlayedDownloads> {
             Text(
               '播放完24小时后移除下载',
               style: TextStyle(
+                // Todo: 文字颜色后面需要修改
                 color: Color(0x99000000),
                 fontSize: 12,
                 height: 16 / 12,
