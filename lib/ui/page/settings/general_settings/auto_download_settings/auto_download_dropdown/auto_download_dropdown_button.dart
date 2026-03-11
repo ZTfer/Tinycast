@@ -59,13 +59,14 @@ class _AutoDownloadDropdownButtonState
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 widget.label,
@@ -76,7 +77,7 @@ class _AutoDownloadDropdownButtonState
                   height: 16 / 14,
                 ),
               ),
-              const SizedBox(width: 4.0),
+              const SizedBox(width: 6.0),
               Icon(
                 LucideIcons.chevronDown,
                 size: 14,
