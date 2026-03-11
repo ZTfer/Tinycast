@@ -44,18 +44,7 @@ class _TestPageState extends State<TestPage> {
                 });
               },
             ),
-            AutoDownloadDropdownButton(
-              label: '自动下载',
-              borderRadius: 10.0,
-              fontSize: 14.0,
-              onPressed: () {},
-              labelStyle: TextStyle(
-                color: const Color(0xD9000000),
-                fontSize: 14,
-                height: 16 / 14,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
+            AutoDownloadDropdownButton(label: '自动下载', onPressed: () {}),
           ],
         ),
       ),

@@ -3,8 +3,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// 按钮组件
 ///
-/// 包含文字的按钮组件。
-/// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
+/// 包含文字和图标的按钮组件。
+/// 支持悬停（Hover）和点击（Press）状态的视觉反馈。
 
 class AutoDownloadDropdownButton extends StatefulWidget {
   /// 按钮显示的文字
@@ -13,34 +13,10 @@ class AutoDownloadDropdownButton extends StatefulWidget {
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
-  /// 文字样式，可选。未提供时使用默认样式。
-  final TextStyle? labelStyle;
-
-  /// 文字大小，默认 10
-  final double fontSize;
-
-  /// 水平内边距，默认 8
-  final double horizontalPadding;
-
-  /// 垂直内边距，默认 4
-  final double verticalPadding;
-
-  /// 圆角大小，默认 4
-  final double borderRadius;
-
-  /// 按钮宽度，默认 80
-  final double width;
-
   const AutoDownloadDropdownButton({
     super.key,
     required this.label,
     required this.onPressed,
-    this.labelStyle,
-    this.fontSize = 12,
-    this.horizontalPadding = 16,
-    this.verticalPadding = 6,
-    this.borderRadius = 4,
-    this.width = 80,
   });
 
   @override
@@ -78,44 +54,35 @@ class _AutoDownloadDropdownButtonState
 
         /// 触发点击回调
         onTap: widget.onPressed,
-        child: SizedBox(
-          /// 按钮宽度：80px
-          width: widget.width,
-          child: AnimatedContainer(
-            /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
-            duration: _isHovering
-                ? const Duration(milliseconds: 200)
-                : Duration.zero,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.horizontalPadding,
-              vertical: widget.verticalPadding,
-            ),
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(),
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.label,
-                  style:
-                      widget.labelStyle ??
-                      TextStyle(
-                        color: _getContentColor(),
-                        fontSize: widget.fontSize,
-                        fontWeight: FontWeight.normal,
-                        height: 1.5,
-                      ),
+        child: AnimatedContainer(
+          /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
+          duration: _isHovering
+              ? const Duration(milliseconds: 200)
+              : Duration.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: _getBackgroundColor(),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  color: Color(0xD9000000),
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  height: 16 / 14,
                 ),
-                const SizedBox(width: 4.0),
-                Icon(
-                  LucideIcons.chevronDown,
-                  size: widget.fontSize,
-                  color: _getContentColor(),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4.0),
+              Icon(
+                LucideIcons.chevronDown,
+                size: 14,
+                color: const Color(0xD9000000),
+              ),
+            ],
           ),
         ),
       ),
@@ -132,13 +99,5 @@ class _AutoDownloadDropdownButtonState
     if (_isPressed) return const Color(0xFFDADADA);
     if (_isHovering) return const Color(0xFFE1E1E1);
     return const Color(0xFFEEEEEE);
-  }
-
-  /// 获取内容颜色（文字）
-  ///
-  /// 根据当前状态返回对应的内容颜色。
-  /// 目前所有状态都返回黑色 (0xFF000000)。
-  Color _getContentColor() {
-    return const Color(0xFF000000);
   }
 }
