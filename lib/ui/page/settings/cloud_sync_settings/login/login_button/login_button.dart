@@ -2,12 +2,15 @@ import 'package:flutter/widgets.dart';
 
 /// 按钮组件
 ///
-/// 包含文字的按钮组件。
-/// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
+/// 包含图标和文字的按钮组件。
+/// 支持悬停（Hover）和点击（Press）状态的视觉反馈。
 
 class LoginButton extends StatefulWidget {
   /// 按钮显示的文字
-  final String label;
+  final String text;
+
+  /// 按钮显示的图标（可选），可以是 Icon、Image、SvgPicture 等
+  final Widget? icon;
 
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
@@ -15,31 +18,28 @@ class LoginButton extends StatefulWidget {
   /// 文字样式，可选。未提供时使用默认样式。
   final TextStyle? labelStyle;
 
-  /// 文字大小，默认 10
+  /// 文字大小，默认 12
   final double fontSize;
 
-  /// 水平内边距，默认 8
+  /// 水平内边距，默认 16
   final double horizontalPadding;
 
-  /// 垂直内边距，默认 4
+  /// 垂直内边距，默认 6
   final double verticalPadding;
 
-  /// 圆角大小，默认 10
+  /// 圆角大小，默认 16
   final double borderRadius;
-
-  /// 按钮宽度，默认 80
-  final double width;
 
   const LoginButton({
     super.key,
-    required this.label,
+    required this.text,
+    this.icon,
     required this.onPressed,
     this.labelStyle,
     this.fontSize = 12,
     this.horizontalPadding = 16,
     this.verticalPadding = 6,
     this.borderRadius = 16,
-    this.width = 80,
   });
 
   @override
@@ -75,34 +75,43 @@ class _LoginButtonState extends State<LoginButton> {
 
         /// 触发点击回调
         onTap: widget.onPressed,
-        child: SizedBox(
-          /// 按钮宽度：80px
-          width: widget.width,
-          child: AnimatedContainer(
-            /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
-            duration: _isHovering
-                ? const Duration(milliseconds: 200)
-                : Duration.zero,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.horizontalPadding,
-              vertical: widget.verticalPadding,
-            ),
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(),
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-            ),
-            child: Text(
-              widget.label,
-              textAlign: TextAlign.center,
-              style:
-                  widget.labelStyle ??
-                      TextStyle(
-                        color: _getContentColor(),
-                        fontSize: widget.fontSize,
-                        fontWeight: FontWeight.normal,
-                        height: 1.5,
-                      ),
-            ),
+        child: AnimatedContainer(
+          /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
+          duration: _isHovering
+              ? const Duration(milliseconds: 200)
+              : Duration.zero,
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.horizontalPadding,
+            vertical: widget.verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            color: _getBackgroundColor(),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.icon != null) ...[
+                SizedBox(
+                  width: widget.fontSize,
+                  height: widget.fontSize,
+                  child: widget.icon,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                widget.text,
+                textAlign: TextAlign.center,
+                style:
+                    widget.labelStyle ??
+                    TextStyle(
+                      color: _getContentColor(),
+                      fontSize: widget.fontSize,
+                      fontWeight: FontWeight.normal,
+                      height: 1.5,
+                    ),
+              ),
+            ],
           ),
         ),
       ),
