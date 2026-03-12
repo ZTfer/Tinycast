@@ -8,18 +8,18 @@ class SupportPlatformList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SvgPicture.asset('assets/images/icon_apple.svg', width: 24, height: 24),
+        SvgPicture.asset('assets/icons/logo_apple.svg', width: 24, height: 24),
         SvgPicture.asset(
-          'assets/images/icon_android.svg',
+          'assets/icons/logo_android.svg',
           width: 24,
           height: 24,
         ),
         SvgPicture.asset(
-          'assets/images/icon_windows.svg',
+          'assets/icons/logo_windows.svg',
           width: 24,
           height: 24,
         ),
-        SvgPicture.asset('assets/images/icon_linux.svg', width: 24, height: 24),
+        SvgPicture.asset('assets/icons/logo_linux.svg', width: 24, height: 24),
       ],
     );
   }
