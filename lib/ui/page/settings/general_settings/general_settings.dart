@@ -18,7 +18,15 @@ class GeneralSettings extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(right: 8.0),
-              child: Text("下载:", textAlign: TextAlign.right),
+              child: Text(
+                "下载:",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: Color(0xD9000000),
+                  fontSize: 14,
+                  height: 16 / 14,
+                ),
+              ),
             ),
             DownloadSettings(),
           ],
@@ -27,7 +35,15 @@ class GeneralSettings extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(right: 8.0),
-              child: Text("自动下载:", textAlign: TextAlign.right),
+              child: Text(
+                "自动下载:",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: Color(0xD9000000),
+                  fontSize: 14,
+                  height: 16 / 14,
+                ),
+              ),
             ),
             AutoDownloadSettings(),
           ],
