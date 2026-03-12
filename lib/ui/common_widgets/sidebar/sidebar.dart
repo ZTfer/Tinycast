@@ -74,7 +74,13 @@ class Sidebar extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildMenuButton(icon: LucideIcons.settings, onPressed: () {}),
+              _buildMenuButton(
+                      icon: LucideIcons.settings,
+                      state: currentPage == 'settings'
+                          ? SidebarButtonState.iconActive
+                          : SidebarButtonState.defaultState,
+                      onPressed: () => onPageChanged('settings'),
+                    ),
               const SizedBox(height: 10),
             ],
           ),
