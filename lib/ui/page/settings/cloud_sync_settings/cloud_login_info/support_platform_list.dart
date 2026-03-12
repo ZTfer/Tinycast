@@ -7,6 +7,7 @@ class SupportPlatformList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: 8,
       children: [
         SvgPicture.asset('assets/icons/logo_apple.svg', width: 24, height: 24),
         SvgPicture.asset(

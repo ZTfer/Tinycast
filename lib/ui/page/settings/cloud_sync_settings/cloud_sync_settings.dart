@@ -7,8 +7,10 @@ class CloudSyncSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: 12,
       children: [
         Column(
+          spacing: 2,
           children: [
             Image.asset(
               'assets/images/image_cloud_sync.png',
