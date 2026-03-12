@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/settings/play_settings/continuous_play_settings.dart';
-import 'package:tinycast/ui/page/settings/play_settings/skip_time_settings.dart';
+import 'package:tinycast/ui/page/settings/play_settings/skip_time_settings/skip_time_settings.dart';
 
 class PlaySettings extends StatelessWidget {
   const PlaySettings({super.key});
