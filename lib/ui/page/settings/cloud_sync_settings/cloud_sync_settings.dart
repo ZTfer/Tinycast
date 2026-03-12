@@ -8,7 +8,7 @@ class CloudSyncSettings extends StatelessWidget {
     return Row(
       children: [
         Image.asset(
-          'assets/images/image_cloud_sync.png', // 路径需与 pubspec.yaml 中一致
+          'assets/images/image_cloud_sync.png',
           width: 120,
           height: 80,
         ),
