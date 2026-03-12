@@ -44,7 +44,7 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
             ),
             SettingsDropdownItem(
               icon: Icon(LucideIcons.check),
-              text: '每个节目最新单集',
+              text: '每个节目最新 1 集',
               onPressed: () => _handleItemSelected(),
             ),
             SettingsDropdownItem(
