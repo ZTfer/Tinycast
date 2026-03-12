@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button/social_login_button_group.dart';
 import 'package:tinycast/ui/page/up_next_queue/queue_empty_page/queue_empty_page.dart';
 import 'package:tinycast/ui/common_widgets/toast/vertical_icon_toast.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class _TestPageState extends State<TestPage> {
             SubscribeSearchResultError(),
             GoogleLoginButton(),
             AppleLoginButton(),
+            SocialLoginButtonGroup(),
           ],
         ),
       ),
