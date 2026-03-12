@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tinycast/ui/page/settings/play_settings/skip_time_dropdown.dart';
+import 'package:tinycast/ui/page/settings/play_settings/skip_time_settings/skip_time_dropdown.dart';
 import 'package:tinycast/ui/page/settings/settings_dropdown/settings_dropdown_button.dart';
 
 class SkipTimeSettings extends StatefulWidget {
