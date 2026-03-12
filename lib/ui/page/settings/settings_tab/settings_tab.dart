@@ -32,6 +32,14 @@ class SettingsTab extends StatelessWidget {
               : SettingsTabButtonState.defaultState,
           onPressed: () => onPageChanged('playSettings'),
         ),
+        SettingsTabButton(
+          icon: Icons.cloud,
+          label: '云同步',
+          state: currentPage == 'cloudSyncSettings'
+              ? SettingsTabButtonState.iconActive
+              : SettingsTabButtonState.defaultState,
+          onPressed: () => onPageChanged('cloudSyncSettings'),
+        ),
       ],
     );
   }

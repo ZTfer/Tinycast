@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/settings/settings_tab/settings_tab.dart';
 import 'package:tinycast/ui/page/settings/general_settings/general_settings.dart';
 import 'package:tinycast/ui/page/settings/play_settings/play_settings.dart';
+import 'package:tinycast/ui/page/settings/cloud_sync_settings/cloud_sync_settings.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -11,7 +12,7 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  String _currentPage = 'general';
+  String _currentPage = 'generalSettings';
 
   void _navigateToPage(String page) {
     setState(() {
@@ -41,6 +42,8 @@ class _SettingsState extends State<Settings> {
         return const GeneralSettings();
       case 'playSettings':
         return const PlaySettings();
+      case 'cloudSyncSettings':
+        return const CloudSyncSettings();
       default:
         return const SizedBox.shrink();
     }
