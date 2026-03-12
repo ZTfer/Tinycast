@@ -25,7 +25,7 @@ class _SubscribeState extends State<Subscribe> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SubscribeTabbar(
+        SubscribeTab(
           currentPage: _currentPage,
           onPageChanged: _navigateToPage,
         ),

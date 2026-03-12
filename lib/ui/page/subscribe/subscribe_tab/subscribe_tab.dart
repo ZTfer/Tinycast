@@ -6,14 +6,14 @@ import 'package:tinycast/ui/page/subscribe/subscribe_tab/subscribe_tab_button.da
 ///
 /// 用于在订阅页面顶部显示可切换的标签按钮，支持 RSS 和 OPML 两种订阅方式。
 /// 点击不同的标签按钮会触发页面切换回调。
-class SubscribeTabbar extends StatelessWidget {
+class SubscribeTab extends StatelessWidget {
   /// 当前选中的页面标识
   final String currentPage;
 
   /// 页面切换时的回调函数，接收页面标识作为参数
   final Function(String) onPageChanged;
 
-  const SubscribeTabbar({
+  const SubscribeTab({
     super.key,
     required this.currentPage,
     required this.onPageChanged,
