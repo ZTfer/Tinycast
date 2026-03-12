@@ -4,10 +4,8 @@ import 'package:tinycast/ui/common_widgets/toast/vertical_icon_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
-import 'package:tinycast/ui/page/settings/general_settings/general_settings.dart';
-import 'package:tinycast/ui/common_widgets/radio/label_radio.dart';
-import 'package:tinycast/ui/page/settings/settings_dropdown/settings_dropdown_button.dart';
-import 'package:tinycast/ui/page/settings/play_settings/play_settings.dart';
+import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button/google_login_button.dart';
+import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button/apple_login_button.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -35,18 +33,8 @@ class _TestPageState extends State<TestPage> {
               textSize: 12,
             ),
             SubscribeSearchResultError(),
-            GeneralSettings(),
-            LabelRadio(
-              value: _radioValue,
-              label: '单选框',
-              onChanged: (bool newValue) {
-                setState(() {
-                  _radioValue = newValue;
-                });
-              },
-            ),
-            SettingsDropdownButton(label: '自动下载', onPressed: () {}),
-            PlaySettings(),
+            GoogleLoginButton(),
+            AppleLoginButton(),
           ],
         ),
       ),
