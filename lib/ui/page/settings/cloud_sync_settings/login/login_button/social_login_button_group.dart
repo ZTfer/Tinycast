@@ -8,9 +8,11 @@ class SocialLoginButtonGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      
       spacing: 12,
-      children: [const GoogleLoginButton(), const AppleLoginButton()],
+      children: [
+        const Expanded(child: GoogleLoginButton()),
+        const Expanded(child: AppleLoginButton()),
+      ],
     );
   }
 }

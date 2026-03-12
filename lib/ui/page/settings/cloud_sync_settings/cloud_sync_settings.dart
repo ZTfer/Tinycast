@@ -22,10 +22,12 @@ class CloudSyncSettings extends StatelessWidget {
             Text('Cloud Sync'),
           ],
         ),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 12,
-          children: [CloudLoginInfo(), SocialLoginButtonGroup()],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 12,
+            children: [CloudLoginInfo(), SocialLoginButtonGroup()],
+          ),
         ),
       ],
     );
