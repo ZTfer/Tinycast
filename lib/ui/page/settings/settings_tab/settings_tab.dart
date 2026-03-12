@@ -19,10 +19,10 @@ class SettingsTab extends StatelessWidget {
         SettingsTabButton(
           icon: Icons.settings,
           label: '通用',
-          state: currentPage == 'general'
+          state: currentPage == 'generalSettings'
               ? SettingsTabButtonState.iconActive
               : SettingsTabButtonState.defaultState,
-          onPressed: () => onPageChanged('general'),
+          onPressed: () => onPageChanged('generalSettings'),
         ),
         SettingsTabButton(
           icon: Icons.play_circle,

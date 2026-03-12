@@ -37,7 +37,7 @@ class _SettingsState extends State<Settings> {
 
   Widget _buildCurrentPage() {
     switch (_currentPage) {
-      case 'general':
+      case 'generalSettings':
         return const GeneralSettings();
       case 'playSettings':
         return const PlaySettings();
