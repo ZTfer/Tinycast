@@ -9,7 +9,11 @@ class AppleLoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return LoginButton(
       text: 'Apple 登录',
-      icon: SvgPicture.asset('assets/icons/logo_apple.svg'),
+      icon: SvgPicture.asset(
+        'assets/icons/logo_apple.svg',
+        width: 16,
+        height: 16,
+      ),
       onPressed: () {},
     );
   }
