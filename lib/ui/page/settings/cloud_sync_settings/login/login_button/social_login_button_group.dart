@@ -8,7 +8,7 @@ class SocialLoginButtonGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      // crossAxisAlignment: CrossAxisAlignment.stretch,
+      
       spacing: 12,
       children: [const GoogleLoginButton(), const AppleLoginButton()],
     );

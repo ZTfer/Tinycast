@@ -9,7 +9,7 @@ class GoogleLoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return LoginButton(
       text: 'Google 登录',
-      icon: Image.asset('assets/icons/logo_google.png', width: 16, height: 16),
+      icon: Image.asset('assets/icons/logo_google.png', width: 20, height: 20),
       onPressed: () {},
     );
   }

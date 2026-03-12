@@ -89,7 +89,9 @@ class _LoginButtonState extends State<LoginButton> {
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[
                 SizedBox(
