@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-
 class SearchHistoryItem extends StatelessWidget {
-  const SearchHistoryItem({super.key});
+  final String historyKeyword;
+
+  const SearchHistoryItem({super.key, required this.historyKeyword});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class SearchHistoryItem extends StatelessWidget {
           Icon(LucideIcons.history, size: 14, color: Color(0xFF000000)),
           SizedBox(width: 8),
           Text(
-            '关键词',
+            historyKeyword,
             style: TextStyle(
               fontSize: 14,
               height: 18 / 14,
