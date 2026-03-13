@@ -80,8 +80,13 @@ class _HomeToolbarState extends State<HomeToolbar> {
       _currentDropdownOverlay = null;
     }
 
-    final RenderBox renderBox =
-        _searchButtonKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox? renderBox =
+        _searchButtonKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox == null) {
+      return;
+    }
+
     final Offset offset = renderBox.localToGlobal(Offset.zero);
     final Size size = renderBox.size;
     final Size screenSize = MediaQuery.of(context).size;
@@ -89,11 +94,11 @@ class _HomeToolbarState extends State<HomeToolbar> {
     const double estimatedMenuWidth = 300.0;
     const double estimatedMenuHeight = 400.0;
 
-    double left = offset.dx;
+    double left = (screenSize.width - estimatedMenuWidth) / 2;
     double top = offset.dy + size.height + 4;
 
-    if (left + estimatedMenuWidth > screenSize.width) {
-      left = screenSize.width - estimatedMenuWidth - 8;
+    if (left < 8) {
+      left = 8;
     }
 
     if (top + estimatedMenuHeight > screenSize.height) {
@@ -116,7 +121,7 @@ class _HomeToolbarState extends State<HomeToolbar> {
             child: GestureDetector(
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: Center(child: SearchPage()),
+              child: SearchPage(),
             ),
           ),
         ],
