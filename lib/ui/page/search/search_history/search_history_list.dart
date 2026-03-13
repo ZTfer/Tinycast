@@ -7,6 +7,7 @@ class SearchHistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: true,
       itemCount: 10,
       itemBuilder: (context, index) {
         return SearchHistoryItem(historyKeyword: '关键词$index');

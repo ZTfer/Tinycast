@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/page/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
 import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button/google_login_button.dart';
 import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button/apple_login_button.dart';
+import 'package:tinycast/ui/page/search/search_page.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -17,7 +18,6 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -36,6 +36,7 @@ class _TestPageState extends State<TestPage> {
             GoogleLoginButton(),
             AppleLoginButton(),
             SocialLoginButtonGroup(),
+            SearchPage(),
           ],
         ),
       ),
