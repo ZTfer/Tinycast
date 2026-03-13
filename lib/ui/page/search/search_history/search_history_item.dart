@@ -28,15 +28,9 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
           ? SystemMouseCursors.click
           : MouseCursor.defer,
       child: GestureDetector(
-        onTapDown: widget.onPressed != null
-            ? (_) => setState(() => _isPressed = true)
-            : null,
-        onTapUp: widget.onPressed != null
-            ? (_) => setState(() => _isPressed = false)
-            : null,
-        onTapCancel: widget.onPressed != null
-            ? () => setState(() => _isPressed = false)
-            : null,
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.onPressed,
         child: AnimatedContainer(
           duration: _isHovering
