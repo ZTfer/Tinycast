@@ -9,10 +9,10 @@ class SearchHistoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          Icon(LucideIcons.history, size: 14, color: Color(0xFF000000)),
+          Icon(LucideIcons.history, size: 14, color: Color(0x40000000)),
           SizedBox(width: 8),
           Text(
             historyKeyword,
@@ -22,8 +22,8 @@ class SearchHistoryItem extends StatelessWidget {
               color: Color(0xFF000000),
             ),
           ),
-          SizedBox(width: 8),
-          Icon(LucideIcons.cornerDownLeft, size: 14, color: Color(0xFF000000)),
+          Spacer(),
+          Icon(LucideIcons.cornerDownLeft, size: 14, color: Color(0x40000000)),
         ],
       ),
     );
