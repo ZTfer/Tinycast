@@ -48,21 +48,20 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
             borderRadius: BorderRadius.circular(6.0),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconTheme(
-                data: IconThemeData(color: _getContentColor(), size: 12.0),
-                child: const Icon(LucideIcons.history),
-              ),
+              Icon(LucideIcons.history, size: 14, color: Color(0x40000000)),
+
               const SizedBox(width: 6.0),
               Text(
                 widget.historyKeyword,
-                style: TextStyle(color: _getContentColor(), fontSize: 12.0),
+                style: TextStyle(color: Color(0xD9000000), fontSize: 14.0),
               ),
               const Spacer(),
-              IconTheme(
-                data: IconThemeData(color: _getContentColor(), size: 12.0),
-                child: const Icon(LucideIcons.cornerDownLeft),
+              Icon(
+                LucideIcons.cornerDownLeft,
+                size: 14,
+                color: Color(0x40000000),
               ),
             ],
           ),
@@ -75,12 +74,5 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
     if (_isPressed) return const Color(0xFFE0E0E0);
     if (_isHovering) return const Color(0xFFF5F5F5);
     return const Color(0x00F5F5F5);
-  }
-
-  Color _getContentColor() {
-    if (widget.onPressed != null) {
-      return const Color(0xD9000000);
-    }
-    return const Color(0x40000000);
   }
 }
