@@ -3,18 +3,18 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SearchResultsSuccessItem extends StatefulWidget {
   /// 剧集标题
-  final String title;
+  final String episodeTitle;
 
-  /// 播客名称
-  final String podcastName;
+  /// 剧集简介
+  final String episodeDescription;
 
   /// 按钮点击的回调函数
   final VoidCallback? onPressed;
 
   const SearchResultsSuccessItem({
     super.key,
-    required this.title,
-    required this.podcastName,
+    required this.episodeTitle,
+    required this.episodeDescription,
     this.onPressed,
   });
 
@@ -70,7 +70,7 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.title,
+                      widget.episodeTitle,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.podcastName,
+                      widget.episodeDescription,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF888888),
