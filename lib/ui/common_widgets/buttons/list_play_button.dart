@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// 包含左侧图标和右侧文字的按钮组件。
 /// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
-/// 参照 [EpisodeControlButton] 实现交互逻辑。
+
 class ListPlayButton extends StatefulWidget {
   /// 按钮左侧显示的图标
   final Widget icon;
