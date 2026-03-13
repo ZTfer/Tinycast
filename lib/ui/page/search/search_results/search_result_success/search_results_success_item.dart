@@ -5,6 +5,9 @@ class SearchResultsSuccessItem extends StatefulWidget {
   /// 剧集标题
   final String episodeTitle;
 
+  /// 播客名称
+  final String podcastName;
+
   /// 剧集简介
   final String episodeDescription;
 
@@ -14,6 +17,7 @@ class SearchResultsSuccessItem extends StatefulWidget {
   const SearchResultsSuccessItem({
     super.key,
     required this.episodeTitle,
+    required this.podcastName,
     required this.episodeDescription,
     this.onPressed,
   });
@@ -80,6 +84,15 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
+                    Text(
+                      widget.podcastName,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF888888),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     Text(
                       widget.episodeDescription,
                       style: const TextStyle(

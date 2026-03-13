@@ -40,6 +40,7 @@ class _TestPageState extends State<TestPage> {
             SearchPage(),
             SearchResultsSuccessItem(
               episodeTitle: '剧集标题',
+              podcastName: '播客名称',
               episodeDescription: '剧集简介',
             ),
           ],
