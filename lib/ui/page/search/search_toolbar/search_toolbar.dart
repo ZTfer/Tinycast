@@ -9,7 +9,7 @@ class SearchToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SearchToolbarKeyTips(),
         SearchToolbarDeleteButton(
