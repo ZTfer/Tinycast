@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// 列表播放按钮
+/// 搜索工具栏删除按钮
 ///
 /// 包含左侧图标和右侧文字的按钮组件。
 /// 支持悬停（Hover）和点击（Press）状态的视觉反馈，
