@@ -1,7 +1,26 @@
-import 'package:flutter/widgets.dart';
+// import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:tinycast/ui/page/homepage.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
+  // 初始化窗口管理器
+  await windowManager.ensureInitialized();
+
+  // 设置窗口选项
+  WindowOptions windowOptions = WindowOptions(
+    size: Size(400, 800),
+    center: true,
+    // backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+
+  // 运行 App
   runApp(const MyApp());
 }
 
@@ -12,7 +31,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WidgetsApp(
-      title: 'Flutter Demo',
+      title: 'Tinycast',
       color: const Color(0xFFFFFFFF),
       // WidgetsApp 需要 explicit 的 pageRouteBuilder
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
