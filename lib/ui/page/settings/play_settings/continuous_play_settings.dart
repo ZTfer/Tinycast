@@ -19,6 +19,7 @@ class _ContinuousPlaySettingsState extends State<ContinuousPlaySettings> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        const SizedBox(height: 4.0),
         LabelRadio(
           value: _selectedOption == ContinuousPlayOption.continuePlaying,
           label: '单集结束后继续播放',
@@ -42,6 +43,7 @@ class _ContinuousPlaySettingsState extends State<ContinuousPlaySettings> {
             }
           },
         ),
+        const SizedBox(height: 16.0),
       ],
     );
   }
