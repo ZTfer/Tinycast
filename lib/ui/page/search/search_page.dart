@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'search_toolbar/search_toolbar.dart';
-import 'search_history/search_history_list.dart';
+// import 'search_history/search_history_list.dart';
 import 'search_results/search_result_success/search_results_success_list.dart';
 
 class SearchPage extends StatelessWidget {
