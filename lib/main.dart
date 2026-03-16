@@ -1,9 +1,12 @@
-// import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+// import 'package:flutter/material.dart';
 import 'package:tinycast/ui/page/homepage.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
+  // 必须添加这一行，否则 window_manager 会报错
+  WidgetsFlutterBinding.ensureInitialized();
+
   // 初始化窗口管理器
   await windowManager.ensureInitialized();
 
@@ -11,7 +14,7 @@ void main() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(400, 800),
     center: true,
-    // backgroundColor: Colors.transparent,
+    // backgroundColor: const Color.fromARGB(0, 255, 255, 255),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
