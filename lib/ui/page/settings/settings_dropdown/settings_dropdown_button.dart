@@ -20,12 +20,10 @@ class SettingsDropdownButton extends StatefulWidget {
   });
 
   @override
-  State<SettingsDropdownButton> createState() =>
-      _SettingsDropdownButtonState();
+  State<SettingsDropdownButton> createState() => _SettingsDropdownButtonState();
 }
 
-class _SettingsDropdownButtonState
-    extends State<SettingsDropdownButton> {
+class _SettingsDropdownButtonState extends State<SettingsDropdownButton> {
   // 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
   // 记录按钮是否正在被按下
@@ -63,6 +61,7 @@ class _SettingsDropdownButtonState
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: _getBorderColor(), width: 0.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -95,10 +94,22 @@ class _SettingsDropdownButtonState
   /// 根据当前状态返回对应的背景颜色：
   /// - 按下状态：浅灰色 (0xFFDADADA)
   /// - 悬停状态：浅灰色 (0xFFE1E1E1)
-  /// - 默认状态：浅灰色 (0xFFEEEEEE)
+  /// - 默认状态：白色 (0xFFFFFFFF)
   Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0xFFDADADA);
-    if (_isHovering) return const Color(0xFFE1E1E1);
-    return const Color(0xFFEEEEEE);
+    if (_isPressed) return const Color(0xFFF0F0F0);
+    if (_isHovering) return const Color(0xFFF9F9F9);
+    return const Color(0xFFFFFFFF);
+  }
+
+  /// 获取按钮边框颜色
+  ///
+  /// 根据当前状态返回对应的边框颜色：
+  /// - 按下状态：黑色 (0xFF000000)
+  /// - 悬停状态：浅灰色 (0xFFEEEEEE)
+  /// - 默认状态：浅灰色 (0xFFFEFEFE)
+  Color _getBorderColor() {
+    if (_isPressed) return const Color(0xFFCCCCCC);
+    if (_isHovering) return const Color(0xFFDDDDDD);
+    return const Color(0xFFE0E0E0);
   }
 }

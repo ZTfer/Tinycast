@@ -91,9 +91,9 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
+          spacing: 8,
           children: [
             SettingsDropdownButton(
               key: _forwardButtonKey,
@@ -112,6 +112,7 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
         ),
         const SizedBox(height: 12),
         Row(
+          spacing: 8,
           children: [
             SettingsDropdownButton(
               key: _rewindButtonKey,
