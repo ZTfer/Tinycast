@@ -42,7 +42,7 @@ class SearchToolbarDeleteButton extends StatefulWidget {
     required this.label,
     required this.onPressed,
     this.labelStyle,
-    this.spacing = 6.0,
+    this.spacing = 4.0,
     this.iconSize = 10,
     this.fontSize = 10,
     this.horizontalPadding = 8,
@@ -51,7 +51,8 @@ class SearchToolbarDeleteButton extends StatefulWidget {
   });
 
   @override
-  State<SearchToolbarDeleteButton> createState() => _SearchToolbarDeleteButtonState();
+  State<SearchToolbarDeleteButton> createState() =>
+      _SearchToolbarDeleteButtonState();
 }
 
 class _SearchToolbarDeleteButtonState extends State<SearchToolbarDeleteButton> {
@@ -98,6 +99,7 @@ class _SearchToolbarDeleteButtonState extends State<SearchToolbarDeleteButton> {
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               /// 左侧图标
               IconTheme(
@@ -118,6 +120,7 @@ class _SearchToolbarDeleteButtonState extends State<SearchToolbarDeleteButton> {
                       color: _getContentColor(),
                       fontSize: widget.fontSize,
                       fontWeight: FontWeight.normal,
+                      height: 12 / widget.fontSize,
                     ),
               ),
             ],
@@ -136,7 +139,7 @@ class _SearchToolbarDeleteButtonState extends State<SearchToolbarDeleteButton> {
   Color _getBackgroundColor() {
     if (_isPressed) return const Color(0xFFDADADA);
     if (_isHovering) return const Color(0xFFE1E1E1);
-    return const Color(0xFFEEEEEE);
+    return const Color(0xFFFFFFFF);
   }
 
   /// 获取内容颜色（图标 + 文字）
