@@ -227,7 +227,7 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
             children: [
               // 后退15秒按钮
               EpisodeControlButton(
-                icon: const Icon(LucideIcons.skipBack, size: 20),
+                icon: const Icon(LucideIcons.undoDot, size: 20),
                 onPressed: () {},
               ),
               // 播放/暂停按钮
@@ -237,7 +237,7 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
               ),
               // 前进15秒按钮
               EpisodeControlButton(
-                icon: const Icon(LucideIcons.skipForward, size: 20),
+                icon: const Icon(LucideIcons.redoDot, size: 20),
                 onPressed: () {},
               ),
             ],
