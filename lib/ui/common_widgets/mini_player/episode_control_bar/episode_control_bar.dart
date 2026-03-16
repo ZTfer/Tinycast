@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/episode_control_bar/episode_control_button.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/speed_dropdown/speed_dropdown.dart';
+import 'package:tinycast/ui/common_widgets/mini_player/volume_control_bar/volume_control_bar.dart';
 
 class EpisodeControlBar extends StatefulWidget {
   const EpisodeControlBar({super.key});
@@ -12,6 +13,7 @@ class EpisodeControlBar extends StatefulWidget {
 
 class _EpisodeControlBarState extends State<EpisodeControlBar> {
   final GlobalKey _speedButtonKey = GlobalKey();
+  final GlobalKey _volumeButtonKey = GlobalKey();
   OverlayEntry? _dropdownOverlay;
   static OverlayEntry? _currentDropdownOverlay;
 
@@ -58,6 +60,64 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
               onTap: () {},
               behavior: HitTestBehavior.opaque,
               child: SpeedDropdown(onItemSelected: _hideDropdown),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Overlay.of(context).insert(_dropdownOverlay!);
+    _currentDropdownOverlay = _dropdownOverlay;
+  }
+
+  void _showVolumeControl() {
+    if (_currentDropdownOverlay != null) {
+      _currentDropdownOverlay?.remove();
+      _currentDropdownOverlay = null;
+    }
+
+    final RenderBox? renderBox =
+        _volumeButtonKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox == null) {
+      return;
+    }
+
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    final Size size = renderBox.size;
+    final Size screenSize = MediaQuery.of(context).size;
+
+    const double estimatedMenuWidth = 140.0;
+    const double estimatedMenuHeight = 60.0;
+
+    double left = offset.dx;
+    double top = offset.dy + size.height + 4;
+
+    if (left + estimatedMenuWidth > screenSize.width) {
+      left = screenSize.width - estimatedMenuWidth - 8;
+    }
+
+    if (top + estimatedMenuHeight > screenSize.height) {
+      top = offset.dy - estimatedMenuHeight - 4;
+    }
+
+    _dropdownOverlay = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _hideDropdown,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            left: left,
+            top: top,
+            child: GestureDetector(
+              onTap: () {},
+              behavior: HitTestBehavior.opaque,
+              child: VolumeControlBar(volume: 50, onVolumeChanged: (value) {}),
             ),
           ),
         ],
@@ -123,7 +183,8 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
           // 音量控制按钮
           EpisodeControlButton(
             icon: const Icon(LucideIcons.volume2, size: 16),
-            onPressed: () {},
+            onPressed: _showVolumeControl,
+            key: _volumeButtonKey,
           ),
         ],
       ),
