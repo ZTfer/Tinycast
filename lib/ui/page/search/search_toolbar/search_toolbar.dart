@@ -8,16 +8,31 @@ class SearchToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      spacing: 8.0,
       children: [
-        SearchToolbarKeyTips(),
-        SearchToolbarDeleteButton(
-          icon: Icon(LucideIcons.trash2, size: 10, color: Color(0x80000000)),
-          label: '删除',
-          onPressed: () {},
+        _buildDivider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SearchToolbarKeyTips(),
+            SearchToolbarDeleteButton(
+              icon: Icon(
+                LucideIcons.trash2,
+                size: 10,
+                color: Color(0x80000000),
+              ),
+              label: '清空记录',
+              onPressed: () {},
+            ),
+          ],
         ),
       ],
     );
   }
+}
+
+/// 构建分隔线
+Widget _buildDivider() {
+  return Container(height: 0.5, color: const Color(0xFFE0E0E0));
 }

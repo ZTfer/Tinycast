@@ -30,6 +30,7 @@ class SearchPage extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        spacing: 8.0,
         children: [
           //Todo: 有搜索记录时展示搜索记录，没有时不展示
           // Flexible(child: SearchHistoryList()),
