@@ -27,7 +27,12 @@ class _SettingsState extends State<Settings> {
         SettingsTab(currentPage: _currentPage, onPageChanged: _navigateToPage),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.only(
+              top: 24,
+              bottom: 24,
+              left: 12,
+              right: 12,
+            ),
             alignment: Alignment.topLeft,
             child: _buildCurrentPage(),
           ),
