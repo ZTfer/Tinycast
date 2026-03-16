@@ -70,52 +70,78 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _isHovering = true),
-        onExit: (_) => setState(() => _isHovering = false),
-        child: GestureDetector(
-          onTapDown: (details) {
-            final box = context.findRenderObject() as RenderBox?;
-            if (box == null) return;
-            final trackWidth = box.size.width;
-            final progress = _calcProgress(details.localPosition, trackWidth);
-            widget.onVolumeChanged?.call(_progressToVolume(progress));
-          },
-          onHorizontalDragStart: (details) {
-            setState(() {
-              _isDragging = true;
+    return Container(
+      width: 140,
+      padding: const EdgeInsets.all(4.0),
+      decoration: BoxDecoration(
+        color: Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(
+          color: Color(0xFFE0E0E0), // 边框颜色
+          width: 0.5, // 边框宽度
+          style: BorderStyle.solid, // 实线
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF000000).withValues(alpha: 0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovering = true),
+          onExit: (_) => setState(() => _isHovering = false),
+          child: GestureDetector(
+            onTapDown: (details) {
               final box = context.findRenderObject() as RenderBox?;
               if (box == null) return;
-              _dragValue = _calcProgress(details.localPosition, box.size.width);
-            });
-          },
-          onHorizontalDragUpdate: (details) {
-            setState(() {
-              final box = context.findRenderObject() as RenderBox?;
-              if (box == null) return;
-              _dragValue = _calcProgress(details.localPosition, box.size.width);
-            });
-          },
-          onHorizontalDragEnd: (details) {
-            widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
-            setState(() => _isDragging = false);
-          },
-          child: SizedBox(
-            height: widget.thumbRadius * 2 + 8,
-            child: CustomPaint(
-              painter: _ProgressTrackPainter(
-                progress: _progress,
-                trackColor: widget.trackColor,
-                progressColor: widget.progressColor,
-                thumbColor: widget.thumbColor,
-                trackHeight: widget.trackHeight,
-                thumbRadius: widget.thumbRadius,
-                showThumb: _isDragging || _isHovering,
+              final trackWidth = box.size.width;
+              final progress = _calcProgress(details.localPosition, trackWidth);
+              widget.onVolumeChanged?.call(_progressToVolume(progress));
+            },
+            onHorizontalDragStart: (details) {
+              setState(() {
+                _isDragging = true;
+                final box = context.findRenderObject() as RenderBox?;
+                if (box == null) return;
+                _dragValue = _calcProgress(
+                  details.localPosition,
+                  box.size.width,
+                );
+              });
+            },
+            onHorizontalDragUpdate: (details) {
+              setState(() {
+                final box = context.findRenderObject() as RenderBox?;
+                if (box == null) return;
+                _dragValue = _calcProgress(
+                  details.localPosition,
+                  box.size.width,
+                );
+              });
+            },
+            onHorizontalDragEnd: (details) {
+              widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
+              setState(() => _isDragging = false);
+            },
+            child: SizedBox(
+              height: widget.thumbRadius * 2 + 8,
+              child: CustomPaint(
+                painter: _ProgressTrackPainter(
+                  progress: _progress,
+                  trackColor: widget.trackColor,
+                  progressColor: widget.progressColor,
+                  thumbColor: widget.thumbColor,
+                  trackHeight: widget.trackHeight,
+                  thumbRadius: widget.thumbRadius,
+                  showThumb: _isDragging || _isHovering,
+                ),
+                size: Size.infinite,
               ),
-              size: Size.infinite,
             ),
           ),
         ),
