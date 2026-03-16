@@ -48,7 +48,7 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(6.0),
@@ -63,15 +63,15 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        width: 32,
-                        height: 32,
+                        width: 24,
+                        height: 24,
                         color: const Color(0xFFE0E0E0),
                         child: const Center(
                           child: Text('Cover', style: TextStyle(fontSize: 8)),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -81,8 +81,9 @@ class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
                             widget.episodeTitle,
                             style: const TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF333333),
+                              height: 16 / 14,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

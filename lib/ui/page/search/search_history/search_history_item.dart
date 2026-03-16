@@ -36,7 +36,7 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(6.0),
