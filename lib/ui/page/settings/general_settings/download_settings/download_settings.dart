@@ -10,7 +10,13 @@ class DownloadSettings extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      children: [const DownloadWhenFavorite(), const RemovePlayedDownloads()],
+      children: [
+        const SizedBox(height: 4.0),
+        const DownloadWhenFavorite(),
+        const SizedBox(height: 4.0),
+        const RemovePlayedDownloads(),
+        const SizedBox(height: 12.0),
+      ],
     );
   }
 }

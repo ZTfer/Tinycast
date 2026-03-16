@@ -12,12 +12,12 @@ class GeneralSettings extends StatelessWidget {
         0: IntrinsicColumnWidth(), // 关键：第一列宽度由内容决定（取最大值）
         1: FlexColumnWidth(), // 第二列占满剩余空间
       },
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      defaultVerticalAlignment: TableCellVerticalAlignment.top,
       children: [
         const TableRow(
           children: [
             Padding(
-              padding: EdgeInsets.only(right: 8.0),
+              padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
                 "下载:",
                 textAlign: TextAlign.right,
@@ -34,7 +34,7 @@ class GeneralSettings extends StatelessWidget {
         const TableRow(
           children: [
             Padding(
-              padding: EdgeInsets.only(right: 8.0),
+              padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
                 "自动下载:",
                 textAlign: TextAlign.right,
