@@ -10,6 +10,7 @@ import 'package:tinycast/ui/page/settings/cloud_sync_settings/login/login_button
 import 'package:tinycast/ui/page/search/search_page.dart';
 import 'package:tinycast/ui/page/search/search_results/search_results_success/search_results_success_item.dart';
 import 'package:tinycast/ui/common_widgets/mini_player/volume_control_bar/volume_control_bar.dart';
+import 'package:tinycast/ui/common_widgets/buttons/primary_button.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -45,6 +46,7 @@ class _TestPageState extends State<TestPage> {
               episodeDescription: '剧集简介',
             ),
             VolumeControlBar(),
+            PrimaryButton(label: '测试打开新窗口', onPressed: () {}),
           ],
         ),
       ),
