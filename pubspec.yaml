@@ -39,6 +39,7 @@ dependencies:
   lucide_icons_flutter: ^3.1.10
   flutter_svg: ^2.2.4
   window_manager: ^0.5.1
+  desktop_multi_window: ^0.3.0
 
 dev_dependencies:
   flutter_test:
