@@ -47,11 +47,21 @@ class MyApp extends StatelessWidget {
       },
       // WidgetsApp 不提供默认的 textStyle，需要手动指定
       textStyle: const TextStyle(
+        fontFamily: 'PingFang SC',
+        fontFamilyFallback: [
+          'PingFang SC', // macOS/iOS 常用中文
+          'Noto Sans SC', // 中文回退
+          'Roboto', // 英文/通用回退
+          'Heiti SC', // 备选中文
+          'Microsoft YaHei', // Windows 常用中文
+          'sans-serif', // 系统通用
+        ],
         color: Color(0xFF000000),
         fontSize: 16,
         fontWeight: FontWeight.normal,
         decoration: TextDecoration.none,
       ),
+
       home: const MyHomePage(),
       // WidgetsApp 默认不包含 Directionality，除非配置 localizationsDelegates
       // 在 builder 中包裹 Directionality 是最简单的做法
