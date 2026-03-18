@@ -40,6 +40,16 @@ dependencies:
   flutter_svg: ^2.2.4
   window_manager: ^0.5.1
   desktop_multi_window: ^0.3.0
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  riverpod: ^2.5.1
+  flutter_riverpod: ^2.5.1
+  just_audio: ^0.9.40
+  audio_service: ^0.18.18
+  dio: ^5.7.0
+  path_provider: ^2.1.4
+  cached_network_image: ^3.4.1
+  xml: ^6.6.1
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +61,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.11
+  mockito: ^5.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
