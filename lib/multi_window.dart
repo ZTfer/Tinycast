@@ -59,6 +59,7 @@ Future<void> initSettingsWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 380),
     center: true,
+    backgroundColor: const Color(0xFFFFFFFF),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -96,7 +97,11 @@ class SettingsWindowApp extends StatelessWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: child ?? const SizedBox(),
+          child: Container(
+            padding: const EdgeInsets.all(12.0),
+            color: const Color(0xFFFFFFFF),
+            child: child ?? const SizedBox(),
+          ),
         );
       },
     );

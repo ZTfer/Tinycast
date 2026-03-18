@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
       textStyle: const TextStyle(
         color: Color(0xFF000000),
         fontSize: 16,
+        fontWeight: FontWeight.normal,
         decoration: TextDecoration.none,
       ),
       home: const MyHomePage(),
