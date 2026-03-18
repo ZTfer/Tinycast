@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/sidebar/sidebar_button.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class Sidebar extends StatelessWidget {
   final String currentPage;
@@ -11,6 +12,13 @@ class Sidebar extends StatelessWidget {
     required this.currentPage,
     required this.onPageChanged,
   });
+
+  Future<void> _openSettingsWindow() async {
+    final controller = await WindowController.create(
+      WindowConfiguration(hiddenAtLaunch: true, arguments: 'settings'),
+    );
+    await controller.show();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,12 +83,12 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
               _buildMenuButton(
-                      icon: LucideIcons.settings,
-                      state: currentPage == 'settings'
-                          ? SidebarButtonState.iconActive
-                          : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('settings'),
-                    ),
+                icon: LucideIcons.settings,
+                state: currentPage == 'settings'
+                    ? SidebarButtonState.iconActive
+                    : SidebarButtonState.defaultState,
+                onPressed: _openSettingsWindow,
+              ),
               const SizedBox(height: 10),
             ],
           ),
