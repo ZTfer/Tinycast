@@ -42,7 +42,7 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 ## 功能模块
 
 ### 1. 项目架构和文件夹结构整理
-**规格文件**: [project-architecture/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/project-architecture/spec.md)
+**规格文件**: [project-architecture/spec.md](project-architecture/spec.md)
 
 **主要内容**:
 - 建立 MVVM 架构分层
@@ -51,11 +51,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 创建基础架构代码
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/project-architecture/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/project-architecture/checklist.md)
+- [tasks.md](project-architecture/tasks.md)
+- [checklist.md](project-architecture/checklist.md)
 
 ### 2. RSS 订阅功能
-**规格文件**: [rss-subscription/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/rss-subscription/spec.md)
+**规格文件**: [rss-subscription/spec.md](rss-subscription/spec.md)
 
 **主要内容**:
 - RSS 订阅源解析
@@ -65,11 +65,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 播客列表和详情展示
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/rss-subscription/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/rss-subscription/checklist.md)
+- [tasks.md](rss-subscription/tasks.md)
+- [checklist.md](rss-subscription/checklist.md)
 
 ### 3. 音频播放功能
-**规格文件**: [audio-playback/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/audio-playback/spec.md)
+**规格文件**: [audio-playback/spec.md](audio-playback/spec.md)
 
 **主要内容**:
 - 集成 just_audio 和 audio_service
@@ -79,11 +79,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 实现后台播放支持
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/audio-playback/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/audio-playback/checklist.md)
+- [tasks.md](audio-playback/tasks.md)
+- [checklist.md](audio-playback/checklist.md)
 
 ### 4. 下载管理功能
-**规格文件**: [download-management/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/download-management/spec.md)
+**规格文件**: [download-management/spec.md](download-management/spec.md)
 
 **主要内容**:
 - 实现下载管理器
@@ -94,11 +94,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 实现自动下载功能
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/download-management/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/download-management/checklist.md)
+- [tasks.md](download-management/tasks.md)
+- [checklist.md](download-management/checklist.md)
 
 ### 5. 队列管理功能
-**规格文件**: [queue-management/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/queue-management/spec.md)
+**规格文件**: [queue-management/spec.md](queue-management/spec.md)
 
 **主要内容**:
 - 实现队列数据模型
@@ -108,11 +108,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 集成播放功能（自动播放下一集）
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/queue-management/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/queue-management/checklist.md)
+- [tasks.md](queue-management/tasks.md)
+- [checklist.md](queue-management/checklist.md)
 
 ### 6. 收藏管理功能
-**规格文件**: [favorite-management/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/favorite-management/spec.md)
+**规格文件**: [favorite-management/spec.md](favorite-management/spec.md)
 
 **主要内容**:
 - 实现收藏数据模型
@@ -121,11 +121,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 实现收藏持久化
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/favorite-management/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/favorite-management/checklist.md)
+- [tasks.md](favorite-management/tasks.md)
+- [checklist.md](favorite-management/checklist.md)
 
 ### 7. 设置管理功能
-**规格文件**: [settings-management/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/settings-management/spec.md)
+**规格文件**: [settings-management/spec.md](settings-management/spec.md)
 
 **主要内容**:
 - 实现设置数据模型
@@ -135,11 +135,11 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 实现设置持久化
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/settings-management/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/settings-management/checklist.md)
+- [tasks.md](settings-management/tasks.md)
+- [checklist.md](settings-management/checklist.md)
 
 ### 8. 搜索功能
-**规格文件**: [search-functionality/spec.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/search-functionality/spec.md)
+**规格文件**: [search-functionality/spec.md](search-functionality/spec.md)
 
 **主要内容**:
 - 实现搜索服务（集成 Podcast Index API）
@@ -149,8 +149,8 @@ TinyCast 是一个跨平台的播客应用，支持 macOS、Windows、Linux、iO
 - 实现搜索 UI 交互
 
 **关键文件**:
-- [tasks.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/search-functionality/tasks.md)
-- [checklist.md](file:///Users/ztfer/Qsync/Playground/Flutter_Playground/tinycast/.trae/specs/search-functionality/checklist.md)
+- [tasks.md](search-functionality/tasks.md)
+- [checklist.md](search-functionality/checklist.md)
 
 ## 开发顺序建议
 
