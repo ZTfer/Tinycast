@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/ui/common_widgets/sidebar/sidebar_button.dart';
+import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class Sidebar extends StatelessWidget {
@@ -16,6 +17,13 @@ class Sidebar extends StatelessWidget {
   Future<void> _openSettingsWindow() async {
     final controller = await WindowController.create(
       WindowConfiguration(hiddenAtLaunch: true, arguments: 'settings'),
+    );
+    await controller.show();
+  }
+
+  Future<void> _openSubscribeWindow() async {
+    final controller = await WindowController.create(
+      WindowConfiguration(hiddenAtLaunch: true, arguments: 'subscribe'),
     );
     await controller.show();
   }
@@ -70,7 +78,7 @@ class Sidebar extends StatelessWidget {
                       state: currentPage == 'subscribe'
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('subscribe'),
+                      onPressed: _openSubscribeWindow,
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.flaskConical,

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/ui/page/settings/settings.dart';
+import 'package:tinycast/ui/page/subscribe/subscribe.dart';
 import 'package:window_manager/window_manager.dart';
 
 /// 窗口参数类
@@ -11,6 +12,7 @@ class WindowArguments {
   /// 可选值：
   /// - 'main': 主窗口
   /// - 'settings': 设置窗口
+  /// - 'subscribe': 订阅窗口
   final String type;
 
   WindowArguments({required this.type});
@@ -69,6 +71,27 @@ Future<void> initSettingsWindow() async {
   });
 }
 
+/// 初始化订阅窗口
+///
+/// 配置并显示应用的订阅窗口，使用隐藏标题栏样式
+/// 窗口大小为 600x380，居中显示
+/// 该窗口用于显示应用的订阅界面
+Future<void> initSubscribeWindow() async {
+  await windowManager.ensureInitialized();
+
+  WindowOptions windowOptions = WindowOptions(
+    size: Size(600, 500),
+    center: true,
+    backgroundColor: const Color(0xFFFFFFFF),
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+}
+
 /// 设置窗口应用组件
 ///
 /// 这是设置窗口的根组件，使用 WidgetsApp 作为基础
@@ -94,6 +117,45 @@ class SettingsWindowApp extends StatelessWidget {
         decoration: TextDecoration.none,
       ),
       home: const Settings(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Container(
+            padding: const EdgeInsets.all(12.0),
+            color: const Color(0xFFFFFFFF),
+            child: child ?? const SizedBox(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 订阅窗口应用组件
+///
+/// 这是订阅窗口的根组件，使用 WidgetsApp 作为基础
+/// 显示 Subscribe 页面作为主界面
+class SubscribeWindowApp extends StatelessWidget {
+  const SubscribeWindowApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetsApp(
+      title: 'Subscribe',
+      color: const Color(0xFFFFFFFF),
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
+      textStyle: const TextStyle(
+        color: Color(0xFF000000),
+        fontSize: 16,
+        decoration: TextDecoration.none,
+      ),
+      home: const Subscribe(),
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,

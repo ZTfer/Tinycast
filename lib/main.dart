@@ -18,6 +18,10 @@ void main(List<String> args) async {
       await initSettingsWindow();
       runApp(const SettingsWindowApp());
       break;
+    case 'subscribe':
+      await initSubscribeWindow();
+      runApp(const SubscribeWindowApp());
+      break;
     default:
       await initMainWindow();
       runApp(const MyApp());
