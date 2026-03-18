@@ -46,13 +46,51 @@
 - **则**应包含以下字段：
   - id: String（唯一标识符）
   - title: String（播客标题）
+  - subtitle: String（副标题）
   - author: String（作者/发布者）
   - description: String（播客描述）
   - artworkUrl: String（封面图 URL）
   - rssUrl: String（RSS 订阅源 URL）
+  - websiteUrl: String（播客官网链接）
+  - language: String（语言，如 zh-CN）
+  - copyright: String（版权信息）
+  - categories: List<String>（分类列表）
+  - keywords: String（关键词）
+  - isExplicit: bool（是否包含成人内容）
+  - ownerName: String（所有者名称）
+  - ownerEmail: String（所有者邮箱）
   - lastUpdated: DateTime（最后更新时间）
   - episodeCount: int（节目数量）
   - isSubscribed: bool（是否已订阅）
+  - subscribedAt: DateTime（订阅时间）
+
+### 需求：节目数据模型
+系统应定义节目的数据模型。
+
+#### 场景：节目模型定义
+- **当**定义节目模型
+- **则**应包含以下字段：
+  - id: String（唯一标识符，使用 guid）
+  - podcastId: String（所属播客 ID）
+  - title: String（节目标题）
+  - description: String（节目描述，可能包含 HTML）
+  - link: String（节目链接）
+  - guid: String（节目唯一标识符）
+  - author: String（节目作者）
+  - pubDate: DateTime（发布时间）
+  - audioUrl: String（音频文件 URL）
+  - audioType: String（音频文件类型，如 audio/mpeg）
+  - duration: int（时长，单位：秒）
+  - artworkUrl: String（节目封面图 URL）
+  - isExplicit: bool（是否包含成人内容）
+  - isPlayed: bool（是否已播放）
+  - isDownloaded: bool（是否已下载）
+  - downloadedPath: String（下载文件路径）
+  - downloadProgress: double（下载进度 0.0-1.0）
+  - playProgress: int（播放进度，单位：秒）
+  - lastPlayedAt: DateTime（最后播放时间）
+  - createdAt: DateTime（创建时间）
+  - updatedAt: DateTime（更新时间）
 
 ### 需求：播客数据库存储
 系统应使用 Isar 数据库存储播客数据。
