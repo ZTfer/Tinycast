@@ -180,12 +180,12 @@ class _HomeToolbarState extends State<HomeToolbar> {
             onPressed: _showDropdown,
             key: _sleepButtonKey,
           ),
-          const SizedBox(width: 8),
 
           /*
           // 侧边栏按钮
           // 用于展开收起窗口，让窗口变成紧凑模式或者展开
           // 暂时不开发这个功能，先注释掉
+          const SizedBox(width: 8),
           HomeToolbarButton(
             icon: const Icon(
               LucideIcons.panelLeftOpen,

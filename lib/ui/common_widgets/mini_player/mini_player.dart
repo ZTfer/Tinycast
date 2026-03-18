@@ -10,12 +10,6 @@ class MiniPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFEEEEEE), // 顶部边框，与主内容区分
-            width: 1.0,
-          ),
-        ),
         color: Color(0xFFFFFFFF), // 背景色
       ),
       child: Column(
