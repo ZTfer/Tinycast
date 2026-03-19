@@ -17,7 +17,7 @@ class AppRouter {
       case AppRoutes.home:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const MyHomePage(),
+          builder: (_) => const HomePage(),
         );
       case AppRoutes.queue:
         return MaterialPageRoute(
@@ -62,7 +62,7 @@ class AppRouter {
       default:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const MyHomePage(),
+          builder: (_) => const HomePage(),
         );
     }
   }
