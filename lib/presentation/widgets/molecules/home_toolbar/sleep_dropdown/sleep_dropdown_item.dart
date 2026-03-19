@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 class SleepDropdownItem extends StatefulWidget {
   /// 按钮显示的图标（可选）
@@ -122,6 +122,8 @@ class _SleepDropdownItemState extends State<SleepDropdownItem> {
                 style: TextStyle(
                   /// 根据状态动态获取内容颜色
                   color: _getContentColor(),
+                  decoration: TextDecoration.none,
+                  fontWeight: FontWeight.normal,
 
                   /// 字体大小 14
                   fontSize: 12.0,

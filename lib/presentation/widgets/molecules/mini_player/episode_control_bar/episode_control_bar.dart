@@ -217,7 +217,11 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
         children: [
           // 播放速度控制按钮
           EpisodeControlButton(
-            icon: const Icon(LucideIcons.gauge, size: 16),
+            icon: const Icon(
+              LucideIcons.gauge400,
+              size: 16,
+              fontWeight: FontWeight.normal,
+            ),
             onPressed: _showDropdown,
             key: _speedButtonKey,
           ),
@@ -227,24 +231,40 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
             children: [
               // 后退15秒按钮
               EpisodeControlButton(
-                icon: const Icon(LucideIcons.undoDot, size: 20),
+                icon: const Icon(
+                  LucideIcons.undoDot,
+                  size: 20,
+                  fontWeight: FontWeight.normal,
+                ),
                 onPressed: () {},
               ),
               // 播放/暂停按钮
               EpisodeControlButton(
-                icon: const Icon(LucideIcons.play, size: 24),
+                icon: const Icon(
+                  LucideIcons.play,
+                  size: 24,
+                  fontWeight: FontWeight.normal,
+                ),
                 onPressed: () {},
               ),
               // 前进15秒按钮
               EpisodeControlButton(
-                icon: const Icon(LucideIcons.redoDot, size: 20),
+                icon: const Icon(
+                  LucideIcons.redoDot400,
+                  size: 20,
+                  fontWeight: FontWeight.normal,
+                ),
                 onPressed: () {},
               ),
             ],
           ),
           // 音量控制按钮
           EpisodeControlButton(
-            icon: const Icon(LucideIcons.volume2, size: 16),
+            icon: const Icon(
+              LucideIcons.volume2,
+              size: 16,
+              fontWeight: FontWeight.normal,
+            ),
             onPressed: _showVolumeControl,
             key: _volumeButtonKey,
           ),

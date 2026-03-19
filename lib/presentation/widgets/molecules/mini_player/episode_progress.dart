@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 /// 音频播放进度条
 ///
@@ -180,11 +180,15 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
             children: [
               Text(
                 _formatDuration(displayPosition),
-                style: effectiveTimeLabelStyle,
+                style: effectiveTimeLabelStyle.copyWith(
+                  decoration: TextDecoration.none,
+                ),
               ),
               Text(
                 _formatDuration(widget.duration),
-                style: effectiveTimeLabelStyle,
+                style: effectiveTimeLabelStyle.copyWith(
+                  decoration: TextDecoration.none,
+                ),
               ),
             ],
           ),

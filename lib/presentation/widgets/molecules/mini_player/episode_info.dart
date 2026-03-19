@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 class EpisodeInfo extends StatelessWidget {
   const EpisodeInfo({super.key});
@@ -19,7 +19,15 @@ class EpisodeInfo extends StatelessWidget {
               height: 40,
               color: const Color(0xFFE0E0E0), // 灰色占位背景
               child: const Center(
-                child: Text('Cover', style: TextStyle(fontSize: 8)),
+                child: Text(
+                  'Cover',
+                  style: TextStyle(
+                    fontSize: 8,
+                    decoration: TextDecoration.none,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
+                ),
               ),
               // 如果有真实图片，可以使用:
               // child: Image.network('url', fit: BoxFit.cover),
@@ -38,6 +46,7 @@ class EpisodeInfo extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF333333),
+                    decoration: TextDecoration.none,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -45,7 +54,12 @@ class EpisodeInfo extends StatelessWidget {
                 SizedBox(height: 2),
                 Text(
                   'Podcast Name',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF888888),
+                    decoration: TextDecoration.none,
+                    fontWeight: FontWeight.normal,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
