@@ -33,7 +33,8 @@ class DownloadsEpisodeDropdownItem extends StatefulWidget {
 /// [DownloadsEpisodeDropdownItem] 的状态类
 ///
 /// 管理按钮的交互状态，包括悬停和按下状态。
-class _DownloadsEpisodeDropdownItemState extends State<DownloadsEpisodeDropdownItem> {
+class _DownloadsEpisodeDropdownItemState
+    extends State<DownloadsEpisodeDropdownItem> {
   /// 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
 
@@ -121,6 +122,8 @@ class _DownloadsEpisodeDropdownItemState extends State<DownloadsEpisodeDropdownI
 
                   /// 字体大小 14
                   fontSize: 12.0,
+                  fontWeight: FontWeight.normal,
+                  decoration: TextDecoration.none,
                 ),
               ),
             ],

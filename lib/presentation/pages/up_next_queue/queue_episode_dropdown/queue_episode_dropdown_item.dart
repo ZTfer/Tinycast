@@ -121,6 +121,8 @@ class _QueueEpisodeDropdownItemState extends State<QueueEpisodeDropdownItem> {
 
                   /// 字体大小 14
                   fontSize: 12.0,
+                  decoration: TextDecoration.none,
+                  fontWeight: FontWeight.normal,
                 ),
               ),
             ],

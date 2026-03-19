@@ -95,6 +95,7 @@ class _ListPlayButtonState extends State<PrimaryButton> {
                     color: _getContentColor(),
                     fontSize: widget.fontSize,
                     fontWeight: FontWeight.normal,
+                    decoration: TextDecoration.none,
                     height: 1.5,
                   ),
             ),

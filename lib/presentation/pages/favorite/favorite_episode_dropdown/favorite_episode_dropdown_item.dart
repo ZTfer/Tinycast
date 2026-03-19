@@ -33,7 +33,8 @@ class FavoriteEpisodeDropdownItem extends StatefulWidget {
 /// [FavoriteEpisodeDropdownItem] 的状态类
 ///
 /// 管理按钮的交互状态，包括悬停和按下状态。
-class _FavoriteEpisodeDropdownItemState extends State<FavoriteEpisodeDropdownItem> {
+class _FavoriteEpisodeDropdownItemState
+    extends State<FavoriteEpisodeDropdownItem> {
   /// 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
 
@@ -116,6 +117,12 @@ class _FavoriteEpisodeDropdownItemState extends State<FavoriteEpisodeDropdownIte
 
                 /// 文字样式
                 style: TextStyle(
+                  /// 字体粗细
+                  fontWeight: FontWeight.normal,
+
+                  /// 文字装饰
+                  decoration: TextDecoration.none,
+
                   /// 根据状态动态获取内容颜色
                   color: _getContentColor(),
 

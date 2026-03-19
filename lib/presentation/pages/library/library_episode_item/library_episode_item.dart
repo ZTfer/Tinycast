@@ -14,7 +14,11 @@ class LibraryEpisodeItem extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(fontSize: 11, color: Color(0xD9000000)),
+            style: const TextStyle(
+              fontSize: 11,
+              decoration: TextDecoration.none,
+              color: Color(0xD9000000),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

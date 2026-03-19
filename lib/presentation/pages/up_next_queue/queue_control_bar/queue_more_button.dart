@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 /// 队列更多操作按钮
 ///
 /// 用于待播放队列列表项中的单图标按钮（如更多选项、删除等）。
-/// 参照 [EpisodeControlButton] 实现，支持悬停和点击状态的视觉反馈。
+
 class QueueMoreButton extends StatefulWidget {
   /// 按钮显示的图标
   final Widget icon;

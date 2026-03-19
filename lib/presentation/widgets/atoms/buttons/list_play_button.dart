@@ -118,6 +118,7 @@ class _ListPlayButtonState extends State<ListPlayButton> {
                       color: _getContentColor(),
                       fontSize: widget.fontSize,
                       fontWeight: FontWeight.normal,
+                      decoration: TextDecoration.none,
                     ),
               ),
             ],

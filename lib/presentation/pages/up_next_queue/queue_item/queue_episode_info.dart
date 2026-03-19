@@ -19,7 +19,15 @@ class QueueEpisodeInfo extends StatelessWidget {
               height: 40,
               color: const Color(0xFFE0E0E0), // 灰色占位背景
               child: const Center(
-                child: Text('Cover', style: TextStyle(fontSize: 8)),
+                child: Text(
+                  'Cover',
+                  style: TextStyle(
+                    color: Color(0xFF333333),
+                    fontSize: 8,
+                    fontWeight: FontWeight.normal,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
               ),
               // 如果有真实图片，可以使用:
               // child: Image.network('url', fit: BoxFit.cover),
@@ -37,6 +45,7 @@ class QueueEpisodeInfo extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
                     color: Color(0xFF333333),
                   ),
                   maxLines: 1,
@@ -45,7 +54,11 @@ class QueueEpisodeInfo extends StatelessWidget {
                 SizedBox(height: 2),
                 Text(
                   'Podcast Name',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    decoration: TextDecoration.none,
+                    color: Color(0xFF888888),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

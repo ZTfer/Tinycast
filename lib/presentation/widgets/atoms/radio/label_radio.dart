@@ -83,6 +83,8 @@ class _RadioState extends State<LabelRadio> {
                   fontWeight: widget.value
                       ? FontWeight.w500
                       : FontWeight.normal,
+                  // 文字装饰：无下划线
+                  decoration: TextDecoration.none,
                 ),
               ),
             ],
