@@ -7,6 +7,8 @@ import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/pages/test_page/test_page.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
+import 'package:tinycast/core/router/app_router.dart';
+import 'package:tinycast/core/router/app_routes.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -22,6 +24,7 @@ class _BodyState extends State<Body> {
     setState(() {
       _currentPage = page;
     });
+    AppRouter.navigateTo(context, page);
   }
 
   @override
@@ -45,18 +48,19 @@ class _BodyState extends State<Body> {
 
   Widget _buildCurrentPage() {
     switch (_currentPage) {
-      case 'library':
+      case AppRoutes.library:
         return const Library();
-      case 'favorite':
+      case AppRoutes.favorite:
         return const Favorite();
-      case 'downloads':
+      case AppRoutes.downloads:
         return const Downloads();
-      case 'subscribe':
+      case AppRoutes.subscribe:
         return const Subscribe();
-      case 'testpage':
+      case AppRoutes.testPage:
         return const TestPage();
-      case 'settings':
+      case AppRoutes.settings:
         return const Settings();
+      case AppRoutes.queue:
       default:
         return const UpNextQueue();
     }

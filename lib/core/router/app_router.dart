@@ -7,8 +7,9 @@ import 'package:tinycast/presentation/pages/downloads/downloads.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
 import 'package:tinycast/presentation/pages/test_page/test_page.dart';
-import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
 import 'package:tinycast/presentation/pages/search/search_page.dart';
+import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -66,11 +67,19 @@ class AppRouter {
     }
   }
 
-  static void navigateTo(BuildContext context, String routeName, {Object? arguments}) {
+  static void navigateTo(
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     Navigator.pushNamed(context, routeName, arguments: arguments);
   }
 
-  static void navigateToAndRemoveUntil(BuildContext context, String routeName, {Object? arguments}) {
+  static void navigateToAndRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     Navigator.pushNamedAndRemoveUntil(
       context,
       routeName,
@@ -79,7 +88,11 @@ class AppRouter {
     );
   }
 
-  static void navigateToAndReplace(BuildContext context, String routeName, {Object? arguments}) {
+  static void navigateToAndReplace(
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     Navigator.pushReplacementNamed(context, routeName, arguments: arguments);
   }
 
@@ -89,5 +102,21 @@ class AppRouter {
 
   static void popUntil(BuildContext context, String routeName) {
     Navigator.popUntil(context, ModalRoute.withName(routeName));
+  }
+
+  /// 打开设置窗口
+  static Future<void> openSettingsWindow() async {
+    final controller = await WindowController.create(
+      WindowConfiguration(hiddenAtLaunch: true, arguments: 'settings'),
+    );
+    await controller.show();
+  }
+
+  /// 打开订阅窗口
+  static Future<void> openSubscribeWindow() async {
+    final controller = await WindowController.create(
+      WindowConfiguration(hiddenAtLaunch: true, arguments: 'subscribe'),
+    );
+    await controller.show();
   }
 }
