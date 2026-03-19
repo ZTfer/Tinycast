@@ -7,7 +7,7 @@ import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/pages/test_page/test_page.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
-import 'package:tinycast/core/router/app_router.dart';
+// import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 
 class Body extends StatefulWidget {

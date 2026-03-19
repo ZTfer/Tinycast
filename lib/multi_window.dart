@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
-import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:window_manager/window_manager.dart';
 
 /// 窗口参数类
@@ -95,40 +94,78 @@ Future<void> initSubscribeWindow() async {
 
 /// 设置窗口应用组件
 ///
-/// 这是设置窗口的根组件，使用 MaterialApp 作为基础
+/// 这是设置窗口的根组件，使用 WidgetsApp 作为基础
 /// 显示 Settings 页面作为主界面
 class SettingsWindowApp extends StatelessWidget {
   const SettingsWindowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return WidgetsApp(
       title: 'Settings',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      color: const Color(0xFFFFFFFF),
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
+      textStyle: const TextStyle(
+        color: Color(0xFF000000),
+        fontSize: 16,
+        decoration: TextDecoration.none,
+      ),
       home: const Settings(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Container(
+            padding: const EdgeInsets.all(12.0),
+            color: const Color(0xFFFFFFFF),
+            child: child ?? const SizedBox(),
+          ),
+        );
+      },
     );
   }
 }
 
 /// 订阅窗口应用组件
 ///
-/// 这是订阅窗口的根组件，使用 MaterialApp 作为基础
+/// 这是订阅窗口的根组件，使用 WidgetsApp 作为基础
 /// 显示 Subscribe 页面作为主界面
 class SubscribeWindowApp extends StatelessWidget {
   const SubscribeWindowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return WidgetsApp(
       title: 'Subscribe',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      color: const Color(0xFFFFFFFF),
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
+      textStyle: const TextStyle(
+        color: Color(0xFF000000),
+        fontSize: 16,
+        decoration: TextDecoration.none,
+      ),
       home: const Subscribe(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Container(
+            padding: const EdgeInsets.all(12.0),
+            color: const Color(0xFFFFFFFF),
+            child: child ?? const SizedBox(),
+          ),
+        );
+      },
     );
   }
 }
