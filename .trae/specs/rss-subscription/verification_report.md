@@ -15,7 +15,11 @@
 ### 1.1 Podcast 实体类（Domain 层）
 
 - ✅ **已创建**: [lib/domain/entities/podcast.dart](lib/domain/entities/podcast.dart)
-- ✅ **包含所有必需字段**: id, title, subtitle, author, description, artworkUrl, rssUrl, websiteUrl, language, copyright, categories, keywords, isExplicit, ownerName, ownerEmail, lastUpdated, episodeCount, isSubscribed, subscribedAt, createdAt
+- ✅ **包含所有必需字段**:
+  id, title, subtitle, author, description, artworkUrl, rssUrl,
+  websiteUrl, language, copyright, categories, keywords, isExplicit,
+  ownerName, ownerEmail, lastUpdated, episodeCount, isSubscribed,
+  subscribedAt, createdAt
 
 ### 1.2 Podcast 模型类（Data 层）
 
@@ -26,7 +30,11 @@
 ### 1.3 Episode 实体类（Domain 层）
 
 - ✅ **已创建**: [lib/domain/entities/episode.dart](lib/domain/entities/episode.dart)
-- ✅ **包含所有必需字段**: id, podcastId, title, description, link, guid, author, pubDate, audioUrl, audioType, duration, artworkUrl, isExplicit, isPlayed, isDownloaded, downloadedPath, downloadProgress, playProgress, lastPlayedAt, createdAt, updatedAt
+- ✅ **包含所有必需字段**:
+  id, podcastId, title, description, link, guid, author, pubDate,
+  audioUrl, audioType, duration, artworkUrl, isExplicit, isPlayed,
+  isDownloaded, downloadedPath, downloadProgress, playProgress,
+  lastPlayedAt, createdAt, updatedAt
 
 ### 1.4 Episode 模型类（Data 层）
 
@@ -44,11 +52,13 @@
 
 ### 2.1 Podcast Isar Collection
 
-- ✅ **已创建**: [lib/data/models/podcast_model.dart](lib/data/models/podcast_model.dart) 使用 @Collection() 注解
+- ✅ **已创建**: [lib/data/models/podcast_model.dart](lib/data/models/podcast_model.dart)
+  使用 @Collection() 注解
 
 ### 2.2 Episode Isar Collection
 
-- ✅ **已创建**: [lib/data/models/episode_model.dart](lib/data/models/episode_model.dart) 使用 @Collection() 注解
+- ✅ **已创建**: [lib/data/models/episode_model.dart](lib/data/models/episode_model.dart)
+  使用 @Collection() 注解
 
 ### 2.3 索引配置
 
@@ -66,7 +76,7 @@
 
 - ✅ **已创建**: [lib/data/database/isar_service.dart](lib/data/database/isar_service.dart)
 - ✅ **初始化成功**: 使用 Isar.open() 打开数据库
-- ✅ **包含 Podcast 和 Episode Schema
+- ✅ **包含 Podcast 和 Episode Schema**
 
 ---
 
@@ -90,7 +100,9 @@
 ### 3.4 播客元数据提取
 
 - ✅ **提取正确**: extractPodcastMetadata() 方法提取所有必需字段
-- ✅ **支持 iTunes 扩展**: itunes:author, itunes:subtitle, itunes:image, itunes:explicit, itunes:category, itunes:keywords, itunes:owner
+- ✅ **支持 iTunes 扩展**:
+  itunes:author, itunes:subtitle, itunes:image, itunes:explicit,
+  itunes:category, itunes:keywords, itunes:owner
 
 ### 3.5 节目列表提取
 
@@ -115,13 +127,15 @@
 
 ### 4.1 RemotePodcastDataSource
 
-- ✅ **已创建**: [lib/data/datasources/remote_podcast_datasource.dart](lib/data/datasources/remote_podcast_datasource.dart)
+- ✅ **已创建**:
+  [lib/data/datasources/remote_podcast_datasource.dart](lib/data/datasources/remote_podcast_datasource.dart)
 - ✅ **getPodcastFromRss()**: 从 RSS 获取播客数据
 - ✅ **validateRssUrl()**: 验证 RSS URL 可访问性（使用 HEAD 请求）
 
 ### 4.2 LocalPodcastDataSource
 
-- ✅ **已创建**: [lib/data/datasources/local_podcast_datasource.dart](lib/data/datasources/local_podcast_datasource.dart)
+- ✅ **已创建**:
+  [lib/data/datasources/local_podcast_datasource.dart](lib/data/datasources/local_podcast_datasource.dart)
 - ✅ **getSubscribedPodcasts()**: 查询已订阅播客
 - ✅ **getPodcastById()**: 根据 ID 查询播客
 - ✅ **savePodcast()**: 保存播客到数据库
@@ -139,7 +153,8 @@
 
 ### 5.1 PodcastRepository 接口（Domain 层）
 
-- ✅ **已创建**: [lib/domain/repositories/podcast_repository.dart](lib/domain/repositories/podcast_repository.dart)
+- ✅ **已创建**:
+  [lib/domain/repositories/podcast_repository.dart](lib/domain/repositories/podcast_repository.dart)
 - ✅ **subscribe()**: 订阅播客
 - ✅ **unsubscribe()**: 取消订阅
 - ✅ **getSubscribedPodcasts()**: 获取已订阅播客列表
@@ -148,7 +163,8 @@
 
 ### 5.2 PodcastRepositoryImpl（Data 层）
 
-- ✅ **已创建**: [lib/data/repositories/podcast_repository_impl.dart](lib/data/repositories/podcast_repository_impl.dart)
+- ✅ **已创建**:
+  [lib/data/repositories/podcast_repository_impl.dart](lib/data/repositories/podcast_repository_impl.dart)
 - ✅ **订阅逻辑正常**: 解析 RSS + 检查重复 + 保存数据库
 - ✅ **取消订阅逻辑正常**: 删除物理文件 + 删除数据库记录
 - ✅ **查询已订阅播客列表正常**: 从数据库查询并转换为实体
@@ -160,21 +176,25 @@
 
 ### 6.1 SubscribePodcastUseCase
 
-- ✅ **已创建**: [lib/domain/usecases/subscribe_podcast_usecase.dart](lib/domain/usecases/subscribe_podcast_usecase.dart)
+- ✅ **已创建**:
+  [lib/domain/usecases/subscribe_podcast_usecase.dart](lib/domain/usecases/subscribe_podcast_usecase.dart)
 - ✅ **输入验证**: 验证 RSS URL 不为空且格式正确
 
 ### 6.2 UnsubscribePodcastUseCase
 
-- ✅ **已创建**: [lib/domain/usecases/unsubscribe_podcast_usecase.dart](lib/domain/usecases/unsubscribe_podcast_usecase.dart)
+- ✅ **已创建**:
+  [lib/domain/usecases/unsubscribe_podcast_usecase.dart](lib/domain/usecases/unsubscribe_podcast_usecase.dart)
 - ✅ **输入验证**: 验证 podcastId 为正整数
 
 ### 6.3 GetSubscribedPodcastsUseCase
 
-- ✅ **已创建**: [lib/domain/usecases/get_subscribed_podcasts_usecase.dart](lib/domain/usecases/get_subscribed_podcasts_usecase.dart)
+- ✅ **已创建**:
+  [lib/domain/usecases/get_subscribed_podcasts_usecase.dart](lib/domain/usecases/get_subscribed_podcasts_usecase.dart)
 
 ### 6.4 GetPodcastByIdUseCase
 
-- ✅ **已创建**: [lib/domain/usecases/get_podcast_by_id_usecase.dart](lib/domain/usecases/get_podcast_by_id_usecase.dart)
+- ✅ **已创建**:
+  [lib/domain/usecases/get_podcast_by_id_usecase.dart](lib/domain/usecases/get_podcast_by_id_usecase.dart)
 - ✅ **输入验证**: 验证 ID 为正整数
 
 ---
@@ -183,7 +203,8 @@
 
 ### 7.1 PodcastNotifier
 
-- ✅ **已创建**: [lib/presentation/providers/podcast_provider.dart](lib/presentation/providers/podcast_provider.dart)
+- ✅ **已创建**:
+  [lib/presentation/providers/podcast_provider.dart](lib/presentation/providers/podcast_provider.dart)
 - ✅ **PodcastState**: 包含 status, podcast, podcasts, episodes, errorMessage
 - ✅ **PodcastStatus 枚举**: initial, loading, success, error
 
@@ -191,7 +212,8 @@
 
 - ✅ **已创建**: StateNotifierProvider<PodcastNotifier, PodcastState>
 - ✅ **订阅状态管理**: subscribe() 方法更新状态
-- ✅ **加载状态管理**: loadSubscribedPodcasts(), loadPodcastById(), loadEpisodesByPodcastId() 方法
+- ✅ **加载状态管理**:
+  loadSubscribedPodcasts(), loadPodcastById(), loadEpisodesByPodcastId() 方法
 - ✅ **错误状态管理**: 所有方法都捕获错误并更新状态
 
 ### 7.3 其他 Providers
@@ -201,7 +223,8 @@
 - ✅ **unsubscribePodcastUseCaseProvider**: 提供 UnsubscribePodcastUseCase 实例
 - ✅ **getSubscribedPodcastsUseCaseProvider**: 提供 GetSubscribedPodcastsUseCase 实例
 - ✅ **getPodcastByIdUseCaseProvider**: 提供 GetPodcastByIdUseCase 实例
-- ✅ **getEpisodesByPodcastIdUseCaseProvider**: 提供 GetEpisodesByPodcastIdUseCase 实例
+- ✅ **getEpisodesByPodcastIdUseCaseProvider**:
+  提供 GetEpisodesByPodcastIdUseCase 实例
 - ✅ **podcastStateProvider**: 提供 PodcastState
 - ✅ **subscribedPodcastsProvider**: 提供已订阅播客列表
 - ✅ **currentPodcastProvider**: 提供当前播客
@@ -213,12 +236,14 @@
 
 ### 8.1 SubscribeByRss
 
-- ✅ **已创建**: [lib/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart](lib/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart)
+- ✅ **已创建**:
+  [lib/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart](lib/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart)
 
 ### 8.2 RSS URL 输入框
 
-- ✅ **正常工作**: [lib/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart](lib/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart)
-- ✅ **占位文字**: 'https://domain.com/podcast.rss'
+- ✅ **正常工作**:
+  [lib/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart](lib/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart)
+- ✅ **占位文字**: `<https://domain.com/podcast.rss>`
 - ✅ **文本样式**: 12px 字体，黑色
 
 ### 8.3 订阅按钮
@@ -265,7 +290,8 @@
 
 ### 9.4 播客卡片组件
 
-- ✅ **正常工作**: [lib/presentation/pages/library/library_list_item/library_list_item.dart](lib/presentation/pages/library/library_list_item/library_list_item.dart)
+- ✅ **正常工作**:
+  [lib/presentation/pages/library/library_list_item/library_list_item.dart](lib/presentation/pages/library/library_list_item/library_list_item.dart)
 
 ### 9.5 下拉刷新
 
@@ -283,7 +309,8 @@
 
 ### 10.1 PodcastDetailPage
 
-- ✅ **已创建**: [lib/presentation/pages/podcast_detail/podcast_detail.dart](lib/presentation/pages/podcast_detail/podcast_detail.dart)
+- ✅ **已创建**:
+  [lib/presentation/pages/podcast_detail/podcast_detail.dart](lib/presentation/pages/podcast_detail/podcast_detail.dart)
 
 ### 10.2 播客信息显示
 
@@ -321,8 +348,10 @@
 ### 11.1 AppException
 
 - ✅ **已创建**: [lib/core/utils/app_exception.dart](lib/core/utils/app_exception.dart)
-- ✅ **异常类型**: network, storage, authentication, validation, permission, unknown
-- ✅ **工厂方法**: network(), storage(), authentication(), validation(), permission(), unknown()
+- ✅ **异常类型**:
+  network, storage, authentication, validation, permission, unknown
+- ✅ **工厂方法**:
+  network(), storage(), authentication(), validation(), permission(), unknown()
 
 ### 11.2 网络错误处理
 
@@ -364,13 +393,15 @@
 
 ### 12.1 FileStorageService
 
-- ✅ **已创建**: [lib/data/services/file_storage_service.dart](lib/data/services/file_storage_service.dart)
+- ✅ **已创建**:
+  [lib/data/services/file_storage_service.dart](lib/data/services/file_storage_service.dart)
 - ✅ **单例模式**: 使用 instance 访问
 
 ### 12.2 获取存储目录方法
 
 - ✅ **getTemporaryDirectory()**: 使用 path_provider.getTemporaryDirectory()
-- ✅ **getApplicationSupportDirectory()**: 使用 path_provider.getApplicationSupportDirectory()
+- ✅ **getApplicationSupportDirectory()**:
+  使用 path_provider.getApplicationSupportDirectory()
 - ✅ **getImagesDirectory()**: 创建 images 子目录
 - ✅ **getAudioDirectory()**: 创建 audio 子目录
 
@@ -380,7 +411,9 @@
 
 ### 12.4 永久存储目录
 
-- ✅ **正确**: applicationSupportDirectory（iOS/macOS: Library/Application Support，Android: files 目录，Windows/Linux: AppData 或 .config 目录）
+- ✅ **正确**: applicationSupportDirectory
+  （iOS/macOS: Library/Application Support，Android: files 目录，
+  Windows/Linux: AppData 或 .config 目录）
 
 ### 12.5 文件存在性检查
 
@@ -413,7 +446,8 @@
 
 ### 13.1 AudioDownloadService
 
-- ✅ **已创建**: [lib/data/services/audio_download_service.dart](lib/data/services/audio_download_service.dart)
+- ✅ **已创建**:
+  [lib/data/services/audio_download_service.dart](lib/data/services/audio_download_service.dart)
 - ✅ **单例模式**: 使用 instance 访问
 
 ### 13.2 音频下载方法
@@ -423,7 +457,7 @@
 
 ### 13.3 下载进度跟踪
 
-- ✅ **正常工作**: 使用 Stream<DownloadStatus> 和 Stream<double>
+- ✅ **正常工作**: 使用 `Stream<DownloadStatus>` 和 `Stream<double>`
 - ✅ **进度更新**: onReceiveProgress 回调更新进度
 
 ### 13.4 断点续传功能
@@ -442,7 +476,9 @@
 
 ### 13.7 数据库下载状态更新
 
-- ✅ **正常工作**: _updateEpisodeDownloadStatus() 方法更新 isDownloaded, downloadedPath, downloadProgress
+- ✅ **正常工作**:
+  _updateEpisodeDownloadStatus() 方法更新 isDownloaded, downloadedPath,
+  downloadProgress
 
 ### 13.8 isDownloaded 和 downloadedPath 字段更新
 
@@ -465,7 +501,8 @@
 
 ### 14.1 ImageCacheService
 
-- ✅ **已创建**: [lib/data/services/image_cache_service.dart](lib/data/services/image_cache_service.dart)
+- ✅ **已创建**:
+  [lib/data/services/image_cache_service.dart](lib/data/services/image_cache_service.dart)
 - ✅ **单例模式**: 使用 instance 访问
 
 ### 14.2 图片缓存检查方法
@@ -501,7 +538,8 @@
 
 ### 15.1 CacheCleanupService
 
-- ✅ **已创建**: [lib/data/services/cache_cleanup_service.dart](lib/data/services/cache_cleanup_service.dart)
+- ✅ **已创建**:
+  [lib/data/services/cache_cleanup_service.dart](lib/data/services/cache_cleanup_service.dart)
 - ✅ **单例模式**: 使用 instance 访问
 
 ### 15.2 手动清理缓存方法
@@ -537,7 +575,9 @@
 
 ### 15.7 删除物理文件后更新数据库状态
 
-- ✅ **正常工作**: _updateEpisodeDownloadStatus() 方法更新 isDownloaded, downloadedPath, downloadProgress
+- ✅ **正常工作**:
+  _updateEpisodeDownloadStatus() 方法更新 isDownloaded, downloadedPath,
+  downloadProgress
 - ✅ **批量更新**: _updateAllEpisodesDownloadStatus() 方法
 
 ---
@@ -546,7 +586,8 @@
 
 ### 16.1 CacheSettingsPage
 
-- ✅ **已创建**: [lib/presentation/pages/settings/cache_settings/cache_settings.dart](lib/presentation/pages/settings/cache_settings/cache_settings.dart)
+- ✅ **已创建**:
+  [lib/presentation/pages/settings/cache_settings/cache_settings.dart](lib/presentation/pages/settings/cache_settings/cache_settings.dart)
 
 ### 16.2 缓存大小显示
 
@@ -601,21 +642,24 @@
 
 ### 17.5 权限配置总结
 
-| 平台 | 需要额外权限 | 当前状态 |
-|------|-------------|---------|
-| iOS | ❌ 否 | ✅ 正常 |
-| macOS | ❌ 否 | ✅ 正常 |
-| Android | ❌ 否 | ✅ 正常 |
-| Linux | ❌ 否 | ✅ 正常 |
-| Windows | ❌ 否 | ✅ 正常 |
+| 平台   | 需要额外权限 | 当前状态 |
+| ------ | ------------ | -------- |
+| iOS    | ❌ 否        | ✅ 正常  |
+| macOS  | ❌ 否        | ✅ 正常  |
+| Android| ❌ 否        | ✅ 正常  |
+| Linux  | ❌ 否        | ✅ 正常  |
+| Windows| ❌ 否        | ✅ 正常  |
 
 ---
 
 ## 验证统计
 
 ### 总检查点数: 69
+
 ### 已通过: 69
+
 ### 未通过: 0
+
 ### 通过率: 100%
 
 ---
