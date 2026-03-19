@@ -6,36 +6,49 @@ import 'app_exception.dart';
 import 'app_constants.dart';
 import 'logger.dart';
 
+/// 网络请求工具类
 class NetworkHelper {
   NetworkHelper._();
 
+  /// 默认基础 URL
   static const String _defaultBaseUrl = '';
+
+  /// 请求超时时间（毫秒）
   static int _timeout = AppConstants.defaultTimeout;
+
+  /// 最大重试次数
   static int _maxRetryCount = AppConstants.maxRetryCount;
+
+  /// 默认请求头
   static Map<String, String> _defaultHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
+  /// 设置基础 URL
   static void setBaseUrl(String baseUrl) {
     Logger.info('Base URL set to: $baseUrl');
   }
 
+  /// 设置请求超时时间（毫秒）
   static void setTimeout(int timeoutMs) {
     _timeout = timeoutMs;
     Logger.info('Timeout set to: ${timeoutMs}ms');
   }
 
+  /// 设置最大重试次数
   static void setMaxRetryCount(int count) {
     _maxRetryCount = count;
     Logger.info('Max retry count set to: $count');
   }
 
+  /// 设置默认请求头
   static void setDefaultHeaders(Map<String, String> headers) {
     _defaultHeaders = {..._defaultHeaders, ...headers};
     Logger.info('Default headers updated');
   }
 
+  /// 发送 GET 请求
   static Future<http.Response> get(
     String endpoint, {
     Map<String, String>? headers,
@@ -51,6 +64,7 @@ class NetworkHelper {
     );
   }
 
+  /// 发送 POST 请求
   static Future<http.Response> post(
     String endpoint, {
     Map<String, String>? headers,
@@ -68,6 +82,7 @@ class NetworkHelper {
     );
   }
 
+  /// 发送 PUT 请求
   static Future<http.Response> put(
     String endpoint, {
     Map<String, String>? headers,
@@ -85,6 +100,7 @@ class NetworkHelper {
     );
   }
 
+  /// 发送 DELETE 请求
   static Future<http.Response> delete(
     String endpoint, {
     Map<String, String>? headers,
@@ -102,6 +118,7 @@ class NetworkHelper {
     );
   }
 
+  /// 发送 PATCH 请求
   static Future<http.Response> patch(
     String endpoint, {
     Map<String, String>? headers,
@@ -119,6 +136,7 @@ class NetworkHelper {
     );
   }
 
+  /// 发送 GET 请求并解析 JSON 响应
   static Future<T> getJson<T>(
     String endpoint, {
     Map<String, String>? headers,
@@ -135,6 +153,7 @@ class NetworkHelper {
     return _parseResponse<T>(response, parser);
   }
 
+  /// 发送 POST 请求并解析 JSON 响应
   static Future<T> postJson<T>(
     String endpoint, {
     Map<String, String>? headers,
@@ -153,6 +172,7 @@ class NetworkHelper {
     return _parseResponse<T>(response, parser);
   }
 
+  /// 下载文件
   static Future<http.Response> downloadFile(
     String url,
     String savePath, {
@@ -208,6 +228,7 @@ class NetworkHelper {
     }
   }
 
+  /// 上传文件
   static Future<http.Response> uploadFile(
     String endpoint,
     File file, {
@@ -266,6 +287,7 @@ class NetworkHelper {
     }
   }
 
+  /// 内部请求方法（支持重试）
   static Future<http.Response> _request({
     required String method,
     required String endpoint,
@@ -363,6 +385,7 @@ class NetworkHelper {
         AppException.network('Request failed after $_maxRetryCount retries');
   }
 
+  /// 构建 URI（支持查询参数）
   static Uri _buildUri(
     String endpoint, [
     Map<String, dynamic>? queryParameters,
@@ -373,6 +396,7 @@ class NetworkHelper {
     return Uri.parse(url).replace(queryParameters: queryParameters);
   }
 
+  /// 编码请求体
   static dynamic _encodeBody(dynamic body) {
     if (body == null) return null;
     if (body is String) return body;
@@ -380,6 +404,7 @@ class NetworkHelper {
     return body.toString();
   }
 
+  /// 处理错误响应
   static AppException _handleErrorResponse(http.Response response) {
     final statusCode = response.statusCode;
     String message = 'Request failed with status $statusCode';
@@ -418,6 +443,7 @@ class NetworkHelper {
     }
   }
 
+  /// 解析响应
   static T _parseResponse<T>(
     http.Response response,
     T Function(dynamic) parser,
@@ -439,10 +465,12 @@ class NetworkHelper {
     }
   }
 
+  /// 检查是否为网络错误
   static bool isNetworkError(Object error) {
     return error is AppException && error.type == ExceptionType.network;
   }
 
+  /// 检查是否为认证错误
   static bool isAuthError(Object error) {
     return error is AppException && error.type == ExceptionType.authentication;
   }

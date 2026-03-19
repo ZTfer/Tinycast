@@ -1,21 +1,29 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
+/// 应用异常类导入
 import 'app_exception.dart';
+
+/// 日志工具类导入
 import 'logger.dart';
 
+/// 错误处理类
 class ErrorHandler {
   ErrorHandler._();
 
+  /// 错误处理器列表
   static final List<void Function(AppException)> _errorHandlers = [];
 
+  /// 注册错误处理器
   static void registerErrorHandler(void Function(AppException) handler) {
     _errorHandlers.add(handler);
   }
 
+  /// 注销错误处理器
   static void unregisterErrorHandler(void Function(AppException) handler) {
     _errorHandlers.remove(handler);
   }
 
+  /// 处理异步操作中的错误
   static Future<T> handleError<T>(
     FutureOr<T> Function() operation, {
     String? errorMessage,
@@ -25,7 +33,7 @@ class ErrorHandler {
       return await operation();
     } catch (error, stackTrace) {
       final exception = _convertToAppException(error, stackTrace, errorMessage);
-      
+
       Logger.error(
         errorMessage ?? 'An error occurred',
         error: error,
@@ -48,6 +56,7 @@ class ErrorHandler {
     }
   }
 
+  /// 将错误转换为应用异常
   static AppException _convertToAppException(
     Object error,
     StackTrace stackTrace,
@@ -90,6 +99,7 @@ class ErrorHandler {
     );
   }
 
+  /// 获取用户友好的错误消息
   static String getUserFriendlyMessage(AppException exception) {
     switch (exception.type) {
       case ExceptionType.network:
@@ -107,6 +117,7 @@ class ErrorHandler {
     }
   }
 
+  /// 记录错误日志
   static void logError(AppException exception) {
     Logger.error(
       exception.message,
