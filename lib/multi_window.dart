@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tinycast/ui/page/settings/settings.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe.dart';
+import 'package:tinycast/presentation/pages/settings/settings.dart';
+import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
 import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:window_manager/window_manager.dart';
 

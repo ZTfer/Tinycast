@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tinycast/core/router/app_routes.dart';
-import 'package:tinycast/ui/page/homepage.dart';
-import 'package:tinycast/ui/page/library/library.dart';
-import 'package:tinycast/ui/page/favorite/favorite.dart';
-import 'package:tinycast/ui/page/downloads/downloads.dart';
-import 'package:tinycast/ui/page/subscribe/subscribe.dart';
-import 'package:tinycast/ui/page/settings/settings.dart';
-import 'package:tinycast/ui/page/test_page/test_page.dart';
-import 'package:tinycast/ui/page/up_next_queue/up_next_queue.dart';
-import 'package:tinycast/ui/page/search/search_page.dart';
+import 'package:tinycast/presentation/pages/homepage.dart';
+import 'package:tinycast/presentation/pages/library/library.dart';
+import 'package:tinycast/presentation/pages/favorite/favorite.dart';
+import 'package:tinycast/presentation/pages/downloads/downloads.dart';
+import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
+import 'package:tinycast/presentation/pages/settings/settings.dart';
+import 'package:tinycast/presentation/pages/test_page/test_page.dart';
+import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
+import 'package:tinycast/presentation/pages/search/search_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
