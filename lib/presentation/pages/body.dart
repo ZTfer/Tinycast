@@ -18,13 +18,12 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  String _currentPage = 'queue';
+  String _currentPage = AppRoutes.queue;
 
   void _navigateToPage(String page) {
     setState(() {
       _currentPage = page;
     });
-    AppRouter.navigateTo(context, page);
   }
 
   @override

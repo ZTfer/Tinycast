@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/molecules/sidebar/sidebar_button.dart';
 import 'package:tinycast/core/router/app_router.dart';
+import 'package:tinycast/core/router/app_routes.dart';
 
 class Sidebar extends StatelessWidget {
   final String currentPage;
@@ -32,52 +33,52 @@ class Sidebar extends StatelessWidget {
                   children: [
                     _buildMenuButton(
                       icon: LucideIcons.listMusic,
-                      state: currentPage == 'queue'
+                      state: currentPage == AppRoutes.queue
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('queue'),
+                      onPressed: () => onPageChanged(AppRoutes.queue),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.layoutGrid,
-                      state: currentPage == 'library'
+                      state: currentPage == AppRoutes.library
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('library'),
+                      onPressed: () => onPageChanged(AppRoutes.library),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.star,
-                      state: currentPage == 'favorite'
+                      state: currentPage == AppRoutes.favorite
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('favorite'),
+                      onPressed: () => onPageChanged(AppRoutes.favorite),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.download,
-                      state: currentPage == 'downloads'
+                      state: currentPage == AppRoutes.downloads
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('downloads'),
+                      onPressed: () => onPageChanged(AppRoutes.downloads),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.plus,
-                      state: currentPage == 'subscribe'
+                      state: currentPage == AppRoutes.subscribe
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
                       onPressed: () => AppRouter.openSubscribeWindow(),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.flaskConical,
-                      state: currentPage == 'testpage'
+                      state: currentPage == AppRoutes.testPage
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged('testpage'),
+                      onPressed: () => onPageChanged(AppRoutes.testPage),
                     ),
                   ],
                 ),
               ),
               _buildMenuButton(
                 icon: LucideIcons.settings,
-                state: currentPage == 'settings'
+                state: currentPage == AppRoutes.settings
                     ? SidebarButtonState.iconActive
                     : SidebarButtonState.defaultState,
                 onPressed: () => AppRouter.openSettingsWindow(),

@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/pages/homepage.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
-import 'package:tinycast/core/theme/app_theme.dart';
-import 'package:tinycast/core/router/app_router.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,15 +43,38 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return WidgetsApp(
       title: 'Tinycast',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: '/',
+      color: const Color(0xFFFFFFFF),
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
+      textStyle: const TextStyle(
+        fontFamily: 'PingFang SC',
+        fontFamilyFallback: [
+          'PingFang SC',
+          'Noto Sans SC',
+          'Roboto',
+          'Heiti SC',
+          'Microsoft YaHei',
+          'sans-serif',
+        ],
+        color: Color(0xFF000000),
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        decoration: TextDecoration.none,
+      ),
       home: const HomePage(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: child ?? const SizedBox(),
+        );
+      },
     );
   }
 }
