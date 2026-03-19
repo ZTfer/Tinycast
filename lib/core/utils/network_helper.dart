@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart' as dio;
 import 'app_exception.dart';
 import 'app_constants.dart';
 import 'logger.dart';
@@ -9,6 +9,9 @@ import 'logger.dart';
 /// 网络请求工具类
 class NetworkHelper {
   NetworkHelper._();
+
+  /// Dio 实例
+  static final dio.Dio _dio = dio.Dio();
 
   /// 默认基础 URL
   static const String _defaultBaseUrl = '';
@@ -27,12 +30,15 @@ class NetworkHelper {
 
   /// 设置基础 URL
   static void setBaseUrl(String baseUrl) {
+    _dio.options.baseUrl = baseUrl;
     Logger.info('Base URL set to: $baseUrl');
   }
 
   /// 设置请求超时时间（毫秒）
   static void setTimeout(int timeoutMs) {
     _timeout = timeoutMs;
+    _dio.options.connectTimeout = Duration(milliseconds: timeoutMs);
+    _dio.options.receiveTimeout = Duration(milliseconds: timeoutMs);
     Logger.info('Timeout set to: ${timeoutMs}ms');
   }
 
@@ -45,11 +51,12 @@ class NetworkHelper {
   /// 设置默认请求头
   static void setDefaultHeaders(Map<String, String> headers) {
     _defaultHeaders = {..._defaultHeaders, ...headers};
+    _dio.options.headers.addAll(_defaultHeaders);
     Logger.info('Default headers updated');
   }
 
   /// 发送 GET 请求
-  static Future<http.Response> get(
+  static Future<dio.Response> get(
     String endpoint, {
     Map<String, String>? headers,
     Map<String, dynamic>? queryParameters,
@@ -65,7 +72,7 @@ class NetworkHelper {
   }
 
   /// 发送 POST 请求
-  static Future<http.Response> post(
+  static Future<dio.Response> post(
     String endpoint, {
     Map<String, String>? headers,
     dynamic body,
@@ -83,7 +90,7 @@ class NetworkHelper {
   }
 
   /// 发送 PUT 请求
-  static Future<http.Response> put(
+  static Future<dio.Response> put(
     String endpoint, {
     Map<String, String>? headers,
     dynamic body,
@@ -101,7 +108,7 @@ class NetworkHelper {
   }
 
   /// 发送 DELETE 请求
-  static Future<http.Response> delete(
+  static Future<dio.Response> delete(
     String endpoint, {
     Map<String, String>? headers,
     dynamic body,
@@ -119,7 +126,7 @@ class NetworkHelper {
   }
 
   /// 发送 PATCH 请求
-  static Future<http.Response> patch(
+  static Future<dio.Response> patch(
     String endpoint, {
     Map<String, String>? headers,
     dynamic body,
@@ -173,48 +180,32 @@ class NetworkHelper {
   }
 
   /// 下载文件
-  static Future<http.Response> downloadFile(
+  static Future<dio.Response> downloadFile(
     String url,
     String savePath, {
     void Function(int bytes, int total)? onProgress,
   }) async {
     try {
-      final request = http.Request('GET', Uri.parse(url));
-      final response = await http.Client().send(request);
-
-      if (response.statusCode != 200) {
-        throw AppException.network(
-          'Failed to download file',
-          statusCode: response.statusCode,
-        );
-      }
-
-      final contentLength = response.contentLength ?? 0;
       final file = File(savePath);
-      final sink = file.openWrite();
+      final response = await _dio.download(
+        url,
+        savePath,
+        onReceiveProgress: onProgress,
+      );
 
-      int downloadedBytes = 0;
-      await response.stream
-          .listen(
-            (chunk) {
-              sink.add(chunk);
-              downloadedBytes += chunk.length;
-              if (onProgress != null && contentLength > 0) {
-                onProgress(downloadedBytes, contentLength);
-              }
-            },
-            onDone: () => sink.close(),
-            onError: (error) {
-              sink.close();
-              throw AppException.network(
-                'Error downloading file',
-                originalError: error,
-              );
-            },
-          )
-          .asFuture();
-
-      return http.Response('Downloaded', response.statusCode);
+      Logger.info('File downloaded successfully to: $savePath');
+      return dio.Response(
+        requestOptions: dio.RequestOptions(path: url),
+        statusCode: 200,
+        data: 'Downloaded',
+      );
+    } on dio.DioException catch (e, stackTrace) {
+      Logger.error('Error downloading file', error: e, stackTrace: stackTrace);
+      throw AppException.network(
+        'Failed to download file',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     } catch (e, stackTrace) {
       Logger.error('Error downloading file', error: e, stackTrace: stackTrace);
       if (e is AppException) {
@@ -229,7 +220,7 @@ class NetworkHelper {
   }
 
   /// 上传文件
-  static Future<http.Response> uploadFile(
+  static Future<dio.Response> uploadFile(
     String endpoint,
     File file, {
     String? fieldName,
@@ -238,39 +229,29 @@ class NetworkHelper {
     int? timeout,
   }) async {
     try {
-      final uri = _buildUri(endpoint);
-      final request = http.MultipartRequest('POST', uri);
+      final formData = dio.FormData.fromMap({...?fields});
+      final multipartFile = await dio.MultipartFile.fromFile(file.path);
+      formData.files.add(MapEntry(fieldName ?? 'file', multipartFile));
 
-      if (headers != null) {
-        request.headers.addAll(headers);
-      }
-
-      if (fields != null) {
-        request.fields.addAll(fields);
-      }
-
-      final multipartFile = await http.MultipartFile.fromPath(
-        fieldName ?? 'file',
-        file.path,
-      );
-      request.files.add(multipartFile);
-
-      final streamedResponse = await request.send().timeout(
-        Duration(milliseconds: timeout ?? _timeout),
+      final response = await _dio.post(
+        endpoint,
+        data: formData,
+        options: dio.Options(
+          headers: headers,
+          contentType: 'multipart/form-data',
+        ),
       );
 
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode >= 400) {
+      if (response.statusCode != null && response.statusCode! >= 400) {
         throw _handleErrorResponse(response);
       }
 
       Logger.info('File uploaded successfully to: $endpoint');
       return response;
-    } on TimeoutException catch (e, stackTrace) {
-      Logger.error('Upload timeout', error: e, stackTrace: stackTrace);
+    } on dio.DioException catch (e, stackTrace) {
+      Logger.error('Error uploading file', error: e, stackTrace: stackTrace);
       throw AppException.network(
-        'Upload timeout',
+        'Failed to upload file',
         originalError: e,
         stackTrace: stackTrace,
       );
@@ -288,7 +269,7 @@ class NetworkHelper {
   }
 
   /// 内部请求方法（支持重试）
-  static Future<http.Response> _request({
+  static Future<dio.Response> _request({
     required String method,
     required String endpoint,
     Map<String, String>? headers,
@@ -306,56 +287,85 @@ class NetworkHelper {
 
         Logger.debug('$method $uri');
 
-        http.Response response;
+        dio.Response response;
         final requestTimeout = Duration(milliseconds: timeout ?? _timeout);
 
         switch (method.toUpperCase()) {
           case 'GET':
-            response = await http
-                .get(uri, headers: mergedHeaders)
-                .timeout(requestTimeout);
+            response = await _dio.get(
+              endpoint,
+              queryParameters: queryParameters,
+              options: dio.Options(
+                headers: mergedHeaders,
+                sendTimeout: requestTimeout,
+                receiveTimeout: requestTimeout,
+              ),
+            );
             break;
           case 'POST':
-            response = await http
-                .post(uri, headers: mergedHeaders, body: _encodeBody(body))
-                .timeout(requestTimeout);
+            response = await _dio.post(
+              endpoint,
+              data: _encodeBody(body),
+              queryParameters: queryParameters,
+              options: dio.Options(
+                headers: mergedHeaders,
+                sendTimeout: requestTimeout,
+                receiveTimeout: requestTimeout,
+              ),
+            );
             break;
           case 'PUT':
-            response = await http
-                .put(uri, headers: mergedHeaders, body: _encodeBody(body))
-                .timeout(requestTimeout);
+            response = await _dio.put(
+              endpoint,
+              data: _encodeBody(body),
+              queryParameters: queryParameters,
+              options: dio.Options(
+                headers: mergedHeaders,
+                sendTimeout: requestTimeout,
+                receiveTimeout: requestTimeout,
+              ),
+            );
             break;
           case 'DELETE':
-            response = await http
-                .delete(uri, headers: mergedHeaders, body: _encodeBody(body))
-                .timeout(requestTimeout);
+            response = await _dio.delete(
+              endpoint,
+              data: _encodeBody(body),
+              queryParameters: queryParameters,
+              options: dio.Options(
+                headers: mergedHeaders,
+                sendTimeout: requestTimeout,
+                receiveTimeout: requestTimeout,
+              ),
+            );
             break;
           case 'PATCH':
-            response = await http
-                .patch(uri, headers: mergedHeaders, body: _encodeBody(body))
-                .timeout(requestTimeout);
+            response = await _dio.patch(
+              endpoint,
+              data: _encodeBody(body),
+              queryParameters: queryParameters,
+              options: dio.Options(
+                headers: mergedHeaders,
+                sendTimeout: requestTimeout,
+                receiveTimeout: requestTimeout,
+              ),
+            );
             break;
           default:
             throw AppException.validation('Unsupported HTTP method: $method');
         }
 
-        if (response.statusCode >= 400) {
+        if (response.statusCode != null && response.statusCode! >= 400) {
           throw _handleErrorResponse(response);
         }
 
         Logger.info('$method $uri - ${response.statusCode}');
         return response;
-      } on TimeoutException catch (e, stackTrace) {
-        Logger.warning('Request timeout (attempt ${retryCount + 1})');
-        lastException = AppException.network(
-          'Request timeout',
-          originalError: e,
-          stackTrace: stackTrace,
+      } on dio.DioException catch (e, stackTrace) {
+        Logger.warning(
+          'Request error (attempt ${retryCount + 1}): ${e.message}',
         );
-      } on SocketException catch (e, stackTrace) {
-        Logger.warning('Network error (attempt ${retryCount + 1})');
         lastException = AppException.network(
-          'Network connection failed',
+          'Request failed: ${e.message}',
           originalError: e,
           stackTrace: stackTrace,
         );
@@ -405,16 +415,16 @@ class NetworkHelper {
   }
 
   /// 处理错误响应
-  static AppException _handleErrorResponse(http.Response response) {
-    final statusCode = response.statusCode;
+  static AppException _handleErrorResponse(dio.Response response) {
+    final statusCode = response.statusCode ?? 500;
     String message = 'Request failed with status $statusCode';
 
     try {
-      final body = jsonDecode(response.body);
-      if (body is Map && body.containsKey('message')) {
-        message = body['message'] as String;
-      } else if (body is Map && body.containsKey('error')) {
-        message = body['error'] as String;
+      final data = response.data;
+      if (data is Map && data.containsKey('message')) {
+        message = data['message'] as String;
+      } else if (data is Map && data.containsKey('error')) {
+        message = data['error'] as String;
       }
     } catch (e) {
       Logger.debug('Failed to parse error response');
@@ -445,11 +455,11 @@ class NetworkHelper {
 
   /// 解析响应
   static T _parseResponse<T>(
-    http.Response response,
+    dio.Response response,
     T Function(dynamic) parser,
   ) {
     try {
-      final body = jsonDecode(response.body);
+      final body = response.data;
       return parser(body);
     } catch (e, stackTrace) {
       Logger.error(
