@@ -1,7 +1,8 @@
 import 'dart:io';
-
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tinycast/data/models/podcast_model.dart';
+import 'package:tinycast/data/database/isar_collections.dart';
 
 class IsarService {
   static IsarService? _instance;
@@ -34,14 +35,14 @@ class IsarService {
 
     try {
       final dir = await getApplicationDocumentsDirectory();
-      
+
       _isar = await Isar.open(
-        schemas ?? [],
+        [PodcastSchema],
         directory: dir.path,
         name: _databaseName,
         inspector: true,
       );
-      
+
       _isInitialized = true;
     } catch (e) {
       throw Exception('Failed to open Isar database: $e');
@@ -70,10 +71,10 @@ class IsarService {
 
   Future<void> deleteDatabase() async {
     await close();
-    
+
     final dir = await getApplicationDocumentsDirectory();
     final dbFile = File('${dir.path}/$_databaseName.isar');
-    
+
     if (await dbFile.exists()) {
       await dbFile.delete();
     }
