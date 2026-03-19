@@ -3,28 +3,33 @@ import 'package:tinycast/presentation/pages/library/library_episode_item/library
 
 class LibraryEpisodeItem extends StatelessWidget {
   final String title;
+  final VoidCallback? onTap;
 
-  const LibraryEpisodeItem({super.key, required this.title});
+  const LibraryEpisodeItem({super.key, required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              decoration: TextDecoration.none,
-              color: Color(0xD9000000),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11,
+                decoration: TextDecoration.none,
+                color: Color(0xD9000000),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        LibraryEpisodePlayButton(onPressed: () {}),
-      ],
+          LibraryEpisodePlayButton(onPressed: onTap ?? () {}),
+        ],
+      ),
     );
   }
 }

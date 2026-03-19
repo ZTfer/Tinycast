@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 /// Library 节目封面组件
 ///
-/// 用于显示节目封面的占位符组件。
-/// 目前使用灰色背景作为占位，后续可以替换为实际图片。
+/// 用于显示节目封面。
+/// 支持显示实际图片或使用占位符。
 class LibraryShowCover extends StatelessWidget {
   /// 封面宽度，默认 34
   final double width;
@@ -17,12 +17,16 @@ class LibraryShowCover extends StatelessWidget {
   /// 圆角大小，默认 6
   final double borderRadius;
 
+  /// 封面图片 URL
+  final String? artworkUrl;
+
   const LibraryShowCover({
     super.key,
     this.width = 34,
     this.height = 34,
     this.backgroundColor = const Color(0xFFD9D9D9),
     this.borderRadius = 6,
+    this.artworkUrl,
   });
 
   @override
@@ -33,6 +37,15 @@ class LibraryShowCover extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(borderRadius),
+        image: artworkUrl != null
+            ? DecorationImage(
+                image: NetworkImage(artworkUrl!),
+                fit: BoxFit.cover,
+                onError: (exception, stackTrace) {
+                  // 图片加载失败时使用背景色
+                },
+              )
+            : null,
       ),
     );
   }

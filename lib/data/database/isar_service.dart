@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
+import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_collections.dart';
 
 class IsarService {
@@ -37,13 +38,15 @@ class IsarService {
       final dir = await getApplicationDocumentsDirectory();
 
       _isar = await Isar.open(
-        [PodcastSchema],
+        [PodcastSchema, EpisodeSchema],
         directory: dir.path,
         name: _databaseName,
         inspector: true,
       );
 
       _isInitialized = true;
+    } on FileSystemException catch (e) {
+      throw Exception('Failed to access database directory: $e');
     } catch (e) {
       throw Exception('Failed to open Isar database: $e');
     }
@@ -54,9 +57,13 @@ class IsarService {
       return;
     }
 
-    await _isar!.close();
-    _isInitialized = false;
-    _isar = null;
+    try {
+      await _isar!.close();
+      _isInitialized = false;
+      _isar = null;
+    } catch (e) {
+      throw Exception('Failed to close Isar database: $e');
+    }
   }
 
   Future<void> clearAll() async {
@@ -64,19 +71,27 @@ class IsarService {
       throw StateError('Isar database is not initialized.');
     }
 
-    await _isar!.writeTxn(() async {
-      await _isar!.clear();
-    });
+    try {
+      await _isar!.writeTxn(() async {
+        await _isar!.clear();
+      });
+    } catch (e) {
+      throw Exception('Failed to clear database: $e');
+    }
   }
 
   Future<void> deleteDatabase() async {
-    await close();
+    try {
+      await close();
 
-    final dir = await getApplicationDocumentsDirectory();
-    final dbFile = File('${dir.path}/$_databaseName.isar');
+      final dir = await getApplicationDocumentsDirectory();
+      final dbFile = File('${dir.path}/$_databaseName.isar');
 
-    if (await dbFile.exists()) {
-      await dbFile.delete();
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+      }
+    } catch (e) {
+      throw Exception('Failed to delete database: $e');
     }
   }
 

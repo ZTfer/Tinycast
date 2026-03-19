@@ -8,4 +8,5 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String search = '/search';
   static const String testPage = '/test-page';
+  static const String podcastDetail = '/podcast-detail';
 }

@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_search_result/subscribe_search_result.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
-class SubscribeByRss extends StatelessWidget {
+class SubscribeByRss extends ConsumerStatefulWidget {
   const SubscribeByRss({super.key});
+
+  @override
+  ConsumerState<SubscribeByRss> createState() => _SubscribeByRssState();
+}
+
+class _SubscribeByRssState extends ConsumerState<SubscribeByRss> {
+  @override
+  void initState() {
+    super.initState();
+    // 初始化时加载已订阅的播客列表
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

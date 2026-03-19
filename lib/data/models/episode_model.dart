@@ -1,0 +1,50 @@
+import 'package:isar/isar.dart';
+
+part 'episode_model.g.dart';
+
+@Collection()
+class Episode {
+  final Id id = Isar.autoIncrement;
+
+  @Index()
+  late int podcastId;
+
+  late String title;
+
+  late String description;
+
+  String? link;
+
+  String? guid;
+
+  String? author;
+
+  @Index()
+  late DateTime pubDate;
+
+  late String audioUrl;
+
+  late String audioType;
+
+  int? duration;
+
+  String? artworkUrl;
+
+  late bool isExplicit;
+
+  late bool isPlayed;
+
+  late bool isDownloaded;
+
+  String? downloadedPath;
+
+  late double downloadProgress;
+
+  late double playProgress;
+
+  DateTime? lastPlayedAt;
+
+  final DateTime createdAt = DateTime.now();
+
+  late DateTime updatedAt;
+}

@@ -14,10 +14,14 @@ class LibraryShowInfo extends StatefulWidget {
   /// 更新时间（如 "1 h ago"）
   final String timeAgo;
 
+  /// 更多按钮的回调
+  final VoidCallback? onMorePressed;
+
   const LibraryShowInfo({
     super.key,
     required this.showName,
     required this.timeAgo,
+    this.onMorePressed,
   });
 
   @override
@@ -170,7 +174,7 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
               icon: const Icon(LucideIcons.ellipsisVertical),
 
               /// 点击时显示下拉菜单
-              onPressed: _showDropdown,
+              onPressed: widget.onMorePressed ?? _showDropdown,
             ),
           ],
         ),

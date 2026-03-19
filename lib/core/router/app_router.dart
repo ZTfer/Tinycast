@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/core/router/app_routes.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/pages/homepage.dart';
 import 'package:tinycast/presentation/pages/library/library.dart';
 import 'package:tinycast/presentation/pages/favorite/favorite.dart';
@@ -9,6 +10,7 @@ import 'package:tinycast/presentation/pages/settings/settings.dart';
 import 'package:tinycast/presentation/pages/test_page/test_page.dart';
 import 'package:tinycast/presentation/pages/search/search_page.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
+import 'package:tinycast/presentation/pages/podcast_detail/podcast_detail.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class AppRouter {
@@ -75,6 +77,16 @@ class AppRouter {
           settings: settings,
           pageBuilder: (context, animation, secondaryAnimation) =>
               const TestPage(),
+          transitionDuration: Duration.zero,
+        );
+      case AppRoutes.podcastDetail:
+        final podcastId = settings.arguments is int
+            ? settings.arguments as int
+            : (settings.arguments as Podcast).id;
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PodcastDetailPage(podcastId: podcastId),
           transitionDuration: Duration.zero,
         );
       default:

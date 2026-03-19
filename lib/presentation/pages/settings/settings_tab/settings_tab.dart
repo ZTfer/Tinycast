@@ -40,6 +40,14 @@ class SettingsTab extends StatelessWidget {
               : SettingsTabButtonState.defaultState,
           onPressed: () => onPageChanged('cloudSyncSettings'),
         ),
+        SettingsTabButton(
+          icon: Icons.storage,
+          label: '缓存',
+          state: currentPage == 'cacheSettings'
+              ? SettingsTabButtonState.iconActive
+              : SettingsTabButtonState.defaultState,
+          onPressed: () => onPageChanged('cacheSettings'),
+        ),
       ],
     );
   }

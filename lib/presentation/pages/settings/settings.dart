@@ -3,6 +3,7 @@ import 'package:tinycast/presentation/pages/settings/settings_tab/settings_tab.d
 import 'package:tinycast/presentation/pages/settings/general_settings/general_settings.dart';
 import 'package:tinycast/presentation/pages/settings/play_settings/play_settings.dart';
 import 'package:tinycast/presentation/pages/settings/cloud_sync_settings/cloud_sync_settings.dart';
+import 'package:tinycast/presentation/pages/settings/cache_settings/cache_settings.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -49,6 +50,8 @@ class _SettingsState extends State<Settings> {
         return const PlaySettings();
       case 'cloudSyncSettings':
         return const CloudSyncSettings();
+      case 'cacheSettings':
+        return const CacheSettings();
       default:
         return const SizedBox.shrink();
     }

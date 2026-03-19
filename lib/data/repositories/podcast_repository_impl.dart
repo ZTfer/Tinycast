@@ -1,0 +1,267 @@
+import '../../domain/entities/podcast.dart';
+import '../../domain/entities/episode.dart';
+import '../../domain/repositories/podcast_repository.dart';
+import '../datasources/remote_podcast_datasource.dart';
+import '../datasources/local_podcast_datasource.dart';
+import '../services/file_storage_service.dart';
+import '../models/podcast_model.dart' as model;
+import '../models/episode_model.dart' as model;
+import '../../core/utils/app_exception.dart';
+import '../../core/utils/logger.dart';
+
+class PodcastRepositoryImpl implements PodcastRepository {
+  final RemotePodcastDataSource _remoteDataSource;
+  final LocalPodcastDataSource _localDataSource;
+  final FileStorageService _fileStorageService;
+
+  PodcastRepositoryImpl({
+    RemotePodcastDataSource? remoteDataSource,
+    LocalPodcastDataSource? localDataSource,
+    FileStorageService? fileStorageService,
+  })  : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
+        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
+        _fileStorageService = fileStorageService ?? FileStorageService.instance;
+
+  @override
+  Future<Podcast> subscribe(String rssUrl) async {
+    try {
+      Logger.info('开始订阅播客: $rssUrl');
+
+      final isSubscribed = await _localDataSource.isPodcastSubscribed(rssUrl);
+      if (isSubscribed) {
+        throw AppException.validation(
+          '该播客已订阅',
+        );
+      }
+
+      final result = await _remoteDataSource.getPodcastFromRss(rssUrl);
+      final podcastEntity = result['podcast'] as Podcast;
+      final episodes = result['episodes'] as List<Episode>;
+
+      final podcastId = await _localDataSource.savePodcast(podcastEntity);
+
+      final episodesWithPodcastId = episodes.map((episode) {
+        return Episode(
+          id: episode.id,
+          podcastId: podcastId,
+          title: episode.title,
+          description: episode.description,
+          link: episode.link,
+          guid: episode.guid,
+          author: episode.author,
+          pubDate: episode.pubDate,
+          audioUrl: episode.audioUrl,
+          audioType: episode.audioType,
+          duration: episode.duration,
+          artworkUrl: episode.artworkUrl,
+          isExplicit: episode.isExplicit,
+          isPlayed: episode.isPlayed,
+          isDownloaded: episode.isDownloaded,
+          downloadedPath: episode.downloadedPath,
+          downloadProgress: episode.downloadProgress,
+          playProgress: episode.playProgress,
+          lastPlayedAt: episode.lastPlayedAt,
+          createdAt: episode.createdAt,
+          updatedAt: episode.updatedAt,
+        );
+      }).toList();
+
+      await _localDataSource.saveEpisodes(episodesWithPodcastId);
+
+      await _localDataSource.updatePodcastSubscription(podcastId, true);
+      await _localDataSource.updatePodcastEpisodeCount(podcastId, episodes.length);
+
+      final podcastModel = await _localDataSource.getPodcastById(podcastId);
+      if (podcastModel == null) {
+        throw AppException.unknown('保存播客后无法获取数据');
+      }
+
+      final podcast = _convertPodcastModelToEntity(podcastModel);
+
+      Logger.info('成功订阅播客: ${podcast.title}');
+
+      return podcast;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('订阅播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '订阅播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<void> unsubscribe(int podcastId) async {
+    try {
+      Logger.info('开始取消订阅播客: $podcastId');
+
+      final podcast = await _localDataSource.getPodcastById(podcastId);
+      if (podcast == null) {
+        throw AppException.validation('播客不存在');
+      }
+
+      final episodes = await _localDataSource.getEpisodesByPodcastId(podcastId);
+
+      for (final episode in episodes) {
+        if (episode.isDownloaded && episode.downloadedPath != null) {
+          try {
+            await _fileStorageService.deleteFile(episode.downloadedPath!);
+            Logger.info('已删除节目文件: ${episode.downloadedPath}');
+          } catch (e) {
+            Logger.warning('删除节目文件失败: ${episode.downloadedPath}, 错误: $e');
+          }
+        }
+      }
+
+      await _localDataSource.deleteEpisodesByPodcastId(podcastId);
+
+      await _localDataSource.deletePodcast(podcastId);
+
+      Logger.info('成功取消订阅播客: ${podcast.title}');
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('取消订阅播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '取消订阅播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<List<Podcast>> getSubscribedPodcasts() async {
+    try {
+      Logger.info('获取已订阅播客列表');
+
+      final podcastModels = await _localDataSource.getSubscribedPodcasts();
+
+      final podcasts = podcastModels
+          .map((model) => _convertPodcastModelToEntity(model))
+          .toList();
+
+      Logger.info('成功获取 ${podcasts.length} 个已订阅播客');
+
+      return podcasts;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('获取已订阅播客列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取已订阅播客列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<Podcast?> getPodcastById(int id) async {
+    try {
+      Logger.info('根据 ID 获取播客: $id');
+
+      final podcastModel = await _localDataSource.getPodcastById(id);
+
+      if (podcastModel == null) {
+        Logger.info('未找到 ID 为 $id 的播客');
+        return null;
+      }
+
+      final podcast = _convertPodcastModelToEntity(podcastModel);
+
+      Logger.info('成功获取播客: ${podcast.title}');
+
+      return podcast;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('获取播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<List<Episode>> getEpisodesByPodcastId(int podcastId) async {
+    try {
+      Logger.info('获取播客的节目列表: $podcastId');
+
+      final episodeModels = await _localDataSource.getEpisodesByPodcastId(podcastId);
+
+      final episodes = episodeModels
+          .map((model) => _convertEpisodeModelToEntity(model))
+          .toList();
+
+      Logger.info('成功获取 ${episodes.length} 个节目');
+
+      return episodes;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('获取节目列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取节目列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Podcast _convertPodcastModelToEntity(model.Podcast model) {
+    return Podcast(
+      id: model.id,
+      title: model.title,
+      subtitle: model.subtitle,
+      author: model.author,
+      description: model.description,
+      artworkUrl: model.artworkUrl,
+      rssUrl: model.rssUrl,
+      websiteUrl: model.websiteUrl,
+      language: model.language,
+      copyright: model.copyright,
+      categories: model.categories,
+      keywords: model.keywords,
+      isExplicit: model.isExplicit,
+      ownerName: model.ownerName,
+      ownerEmail: model.ownerEmail,
+      lastUpdated: model.lastUpdated,
+      episodeCount: model.episodeCount,
+      isSubscribed: model.isSubscribed,
+      subscribedAt: model.subscribedAt,
+      createdAt: model.createdAt,
+    );
+  }
+
+  Episode _convertEpisodeModelToEntity(model.Episode model) {
+    return Episode(
+      id: model.id,
+      podcastId: model.podcastId,
+      title: model.title,
+      description: model.description,
+      link: model.link,
+      guid: model.guid,
+      author: model.author,
+      pubDate: model.pubDate,
+      audioUrl: model.audioUrl,
+      audioType: model.audioType,
+      duration: model.duration,
+      artworkUrl: model.artworkUrl,
+      isExplicit: model.isExplicit,
+      isPlayed: model.isPlayed,
+      isDownloaded: model.isDownloaded,
+      downloadedPath: model.downloadedPath,
+      downloadProgress: model.downloadProgress,
+      playProgress: model.playProgress,
+      lastPlayedAt: model.lastPlayedAt,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    );
+  }
+}
