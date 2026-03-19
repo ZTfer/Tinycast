@@ -15,54 +15,74 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.home:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const HomePage(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomePage(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.queue:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const UpNextQueue(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const UpNextQueue(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.library:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const Library(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const Library(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.favorite:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const Favorite(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const Favorite(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.downloads:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const Downloads(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const Downloads(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.subscribe:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const Subscribe(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const Subscribe(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.settings:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const Settings(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const Settings(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.search:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const SearchPage(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SearchPage(),
+          transitionDuration: Duration.zero,
         );
       case AppRoutes.testPage:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const TestPage(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const TestPage(),
+          transitionDuration: Duration.zero,
         );
       default:
-        return MaterialPageRoute(
+        return PageRouteBuilder(
           settings: settings,
-          builder: (_) => const HomePage(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomePage(),
+          transitionDuration: Duration.zero,
         );
     }
   }
