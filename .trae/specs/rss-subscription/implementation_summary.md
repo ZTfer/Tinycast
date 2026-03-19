@@ -13,7 +13,7 @@
 ### ✅ 已完成任务（共 19 个核心任务）
 
 | 任务 ID | 任务名称 | 优先级 | 状态 |
-|---------|---------|--------|------|
+| --------- | --------- | -------- | ------ |
 | 任务 1 | 创建数据模型 | High | ✅ 已完成 |
 | 任务 2 | 配置 Isar 数据库 | High | ✅ 已完成 |
 | 任务 3 | 实现 RSS 解析器 | High | ✅ 已完成 |
@@ -37,7 +37,7 @@
 ### ⏸ 待完成任务（测试任务）
 
 | 任务 ID | 任务名称 | 优先级 | 状态 |
-|---------|---------|--------|------|
+| --------- | --------- | -------- | ------ |
 | 任务 20 | 编写文件存储相关测试 | Low | ⏸ 待完成 |
 | 任务 21 | 编写文件存储集成测试 | Low | ⏸ 待完成 |
 | 任务 22 | 编写单元测试 | Low | ⏸ 待完成 |
@@ -49,16 +49,19 @@
 ### 1. 数据模型层
 
 **Domain 层实体类：**
+
 - `lib/domain/entities/podcast.dart` - Podcast 实体类
 - `lib/domain/entities/episode.dart` - Episode 实体类
 
 **Data 层模型类：**
+
 - `lib/data/models/podcast_model.dart` - Podcast 模型类
   - 配置索引：title, rssUrl (unique), lastUpdated
 - `lib/data/models/episode_model.dart` - Episode 模型类
   - 配置索引：podcastId, pubDate
 
 **特性：**
+
 - 完整的字段定义（符合 spec 要求）
 - Isar @Collection() 注解
 - 自动生成的 .g.dart 文件
@@ -67,12 +70,14 @@
 ### 2. 数据库层
 
 **Isar 数据库配置：**
+
 - `lib/data/database/isar_service.dart`
   - 添加 Episode collection
   - 配置 Podcast -> Episode 关联关系
   - 完善的错误处理
 
 **特性：**
+
 - 事务支持（writeTxn）
 - 索引优化查询性能
 - 关联查询支持
@@ -80,11 +85,13 @@
 ### 3. 数据源层
 
 **远程数据源：**
+
 - `lib/data/datasources/remote_podcast_datasource.dart`
   - getPodcastFromRss() - 从 RSS 获取播客数据
   - validateRssUrl() - 验证 RSS URL 可访问性
 
 **本地数据源：**
+
 - `lib/data/datasources/local_podcast_datasource.dart`
   - getSubscribedPodcasts() - 查询已订阅播客
   - savePodcast() - 保存播客
@@ -95,12 +102,14 @@
 ### 4. RSS 解析器
 
 **RSS 解析服务：**
+
 - `lib/data/services/rss_parser_service.dart`
   - parseRssFeed() - 解析 RSS 订阅源
   - extractPodcastMetadata() - 提取播客元数据
   - extractEpisodes() - 提取节目列表
 
 **特性：**
+
 - 支持 RSS 2.0 和 Atom 格式
 - 使用 dio 进行 HTTP 请求
 - 使用 xml 包解析 XML
@@ -111,6 +120,7 @@
 ### 5. 仓库层
 
 **仓库接口：**
+
 - `lib/domain/repositories/podcast_repository.dart`
   - subscribe() - 订阅播客
   - unsubscribe() - 取消订阅
@@ -119,6 +129,7 @@
   - getEpisodesByPodcastId() - 获取播客的节目列表
 
 **仓库实现：**
+
 - `lib/data/repositories/podcast_repository_impl.dart`
   - 订阅逻辑：解析 RSS + 保存数据库 + 检查重复
   - 取消订阅逻辑：删除播客 + 级联删除节目 + 清理文件
@@ -127,6 +138,7 @@
 ### 6. 用例层
 
 **用例类：**
+
 - `lib/domain/usecases/subscribe_podcast_usecase.dart` - SubscribePodcastUseCase
 - `lib/domain/usecases/unsubscribe_podcast_usecase.dart` - UnsubscribePodcastUseCase
 - `lib/domain/usecases/get_subscribed_podcasts_usecase.dart` - GetSubscribedPodcastsUseCase
@@ -134,6 +146,7 @@
 - `lib/domain/usecases/get_episodes_by_podcast_id_usecase.dart` - GetEpisodesByPodcastIdUseCase
 
 **特性：**
+
 - 依赖注入（接收 PodcastRepository）
 - 输入验证
 - 统一的错误处理
@@ -142,6 +155,7 @@
 ### 7. 状态管理层
 
 **Riverpod Providers：**
+
 - `lib/presentation/providers/podcast_provider.dart`
   - PodcastNotifier - 状态管理
   - PodcastState - 状态定义（initial、loading、success、error）
@@ -149,6 +163,7 @@
   - subscribedPodcastsProvider - 提供已订阅播客列表
 
 **特性：**
+
 - StateNotifier 模式
 - 完整的状态转换
 - 错误处理集成
@@ -157,20 +172,24 @@
 ### 8. 表现层
 
 **RSS 订阅界面：**
+
 - `lib/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart`
 - `lib/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart`
 
 **播客列表页面：**
+
 - `lib/presentation/pages/library/library.dart`
 - 更新了 LibraryListItem、LibraryShowCover、LibraryShowInfo、LibraryEpisodeItem 组件
 
 **播客详情页面：**
+
 - `lib/presentation/pages/podcast_detail/podcast_detail.dart`
 - 完整的播客详情展示
 - 节目列表（按发布时间倒序）
 - 加载更多功能
 
 **文件管理界面：**
+
 - `lib/presentation/pages/settings/cache_settings/cache_settings.dart`
 - 缓存大小显示
 - 清理选项选择
@@ -179,15 +198,18 @@
 ### 9. 错误处理层
 
 **错误处理器：**
+
 - `lib/core/utils/network_error_handler.dart` - 网络错误处理
 - `lib/core/utils/parse_error_handler.dart` - 解析错误处理
 - `lib/core/utils/storage_error_handler.dart` - 存储错误处理
 
 **用户反馈组件：**
+
 - `lib/core/utils/error_toast.dart` - Toast 提示
 - `lib/core/utils/error_dialog.dart` - 错误对话框
 
 **特性：**
+
 - 统一的 AppException 处理
 - 用户友好的错误消息
 - 重试机制
@@ -196,6 +218,7 @@
 ### 10. 文件存储层 ✨
 
 **文件存储服务：**
+
 - `lib/data/services/file_storage_service.dart`
   - getTemporaryDirectory() - 获取临时缓存目录
   - getApplicationSupportDirectory() - 获取永久存储目录
@@ -209,6 +232,7 @@
   - generateImageFileName() - 生成图片缓存文件名（Hash(Url)）
 
 **特性：**
+
 - 使用 path_provider 包获取平台特定目录
 - 临时缓存：temporaryDirectory（用于未完成的下载或短期缓存）
 - 永久存储：applicationSupportDirectory（iOS/macOS: Library/Application Support，Android: files 目录，Windows/Linux: AppData 或 .config 目录）
@@ -222,6 +246,7 @@
 ### 11. 音频下载服务 ✨
 
 **音频下载服务：**
+
 - `lib/data/services/audio_download_service.dart`
   - downloadEpisode() - 下载节目音频文件
   - pauseDownload() - 暂停下载
@@ -232,6 +257,7 @@
   - deleteDownloadedEpisode() - 删除已下载的节目
 
 **特性：**
+
 - 使用 dio 下载音频文件
 - 支持断点续传（HTTP Range 头）
 - 下载进度跟踪（Stream<DownloadStatus> 和 Stream<double>）
@@ -243,6 +269,7 @@
 ### 12. 图片缓存服务 ✨
 
 **图片缓存服务：**
+
 - `lib/data/services/image_cache_service.dart`
   - getCachedImage() - 获取缓存的图片
   - cacheImage() - 缓存图片到本地
@@ -252,6 +279,7 @@
   - getCacheSizeFormatted() - 获取格式化的缓存大小
 
 **特性：**
+
 - 使用 FileStorageService 获取缓存目录和生成文件名
 - 使用 Dio 下载图片
 - 先检查缓存，如果存在则直接使用
@@ -263,6 +291,7 @@
 ### 13. 缓存清理服务 ✨
 
 **缓存清理服务：**
+
 - `lib/data/services/cache_cleanup_service.dart`
   - clearAllCache() - 清理所有缓存（音频和图片）
   - clearAudioCache() - 清理音频缓存
@@ -277,6 +306,7 @@
   - autoCleanupIfNeeded() - 当缓存超过指定大小时自动清理最旧的文件
 
 **特性：**
+
 - 使用 FileStorageService、ImageCacheService 和 LocalPodcastDataSource
 - 删除物理文件后自动更新数据库中的节目状态
 - 自动清理策略（磁盘空间不足时清理最旧的文件）
@@ -288,9 +318,11 @@
 ### 14. 平台权限配置 ✨
 
 **权限配置文档：**
+
 - `docs/PLATFORM_PERMISSIONS.md`
 
 **配置状态：**
+
 - iOS：无需额外配置（使用沙盒内目录）
 - macOS：无需额外配置（使用沙盒内目录）
 - Android：无需额外配置（使用应用私有目录）
@@ -434,18 +466,20 @@
    - Windows：使用 AppData 目录，避免写入 Program Files 等受保护目录
 
 10. **文件管理服务**
-   - 通过 FileStorageService 获取合适的存储目录
-   - 返回平台特定的目录路径
-   - 检查文件是否存在
-   - 删除文件
-   - 获取文件大小
-   - 拼接文件路径
-   - 生成文件名
 
-11. **状态管理**
-   - 使用 Riverpod 进行状态管理
-   - 对异步数据和依赖注入支持更好
-   - 播客应用状态复杂（播放状态、下载队列、订阅列表同步），需要强大的状态管理能力
+- 通过 FileStorageService 获取合适的存储目录
+- 返回平台特定的目录路径
+- 检查文件是否存在
+- 删除文件
+- 获取文件大小
+- 拼接文件路径
+- 生成文件名
+
+1.  **状态管理**
+
+- 使用 Riverpod 进行状态管理
+- 对异步数据和依赖注入支持更好
+- 播客应用状态复杂（播放状态、下载队列、订阅列表同步），需要强大的状态管理能力
 
 ## 待完成任务
 
