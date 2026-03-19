@@ -569,7 +569,7 @@ packages:
     source: hosted
     version: "3.1.10"
   matcher:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: matcher
       sha256: "12956d0ad8390bbcc63ca2e1469c0619946ccb52809807067a7020d57e647aa6"

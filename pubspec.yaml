@@ -51,6 +51,7 @@ dependencies:
   cached_network_image: ^3.4.1
   xml: ^6.6.1
   path: ^1.9.1
+  matcher: ^0.12.18
 
 dev_dependencies:
   flutter_test:
