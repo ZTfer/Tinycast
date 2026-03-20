@@ -128,14 +128,24 @@ class _LibraryState extends ConsumerState<Library> {
     final state = ref.watch(podcastProvider);
     final podcasts = state.podcasts ?? [];
 
-    return RefreshIndicator(
-      key: _refreshIndicatorKey,
-      onRefresh: _onRefresh,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildContent(state, podcasts),
+    return Material(
+      color: Colors.transparent,
+      child: Localizations(
+        locale: const Locale('en', 'US'),
+        delegates: const <LocalizationsDelegate<dynamic>>[
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        child: RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildContent(state, podcasts),
+            ),
+          ),
         ),
       ),
     );
