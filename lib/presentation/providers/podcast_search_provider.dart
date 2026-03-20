@@ -45,20 +45,39 @@ class PodcastSearchState {
   }
 }
 
-class PodcastSearchNotifier extends StateNotifier<PodcastSearchState> {
-  final PodcastSearchService _podcastSearchService;
-  final SubscribePodcastUseCase _subscribePodcastUseCase;
-  final GetSubscribedPodcastsUseCase _getSubscribedPodcastsUseCase;
+final podcastSearchServiceProvider = Provider<PodcastSearchService>((ref) {
+  return PodcastSearchService();
+});
+
+final podcastSearchRepositoryProvider = Provider<PodcastRepository>((ref) {
+  return PodcastRepositoryImpl();
+});
+
+final podcastSearchSubscribeUseCaseProvider = Provider<SubscribePodcastUseCase>(
+  (ref) {
+    final repository = ref.watch(podcastSearchRepositoryProvider);
+    return SubscribePodcastUseCase(repository);
+  },
+);
+
+final podcastSearchGetSubscribedPodcastsUseCaseProvider =
+    Provider<GetSubscribedPodcastsUseCase>((ref) {
+      final repository = ref.watch(podcastSearchRepositoryProvider);
+      return GetSubscribedPodcastsUseCase(repository);
+    });
+
+class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
   List<Podcast> _subscribedPodcasts = [];
 
-  PodcastSearchNotifier({
-    required PodcastSearchService podcastSearchService,
-    required SubscribePodcastUseCase subscribePodcastUseCase,
-    required GetSubscribedPodcastsUseCase getSubscribedPodcastsUseCase,
-  }) : _podcastSearchService = podcastSearchService,
-       _subscribePodcastUseCase = subscribePodcastUseCase,
-       _getSubscribedPodcastsUseCase = getSubscribedPodcastsUseCase,
-       super(PodcastSearchState());
+  @override
+  PodcastSearchState build() => PodcastSearchState();
+
+  PodcastSearchService get _podcastSearchService =>
+      ref.read(podcastSearchServiceProvider);
+  SubscribePodcastUseCase get _subscribePodcastUseCase =>
+      ref.read(podcastSearchSubscribeUseCaseProvider);
+  GetSubscribedPodcastsUseCase get _getSubscribedPodcastsUseCase =>
+      ref.read(podcastSearchGetSubscribedPodcastsUseCaseProvider);
 
   Future<void> searchPodcast(String url) async {
     state = state.copyWith(
@@ -163,39 +182,10 @@ class PodcastSearchNotifier extends StateNotifier<PodcastSearchState> {
   }
 }
 
-final podcastSearchServiceProvider = Provider<PodcastSearchService>((ref) {
-  return PodcastSearchService();
-});
-
-final podcastSearchRepositoryProvider = Provider<PodcastRepository>((ref) {
-  return PodcastRepositoryImpl();
-});
-
-final podcastSearchSubscribeUseCaseProvider = Provider<SubscribePodcastUseCase>(
-  (ref) {
-    final repository = ref.watch(podcastSearchRepositoryProvider);
-    return SubscribePodcastUseCase(repository);
-  },
-);
-
-final podcastSearchGetSubscribedPodcastsUseCaseProvider =
-    Provider<GetSubscribedPodcastsUseCase>((ref) {
-      final repository = ref.watch(podcastSearchRepositoryProvider);
-      return GetSubscribedPodcastsUseCase(repository);
-    });
-
 final podcastSearchProvider =
-    StateNotifierProvider<PodcastSearchNotifier, PodcastSearchState>((ref) {
-      return PodcastSearchNotifier(
-        podcastSearchService: ref.watch(podcastSearchServiceProvider),
-        subscribePodcastUseCase: ref.watch(
-          podcastSearchSubscribeUseCaseProvider,
-        ),
-        getSubscribedPodcastsUseCase: ref.watch(
-          podcastSearchGetSubscribedPodcastsUseCaseProvider,
-        ),
-      );
-    });
+    NotifierProvider<PodcastSearchNotifier, PodcastSearchState>(
+      PodcastSearchNotifier.new,
+    );
 
 final podcastSearchStateProvider = Provider<PodcastSearchState>((ref) {
   return ref.watch(podcastSearchProvider);

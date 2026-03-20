@@ -9,12 +9,7 @@ import '../../domain/usecases/get_podcast_by_id_usecase.dart';
 import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
 
-enum PodcastStatus {
-  initial,
-  loading,
-  success,
-  error,
-}
+enum PodcastStatus { initial, loading, success, error }
 
 class PodcastState {
   final PodcastStatus status;
@@ -48,34 +43,61 @@ class PodcastState {
   }
 }
 
-class PodcastNotifier extends StateNotifier<PodcastState> {
-  final SubscribePodcastUseCase _subscribePodcastUseCase;
-  final UnsubscribePodcastUseCase _unsubscribePodcastUseCase;
-  final GetSubscribedPodcastsUseCase _getSubscribedPodcastsUseCase;
-  final GetPodcastByIdUseCase _getPodcastByIdUseCase;
-  final GetEpisodesByPodcastIdUseCase _getEpisodesByPodcastIdUseCase;
+final podcastRepositoryProvider = Provider<PodcastRepository>((ref) {
+  return PodcastRepositoryImpl();
+});
 
-  PodcastNotifier({
-    required SubscribePodcastUseCase subscribePodcastUseCase,
-    required UnsubscribePodcastUseCase unsubscribePodcastUseCase,
-    required GetSubscribedPodcastsUseCase getSubscribedPodcastsUseCase,
-    required GetPodcastByIdUseCase getPodcastByIdUseCase,
-    required GetEpisodesByPodcastIdUseCase getEpisodesByPodcastIdUseCase,
-  })  : _subscribePodcastUseCase = subscribePodcastUseCase,
-        _unsubscribePodcastUseCase = unsubscribePodcastUseCase,
-        _getSubscribedPodcastsUseCase = getSubscribedPodcastsUseCase,
-        _getPodcastByIdUseCase = getPodcastByIdUseCase,
-        _getEpisodesByPodcastIdUseCase = getEpisodesByPodcastIdUseCase,
-        super(PodcastState());
+final subscribePodcastUseCaseProvider = Provider<SubscribePodcastUseCase>((
+  ref,
+) {
+  final repository = ref.watch(podcastRepositoryProvider);
+  return SubscribePodcastUseCase(repository);
+});
+
+final unsubscribePodcastUseCaseProvider = Provider<UnsubscribePodcastUseCase>((
+  ref,
+) {
+  final repository = ref.watch(podcastRepositoryProvider);
+  return UnsubscribePodcastUseCase(repository);
+});
+
+final getSubscribedPodcastsUseCaseProvider =
+    Provider<GetSubscribedPodcastsUseCase>((ref) {
+      final repository = ref.watch(podcastRepositoryProvider);
+      return GetSubscribedPodcastsUseCase(repository);
+    });
+
+final getPodcastByIdUseCaseProvider = Provider<GetPodcastByIdUseCase>((ref) {
+  final repository = ref.watch(podcastRepositoryProvider);
+  return GetPodcastByIdUseCase(repository);
+});
+
+final getEpisodesByPodcastIdUseCaseProvider =
+    Provider<GetEpisodesByPodcastIdUseCase>((ref) {
+      final repository = ref.watch(podcastRepositoryProvider);
+      return GetEpisodesByPodcastIdUseCase(repository);
+    });
+
+class PodcastNotifier extends Notifier<PodcastState> {
+  @override
+  PodcastState build() => PodcastState();
+
+  SubscribePodcastUseCase get _subscribePodcastUseCase =>
+      ref.read(subscribePodcastUseCaseProvider);
+  UnsubscribePodcastUseCase get _unsubscribePodcastUseCase =>
+      ref.read(unsubscribePodcastUseCaseProvider);
+  GetSubscribedPodcastsUseCase get _getSubscribedPodcastsUseCase =>
+      ref.read(getSubscribedPodcastsUseCaseProvider);
+  GetPodcastByIdUseCase get _getPodcastByIdUseCase =>
+      ref.read(getPodcastByIdUseCaseProvider);
+  GetEpisodesByPodcastIdUseCase get _getEpisodesByPodcastIdUseCase =>
+      ref.read(getEpisodesByPodcastIdUseCaseProvider);
 
   Future<void> subscribe(String rssUrl) async {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       final podcast = await _subscribePodcastUseCase(rssUrl);
-      state = state.copyWith(
-        status: PodcastStatus.success,
-        podcast: podcast,
-      );
+      state = state.copyWith(status: PodcastStatus.success, podcast: podcast);
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
@@ -88,10 +110,7 @@ class PodcastNotifier extends StateNotifier<PodcastState> {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       await _unsubscribePodcastUseCase(podcastId);
-      state = state.copyWith(
-        status: PodcastStatus.success,
-        podcast: null,
-      );
+      state = state.copyWith(status: PodcastStatus.success, podcast: null);
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
@@ -104,10 +123,7 @@ class PodcastNotifier extends StateNotifier<PodcastState> {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       final podcasts = await _getSubscribedPodcastsUseCase();
-      state = state.copyWith(
-        status: PodcastStatus.success,
-        podcasts: podcasts,
-      );
+      state = state.copyWith(status: PodcastStatus.success, podcasts: podcasts);
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
@@ -120,10 +136,7 @@ class PodcastNotifier extends StateNotifier<PodcastState> {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       final podcast = await _getPodcastByIdUseCase(id);
-      state = state.copyWith(
-        status: PodcastStatus.success,
-        podcast: podcast,
-      );
+      state = state.copyWith(status: PodcastStatus.success, podcast: podcast);
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
@@ -136,10 +149,7 @@ class PodcastNotifier extends StateNotifier<PodcastState> {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       final episodes = await _getEpisodesByPodcastIdUseCase(id);
-      state = state.copyWith(
-        status: PodcastStatus.success,
-        episodes: episodes,
-      );
+      state = state.copyWith(status: PodcastStatus.success, episodes: episodes);
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
@@ -153,44 +163,9 @@ class PodcastNotifier extends StateNotifier<PodcastState> {
   }
 }
 
-final podcastRepositoryProvider = Provider<PodcastRepository>((ref) {
-  return PodcastRepositoryImpl();
-});
-
-final subscribePodcastUseCaseProvider = Provider<SubscribePodcastUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return SubscribePodcastUseCase(repository);
-});
-
-final unsubscribePodcastUseCaseProvider = Provider<UnsubscribePodcastUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return UnsubscribePodcastUseCase(repository);
-});
-
-final getSubscribedPodcastsUseCaseProvider = Provider<GetSubscribedPodcastsUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return GetSubscribedPodcastsUseCase(repository);
-});
-
-final getPodcastByIdUseCaseProvider = Provider<GetPodcastByIdUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return GetPodcastByIdUseCase(repository);
-});
-
-final getEpisodesByPodcastIdUseCaseProvider = Provider<GetEpisodesByPodcastIdUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return GetEpisodesByPodcastIdUseCase(repository);
-});
-
-final podcastProvider = StateNotifierProvider<PodcastNotifier, PodcastState>((ref) {
-  return PodcastNotifier(
-    subscribePodcastUseCase: ref.watch(subscribePodcastUseCaseProvider),
-    unsubscribePodcastUseCase: ref.watch(unsubscribePodcastUseCaseProvider),
-    getSubscribedPodcastsUseCase: ref.watch(getSubscribedPodcastsUseCaseProvider),
-    getPodcastByIdUseCase: ref.watch(getPodcastByIdUseCaseProvider),
-    getEpisodesByPodcastIdUseCase: ref.watch(getEpisodesByPodcastIdUseCaseProvider),
-  );
-});
+final podcastProvider = NotifierProvider<PodcastNotifier, PodcastState>(
+  PodcastNotifier.new,
+);
 
 final podcastStateProvider = Provider<PodcastState>((ref) {
   return ref.watch(podcastProvider);

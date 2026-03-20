@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BaseStateNotifier<T> extends StateNotifier<AsyncValue<T>> {
-  BaseStateNotifier() : super(const AsyncValue.loading());
+class BaseNotifier<T> extends Notifier<AsyncValue<T>> {
+  @override
+  AsyncValue<T> build() => const AsyncValue.loading();
 
   void updateLoading() {
     state = const AsyncValue.loading();
@@ -40,16 +41,16 @@ class BaseStateNotifier<T> extends StateNotifier<AsyncValue<T>> {
 
   bool get hasError => state.hasError;
 
-  T? get value => state.valueOrNull;
+  T? get value => state.value;
 
   Object? get error => state.error;
 
   StackTrace? get stackTrace => state.stackTrace;
 }
 
-class BaseListStateNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
-  BaseListStateNotifier([List<T> initialData = const []])
-      : super(AsyncValue.data(initialData));
+class BaseListNotifier<T> extends Notifier<AsyncValue<List<T>>> {
+  @override
+  AsyncValue<List<T>> build() => AsyncValue.data([]);
 
   void updateLoading() {
     state = const AsyncValue.loading();
@@ -96,7 +97,9 @@ class BaseListStateNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
 
   void updateItem(bool Function(T) predicate, T Function(T) update) {
     state.whenData((data) {
-      updateData(data.map((item) => predicate(item) ? update(item) : item).toList());
+      updateData(
+        data.map((item) => predicate(item) ? update(item) : item).toList(),
+      );
     });
   }
 
@@ -110,16 +113,17 @@ class BaseListStateNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
 
   bool get hasError => state.hasError;
 
-  List<T>? get value => state.valueOrNull;
+  List<T>? get value => state.value;
 
   Object? get error => state.error;
 
   StackTrace? get stackTrace => state.stackTrace;
 }
 
-class BasePaginatedStateNotifier<T> extends StateNotifier<AsyncValue<PaginatedData<T>>> {
-  BasePaginatedStateNotifier()
-      : super(const AsyncValue.data(PaginatedData(items: [], hasMore: true, page: 0)));
+class BasePaginatedNotifier<T> extends Notifier<AsyncValue<PaginatedData<T>>> {
+  @override
+  AsyncValue<PaginatedData<T>> build() =>
+      const AsyncValue.data(PaginatedData(items: [], hasMore: true, page: 0));
 
   void updateLoading() {
     final currentValue = state.value;
@@ -176,7 +180,9 @@ class BasePaginatedStateNotifier<T> extends StateNotifier<AsyncValue<PaginatedDa
   }
 
   void reset() {
-    state = const AsyncValue.data(PaginatedData(items: [], hasMore: true, page: 0));
+    state = const AsyncValue.data(
+      PaginatedData(items: [], hasMore: true, page: 0),
+    );
   }
 
   bool get isLoading => state.value?.isLoading ?? false;
