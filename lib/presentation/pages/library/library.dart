@@ -5,6 +5,7 @@ import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/library/library_list_item/library_list_item.dart';
+import 'package:tinycast/presentation/pages/library/library_empty_page/library_empty_page.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/core/utils/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
@@ -180,26 +181,10 @@ class _LibraryState extends ConsumerState<Library> {
 
     // 空状态
     if (podcasts.isEmpty) {
-      return SizedBox(
-        height: 400,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.podcasts_outlined, size: 64, color: Colors.grey[400]),
-              const SizedBox(height: 16),
-              Text(
-                '还没有订阅任何播客',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '点击下方 "+" 按钮订阅你喜欢的播客',
-                style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-              ),
-            ],
-          ),
-        ),
+      return LibraryEmptyPage(
+        onRssSubscribe: () =>
+            AppRouter.navigateTo(context, AppRoutes.subscribe),
+        onSearchPodcast: () => AppRouter.navigateTo(context, AppRoutes.search),
       );
     }
 

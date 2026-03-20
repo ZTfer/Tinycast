@@ -29,6 +29,9 @@ class SubscribeEpisodeAddButton extends ConsumerWidget {
   /// 按钮高度，默认 28
   final double height;
 
+  /// 自定义图标，仅在未订阅状态下使用
+  final Widget? icon;
+
   const SubscribeEpisodeAddButton({
     super.key,
     required this.podcast,
@@ -39,6 +42,7 @@ class SubscribeEpisodeAddButton extends ConsumerWidget {
     this.borderRadius = 16,
     this.width = 28,
     this.height = 28,
+    this.icon,
   });
 
   @override
@@ -58,6 +62,7 @@ class SubscribeEpisodeAddButton extends ConsumerWidget {
       borderRadius: borderRadius,
       width: width,
       height: height,
+      icon: icon,
     );
   }
 }
@@ -73,6 +78,7 @@ class _SubscribeEpisodeAddButtonWidget extends StatefulWidget {
   final double borderRadius;
   final double width;
   final double height;
+  final Widget? icon;
 
   const _SubscribeEpisodeAddButtonWidget({
     required this.podcast,
@@ -85,6 +91,7 @@ class _SubscribeEpisodeAddButtonWidget extends StatefulWidget {
     this.borderRadius = 16,
     this.width = 28,
     this.height = 28,
+    this.icon,
   });
 
   @override
@@ -139,11 +146,12 @@ class _SubscribeEpisodeAddButtonWidgetState extends State<_SubscribeEpisodeAddBu
                         size: 16,
                         color: Color(0xFFFFFFFF),
                       )
-                    : Icon(
-                        LucideIcons.plus,
-                        size: widget.iconSize,
-                        color: _getContentColor(),
-                      ),
+                    : widget.icon ??
+                        Icon(
+                          LucideIcons.plus,
+                          size: widget.iconSize,
+                          color: _getContentColor(),
+                        ),
           ),
         ),
       ),
