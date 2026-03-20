@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/library/library_episode_item/library_episode_item.dart';
+import 'package:tinycast/presentation/pages/library/library_episode_item/library_episode_item_skeleton.dart';
 import 'package:tinycast/presentation/pages/library/library_show_info/library_show_cover.dart';
 import 'package:tinycast/presentation/pages/library/library_show_info/library_show_info.dart';
 
@@ -25,6 +26,9 @@ class LibraryListItem extends StatelessWidget {
   /// 更多按钮的回调
   final VoidCallback? onMorePressed;
 
+  /// 是否正在加载剧集数据
+  final bool isLoading;
+
   const LibraryListItem({
     super.key,
     required this.podcast,
@@ -32,6 +36,7 @@ class LibraryListItem extends StatelessWidget {
     this.showDivider = true,
     this.onTap,
     this.onMorePressed,
+    this.isLoading = false,
   });
 
   @override
@@ -59,20 +64,7 @@ class LibraryListItem extends StatelessWidget {
                         onMorePressed: onMorePressed,
                       ),
                       const SizedBox(height: 2),
-                      Column(
-                        spacing: 1,
-                        children: episodes
-                            .take(3)
-                            .map(
-                              (episode) => LibraryEpisodeItem(
-                                title: episode.title,
-                                onTap: () {
-                                  // TODO: 导航到播放页面
-                                },
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      Column(spacing: 1, children: _buildEpisodeItems()),
                       const SizedBox(height: 12),
                       if (showDivider) _buildDivider(),
                     ],
@@ -89,6 +81,27 @@ class LibraryListItem extends StatelessWidget {
   /// 构建分隔线
   Widget _buildDivider() {
     return Container(height: 0.5, color: const Color(0xFFE0E0E0));
+  }
+
+  /// 构建剧集列表项
+  List<Widget> _buildEpisodeItems() {
+    // 如果正在加载，显示骨架屏
+    if (isLoading) {
+      return List.generate(3, (index) => const LibraryEpisodeItemSkeleton());
+    }
+
+    // 显示实际剧集数据
+    return episodes
+        .take(3)
+        .map(
+          (episode) => LibraryEpisodeItem(
+            title: episode.title,
+            onTap: () {
+              // TODO: 导航到播放页面
+            },
+          ),
+        )
+        .toList();
   }
 
   /// 格式化时间为相对时间

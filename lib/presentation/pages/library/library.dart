@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/pages/library/library_empty_page/library_empty_page.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
@@ -183,18 +182,66 @@ class _LibraryState extends ConsumerState<Library> {
         final podcast = podcasts[index];
         final showDivider = index < podcasts.length - 1;
 
-        // 获取最新3集（这里暂时使用空列表，实际应该从 episodesProvider 获取）
-        final episodes = <Episode>[];
-
-        return LibraryListItem(
+        return _LibraryPodcastItem(
           key: ValueKey(podcast.id),
           podcast: podcast,
-          episodes: episodes,
           showDivider: showDivider,
           onTap: () => _navigateToPodcastDetail(podcast),
           onMorePressed: () => _showMoreMenu(podcast),
         );
       }),
+    );
+  }
+}
+
+/// 播客列表项组件，负责加载和管理单个播客的剧集数据
+class _LibraryPodcastItem extends ConsumerWidget {
+  final Podcast podcast;
+  final bool showDivider;
+  final VoidCallback onTap;
+  final VoidCallback onMorePressed;
+
+  const _LibraryPodcastItem({
+    super.key,
+    required this.podcast,
+    required this.showDivider,
+    required this.onTap,
+    required this.onMorePressed,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 监听该播客的最新剧集数据
+    final episodesAsync = ref.watch(latestEpisodesProvider(podcast.id));
+
+    return episodesAsync.when(
+      // 数据加载成功
+      data: (episodes) => LibraryListItem(
+        podcast: podcast,
+        episodes: episodes,
+        showDivider: showDivider,
+        onTap: onTap,
+        onMorePressed: onMorePressed,
+        isLoading: false,
+      ),
+      // 加载中状态：显示播客信息和加载骨架屏
+      loading: () => LibraryListItem(
+        podcast: podcast,
+        episodes: [],
+        showDivider: showDivider,
+        onTap: onTap,
+        onMorePressed: onMorePressed,
+        isLoading: true,
+      ),
+      // 错误状态：显示播客信息，但剧集列表为空，不影响其他播客展示
+      error: (error, stack) => LibraryListItem(
+        podcast: podcast,
+        episodes: [],
+        showDivider: showDivider,
+        onTap: onTap,
+        onMorePressed: onMorePressed,
+        isLoading: false,
+      ),
     );
   }
 }

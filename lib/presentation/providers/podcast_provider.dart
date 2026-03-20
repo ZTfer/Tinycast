@@ -185,3 +185,14 @@ final episodesProvider = Provider<List<Episode>?>((ref) {
   final state = ref.watch(podcastProvider);
   return state.episodes;
 });
+
+/// 为每个播客提供最新3集剧集的 Provider
+/// 使用 FutureProvider.family 来支持基于 podcastId 的参数化查询
+final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>((
+  ref,
+  podcastId,
+) async {
+  final useCase = ref.watch(getEpisodesByPodcastIdUseCaseProvider);
+  final episodes = await useCase(podcastId);
+  return episodes.take(3).toList();
+});
