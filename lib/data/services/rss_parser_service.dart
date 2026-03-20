@@ -29,6 +29,7 @@ class RssParserService {
        _maxRetryCount = maxRetryCount {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
+    _dio.options.sendTimeout = Duration(milliseconds: timeout);
   }
 
   /// 解析 RSS 订阅源

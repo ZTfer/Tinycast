@@ -57,7 +57,7 @@ class _SubscribeByRssState extends ConsumerState<SubscribeByRss> {
         const SizedBox(height: 12.0),
         SubscribeActionBar(
           onSearch: () {
-            if (_currentSearchUrl != null || _currentSearchUrl!.isEmpty) {
+            if (_currentSearchUrl == null || _currentSearchUrl!.isEmpty) {
               return;
             }
             ref.read(podcastSearchProvider.notifier).searchPodcast(_currentSearchUrl!);

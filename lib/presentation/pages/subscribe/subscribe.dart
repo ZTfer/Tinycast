@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/pages/subscribe/subscribe_action_bar/subscribe_action_bar.dart';
+// import 'package:tinycast/presentation/pages/subscribe/subscribe_action_bar/subscribe_action_bar.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_by_opml/subscribe_by_opml.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_by_rss/subscribe_by_rss.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_tab/subscribe_tab.dart';
-
 
 class Subscribe extends StatefulWidget {
   const Subscribe({super.key});
@@ -25,10 +24,7 @@ class _SubscribeState extends State<Subscribe> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SubscribeTab(
-          currentPage: _currentPage,
-          onPageChanged: _navigateToPage,
-        ),
+        SubscribeTab(currentPage: _currentPage, onPageChanged: _navigateToPage),
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(12),
@@ -37,11 +33,11 @@ class _SubscribeState extends State<Subscribe> {
           ),
         ),
         // 操作栏
-        Container(
-          padding: const EdgeInsets.all(12),
-          alignment: Alignment.center,
-          child: const SubscribeActionBar(),
-        ),
+        // Container(
+        //   padding: const EdgeInsets.all(12),
+        //   alignment: Alignment.center,
+        //   child: const SubscribeActionBar(),
+        // ),
       ],
     );
   }

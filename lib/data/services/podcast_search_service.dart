@@ -27,11 +27,12 @@ class PodcastSearchService {
     RssParserService? rssParserService,
     int maxRetryCount = AppConstants.maxRetryCount,
     int timeout = AppConstants.defaultTimeout,
-  })  : _dio = dioInstance ?? dio.Dio(),
-        _rssParserService = rssParserService ?? RssParserService(),
-        _maxRetryCount = maxRetryCount {
+  }) : _dio = dioInstance ?? dio.Dio(),
+       _rssParserService = rssParserService ?? RssParserService(),
+       _maxRetryCount = maxRetryCount {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
+    _dio.options.sendTimeout = Duration(milliseconds: timeout);
   }
 
   /// 搜索播客
@@ -84,10 +85,7 @@ class PodcastSearchService {
       return await _rssParserService.parseRssFeed(xmlUrl);
     } catch (e) {
       Logger.error('解析 XML 文件失败: $xmlUrl', error: e);
-      throw AppException.validation(
-        '无法解析 RSS 文件',
-        originalError: e,
-      );
+      throw AppException.validation('无法解析 RSS 文件', originalError: e);
     }
   }
 
@@ -101,9 +99,7 @@ class PodcastSearchService {
     try {
       rssUrl = await _findRssLinkInHtml(url);
       if (rssUrl == null || rssUrl.isEmpty) {
-        throw AppException.validation(
-          '未找到 RSS 订阅链接',
-        );
+        throw AppException.validation('未找到 RSS 订阅链接');
       }
 
       Logger.info('找到 RSS 链接: $rssUrl');
@@ -113,10 +109,7 @@ class PodcastSearchService {
       if (e is AppException) {
         rethrow;
       }
-      throw AppException.validation(
-        '未找到有效的播客 RSS 链接',
-        originalError: e,
-      );
+      throw AppException.validation('未找到有效的播客 RSS 链接', originalError: e);
     }
   }
 
@@ -136,7 +129,8 @@ class PodcastSearchService {
           url,
           options: dio.Options(
             headers: {
-              'Accept': 'text/html, application/xhtml+xml, application/xml, */*',
+              'Accept':
+                  'text/html, application/xhtml+xml, application/xml, */*',
               'User-Agent': 'TinyCast/${AppConstants.appVersion}',
             },
           ),
@@ -198,8 +192,8 @@ class PodcastSearchService {
     try {
       final document = html_parser.parse(htmlContent);
 
-      final rssUrl = _findRssLinkInHead(document) ??
-          _findXmlLinkInHref(document);
+      final rssUrl =
+          _findRssLinkInHead(document) ?? _findXmlLinkInHref(document);
 
       if (rssUrl == null || rssUrl.isEmpty) {
         return null;
@@ -217,8 +211,10 @@ class PodcastSearchService {
   /// [document] HTML 文档对象
   /// 返回找到的 RSS 链接，如果未找到则返回 null
   String? _findRssLinkInHead(dynamic document) {
-    final linkElements = document.querySelectorAll('link[type="application/rss+xml"]');
-    
+    final linkElements = document.querySelectorAll(
+      'link[type="application/rss+xml"]',
+    );
+
     for (final link in linkElements) {
       final href = link.attributes['href'];
       if (href != null && href.isNotEmpty) {
@@ -236,7 +232,7 @@ class PodcastSearchService {
   /// 返回找到的 XML 链接，如果未找到则返回 null
   String? _findXmlLinkInHref(dynamic document) {
     final anchors = document.querySelectorAll('a[href]');
-    
+
     for (final anchor in anchors) {
       final href = anchor.attributes['href'];
       if (href != null && href.toLowerCase().contains('.xml')) {
