@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:dio/io.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:html/parser.dart' as html_parser;
 import '../../core/utils/logger.dart';
@@ -35,15 +33,6 @@ class PodcastSearchService {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
-
-    _dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient();
-        client.findProxy = (uri) => 'DIRECT';
-        client.badCertificateCallback = (cert, host, port) => true;
-        return client;
-      },
-    );
   }
 
   /// 搜索播客

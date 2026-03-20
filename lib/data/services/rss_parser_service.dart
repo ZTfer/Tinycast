@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:dio/io.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:rss_dart/dart_rss.dart';
 import 'package:rss_dart/domain/rss_itunes_category.dart';
@@ -32,15 +30,6 @@ class RssParserService {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
-
-    _dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient();
-        client.findProxy = (uri) => 'DIRECT';
-        client.badCertificateCallback = (cert, host, port) => true;
-        return client;
-      },
-    );
   }
 
   /// 解析 RSS 订阅源
