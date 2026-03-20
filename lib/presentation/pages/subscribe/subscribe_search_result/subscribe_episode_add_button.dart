@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/presentation/providers/podcast_search_provider.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 
-class SubscribeEpisodeAddButton extends StatefulWidget {
+class SubscribeEpisodeAddButton extends ConsumerWidget {
+  /// 播客信息
+  final Podcast podcast;
+
   /// 按钮点击的回调函数
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   /// 图标大小，默认 16
   final double iconSize;
@@ -25,7 +31,8 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
 
   const SubscribeEpisodeAddButton({
     super.key,
-    required this.onPressed,
+    required this.podcast,
+    this.onPressed,
     this.iconSize = 16,
     this.horizontalPadding = 4,
     this.verticalPadding = 4,
@@ -35,47 +42,75 @@ class SubscribeEpisodeAddButton extends StatefulWidget {
   });
 
   @override
-  State<SubscribeEpisodeAddButton> createState() =>
-      _SubscribeEpisodeAddButtonState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final addingStatus = ref.watch(podcastSearchAddingStatusProvider);
+    final isAdding = addingStatus[podcast.rssUrl] ?? false;
+    final isSubscribed = ref.read(podcastSearchProvider.notifier).isPodcastSubscribed(podcast.rssUrl);
+
+    return _SubscribeEpisodeAddButtonWidget(
+      podcast: podcast,
+      onPressed: onPressed,
+      isAdding: isAdding,
+      isSubscribed: isSubscribed,
+      iconSize: iconSize,
+      horizontalPadding: horizontalPadding,
+      verticalPadding: verticalPadding,
+      borderRadius: borderRadius,
+      width: width,
+      height: height,
+    );
+  }
 }
 
-class _SubscribeEpisodeAddButtonState extends State<SubscribeEpisodeAddButton> {
-  // 记录鼠标是否悬停在按钮上
+class _SubscribeEpisodeAddButtonWidget extends StatefulWidget {
+  final Podcast podcast;
+  final VoidCallback? onPressed;
+  final bool isAdding;
+  final bool isSubscribed;
+  final double iconSize;
+  final double horizontalPadding;
+  final double verticalPadding;
+  final double borderRadius;
+  final double width;
+  final double height;
+
+  const _SubscribeEpisodeAddButtonWidget({
+    required this.podcast,
+    this.onPressed,
+    required this.isAdding,
+    required this.isSubscribed,
+    this.iconSize = 16,
+    this.horizontalPadding = 4,
+    this.verticalPadding = 4,
+    this.borderRadius = 16,
+    this.width = 28,
+    this.height = 28,
+  });
+
+  @override
+  State<_SubscribeEpisodeAddButtonWidget> createState() =>
+      _SubscribeEpisodeAddButtonWidgetState();
+}
+
+class _SubscribeEpisodeAddButtonWidgetState extends State<_SubscribeEpisodeAddButtonWidget> {
   bool _isHovering = false;
-  // 记录按钮是否正在被按下
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      /// 鼠标进入时设置悬停状态
       onEnter: (_) => setState(() => _isHovering = true),
-
-      /// 鼠标离开时取消悬停状态
       onExit: (_) => setState(() => _isHovering = false),
-
-      /// 设置鼠标样式为点击手势
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        /// 按下时设置按下状态
         onTapDown: (_) => setState(() => _isPressed = true),
-
-        /// 抬起时取消按下状态
         onTapUp: (_) => setState(() => _isPressed = false),
-
-        /// 取消点击时取消按下状态
         onTapCancel: () => setState(() => _isPressed = false),
-
-        /// 触发点击回调
-        onTap: widget.onPressed,
+        onTap: (widget.isAdding || widget.isSubscribed) ? null : widget.onPressed,
         child: SizedBox(
-          /// 按钮宽度：28px
           width: widget.width,
-
-          /// 按钮高度：28px
           height: widget.height,
           child: AnimatedContainer(
-            /// 悬停时使用 200ms 动画，离开时立即切换（避免闪烁）
             duration: _isHovering
                 ? const Duration(milliseconds: 200)
                 : Duration.zero,
@@ -87,38 +122,42 @@ class _SubscribeEpisodeAddButtonState extends State<SubscribeEpisodeAddButton> {
               color: _getBackgroundColor(),
               borderRadius: BorderRadius.circular(widget.borderRadius),
             ),
-            child: Icon(
-              /// 默认状态为加号图标
-              LucideIcons.plus,
-              //Todo: 点击后切换为禁用状态的loading图标
-              // LucideIcons.loader,
-              //Todo: 执行结束后切换回加号图标
-              /// 图标大小：16px
-              size: widget.iconSize,
-              color: _getContentColor(),
-            ),
+            child: widget.isAdding
+                ? const SizedBox(
+                    width: 16.0,
+                    height: 16.0,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFFFFFFFF),
+                      ),
+                    ),
+                  )
+                : widget.isSubscribed
+                    ? const Icon(
+                        LucideIcons.check,
+                        size: 16,
+                        color: Color(0xFFFFFFFF),
+                      )
+                    : Icon(
+                        LucideIcons.plus,
+                        size: widget.iconSize,
+                        color: _getContentColor(),
+                      ),
           ),
         ),
       ),
     );
   }
 
-  /// 获取按钮背景颜色
-  ///
-  /// 根据当前状态返回对应的背景颜色：
-  /// - 按下状态：浅灰色 (0xFF111111)
-  /// - 悬停状态：浅灰色 (0xFF1C1C1C)
-  /// - 默认状态：浅灰色 (0xFF1F1F1F)
   Color _getBackgroundColor() {
+    if (widget.isAdding) return const Color(0xFF000000);
+    if (widget.isSubscribed) return const Color(0xFF4CAF50);
     if (_isPressed) return const Color(0xFF000000);
     if (_isHovering) return const Color(0xFF111111);
     return const Color(0xFF222222);
   }
 
-  /// 获取内容颜色（图标）
-  ///
-  /// 根据当前状态返回对应的内容颜色。
-  /// 目前所有状态都返回白色 (0xFFFFFFFF)。
   Color _getContentColor() {
     return const Color(0xFFFFFFFF);
   }

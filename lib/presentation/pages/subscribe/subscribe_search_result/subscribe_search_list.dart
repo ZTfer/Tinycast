@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_search_result/subscribe_search_list_item.dart';
-import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/podcast_search_provider.dart';
 
 class SubscribeSearchList extends ConsumerWidget {
   const SubscribeSearchList({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final podcastState = ref.watch(podcastProvider);
-    final podcasts = podcastState.podcasts ?? [];
+    final searchState = ref.watch(podcastSearchProvider);
+    final podcasts = searchState.searchResults ?? [];
 
-    if (podcastState.status == PodcastStatus.loading) {
+    if (searchState.status == PodcastSearchStatus.loading) {
       return const Center(
         child: SizedBox(
           width: 24.0,
@@ -24,11 +24,8 @@ class SubscribeSearchList extends ConsumerWidget {
     if (podcasts.isEmpty) {
       return const Center(
         child: Text(
-          '暂无订阅的播客',
-          style: TextStyle(
-            fontSize: 14.0,
-            color: Color(0x80000000),
-          ),
+          '暂无搜索结果',
+          style: TextStyle(fontSize: 14.0, color: Color(0x80000000)),
         ),
       );
     }
@@ -38,11 +35,9 @@ class SubscribeSearchList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final podcast = podcasts[index];
         return SubscribeSearchListItem(
-          title: podcast.title,
-          podcastName: podcast.author,
+          podcast: podcast,
           onAddPressed: () {
-            // 这里可以添加取消订阅的逻辑
-            // 目前暂时不做处理
+            ref.read(podcastSearchProvider.notifier).addPodcast(podcast);
           },
         );
       },

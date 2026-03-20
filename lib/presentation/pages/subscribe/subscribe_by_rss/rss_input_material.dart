@@ -12,6 +12,7 @@ import 'package:tinycast/core/utils/app_exception.dart';
 /// 使用 Material Design 的 TextField 实现的RSS订阅链接输入框。
 /// 包含占位文字提示，支持用户输入和焦点状态。
 /// 包含订阅按钮、URL格式验证、加载状态显示、错误提示和成功提示。
+/// 支持搜索和订阅两种模式。
 class RssInputMaterial extends ConsumerStatefulWidget {
   /// 输入框的初始值
   final String initialValue;
@@ -22,15 +23,23 @@ class RssInputMaterial extends ConsumerStatefulWidget {
   /// 输入框完成编辑的回调函数
   final ValueChanged<String>? onSubmitted;
 
+  /// 搜索回调函数
+  final ValueChanged<String>? onSearch;
+
   /// 输入框是否可用
   final bool enabled;
+
+  /// 是否为搜索模式
+  final bool isSearchMode;
 
   const RssInputMaterial({
     super.key,
     this.initialValue = '',
     this.onChanged,
     this.onSubmitted,
+    this.onSearch,
     this.enabled = true,
+    this.isSearchMode = false,
   });
 
   @override
@@ -81,9 +90,23 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
     }
   }
 
+  /// 标准化 URL（支持不包含协议的 URL）
+  String _normalizeUrl(String url) {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.isEmpty) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+      return trimmedUrl;
+    }
+
+    return 'https://$trimmedUrl';
+  }
+
   /// 处理订阅操作
   Future<void> _handleSubscribe() async {
-    final rssUrl = _controller.text.trim();
+    final rssUrl = _normalizeUrl(_controller.text.trim());
 
     // 清除之前的消息
     setState(() {
@@ -101,6 +124,13 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
       return;
     }
 
+    // 如果是搜索模式，调用搜索回调
+    if (widget.isSearchMode) {
+      widget.onSearch?.call(rssUrl);
+      return;
+    }
+
+    // 订阅模式
     // 开始订阅
     setState(() {
       _isSubscribing = true;
@@ -334,9 +364,9 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
                           ),
                         ),
                       )
-                    : const Text(
-                        '订阅',
-                        style: TextStyle(
+                    : Text(
+                        widget.isSearchMode ? '搜索' : '订阅',
+                        style: const TextStyle(
                           fontSize: 12.0,
                           fontWeight: FontWeight.w500,
                         ),

@@ -1,16 +1,14 @@
 import 'package:flutter/widgets.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 
 class SubscribeEpisodeInfo extends StatelessWidget {
-  /// 剧集标题
-  final String title;
-
-  /// 播客名称
-  final String podcastName;
+  /// 播客信息
+  final Podcast podcast;
 
   const SubscribeEpisodeInfo({
     super.key,
-    required this.title,
-    required this.podcastName,
+    required this.podcast,
   });
 
   @override
@@ -20,12 +18,28 @@ class SubscribeEpisodeInfo extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: Container(
+          child: SizedBox(
             width: 40,
             height: 40,
-            color: const Color(0xFFE0E0E0),
-            child: const Center(
-              child: Text('Cover', style: TextStyle(fontSize: 8)),
+            child: CachedNetworkImage(
+              imageUrl: podcast.artworkUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                width: 40,
+                height: 40,
+                color: const Color(0xFFE0E0E0),
+                child: const Center(
+                  child: Text('Cover', style: TextStyle(fontSize: 8)),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                width: 40,
+                height: 40,
+                color: const Color(0xFFE0E0E0),
+                child: const Center(
+                  child: Text('Cover', style: TextStyle(fontSize: 8)),
+                ),
+              ),
             ),
           ),
         ),
@@ -36,7 +50,7 @@ class SubscribeEpisodeInfo extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                title,
+                podcast.title,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -47,7 +61,7 @@ class SubscribeEpisodeInfo extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                podcastName,
+                podcast.description.isNotEmpty ? podcast.description : podcast.author,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

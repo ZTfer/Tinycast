@@ -1,47 +1,43 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/secondary_button.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart';
+import 'package:tinycast/presentation/providers/podcast_search_provider.dart';
 
 /// 订阅操作栏组件
 ///
 /// 包含取消和订阅两个按钮的操作栏。
 /// 使用 Row 横向排列，居中对齐。
-class SubscribeActionBar extends StatelessWidget {
-  const SubscribeActionBar({super.key});
+class SubscribeActionBar extends ConsumerWidget {
+  /// 搜索回调函数
+  final VoidCallback? onSearch;
+
+  const SubscribeActionBar({
+    super.key,
+    this.onSearch,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchState = ref.watch(podcastSearchProvider);
+    final isLoading = searchState.status == PodcastSearchStatus.loading;
+
     return Row(
-      /// 主轴尺寸：最小，根据内容自适应
       mainAxisSize: MainAxisSize.min,
-
-      /// 主轴对齐：居中
-      // mainAxisAlignment: MainAxisAlignment.center,
-
-      /// 子组件列表
       children: [
-        /// 取消按钮
         SecondaryButton(
-          /// 按钮文字
           label: '取消',
-
-          /// 按钮点击的回调函数
           onPressed: () {
             debugPrint('Follow pressed');
+            ref.read(podcastSearchProvider.notifier).reset();
           },
         ),
-
-        /// 按钮间距：12px
         const SizedBox(width: 12),
-
-        /// 订阅按钮
         PrimaryButton(
-          /// 按钮文字
           label: '搜索',
-
-          /// 按钮点击的回调函数
-          onPressed: () {
+          onPressed: isLoading ? () {} : () {
             debugPrint('Subscribe pressed');
+            onSearch?.call();
           },
         ),
       ],
