@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
 import '../database/isar_service.dart';

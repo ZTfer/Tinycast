@@ -9,7 +9,7 @@ import audio_service
 import audio_session
 import desktop_multi_window
 import file_picker
-import isar_flutter_libs
+import isar_community_flutter_libs
 import just_audio
 import screen_retriever_macos
 import sqflite_darwin

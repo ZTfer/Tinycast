@@ -1,8 +1,8 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 part 'podcast_model.g.dart';
 
-@Collection()
+@collection
 class Podcast {
   final Id id = Isar.autoIncrement;
 

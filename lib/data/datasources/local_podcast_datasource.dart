@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
 import '../../core/utils/logger.dart';
