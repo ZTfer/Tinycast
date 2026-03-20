@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
+import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:xml/xml.dart';
 import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
@@ -30,6 +31,13 @@ class RssParserService {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
+
+    _dio.httpClientAdapter = Http2Adapter(
+      ConnectionManager(
+        idleTimeout: Duration(seconds: 10),
+        onClientCreate: (_, config) => config.onBadCertificate = (_) => true,
+      ),
+    );
   }
 
   /// 解析 RSS 订阅源
