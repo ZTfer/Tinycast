@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_by_rss/rss_input_material.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe_search_result/subscribe_search_result.dart';
-import 'package:tinycast/presentation/pages/subscribe/subscribe_action_bar/subscribe_action_bar.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_search_provider.dart';
 
@@ -14,8 +13,6 @@ class SubscribeByRss extends ConsumerStatefulWidget {
 }
 
 class _SubscribeByRssState extends ConsumerState<SubscribeByRss> {
-  String? _currentSearchUrl;
-
   @override
   void initState() {
     super.initState();
@@ -49,20 +46,12 @@ class _SubscribeByRssState extends ConsumerState<SubscribeByRss> {
             child: RssInputMaterial(
               isSearchMode: true,
               onSearch: (url) {
-                _currentSearchUrl = url;
+                ref.read(podcastSearchProvider.notifier).searchPodcast(url);
               },
             ),
           ),
         ),
         const SizedBox(height: 12.0),
-        SubscribeActionBar(
-          onSearch: () {
-            if (_currentSearchUrl == null || _currentSearchUrl!.isEmpty) {
-              return;
-            }
-            ref.read(podcastSearchProvider.notifier).searchPodcast(_currentSearchUrl!);
-          },
-        ),
         Expanded(child: const SubscribeSearchResult()),
       ],
     );
