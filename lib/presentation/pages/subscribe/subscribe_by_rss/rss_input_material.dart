@@ -72,7 +72,7 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
   /// 验证 RSS URL 格式
   bool _isValidUrl(String url) {
     if (url.isEmpty) return false;
-    
+
     try {
       final uri = Uri.parse(url);
       return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
@@ -121,8 +121,9 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
       });
 
       // 显示成功提示
-      ErrorToast.showSuccess(context, '订阅成功！');
-
+      if (mounted) {
+        ErrorToast.showSuccess(context, '订阅成功！');
+      }
       // 刷新播客列表
       ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
 
@@ -172,22 +173,21 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
       }
 
       // 显示错误对话框，提供重试选项
-      ErrorDialog.show(
-        context,
-        exception,
-        onRetry: () {
-          // 重试订阅
-          _handleSubscribe();
-        },
-      );
+      if (mounted) {
+        ErrorDialog.show(
+          context,
+          exception,
+          onRetry: () {
+            // 重试订阅
+            _handleSubscribe();
+          },
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 监听 podcast 状态
-    final podcastState = ref.watch(podcastProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -256,7 +256,10 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
                   ),
 
                   /// 最小高度约束
-                  constraints: const BoxConstraints(minHeight: 34.0, maxHeight: 40.0),
+                  constraints: const BoxConstraints(
+                    minHeight: 34.0,
+                    maxHeight: 40.0,
+                  ),
 
                   /// 去除默认的标签
                   label: null,
@@ -312,7 +315,10 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF000000),
                   foregroundColor: const Color(0xFFFFFFFF),
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 8.0,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -323,7 +329,9 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
                         height: 16.0,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.0,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFFFFF)),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFFFFFFFF),
+                          ),
                         ),
                       )
                     : const Text(
@@ -343,10 +351,7 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               _successMessage!,
-              style: const TextStyle(
-                fontSize: 12.0,
-                color: Colors.green,
-              ),
+              style: const TextStyle(fontSize: 12.0, color: Colors.green),
             ),
           ),
       ],

@@ -10,7 +10,7 @@ class StorageErrorHandler {
   static AppException handleFileSystemException(FileSystemException e) {
     Logger.error('文件系统错误', error: e);
 
-    final message = e.message ?? '文件操作失败';
+    final message = e.message;
 
     if (e.osError?.errorCode == 2) {
       return AppException.storage(

@@ -8,7 +8,6 @@ import '../../domain/usecases/get_subscribed_podcasts_usecase.dart';
 import '../../domain/usecases/get_podcast_by_id_usecase.dart';
 import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
-import 'base_provider.dart';
 
 enum PodcastStatus {
   initial,

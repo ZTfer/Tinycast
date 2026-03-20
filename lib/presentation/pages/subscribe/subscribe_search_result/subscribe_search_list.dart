@@ -39,7 +39,7 @@ class SubscribeSearchList extends ConsumerWidget {
         final podcast = podcasts[index];
         return SubscribeSearchListItem(
           title: podcast.title,
-          podcastName: podcast.author ?? '未知作者',
+          podcastName: podcast.author,
           onAddPressed: () {
             // 这里可以添加取消订阅的逻辑
             // 目前暂时不做处理

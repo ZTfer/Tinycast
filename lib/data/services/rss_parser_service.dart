@@ -79,7 +79,7 @@ class RssParserService {
         Logger.info('RSS 解析完成: ${podcast.title}, ${episodes.length} 个节目');
 
         return {'podcast': podcast, 'episodes': episodes};
-      } on dio.DioException catch (e, stackTrace) {
+      } on dio.DioException catch (e) {
         Logger.warning(
           'RSS 解析失败 (尝试 ${retryCount + 1}/$_maxRetryCount): ${e.message}',
         );

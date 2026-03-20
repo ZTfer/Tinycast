@@ -16,25 +16,22 @@ import 'dart:io';
 /// 这个文件展示了如何在应用中使用错误处理和用户反馈系统
 class ErrorHandlingExample {
   /// 示例1: 使用 ErrorHandler 处理异步操作
-  Future<void> example1_UseErrorHandler() async {
+  Future<void> exampleUseErrorHandler() async {
     try {
-      final result = await ErrorHandler.handleError(
-        () async {
-          // 执行可能出错的操作
-          await Future.delayed(const Duration(seconds: 1));
-          return 'Success';
-        },
-        errorMessage: '执行操作失败',
-      );
+      final result = await ErrorHandler.handleError(() async {
+        // 执行可能出错的操作
+        await Future.delayed(const Duration(seconds: 1));
+        return 'Success';
+      }, errorMessage: '执行操作失败');
 
-      print('结果: $result');
+      Logger.info('结果: $result');
     } catch (e) {
-      print('错误: $e');
+      Logger.error('错误: $e');
     }
   }
 
   /// 示例2: 使用 ErrorToast 显示错误提示
-  void example2_ShowErrorToast(BuildContext context) {
+  void exampleShowErrorToast(BuildContext context) {
     // 显示通用错误
     ErrorToast.showError(context, '操作失败');
 
@@ -62,7 +59,7 @@ class ErrorHandlingExample {
   }
 
   /// 示例3: 使用 ErrorDialog 显示错误对话框
-  Future<void> example3_ShowErrorDialog(BuildContext context) async {
+  Future<void> exampleShowErrorDialog(BuildContext context) async {
     // 显示通用错误对话框
     final exception = AppException.network('网络连接失败');
     await ErrorDialog.show(
@@ -70,56 +67,62 @@ class ErrorHandlingExample {
       exception,
       onRetry: () {
         // 重试操作
-        print('重试操作');
+        Logger.info('重试操作');
       },
       onDismiss: () {
         // 对话框关闭时的回调
-        print('对话框关闭');
+        Logger.info('对话框关闭');
       },
     );
 
     // 显示网络错误对话框
-    await NetworkErrorDialog.show(
-      context,
-      message: '网络连接失败，请检查网络设置',
-      onRetry: () {
-        // 重试网络请求
-        print('重试网络请求');
-      },
-    );
+    if (context.mounted) {
+      await NetworkErrorDialog.show(
+        context,
+        message: '网络连接失败，请检查网络设置',
+        onRetry: () {
+          // 重试网络请求
+          Logger.info('重试网络请求');
+        },
+      );
+    }
 
     // 显示解析错误对话框
-    await ParseErrorDialog.show(
-      context,
-      message: '数据解析失败，请稍后重试',
-      onRetry: () {
-        // 重试解析
-        print('重试解析');
-      },
-    );
+    if (context.mounted) {
+      await ParseErrorDialog.show(
+        context,
+        message: '数据解析失败，请稍后重试',
+        onRetry: () {
+          // 重试解析
+          Logger.info('重试解析');
+        },
+      );
+    }
 
     // 显示存储错误对话框
-    await StorageErrorDialog.show(
-      context,
-      message: '存储操作失败，请重试',
-      onRetry: () {
-        // 重试存储操作
-        print('重试存储操作');
-      },
-    );
+    if (context.mounted) {
+      await StorageErrorDialog.show(
+        context,
+        message: '存储操作失败，请重试',
+        onRetry: () {
+          // 重试存储操作
+          Logger.info('重试存储操作');
+        },
+      );
+    }
   }
 
   /// 示例4: 使用 NetworkErrorHandler 处理网络错误
-  Future<void> example4_HandleNetworkError() async {
+  Future<void> exampleHandleNetworkError() async {
     final dioInstance = dio.Dio();
 
     try {
       final response = await dioInstance.get('https://api.example.com/data');
-      print('响应: ${response.data}');
+      Logger.info('响应: ${response.data}');
     } on dio.DioException catch (e) {
       // 使用 NetworkErrorHandler 处理 Dio 异常
       final exception = NetworkErrorHandler.handleDioException(e);
-      print('网络错误: ${exception.message}');
+      Logger.error('网络错误: ${exception.message}');
     }
 
     // 使用带重试的网络请求
@@ -129,9 +132,9 @@ class ErrorHandlingExample {
         maxRetries: 3,
         retryDelay: const Duration(seconds: 1),
       );
-      print('结果: $result');
+      Logger.info('结果: $result');
     } catch (e) {
-      print('重试失败: $e');
+      Logger.error('重试失败: $e');
     }
 
     // 使用带超时的网络请求
@@ -140,20 +143,20 @@ class ErrorHandlingExample {
         () => dioInstance.get('https://api.example.com/data'),
         timeout: const Duration(seconds: 30),
       );
-      print('结果: $result');
+      Logger.info('结果: $result');
     } catch (e) {
-      print('超时错误: $e');
+      Logger.error('超时错误: $e');
     }
   }
 
   /// 示例5: 使用 ParseErrorHandler 处理解析错误
-  void example5_HandleParseError() {
+  void exampleHandleParseError() {
     // 验证 RSS 订阅源格式
     try {
       ParseErrorHandler.validateRssFeed('https://example.com/podcast.rss');
-      print('RSS URL 验证通过');
+      Logger.info('RSS URL 验证通过');
     } catch (e) {
-      print('验证失败: $e');
+      Logger.error('验证失败: $e');
     }
 
     // 验证播客数据
@@ -163,9 +166,9 @@ class ErrorHandlingExample {
         'rssUrl': 'https://example.com/podcast.rss',
         'artworkUrl': 'https://example.com/cover.jpg',
       });
-      print('播客数据验证通过');
+      Logger.info('播客数据验证通过');
     } catch (e) {
-      print('验证失败: $e');
+      Logger.error('验证失败: $e');
     }
 
     // 验证节目数据
@@ -175,57 +178,64 @@ class ErrorHandlingExample {
         'audioUrl': 'https://example.com/episode1.mp3',
         'podcastId': 1,
       });
-      print('节目数据验证通过');
+      Logger.info('节目数据验证通过');
     } catch (e) {
-      print('验证失败: $e');
+      Logger.error('验证失败: $e');
     }
   }
 
   /// 示例6: 使用 StorageErrorHandler 处理存储错误
-  Future<void> example6_HandleStorageError() async {
+  Future<void> exampleHandleStorageError() async {
     // 验证文件路径
     try {
       StorageErrorHandler.validateFilePath('/path/to/file.txt');
-      print('文件路径验证通过');
+      Logger.info('文件路径验证通过');
     } catch (e) {
-      print('验证失败: $e');
+      Logger.error('验证失败: $e');
     }
 
     // 安全创建目录
     try {
-      final directory = await StorageErrorHandler.createDirectorySafely('/path/to/directory');
-      print('目录创建成功: ${directory.path}');
+      final directory = await StorageErrorHandler.createDirectorySafely(
+        '/path/to/directory',
+      );
+      Logger.info('目录创建成功: ${directory.path}');
     } catch (e) {
-      print('创建目录失败: $e');
+      Logger.error('创建目录失败: $e');
     }
 
     // 安全读取文件
     try {
-      final content = await StorageErrorHandler.readFileSafely('/path/to/file.txt');
-      print('文件内容: $content');
+      final content = await StorageErrorHandler.readFileSafely(
+        '/path/to/file.txt',
+      );
+      Logger.info('文件内容: $content');
     } catch (e) {
-      print('读取文件失败: $e');
+      Logger.error('读取文件失败: $e');
     }
 
     // 安全写入文件
     try {
-      await StorageErrorHandler.writeFileSafely('/path/to/file.txt', 'Hello, World!');
-      print('文件写入成功');
+      await StorageErrorHandler.writeFileSafely(
+        '/path/to/file.txt',
+        'Hello, World!',
+      );
+      Logger.info('文件写入成功');
     } catch (e) {
-      print('写入文件失败: $e');
+      Logger.error('写入文件失败: $e');
     }
 
     // 安全删除文件
     try {
       await StorageErrorHandler.deleteFileSafely('/path/to/file.txt');
-      print('文件删除成功');
+      Logger.info('文件删除成功');
     } catch (e) {
-      print('删除文件失败: $e');
+      Logger.error('删除文件失败: $e');
     }
   }
 
   /// 示例7: 在 Widget 中使用错误处理
-  Widget example7_ErrorHandlingInWidget(BuildContext context) {
+  Widget exampleErrorHandlingInWidget(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
         try {
@@ -255,7 +265,7 @@ class ErrorHandlingExample {
               exception,
               onRetry: () {
                 // 重试操作
-                example7_ErrorHandlingInWidget(context);
+                exampleErrorHandlingInWidget(context);
               },
             );
           }
@@ -266,24 +276,21 @@ class ErrorHandlingExample {
   }
 
   /// 示例8: 在 Provider 中使用错误处理
-  Future<void> example8_ErrorHandlingInProvider() async {
+  Future<void> exampleErrorHandlingInProvider() async {
     try {
       // 执行数据加载
       await _loadData();
     } catch (e) {
-      // 处理错误
-      AppException exception;
-      if (e is AppException) {
-        exception = e;
-      } else {
-        exception = AppException.unknown(
-          '加载数据失败：${e.toString()}',
-          originalError: e,
-        );
-      }
-
       // 在 Provider 中设置错误状态
-      // state = state.copyWith(status: Status.error, error: exception);
+      // state = state.copyWith(
+      //   status: Status.error,
+      //   error: e is AppException
+      //       ? e
+      //       : AppException.unknown(
+      //           '加载数据失败：${e.toString()}',
+      //           originalError: e,
+      //         ),
+      // );
     }
   }
 
@@ -303,7 +310,7 @@ class ErrorHandlingExample {
 /// 错误处理最佳实践
 class ErrorHandlingBestPractices {
   /// 最佳实践1: 始终使用 AppException 来表示应用错误
-  void bestPractice1_UseAppException() {
+  void bestPracticeUseAppException() {
     // 好的做法
     try {
       // 执行操作
@@ -320,58 +327,54 @@ class ErrorHandlingBestPractices {
   }
 
   /// 最佳实践2: 使用适当的错误类型
-  void bestPractice2_UseAppropriateErrorType() {
-    // 网络错误
-    throw AppException.network('网络连接失败');
-
-    // 存储错误
-    throw AppException.storage('文件写入失败');
-
-    // 验证错误
-    throw AppException.validation('输入格式不正确');
-
-    // 认证错误
-    throw AppException.authentication('登录已过期');
-
-    // 权限错误
-    throw AppException.permission('没有访问权限');
-
-    // 未知错误
-    throw AppException.unknown('未知错误');
+  void bestPracticeUseAppropriateErrorType(String errorType) {
+    switch (errorType) {
+      case 'network':
+        throw AppException.network('网络连接失败');
+      case 'storage':
+        throw AppException.storage('文件写入失败');
+      case 'validation':
+        throw AppException.validation('输入格式不正确');
+      case 'authentication':
+        throw AppException.authentication('登录已过期');
+      case 'permission':
+        throw AppException.permission('没有访问权限');
+      default:
+        throw AppException.unknown('未知错误');
+    }
   }
 
   /// 最佳实践3: 提供重试选项
-  Future<void> bestPractice3_ProvideRetryOption(BuildContext context) async {
+  Future<void> bestPracticeProvideRetryOption(BuildContext context) async {
     try {
       await _performOperation();
     } catch (e) {
       if (e is AppException) {
-        await ErrorDialog.show(
-          context,
-          e,
-          onRetry: () {
-            // 提供重试选项
-            bestPractice3_ProvideRetryOption(context);
-          },
-        );
+        if (context.mounted) {
+          await ErrorDialog.show(
+            context,
+            e,
+            onRetry: () {
+              // 提供重试选项
+              bestPracticeProvideRetryOption(context);
+            },
+          );
+        }
       }
     }
   }
 
   /// 最佳实践4: 显示用户友好的错误消息
-  void bestPractice4_ShowUserFriendlyErrorMessages(BuildContext context) {
+  void bestPracticeShowUserFriendlyErrorMessages(BuildContext context) {
     // 使用 ErrorToast 显示简短错误
     ErrorToast.showNetworkError(context);
 
     // 使用 ErrorDialog 显示详细错误
-    ErrorDialog.show(
-      context,
-      AppException.network('网络连接失败'),
-    );
+    ErrorDialog.show(context, AppException.network('网络连接失败'));
   }
 
   /// 最佳实践5: 记录错误日志
-  void bestPractice5_LogErrors() {
+  void bestPracticeLogErrors() {
     try {
       // 执行操作
     } catch (e, stackTrace) {
@@ -379,18 +382,16 @@ class ErrorHandlingBestPractices {
       Logger.error('操作失败', error: e, stackTrace: stackTrace);
 
       // 抛出应用异常
-      throw AppException.unknown('操作失败', originalError: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '操作失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
-  /// 模拟操作
-  Future<void> _performOperation() async {
-    await Future.delayed(const Duration(seconds: 1));
-    throw Exception('操作失败');
-  }
-
   /// 最佳实践6: 使用专门的错误处理器
-  Future<void> bestPractice6_UseSpecializedErrorHandlers() async {
+  Future<void> bestPracticeUseSpecializedErrorHandlers() async {
     // 使用 NetworkErrorHandler 处理网络错误
     try {
       // 执行网络请求
@@ -417,16 +418,26 @@ class ErrorHandlingBestPractices {
   }
 
   /// 最佳实践7: 在 UI 层处理错误
-  Future<void> bestPractice7_HandleErrorsInUI(BuildContext context) async {
+  Future<void> bestPracticeHandleErrorsInUI(BuildContext context) async {
     try {
       await _performOperation();
     } catch (e) {
       // 在 UI 层处理错误
       if (e is AppException) {
-        ErrorToast.showException(context, e);
+        if (context.mounted) {
+          ErrorToast.showException(context, e);
+        }
       } else {
-        ErrorToast.showError(context, '操作失败');
+        if (context.mounted) {
+          ErrorToast.showError(context, '操作失败');
+        }
       }
     }
+  }
+
+  /// 模拟操作
+  Future<void> _performOperation() async {
+    await Future.delayed(const Duration(seconds: 1));
+    throw Exception('操作失败');
   }
 }

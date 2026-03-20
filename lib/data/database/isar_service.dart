@@ -3,7 +3,6 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
 import 'package:tinycast/data/models/episode_model.dart';
-import 'package:tinycast/data/database/isar_collections.dart';
 
 class IsarService {
   static IsarService? _instance;

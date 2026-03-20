@@ -46,7 +46,9 @@ class _LibraryState extends ConsumerState<Library> {
       }
 
       // 显示错误提示
-      ErrorToast.showException(context, exception);
+      if (mounted) {
+        ErrorToast.showException(context, exception);
+      }
     }
   }
 
@@ -58,8 +60,10 @@ class _LibraryState extends ConsumerState<Library> {
   /// 重试加载
   Future<void> _retryLoad() async {
     try {
-      await _loadPodcasts();
-      ErrorToast.showSuccess(context, '加载成功');
+      await _loadPodcasts(); // 显示错误提示
+      if (mounted) {
+        ErrorToast.showSuccess(context, '加载成功');
+      }
     } catch (e) {
       // 错误已在 _loadPodcasts 中处理
     }
@@ -67,11 +71,7 @@ class _LibraryState extends ConsumerState<Library> {
 
   /// 导航到播客详情页面
   void _navigateToPodcastDetail(Podcast podcast) {
-    AppRouter.navigateTo(
-      context,
-      AppRoutes.podcastDetail,
-      arguments: podcast,
-    );
+    AppRouter.navigateTo(context, AppRoutes.podcastDetail, arguments: podcast);
   }
 
   /// 显示更多操作菜单
@@ -145,9 +145,7 @@ class _LibraryState extends ConsumerState<Library> {
     if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
       return const SizedBox(
         height: 400,
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -159,18 +157,11 @@ class _LibraryState extends ConsumerState<Library> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.red,
-              ),
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
               Text(
                 state.errorMessage ?? '加载失败',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -195,26 +186,16 @@ class _LibraryState extends ConsumerState<Library> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.podcasts_outlined,
-                size: 64,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.podcasts_outlined, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
                 '还没有订阅任何播客',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
               Text(
                 '点击下方 "+" 按钮订阅你喜欢的播客',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[400],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[400]),
               ),
             ],
           ),

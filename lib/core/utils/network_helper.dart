@@ -186,8 +186,7 @@ class NetworkHelper {
     void Function(int bytes, int total)? onProgress,
   }) async {
     try {
-      final file = File(savePath);
-      final response = await _dio.download(
+      await _dio.download(
         url,
         savePath,
         onReceiveProgress: onProgress,

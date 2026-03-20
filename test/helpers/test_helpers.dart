@@ -193,10 +193,10 @@ class TestHelpers {
     T Function(String key) creator,
     List<String> keys,
   ) {
-    return Map.fromIterable(
-      keys,
-      key: (key) => key as String,
-      value: (key) => creator(key as String),
-    );
+    final result = <String, T>{};
+    for (final key in keys) {
+      result[key] = creator(key);
+    }
+    return result;
   }
 }
