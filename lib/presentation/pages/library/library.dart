@@ -18,9 +18,6 @@ class Library extends ConsumerStatefulWidget {
 }
 
 class _LibraryState extends ConsumerState<Library> {
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
-
   @override
   void initState() {
     super.initState();
@@ -51,11 +48,6 @@ class _LibraryState extends ConsumerState<Library> {
         ErrorToast.showException(context, exception);
       }
     }
-  }
-
-  /// 下拉刷新
-  Future<void> _onRefresh() async {
-    await _loadPodcasts();
   }
 
   /// 重试加载
@@ -128,25 +120,11 @@ class _LibraryState extends ConsumerState<Library> {
     final state = ref.watch(podcastProvider);
     final podcasts = state.podcasts ?? [];
 
-    return Material(
-      color: Colors.transparent,
-      child: Localizations(
-        locale: const Locale('en', 'US'),
-        delegates: const <LocalizationsDelegate<dynamic>>[
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        child: RefreshIndicator(
-          key: _refreshIndicatorKey,
-          onRefresh: _onRefresh,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildContent(state, podcasts),
-            ),
-          ),
-        ),
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _buildContent(state, podcasts),
       ),
     );
   }
