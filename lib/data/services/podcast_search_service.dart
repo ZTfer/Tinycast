@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:dio/io.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:html/parser.dart' as html_parser;
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
@@ -35,11 +36,13 @@ class PodcastSearchService {
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
 
-    _dio.httpClientAdapter = Http2Adapter(
-      ConnectionManager(
-        idleTimeout: Duration(seconds: 10),
-        onClientCreate: (_, config) => config.onBadCertificate = (_) => true,
-      ),
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.findProxy = (uri) => 'DIRECT';
+        client.badCertificateCallback = (cert, host, port) => true;
+        return client;
+      },
     );
   }
 
