@@ -3,6 +3,7 @@
 ## 为什么
 
 当前路由系统存在以下问题：
+
 1. 新窗口打开逻辑（settings 和 subscribe）直接在 sidebar 组件中处理，没有使用统一的 router 系统
 2. body.dart 使用字符串匹配的 switch 语句来切换页面，没有使用 app_router 中定义的路由方法
 3. 路由逻辑分散，不利于测试和维护
@@ -55,7 +56,7 @@
 #### 场景：移除 sidebar 中的窗口逻辑
 
 - **当**重构代码
-- **则**从 sidebar.dart 移除 _openSettingsWindow 和 _openSubscribeWindow 方法
+- **则**从 sidebar.dart 移除 _openSettingsWindow 和_openSubscribeWindow 方法
 - **并且**改为调用 router 的对应方法
 
 #### 场景：在 router 中添加窗口方法

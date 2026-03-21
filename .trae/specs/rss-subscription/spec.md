@@ -66,7 +66,7 @@
   - websiteUrl: String（播客官网链接）
   - language: String（语言，如 zh-CN）
   - copyright: String（版权信息）
-  - categories: List<String>（分类列表）
+  - categories: List`String`（分类列表）
   - keywords: String（关键词）
   - isExplicit: bool（是否包含成人内容）
   - ownerName: String（所有者名称）

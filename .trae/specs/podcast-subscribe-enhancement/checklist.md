@@ -1,3 +1,5 @@
+# 检查清单
+
 - [x] SubscribeEpisodeAddButton 组件支持自定义图标参数
 - [x] SubscribeEpisodeAddButton 在未订阅状态显示自定义图标或默认 plus 图标
 - [x] SubscribeEpisodeAddButton 在已订阅状态显示 check 图标

@@ -116,13 +116,17 @@ class DatabaseCleanupPage extends ConsumerWidget {
 
       Logger.info('数据库清理完成');
 
-      _showMessage(
-        context,
-        '清理完成！删除了 ${result['deletedPodcasts']} 个播客和 ${result['deletedEpisodes']} 个剧集',
-      );
+      if (context.mounted) {
+        _showMessage(
+          context,
+          '清理完成！删除了 ${result['deletedPodcasts']} 个播客和 ${result['deletedEpisodes']} 个剧集',
+        );
+      }
     } catch (e, stackTrace) {
       Logger.error('清理数据库失败', error: e, stackTrace: stackTrace);
-      _showMessage(context, '清理失败: $e');
+      if (context.mounted) {
+        _showMessage(context, '清理失败: $e');
+      }
     }
   }
 
@@ -162,9 +166,13 @@ class DatabaseCleanupPage extends ConsumerWidget {
         }
       }
 
-      _showDialog(context, '数据库状态', buffer.toString());
+      if (context.mounted) {
+        _showDialog(context, '数据库状态', buffer.toString());
+      }
     } catch (e) {
-      _showMessage(context, '查询失败: $e');
+      if (context.mounted) {
+        _showMessage(context, '查询失败: $e');
+      }
     }
   }
 

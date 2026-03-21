@@ -25,7 +25,7 @@
   - [x] SubTask 4.3: 验证按钮状态更新
   - [x] SubTask 4.4: 验证数据库检查逻辑
 
-# Task Dependencies
+## Task Dependencies
 
 - [Task 3] depends on [Task 2]
 - [Task 4] depends on [Task 1, Task 3]

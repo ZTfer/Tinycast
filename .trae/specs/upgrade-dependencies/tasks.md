@@ -1,4 +1,5 @@
 # Tasks
+
 - [x] Task 1: 检查当前依赖的可用更新
   - [x] SubTask 1.1: 运行 `flutter pub outdated` 查看所有可用的更新
   - [x] SubTask 1.2: 记录需要更新的依赖及其版本变更
@@ -23,7 +24,8 @@
   - [x] SubTask 5.2: 运行应用进行手动测试
   - [x] SubTask 5.3: 验证核心功能正常工作
 
-# Task Dependencies
+## Task Dependencies
+
 - [Task 2] 依赖 [Task 1]
 - [Task 3] 依赖 [Task 1]
 - [Task 4] 依赖 [Task 2, Task 3]

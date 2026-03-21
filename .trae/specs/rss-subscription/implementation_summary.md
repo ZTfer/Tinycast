@@ -32,7 +32,9 @@
 | 任务 18 | 实现文件管理界面 | Low | ✅ 已完成 |
 | 任务 19 | 配置平台特定的文件权限 | Low | ✅ 已完成 |
 
-**核心任务完成率：100% (19/19)**
+### 核心任务完成率
+
+核心任务完成率：100% (19/19)
 
 ### ⏸ 待完成任务（测试任务）
 
@@ -260,7 +262,7 @@
 
 - 使用 dio 下载音频文件
 - 支持断点续传（HTTP Range 头）
-- 下载进度跟踪（Stream<DownloadStatus> 和 Stream<double>）
+- 下载进度跟踪（Stream`DownloadStatus` 和 Stream`double`）
 - 部分下载文件保存在 temporaryDirectory
 - 实时更新数据库中的下载状态（isDownloaded、downloadedPath、downloadProgress）
 - 线程安全（单例模式）
@@ -475,7 +477,7 @@
 - 拼接文件路径
 - 生成文件名
 
-1.  **状态管理**
+1. **状态管理**
 
 - 使用 Riverpod 进行状态管理
 - 对异步数据和依赖注入支持更好
