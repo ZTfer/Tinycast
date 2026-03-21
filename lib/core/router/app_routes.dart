@@ -9,4 +9,5 @@ class AppRoutes {
   static const String search = '/search';
   static const String testPage = '/test-page';
   static const String podcastDetail = '/podcast-detail';
+  static const String databaseCleanup = '/database-cleanup';
 }

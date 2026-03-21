@@ -1,4 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:tinycast/core/router/app_router.dart';
+import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/presentation/pages/settings/general_settings/download_settings/download_settings.dart';
 import 'package:tinycast/presentation/pages/settings/general_settings/auto_download_settings/auto_download_settings.dart';
 
@@ -9,8 +11,8 @@ class GeneralSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return Table(
       columnWidths: const {
-        0: IntrinsicColumnWidth(), // 关键：第一列宽度由内容决定（取最大值）
-        1: FlexColumnWidth(), // 第二列占满剩余空间
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.top,
       children: [
@@ -46,6 +48,39 @@ class GeneralSettings extends StatelessWidget {
               ),
             ),
             AutoDownloadSettings(),
+          ],
+        ),
+        TableRow(
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(right: 8.0, top: 8.0),
+              child: Text(
+                "开发者:",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: Color(0xD9000000),
+                  fontSize: 14,
+                  height: 16 / 14,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  AppRouter.navigateTo(context, AppRoutes.databaseCleanup);
+                },
+                child: const Text(
+                  "数据库清理工具",
+                  style: TextStyle(
+                    color: Color(0xFF0000EE),
+                    fontSize: 14,
+                    height: 16 / 14,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ],
