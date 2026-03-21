@@ -38,7 +38,11 @@ class PodcastRepositoryImpl implements PodcastRepository {
       final podcastEntity = result['podcast'] as Podcast;
       final episodes = result['episodes'] as List<Episode>;
 
+      Logger.info('播客实体: ${podcastEntity.title}, isSubscribed: ${podcastEntity.isSubscribed}');
+
       final podcastId = await _localDataSource.savePodcast(podcastEntity);
+      
+      Logger.info('保存播客后获得的 ID: $podcastId');
 
       final episodesWithPodcastId = episodes.map((episode) {
         return Episode(
@@ -68,6 +72,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       await _localDataSource.saveEpisodes(episodesWithPodcastId);
 
+      Logger.info('准备更新订阅状态，podcastId: $podcastId');
       await _localDataSource.updatePodcastSubscription(podcastId, true);
       await _localDataSource.updatePodcastEpisodeCount(podcastId, episodes.length);
 
@@ -75,6 +80,8 @@ class PodcastRepositoryImpl implements PodcastRepository {
       if (podcastModel == null) {
         throw AppException.unknown('保存播客后无法获取数据');
       }
+      
+      Logger.info('获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}');
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
 

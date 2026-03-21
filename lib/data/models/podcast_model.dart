@@ -4,7 +4,7 @@ part 'podcast_model.g.dart';
 
 @collection
 class Podcast {
-  final Id id = Isar.autoIncrement;
+  Id id = Isar.autoIncrement;
 
   @Index()
   late String title;

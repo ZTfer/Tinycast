@@ -271,6 +271,7 @@ Podcast _podcastDeserialize(
   object.copyright = reader.readStringOrNull(offsets[3]);
   object.description = reader.readString(offsets[5]);
   object.episodeCount = reader.readLong(offsets[6]);
+  object.id = id;
   object.isExplicit = reader.readBool(offsets[7]);
   object.isSubscribed = reader.readBool(offsets[8]);
   object.keywords = reader.readStringList(offsets[9]);
@@ -344,7 +345,9 @@ List<IsarLinkBase<dynamic>> _podcastGetLinks(Podcast object) {
   return [];
 }
 
-void _podcastAttach(IsarCollection<dynamic> col, Id id, Podcast object) {}
+void _podcastAttach(IsarCollection<dynamic> col, Id id, Podcast object) {
+  object.id = id;
+}
 
 extension PodcastByIndex on IsarCollection<Podcast> {
   Future<Podcast?> getByRssUrl(String rssUrl) {

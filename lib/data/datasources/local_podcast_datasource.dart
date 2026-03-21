@@ -17,11 +17,17 @@ class LocalPodcastDataSource {
     try {
       Logger.info('获取所有已订阅播客');
 
-      final podcasts = await _isarService.isar.podcasts
-          .filter()
-          .isSubscribedEqualTo(true)
-          .sortBySubscribedAtDesc()
-          .findAll();
+      final allPodcasts = await _isarService.isar.podcasts.where().findAll();
+
+      Logger.info('数据库中共有 ${allPodcasts.length} 个播客');
+
+      for (final p in allPodcasts) {
+        Logger.info(
+          '播客: ${p.title}, isSubscribed: ${p.isSubscribed}, ID: ${p.id}',
+        );
+      }
+
+      final podcasts = allPodcasts.where((p) => p.isSubscribed).toList();
 
       Logger.info('成功获取 ${podcasts.length} 个已订阅播客');
 
@@ -80,6 +86,16 @@ class LocalPodcastDataSource {
       final podcastModel = _convertPodcastEntityToModel(podcast);
 
       final id = await _isarService.isar.writeTxn(() async {
+        final existingPodcast = await _isarService.isar.podcasts
+            .filter()
+            .rssUrlEqualTo(podcast.rssUrl)
+            .findFirst();
+
+        if (existingPodcast != null) {
+          Logger.info('播客已存在，更新现有记录，ID: ${existingPodcast.id}');
+          podcastModel.id = existingPodcast.id;
+        }
+
         return await _isarService.isar.podcasts.put(podcastModel);
       });
 
@@ -293,10 +309,19 @@ class LocalPodcastDataSource {
 
       await _isarService.isar.writeTxn(() async {
         final podcast = await _isarService.isar.podcasts.get(id);
+        Logger.info(
+          '查询到的播客: ${podcast?.title}, ID: ${podcast?.id}, 当前isSubscribed: ${podcast?.isSubscribed}',
+        );
+
         if (podcast != null) {
           podcast.isSubscribed = isSubscribed;
           podcast.subscribedAt = isSubscribed ? DateTime.now() : null;
-          await _isarService.isar.podcasts.put(podcast);
+          final updatedId = await _isarService.isar.podcasts.put(podcast);
+          Logger.info(
+            '更新后的播客 ID: $updatedId, isSubscribed: ${podcast.isSubscribed}',
+          );
+        } else {
+          Logger.warning('未找到 ID 为 $id 的播客，无法更新订阅状态');
         }
       });
 
