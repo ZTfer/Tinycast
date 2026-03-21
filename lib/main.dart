@@ -4,6 +4,7 @@ import 'package:tinycast/presentation/pages/homepage.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/core/router/app_router.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
     return WidgetsApp(
       title: 'Tinycast',
       color: const Color(0xFFFFFFFF),
+      onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,

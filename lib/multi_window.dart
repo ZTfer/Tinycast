@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
+import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
 
 /// 窗口参数类
@@ -104,6 +105,7 @@ class SettingsWindowApp extends StatelessWidget {
     return WidgetsApp(
       title: 'Settings',
       color: const Color(0xFFFFFFFF),
+      onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,
