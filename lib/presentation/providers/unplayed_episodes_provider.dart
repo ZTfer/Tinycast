@@ -36,7 +36,10 @@ final getUnplayedEpisodesUseCaseProvider = Provider<GetUnplayedEpisodesUseCase>(
 
 class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
   @override
-  UnplayedEpisodesState build() => UnplayedEpisodesState();
+  UnplayedEpisodesState build() {
+    Future.microtask(() => loadUnplayedEpisodes());
+    return UnplayedEpisodesState();
+  }
 
   GetUnplayedEpisodesUseCase get _getUnplayedEpisodesUseCase =>
       ref.read(getUnplayedEpisodesUseCaseProvider);
