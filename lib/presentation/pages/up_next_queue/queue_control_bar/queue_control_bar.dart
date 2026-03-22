@@ -13,7 +13,14 @@ class QueueControlBar extends StatefulWidget {
   /// 节目时长（如 "32 min"）
   final String duration;
 
-  const QueueControlBar({super.key, required this.duration});
+  /// 播放按钮点击回调
+  final VoidCallback? onPlayPressed;
+
+  const QueueControlBar({
+    super.key,
+    required this.duration,
+    this.onPlayPressed,
+  });
 
   @override
   State<QueueControlBar> createState() => _QueueControlBarState();
@@ -158,7 +165,7 @@ class _QueueControlBarState extends State<QueueControlBar> {
           label: widget.duration,
 
           /// 点击回调（暂无实现）
-          onPressed: () {},
+          onPressed: widget.onPlayPressed ?? () {},
 
           /// 图标大小 10
           iconSize: 10,

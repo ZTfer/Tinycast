@@ -374,6 +374,36 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<List<model.Episode>> getUnplayedEpisodes() async {
+    try {
+      Logger.info('获取所有未播放节目');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .isPlayedEqualTo(false)
+          .sortByPubDateDesc()
+          .findAll();
+
+      Logger.info('成功获取 ${episodes.length} 个未播放节目');
+
+      return episodes;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('获取未播放节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '获取未播放节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('获取未播放节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取未播放节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   model.Podcast _convertPodcastEntityToModel(Podcast entity) {
     return model.Podcast()
       ..title = entity.title

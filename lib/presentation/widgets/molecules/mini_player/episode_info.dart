@@ -1,48 +1,74 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class EpisodeInfo extends StatelessWidget {
-  const EpisodeInfo({super.key});
+  final String? title;
+  final String? artworkUrl;
+
+  const EpisodeInfo({
+    super.key,
+    this.title,
+    this.artworkUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        // mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 通常左对齐更合适
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 封面图占位
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: Container(
               width: 40,
               height: 40,
-              color: const Color(0xFFE0E0E0), // 灰色占位背景
-              child: const Center(
-                child: Text(
-                  'Cover',
-                  style: TextStyle(
-                    fontSize: 8,
-                    decoration: TextDecoration.none,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              // 如果有真实图片，可以使用:
-              // child: Image.network('url', fit: BoxFit.cover),
+              color: const Color(0xFFE0E0E0),
+              child: artworkUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: artworkUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => const Center(
+                        child: Text(
+                          'Cover',
+                          style: TextStyle(
+                            fontSize: 8,
+                            decoration: TextDecoration.none,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    )
+                  : const Center(
+                      child: Text(
+                        'Cover',
+                        style: TextStyle(
+                          fontSize: 8,
+                          decoration: TextDecoration.none,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 12),
-          // 标题和播客名称
           Expanded(
             child: Column(
-              mainAxisSize: MainAxisSize.min, // 紧凑排列
-              crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-              children: const [
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  'Episode Title',
-                  style: TextStyle(
+                  title ?? '未播放节目',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF333333),
@@ -51,9 +77,9 @@ class EpisodeInfo extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'Podcast Name',
+                const SizedBox(height: 2),
+                const Text(
+                  'tinycast',
                   style: TextStyle(
                     fontSize: 12,
                     color: Color(0xFF888888),

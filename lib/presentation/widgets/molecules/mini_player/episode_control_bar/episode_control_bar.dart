@@ -9,7 +9,18 @@ import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_contr
 /// 位于播放器底部的控制栏，提供播放速度、播放控制（后退、播放/暂停、前进）和音量控制功能。
 /// 使用 Overlay 实现下拉菜单和弹出窗口，支持点击遮罩层关闭弹出窗口。
 class EpisodeControlBar extends StatefulWidget {
-  const EpisodeControlBar({super.key});
+  final bool isPlaying;
+  final VoidCallback onPlayPause;
+  final VoidCallback onSeekForward;
+  final VoidCallback onSeekBackward;
+
+  const EpisodeControlBar({
+    super.key,
+    this.isPlaying = false,
+    required this.onPlayPause,
+    required this.onSeekForward,
+    required this.onSeekBackward,
+  });
 
   @override
   State<EpisodeControlBar> createState() => _EpisodeControlBarState();
@@ -229,32 +240,32 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
             // 播放控制按钮之间的间距
             spacing: 40,
             children: [
-              // 后退15秒按钮
+              // 后退30秒按钮
               EpisodeControlButton(
                 icon: const Icon(
                   LucideIcons.undoDot,
                   size: 20,
                   fontWeight: FontWeight.normal,
                 ),
-                onPressed: () {},
+                onPressed: widget.onSeekBackward,
               ),
               // 播放/暂停按钮
               EpisodeControlButton(
-                icon: const Icon(
-                  LucideIcons.play,
+                icon: Icon(
+                  widget.isPlaying ? LucideIcons.pause : LucideIcons.play,
                   size: 24,
                   fontWeight: FontWeight.normal,
                 ),
-                onPressed: () {},
+                onPressed: widget.onPlayPause,
               ),
-              // 前进15秒按钮
+              // 前进30秒按钮
               EpisodeControlButton(
                 icon: const Icon(
                   LucideIcons.redoDot400,
                   size: 20,
                   fontWeight: FontWeight.normal,
                 ),
-                onPressed: () {},
+                onPressed: widget.onSeekForward,
               ),
             ],
           ),

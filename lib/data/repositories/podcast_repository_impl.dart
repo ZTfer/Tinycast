@@ -221,6 +221,32 @@ class PodcastRepositoryImpl implements PodcastRepository {
     }
   }
 
+  @override
+  Future<List<Episode>> getUnplayedEpisodes() async {
+    try {
+      Logger.info('获取未播放节目列表');
+
+      final episodeModels = await _localDataSource.getUnplayedEpisodes();
+
+      final episodes = episodeModels
+          .map((model) => _convertEpisodeModelToEntity(model))
+          .toList();
+
+      Logger.info('成功获取 ${episodes.length} 个未播放节目');
+
+      return episodes;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('获取未播放节目列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取未播放节目列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Podcast _convertPodcastModelToEntity(model.Podcast model) {
     return Podcast(
       id: model.id,

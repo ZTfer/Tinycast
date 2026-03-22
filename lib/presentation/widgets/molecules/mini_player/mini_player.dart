@@ -1,33 +1,43 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/episode_control_bar.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_info.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_progress.dart';
 
-class MiniPlayer extends StatelessWidget {
+class MiniPlayer extends ConsumerWidget {
   const MiniPlayer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playerState = ref.watch(playbackProvider);
+    final episode = playerState.currentEpisode;
+
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFFFFFFF), // 背景色
+        color: Color(0xFFFFFFFF),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // 自适应高度
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 播放信息（封面、标题、播客名）
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: EpisodeInfo(),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: EpisodeInfo(
+              title: episode?.title,
+              artworkUrl: episode?.artworkUrl,
+            ),
           ),
-          // 播放控制栏（上一曲、播放/暂停、下一曲）
-          const EpisodeControlBar(),
-          // 播放进度条（拖动调整播放位置）
+          EpisodeControlBar(
+            isPlaying: playerState.isPlaying,
+            onPlayPause: () => ref.read(playbackProvider.notifier).togglePlayPause(),
+            onSeekForward: () => ref.read(playbackProvider.notifier).seekForward(),
+            onSeekBackward: () => ref.read(playbackProvider.notifier).seekBackward(),
+          ),
           EpisodeProgress(
-            position: const Duration(minutes: 3, seconds: 42),
-            duration: const Duration(minutes: 45, seconds: 30),
+            position: playerState.currentPosition,
+            duration: playerState.duration,
             onSeek: (position) {
-              // TODO: 接入实际的播放器 seek 逻辑
+              ref.read(playbackProvider.notifier).seekTo(position);
             },
           ),
         ],
