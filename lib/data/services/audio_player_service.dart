@@ -103,6 +103,7 @@ class AudioPlayerService {
 
       _player.playbackEventStream.listen(_onPlaybackEvent);
       _player.playerStateStream.listen(_onPlayerStateChange);
+      _player.positionStream.listen((_) => _updateProgress());
 
       Logger.info('AudioPlayerService initialized');
     } catch (e, stackTrace) {
