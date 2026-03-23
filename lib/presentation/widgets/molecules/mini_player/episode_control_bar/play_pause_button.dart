@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
-import 'package:tinycast/core/utils/logger.dart';
 
 class PlayPauseButton extends ConsumerWidget {
   final VoidCallback onPressed;
@@ -12,13 +11,10 @@ class PlayPauseButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPlaying = ref.watch(isPlayingProvider);
-    
-    Logger.debug('PlayPauseButton build: isPlaying=$isPlaying');
 
     return _PlayPauseButtonContent(
       isPlaying: isPlaying,
       onPressed: onPressed,
-      key: ValueKey('play_pause_$isPlaying'),
     );
   }
 }
@@ -30,7 +26,6 @@ class _PlayPauseButtonContent extends StatefulWidget {
   const _PlayPauseButtonContent({
     required this.isPlaying,
     required this.onPressed,
-    super.key,
   });
 
   @override
@@ -43,15 +38,7 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
   bool _isPressed = false;
 
   @override
-  void didUpdateWidget(_PlayPauseButtonContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    Logger.debug('PlayPauseButton didUpdateWidget: ${oldWidget.isPlaying} -> ${widget.isPlaying}');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    Logger.debug('PlayPauseButtonContent build: isPlaying=${widget.isPlaying}');
-    
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 
@@ -62,17 +61,14 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   void _initListeners() {
-    _playbackStateSubscription = _audioPlayerService.playbackStateStream.listen((
-      playbackState,
-    ) {
-      final isPlaying =
-          playbackState == PlaybackState.playing ||
-          playbackState == PlaybackState.buffering;
-      Logger.debug(
-        'PlaybackNotifier: playbackState=$playbackState, isPlaying=$isPlaying, current=${state.isPlaying}',
-      );
-      state = state.copyWith(isPlaying: isPlaying);
-    });
+    _playbackStateSubscription = _audioPlayerService.playbackStateStream.listen(
+      (playbackState) {
+        final isPlaying =
+            playbackState == PlaybackState.playing ||
+            playbackState == PlaybackState.buffering;
+        state = state.copyWith(isPlaying: isPlaying);
+      },
+    );
 
     _progressSubscription = _audioPlayerService.progressStream.listen((
       progress,

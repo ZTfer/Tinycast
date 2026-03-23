@@ -120,9 +120,6 @@ class AudioPlayerService {
   }
 
   void _onPlayerStateChange(PlayerState state) {
-    Logger.debug(
-      '_onPlayerStateChange: playing=${state.playing}, processingState=${state.processingState}',
-    );
     _updatePlaybackState();
   }
 
@@ -150,13 +147,8 @@ class AudioPlayerService {
       state = PlaybackState.paused;
     }
 
-    Logger.debug(
-      '_updatePlaybackState: playing=${_player.playing}, processingState=${_player.processingState}, state=$state',
-    );
-
     if (!_playbackStateController.isClosed) {
       _playbackStateController.add(state);
-      Logger.debug('_playbackStateController.add($state) called');
     }
   }
 
