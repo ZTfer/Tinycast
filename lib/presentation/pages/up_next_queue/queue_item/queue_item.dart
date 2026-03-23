@@ -176,7 +176,11 @@ class QueueItem extends StatelessWidget {
   /// 使用 QueueControlBar 组件，包含播放按钮和更多选项。
   Widget _buildActionSection() {
     final durationStr = _formatDuration(episode.duration);
-    return QueueControlBar(duration: durationStr, onPlayPressed: onPlayPressed);
+    return QueueControlBar(
+      episodeId: episode.id,
+      duration: durationStr,
+      onPlayPressed: onPlayPressed,
+    );
   }
 
   String _formatDuration(int? durationInSeconds) {

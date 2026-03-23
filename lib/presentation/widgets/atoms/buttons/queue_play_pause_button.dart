@@ -4,61 +4,42 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 class QueuePlayPauseButton extends ConsumerWidget {
+  final int? episodeId;
   final String label;
   final VoidCallback onPressed;
-  final double iconSize;
-  final double fontSize;
-  final double horizontalPadding;
-  final double verticalPadding;
-  final double borderRadius;
 
   const QueuePlayPauseButton({
     super.key,
+    this.episodeId,
     required this.label,
     required this.onPressed,
-    this.iconSize = 10,
-    this.fontSize = 10,
-    this.horizontalPadding = 8,
-    this.verticalPadding = 4,
-    this.borderRadius = 10,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentEpisode = ref.watch(currentEpisodeProvider);
     final isPlaying = ref.watch(isPlayingProvider);
 
+    final isCurrentEpisode = currentEpisode?.id == episodeId;
+    final showPauseIcon = isCurrentEpisode && isPlaying;
+
     return _QueuePlayPauseButtonContent(
-      isPlaying: isPlaying,
+      showPauseIcon: showPauseIcon,
       label: label,
       onPressed: onPressed,
-      iconSize: iconSize,
-      fontSize: fontSize,
-      horizontalPadding: horizontalPadding,
-      verticalPadding: verticalPadding,
-      borderRadius: borderRadius,
     );
   }
 }
 
 class _QueuePlayPauseButtonContent extends StatefulWidget {
-  final bool isPlaying;
+  final bool showPauseIcon;
   final String label;
   final VoidCallback onPressed;
-  final double iconSize;
-  final double fontSize;
-  final double horizontalPadding;
-  final double verticalPadding;
-  final double borderRadius;
 
   const _QueuePlayPauseButtonContent({
-    required this.isPlaying,
+    required this.showPauseIcon,
     required this.label,
     required this.onPressed,
-    required this.iconSize,
-    required this.fontSize,
-    required this.horizontalPadding,
-    required this.verticalPadding,
-    required this.borderRadius,
   });
 
   @override
@@ -86,29 +67,26 @@ class _QueuePlayPauseButtonContentState
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: EdgeInsets.symmetric(
-            horizontal: widget.horizontalPadding,
-            vertical: widget.verticalPadding,
-          ),
+          padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderRadius: BorderRadius.circular(50.0),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                widget.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                size: widget.iconSize,
+                widget.showPauseIcon ? LucideIcons.pause : LucideIcons.play,
+                size: 10,
                 fontWeight: FontWeight.normal,
                 color: const Color(0xFF000000),
               ),
               const SizedBox(width: 6),
               Text(
                 widget.label,
-                style: TextStyle(
-                  color: const Color(0xFF000000),
-                  fontSize: widget.fontSize,
+                style: const TextStyle(
+                  color: Color(0xFF000000),
+                  fontSize: 10,
                   fontWeight: FontWeight.normal,
                   decoration: TextDecoration.none,
                 ),

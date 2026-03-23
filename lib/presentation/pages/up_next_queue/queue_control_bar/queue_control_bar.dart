@@ -10,6 +10,9 @@ import 'package:tinycast/presentation/pages/up_next_queue/queue_episode_dropdown
 /// 包含播放按钮（带时长）和更多选项图标。
 /// 点击更多选项图标会显示下拉菜单。
 class QueueControlBar extends StatefulWidget {
+  /// 节目 ID
+  final int episodeId;
+
   /// 节目时长（如 "32 min"）
   final String duration;
 
@@ -18,6 +21,7 @@ class QueueControlBar extends StatefulWidget {
 
   const QueueControlBar({
     super.key,
+    required this.episodeId,
     required this.duration,
     this.onPlayPressed,
   });
@@ -158,26 +162,14 @@ class _QueueControlBarState extends State<QueueControlBar> {
       children: [
         /// 播放按钮（带时长）
         QueuePlayPauseButton(
+          /// 节目 ID
+          episodeId: widget.episodeId,
+
           /// 节目时长标签
           label: widget.duration,
 
           /// 点击回调
           onPressed: widget.onPlayPressed ?? () {},
-
-          /// 图标大小 10
-          iconSize: 10,
-
-          /// 字体大小 10
-          fontSize: 10,
-
-          /// 水平内边距 8
-          horizontalPadding: 8,
-
-          /// 垂直内边距 4
-          verticalPadding: 4,
-
-          /// 圆角半径 10
-          borderRadius: 10,
         ),
 
         /// 占位符，将播放按钮和更多按钮分开
@@ -189,8 +181,7 @@ class _QueueControlBarState extends State<QueueControlBar> {
           key: _moreButtonKey,
 
           /// 更多图标
-          icon: const Icon(LucideIcons.ellipsisVertical
-),
+          icon: const Icon(LucideIcons.ellipsisVertical),
 
           /// 点击时显示下拉菜单
           onPressed: _showDropdown,
