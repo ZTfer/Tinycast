@@ -5,7 +5,7 @@ import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/episode_control_button.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/speed_dropdown/speed_dropdown.dart';
-import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_control_bar/volume_control_bar.dart';
+import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_control_bar/volume_control_popup.dart';
 
 /// 剧集控制栏
 ///
@@ -170,9 +170,6 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       top = offset.dy - estimatedMenuHeight - 4;
     }
 
-    // 获取当前音量值 (0.0-1.0)
-    final currentVolume = ref.read(volumeProvider);
-
     // 创建弹出窗口的 OverlayEntry
     _dropdownOverlay = OverlayEntry(
       builder: (context) => Stack(
@@ -192,12 +189,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             child: GestureDetector(
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: VolumeControlBar(
-                volume: (currentVolume * 100).round(),
-                onVolumeChanged: (value) {
-                  ref.read(playbackProvider.notifier).setVolume(value / 100.0);
-                },
-              ),
+              child: const VolumeControlPopup(),
             ),
           ),
         ],
