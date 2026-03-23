@@ -9,6 +9,7 @@ class PlayerState {
   final Duration currentPosition;
   final Duration duration;
   final double speed;
+  final double volume;
 
   PlayerState({
     this.currentEpisode,
@@ -16,6 +17,7 @@ class PlayerState {
     this.currentPosition = Duration.zero,
     this.duration = Duration.zero,
     this.speed = 1.0,
+    this.volume = 1.0,
   });
 
   PlayerState copyWith({
@@ -24,6 +26,7 @@ class PlayerState {
     Duration? currentPosition,
     Duration? duration,
     double? speed,
+    double? volume,
   }) {
     return PlayerState(
       currentEpisode: currentEpisode ?? this.currentEpisode,
@@ -31,6 +34,7 @@ class PlayerState {
       currentPosition: currentPosition ?? this.currentPosition,
       duration: duration ?? this.duration,
       speed: speed ?? this.speed,
+      volume: volume ?? this.volume,
     );
   }
 
@@ -44,6 +48,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   StreamSubscription? _playbackStateSubscription;
   StreamSubscription? _progressSubscription;
   StreamSubscription? _speedSubscription;
+  StreamSubscription? _volumeSubscription;
   StreamSubscription? _currentEpisodeSubscription;
 
   AudioPlayerService get _audioPlayerService => AudioPlayerService.instance;
@@ -79,6 +84,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       },
     );
 
+    _volumeSubscription = _audioPlayerService.volumeStream.listen(
+      (volume) {
+        state = state.copyWith(volume: volume);
+      },
+    );
+
     _currentEpisodeSubscription = _audioPlayerService.currentEpisodeStream
         .listen(
           (episode) {
@@ -91,6 +102,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _playbackStateSubscription?.cancel();
     _progressSubscription?.cancel();
     _speedSubscription?.cancel();
+    _volumeSubscription?.cancel();
     _currentEpisodeSubscription?.cancel();
   }
 
@@ -126,6 +138,10 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     await _audioPlayerService.setSpeed(speed);
   }
 
+  Future<void> setVolume(double volume) async {
+    await _audioPlayerService.setVolume(volume);
+  }
+
   Future<void> stop() async {
     await _audioPlayerService.stop();
   }
@@ -153,6 +169,10 @@ final durationProvider = Provider<Duration>((ref) {
 
 final speedProvider = Provider<double>((ref) {
   return ref.watch(playbackProvider).speed;
+});
+
+final volumeProvider = Provider<double>((ref) {
+  return ref.watch(playbackProvider).volume;
 });
 
 final progressRatioProvider = Provider<double>((ref) {

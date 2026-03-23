@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class EpisodeInfo extends StatelessWidget {
   final String? title;
   final String? artworkUrl;
+  final String? podcastTitle;
 
   const EpisodeInfo({
     super.key,
     this.title,
     this.artworkUrl,
+    this.podcastTitle,
   });
 
   @override
@@ -78,9 +80,9 @@ class EpisodeInfo extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  'tinycast',
-                  style: TextStyle(
+                Text(
+                  podcastTitle ?? '未知播客',
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF888888),
                     decoration: TextDecoration.none,

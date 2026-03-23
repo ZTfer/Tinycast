@@ -50,6 +50,9 @@ class AudioPlayerService {
   final StreamController<double> _speedController =
       StreamController<double>.broadcast();
 
+  final StreamController<double> _volumeController =
+      StreamController<double>.broadcast();
+
   final StreamController<domain.Episode?> _currentEpisodeController =
       StreamController<domain.Episode?>.broadcast();
 
@@ -59,6 +62,8 @@ class AudioPlayerService {
   Stream<PlaybackProgress> get progressStream => _progressController.stream;
 
   Stream<double> get speedStream => _speedController.stream;
+
+  Stream<double> get volumeStream => _volumeController.stream;
 
   Stream<domain.Episode?> get currentEpisodeStream =>
       _currentEpisodeController.stream;
@@ -75,6 +80,8 @@ class AudioPlayerService {
   }
 
   double get currentSpeed => _player.speed;
+
+  double get currentVolume => _player.volume;
 
   Duration get position => _player.position;
 
@@ -295,6 +302,21 @@ class AudioPlayerService {
     }
   }
 
+  Future<void> setVolume(double volume) async {
+    try {
+      await _player.setVolume(volume.clamp(0.0, 1.0));
+
+      if (!_volumeController.isClosed) {
+        _volumeController.add(volume);
+      }
+
+      Logger.info('Volume set to: ${(volume * 100).round()}%');
+    } catch (e, stackTrace) {
+      Logger.error('Failed to set volume', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> stop() async {
     try {
       await _savePlayProgress();
@@ -372,6 +394,7 @@ class AudioPlayerService {
       await _playbackStateController.close();
       await _progressController.close();
       await _speedController.close();
+      await _volumeController.close();
       await _currentEpisodeController.close();
 
       Logger.info('AudioPlayerService disposed');
@@ -403,6 +426,8 @@ class _AudioPlayerHandler extends BaseAudioHandler {
 
   @override
   Future<void> setSpeed(double speed) => _player.setSpeed(speed);
+
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
 
   @override
   Future<void> stop() async {

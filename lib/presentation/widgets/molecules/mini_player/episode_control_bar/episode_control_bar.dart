@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/episode_control_button.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/speed_dropdown/speed_dropdown.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_control_bar/volume_control_bar.dart';
@@ -8,7 +10,7 @@ import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_contr
 ///
 /// 位于播放器底部的控制栏，提供播放速度、播放控制（后退、播放/暂停、前进）和音量控制功能。
 /// 使用 Overlay 实现下拉菜单和弹出窗口，支持点击遮罩层关闭弹出窗口。
-class EpisodeControlBar extends StatefulWidget {
+class EpisodeControlBar extends ConsumerStatefulWidget {
   final bool isPlaying;
   final VoidCallback onPlayPause;
   final VoidCallback onSeekForward;
@@ -23,10 +25,10 @@ class EpisodeControlBar extends StatefulWidget {
   });
 
   @override
-  State<EpisodeControlBar> createState() => _EpisodeControlBarState();
+  ConsumerState<EpisodeControlBar> createState() => _EpisodeControlBarState();
 }
 
-class _EpisodeControlBarState extends State<EpisodeControlBar> {
+class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   /// 播放速度按钮的 GlobalKey，用于获取按钮的位置信息
   final GlobalKey _speedButtonKey = GlobalKey();
 
@@ -81,6 +83,9 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
       top = offset.dy - estimatedMenuHeight - 4;
     }
 
+    // 获取当前播放速度
+    final currentSpeed = ref.read(speedProvider);
+
     // 创建弹出窗口的 OverlayEntry
     _dropdownOverlay = OverlayEntry(
       builder: (context) => Stack(
@@ -100,7 +105,13 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
             child: GestureDetector(
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: SpeedDropdown(onItemSelected: _hideDropdown),
+              child: SpeedDropdown(
+                currentSpeed: currentSpeed,
+                onSpeedChanged: (speed) {
+                  ref.read(playbackProvider.notifier).setSpeed(speed);
+                },
+                onItemSelected: _hideDropdown,
+              ),
             ),
           ),
         ],
@@ -158,6 +169,9 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
       top = offset.dy - estimatedMenuHeight - 4;
     }
 
+    // 获取当前音量值 (0.0-1.0)
+    final currentVolume = ref.read(volumeProvider);
+
     // 创建弹出窗口的 OverlayEntry
     _dropdownOverlay = OverlayEntry(
       builder: (context) => Stack(
@@ -177,8 +191,12 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
             child: GestureDetector(
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              // 音量值
-              child: VolumeControlBar(volume: 30, onVolumeChanged: (value) {}),
+              child: VolumeControlBar(
+                volume: (currentVolume * 100).round(),
+                onVolumeChanged: (value) {
+                  ref.read(playbackProvider.notifier).setVolume(value / 100.0);
+                },
+              ),
             ),
           ),
         ],
@@ -219,6 +237,9 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取当前播放速度
+    final currentSpeed = ref.watch(speedProvider);
+
     return Container(
       // 控制栏的垂直和水平内边距
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -228,10 +249,23 @@ class _EpisodeControlBarState extends State<EpisodeControlBar> {
         children: [
           // 播放速度控制按钮
           EpisodeControlButton(
-            icon: const Icon(
-              LucideIcons.gauge400,
-              size: 16,
-              fontWeight: FontWeight.normal,
+            icon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.gauge400,
+                  size: 16,
+                  fontWeight: FontWeight.normal,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${currentSpeed}x',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
             ),
             onPressed: _showDropdown,
             key: _speedButtonKey,

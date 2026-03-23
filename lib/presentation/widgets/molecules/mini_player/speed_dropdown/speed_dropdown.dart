@@ -8,8 +8,17 @@ import 'package:tinycast/presentation/widgets/molecules/mini_player/speed_dropdo
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
 class SpeedDropdown extends StatelessWidget {
   final VoidCallback? onItemSelected;
+  final double currentSpeed;
+  final Function(double)? onSpeedChanged;
 
-  const SpeedDropdown({super.key, this.onItemSelected});
+  const SpeedDropdown({
+    super.key,
+    this.onItemSelected,
+    this.currentSpeed = 1.0,
+    this.onSpeedChanged,
+  });
+
+  static const List<double> _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +29,9 @@ class SpeedDropdown extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: Colors.grey.shade300, // 边框颜色
-          width: 0.5, // 边框宽度
-          style: BorderStyle.solid, // 实线
+          color: Colors.grey.shade300,
+          width: 0.5,
+          style: BorderStyle.solid,
         ),
         boxShadow: [
           BoxShadow(
@@ -36,49 +45,18 @@ class SpeedDropdown extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
-          children: [
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '2 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '1.8 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '1.5 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '1.3 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              icon: Icon(LucideIcons.check),
-              text: '1 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '0.8 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-            SpeedDropdownItem(
-              // icon: Icon(LucideIcons.check),
-              text: '0.5 x',
-              onPressed: () => _handleItemSelected(),
-            ),
-          ],
+          children: _speedOptions.map((speed) {
+            return SpeedDropdownItem(
+              icon: currentSpeed == speed ? Icon(LucideIcons.check) : null,
+              text: '${speed}x',
+              onPressed: () {
+                onSpeedChanged?.call(speed);
+                onItemSelected?.call();
+              },
+            );
+          }).toList(),
         ),
       ),
     );
-  }
-
-  void _handleItemSelected() {
-    onItemSelected?.call();
   }
 }
