@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_button.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_more_button.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_episode_dropdown/queue_episode_dropdown.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 /// Queue 控制栏组件
 ///
 /// 用于待播放队列列表项中的操作区域。
 /// 包含播放按钮（带时长）和更多选项图标。
 /// 点击更多选项图标会显示下拉菜单。
-class QueueControlBar extends StatefulWidget {
+class QueueControlBar extends ConsumerStatefulWidget {
   /// 节目 ID
   final int episodeId;
 
   /// 节目时长（如 "32 min"）
   final String duration;
 
-  /// 播放按钮点击回调
+  /// 播放按钮点击回调（播放新音频）
   final VoidCallback? onPlayPressed;
 
   const QueueControlBar({
@@ -27,13 +29,13 @@ class QueueControlBar extends StatefulWidget {
   });
 
   @override
-  State<QueueControlBar> createState() => _QueueControlBarState();
+  ConsumerState<QueueControlBar> createState() => _QueueControlBarState();
 }
 
 /// [QueueControlBar] 的状态类
 ///
 /// 管理下拉菜单的显示和隐藏状态。
-class _QueueControlBarState extends State<QueueControlBar> {
+class _QueueControlBarState extends ConsumerState<QueueControlBar> {
   /// 更多按钮的 GlobalKey，用于获取按钮的位置和大小
   final GlobalKey _moreButtonKey = GlobalKey();
 
@@ -154,6 +156,22 @@ class _QueueControlBarState extends State<QueueControlBar> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取当前播放状态
+    final playerState = ref.watch(playbackProvider);
+    final currentEpisodeId = playerState.currentEpisode?.id;
+    final isCurrentEpisode = currentEpisodeId == widget.episodeId;
+
+    // 处理播放/暂停切换
+    void handlePlayPause() {
+      if (isCurrentEpisode) {
+        // 当前音频正在播放或暂停中，切换播放/暂停状态
+        ref.read(playbackProvider.notifier).togglePlayPause();
+      } else {
+        // 播放新音频
+        widget.onPlayPressed?.call();
+      }
+    }
+
     return Row(
       /// 主轴尺寸最小，根据内容自适应
       mainAxisSize: MainAxisSize.min,
@@ -169,7 +187,7 @@ class _QueueControlBarState extends State<QueueControlBar> {
           label: widget.duration,
 
           /// 点击回调
-          onPressed: widget.onPlayPressed ?? () {},
+          onPressed: handlePlayPause,
         ),
 
         /// 占位符，将播放按钮和更多按钮分开
