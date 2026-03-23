@@ -4,6 +4,7 @@ import 'package:tinycast/presentation/pages/homepage.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/core/router/app_router.dart';
 
 void main(List<String> args) async {
@@ -37,6 +38,7 @@ void main(List<String> args) async {
 
 Future<void> _initializeApp() async {
   await IsarService.instance.open();
+  await AudioPlayerService.instance.init();
 }
 
 class MyApp extends StatelessWidget {

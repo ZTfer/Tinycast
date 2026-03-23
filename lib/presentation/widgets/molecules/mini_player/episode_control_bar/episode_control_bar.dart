@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/episode_control_button.dart';
+import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_control_bar/play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/speed_dropdown/speed_dropdown.dart';
 import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_control_bar/volume_control_bar.dart';
 
@@ -284,14 +285,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 onPressed: widget.onSeekBackward,
               ),
               // 播放/暂停按钮
-              EpisodeControlButton(
-                icon: Icon(
-                  widget.isPlaying ? LucideIcons.pause : LucideIcons.play,
-                  size: 24,
-                  fontWeight: FontWeight.normal,
-                ),
-                onPressed: widget.onPlayPause,
-              ),
+              PlayPauseButton(onPressed: widget.onPlayPause),
               // 前进30秒按钮
               EpisodeControlButton(
                 icon: const Icon(

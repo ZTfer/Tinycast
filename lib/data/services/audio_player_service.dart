@@ -120,6 +120,9 @@ class AudioPlayerService {
   }
 
   void _onPlayerStateChange(PlayerState state) {
+    Logger.debug(
+      '_onPlayerStateChange: playing=${state.playing}, processingState=${state.processingState}',
+    );
     _updatePlaybackState();
   }
 
@@ -147,12 +150,20 @@ class AudioPlayerService {
       state = PlaybackState.paused;
     }
 
+    Logger.debug(
+      '_updatePlaybackState: playing=${_player.playing}, processingState=${_player.processingState}, state=$state',
+    );
+
     if (!_playbackStateController.isClosed) {
       _playbackStateController.add(state);
+      Logger.debug('_playbackStateController.add($state) called');
     }
   }
 
-  Future<void> playEpisode(domain.Episode episode, {Duration? startPosition}) async {
+  Future<void> playEpisode(
+    domain.Episode episode, {
+    Duration? startPosition,
+  }) async {
     try {
       final audioPath = episode.downloadedPath ?? episode.audioUrl;
 
@@ -182,8 +193,7 @@ class AudioPlayerService {
         await _player.seek(startPosition);
       } else if (playProgress > 0 && playProgress < 1.0) {
         final savedPosition = Duration(
-          milliseconds:
-              (playProgress * (episode.duration ?? 0) * 1000).round(),
+          milliseconds: (playProgress * (episode.duration ?? 0) * 1000).round(),
         );
         await _player.seek(savedPosition);
       }
@@ -213,7 +223,9 @@ class AudioPlayerService {
       title: episode.title,
       artist: episode.author ?? 'Unknown',
       album: '',
-      artUri: episode.artworkUrl != null ? Uri.parse(episode.artworkUrl!) : null,
+      artUri: episode.artworkUrl != null
+          ? Uri.parse(episode.artworkUrl!)
+          : null,
       duration: episode.duration != null
           ? Duration(seconds: episode.duration!)
           : null,
@@ -227,7 +239,11 @@ class AudioPlayerService {
       await _player.play();
       Logger.info('Playback resumed');
     } catch (e, stackTrace) {
-      Logger.error('Failed to resume playback', error: e, stackTrace: stackTrace);
+      Logger.error(
+        'Failed to resume playback',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -238,7 +254,11 @@ class AudioPlayerService {
       await _savePlayProgress();
       Logger.info('Playback paused');
     } catch (e, stackTrace) {
-      Logger.error('Failed to pause playback', error: e, stackTrace: stackTrace);
+      Logger.error(
+        'Failed to pause playback',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -262,7 +282,9 @@ class AudioPlayerService {
     }
   }
 
-  Future<void> seekForward({Duration duration = const Duration(seconds: 30)}) async {
+  Future<void> seekForward({
+    Duration duration = const Duration(seconds: 30),
+  }) async {
     final newPosition = _player.position + duration;
     final maxPosition = _player.duration ?? Duration.zero;
 
@@ -275,7 +297,9 @@ class AudioPlayerService {
     Logger.info('Seeked forward ${duration.inSeconds}s');
   }
 
-  Future<void> seekBackward({Duration duration = const Duration(seconds: 30)}) async {
+  Future<void> seekBackward({
+    Duration duration = const Duration(seconds: 30),
+  }) async {
     final newPosition = _player.position - duration;
 
     if (newPosition < Duration.zero) {
@@ -357,7 +381,9 @@ class AudioPlayerService {
         }
       });
 
-      Logger.info('Play progress saved: ${(progress * 100).toStringAsFixed(1)}%');
+      Logger.info(
+        'Play progress saved: ${(progress * 100).toStringAsFixed(1)}%',
+      );
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to save play progress',

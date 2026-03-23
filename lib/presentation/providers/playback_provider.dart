@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 
@@ -61,41 +62,39 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   void _initListeners() {
-    _playbackStateSubscription = _audioPlayerService.playbackStateStream.listen(
-      (playbackState) {
-        final isPlaying = playbackState == PlaybackState.playing ||
-            playbackState == PlaybackState.buffering;
-        state = state.copyWith(isPlaying: isPlaying);
-      },
-    );
+    _playbackStateSubscription = _audioPlayerService.playbackStateStream.listen((
+      playbackState,
+    ) {
+      final isPlaying =
+          playbackState == PlaybackState.playing ||
+          playbackState == PlaybackState.buffering;
+      Logger.debug(
+        'PlaybackNotifier: playbackState=$playbackState, isPlaying=$isPlaying, current=${state.isPlaying}',
+      );
+      state = state.copyWith(isPlaying: isPlaying);
+    });
 
-    _progressSubscription = _audioPlayerService.progressStream.listen(
-      (progress) {
-        state = state.copyWith(
-          currentPosition: progress.position,
-          duration: progress.duration,
-        );
-      },
-    );
+    _progressSubscription = _audioPlayerService.progressStream.listen((
+      progress,
+    ) {
+      state = state.copyWith(
+        currentPosition: progress.position,
+        duration: progress.duration,
+      );
+    });
 
-    _speedSubscription = _audioPlayerService.speedStream.listen(
-      (speed) {
-        state = state.copyWith(speed: speed);
-      },
-    );
+    _speedSubscription = _audioPlayerService.speedStream.listen((speed) {
+      state = state.copyWith(speed: speed);
+    });
 
-    _volumeSubscription = _audioPlayerService.volumeStream.listen(
-      (volume) {
-        state = state.copyWith(volume: volume);
-      },
-    );
+    _volumeSubscription = _audioPlayerService.volumeStream.listen((volume) {
+      state = state.copyWith(volume: volume);
+    });
 
     _currentEpisodeSubscription = _audioPlayerService.currentEpisodeStream
-        .listen(
-          (episode) {
-            state = state.copyWith(currentEpisode: episode);
-          },
-        );
+        .listen((episode) {
+          state = state.copyWith(currentEpisode: episode);
+        });
   }
 
   void _disposeListeners() {
@@ -107,7 +106,10 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
-    await _audioPlayerService.playEpisode(episode, startPosition: startPosition);
+    await _audioPlayerService.playEpisode(
+      episode,
+      startPosition: startPosition,
+    );
   }
 
   Future<void> play() async {
@@ -122,11 +124,15 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     await _audioPlayerService.togglePlayPause();
   }
 
-  Future<void> seekForward({Duration duration = const Duration(seconds: 30)}) async {
+  Future<void> seekForward({
+    Duration duration = const Duration(seconds: 30),
+  }) async {
     await _audioPlayerService.seekForward(duration: duration);
   }
 
-  Future<void> seekBackward({Duration duration = const Duration(seconds: 30)}) async {
+  Future<void> seekBackward({
+    Duration duration = const Duration(seconds: 30),
+  }) async {
     await _audioPlayerService.seekBackward(duration: duration);
   }
 
