@@ -4,23 +4,24 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 class QueuePlayPauseButton extends ConsumerWidget {
-  final int? episodeId;
+  final int episodeId;
   final String label;
   final VoidCallback onPressed;
 
   const QueuePlayPauseButton({
     super.key,
-    this.episodeId,
+    required this.episodeId,
     required this.label,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentEpisode = ref.watch(currentEpisodeProvider);
-    final isPlaying = ref.watch(isPlayingProvider);
+    final playerState = ref.watch(playbackProvider);
+    final currentEpisodeId = playerState.currentEpisode?.id;
+    final isPlaying = playerState.isPlaying;
 
-    final isCurrentEpisode = currentEpisode?.id == episodeId;
+    final isCurrentEpisode = currentEpisodeId == episodeId;
     final showPauseIcon = isCurrentEpisode && isPlaying;
 
     return _QueuePlayPauseButtonContent(
@@ -43,8 +44,9 @@ class _QueuePlayPauseButtonContent extends StatefulWidget {
   });
 
   @override
-  State<_QueuePlayPauseButtonContent> createState() =>
-      _QueuePlayPauseButtonContentState();
+  State<_QueuePlayPauseButtonContent> createState() {
+    return _QueuePlayPauseButtonContentState();
+  }
 }
 
 class _QueuePlayPauseButtonContentState

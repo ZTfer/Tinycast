@@ -224,6 +224,7 @@ Episode _episodeDeserialize(
   object.downloadedPath = reader.readStringOrNull(offsets[7]);
   object.duration = reader.readLongOrNull(offsets[8]);
   object.guid = reader.readStringOrNull(offsets[9]);
+  object.id = id;
   object.isDownloaded = reader.readBool(offsets[10]);
   object.isExplicit = reader.readBool(offsets[11]);
   object.isPlayed = reader.readBool(offsets[12]);
@@ -297,7 +298,9 @@ List<IsarLinkBase<dynamic>> _episodeGetLinks(Episode object) {
   return [];
 }
 
-void _episodeAttach(IsarCollection<dynamic> col, Id id, Episode object) {}
+void _episodeAttach(IsarCollection<dynamic> col, Id id, Episode object) {
+  object.id = id;
+}
 
 extension EpisodeQueryWhereSort on QueryBuilder<Episode, Episode, QWhere> {
   QueryBuilder<Episode, Episode, QAfterWhere> anyId() {
