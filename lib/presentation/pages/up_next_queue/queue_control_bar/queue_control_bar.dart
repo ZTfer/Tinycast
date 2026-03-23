@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/widgets/atoms/buttons/list_play_button.dart';
+import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_button.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_more_button.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_episode_dropdown/queue_episode_dropdown.dart';
 
@@ -157,14 +157,11 @@ class _QueueControlBarState extends State<QueueControlBar> {
       /// 子组件列表
       children: [
         /// 播放按钮（带时长）
-        ListPlayButton(
-          /// 播放图标
-          icon: const Icon(LucideIcons.play),
-
+        QueuePlayPauseButton(
           /// 节目时长标签
           label: widget.duration,
 
-          /// 点击回调（暂无实现）
+          /// 点击回调
           onPressed: widget.onPlayPressed ?? () {},
 
           /// 图标大小 10
