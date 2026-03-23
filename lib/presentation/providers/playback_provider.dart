@@ -17,7 +17,7 @@ class PlayerState {
     this.currentPosition = Duration.zero,
     this.duration = Duration.zero,
     this.speed = 1.0,
-    this.volume = 1.0,
+    this.volume = 0.3,
   });
 
   PlayerState copyWith({

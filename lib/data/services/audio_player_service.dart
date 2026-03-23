@@ -105,6 +105,10 @@ class AudioPlayerService {
       _player.playerStateStream.listen(_onPlayerStateChange);
       _player.positionStream.listen((_) => _updateProgress());
 
+      // 设置默认音量为 30%
+      await _player.setVolume(0.3);
+      _volumeController.add(0.3);
+
       Logger.info('AudioPlayerService initialized');
     } catch (e, stackTrace) {
       Logger.error(
