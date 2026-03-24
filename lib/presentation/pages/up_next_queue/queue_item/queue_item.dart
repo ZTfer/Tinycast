@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/data/services/image_cache_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
@@ -137,7 +138,10 @@ class QueueItem extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          episode.description,
+          HtmlTagRemoveUtils.getListItemSummary(
+            episode.description,
+            maxLength: 80,
+          ),
           style: const TextStyle(
             fontSize: 9.75,
             color: Color(0xD9000000),
