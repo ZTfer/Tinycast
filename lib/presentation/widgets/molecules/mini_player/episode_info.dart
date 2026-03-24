@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class EpisodeInfo extends StatelessWidget {
   final String? title;
@@ -22,44 +23,17 @@ class EpisodeInfo extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: Container(
+            child: SizedBox(
               width: 40,
               height: 40,
-              color: const Color(0xFFE0E0E0),
-              child: artworkUrl != null
+              child: artworkUrl != null && artworkUrl!.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: artworkUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => const Center(
-                        child: Text(
-                          'Cover',
-                          style: TextStyle(
-                            fontSize: 8,
-                            decoration: TextDecoration.none,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      placeholder: (context, url) => _buildPlaceholder(),
+                      errorWidget: (context, url, error) => _buildPlaceholder(),
                     )
-                  : const Center(
-                      child: Text(
-                        'Cover',
-                        style: TextStyle(
-                          fontSize: 8,
-                          decoration: TextDecoration.none,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
+                  : _buildPlaceholder(),
             ),
           ),
           const SizedBox(width: 12),
@@ -96,6 +70,16 @@ class EpisodeInfo extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// 构建占位图
+  Widget _buildPlaceholder() {
+    return SvgPicture.asset(
+      'assets/images/image_placeholder.svg',
+      width: 40,
+      height: 40,
+      fit: BoxFit.cover,
     );
   }
 }
