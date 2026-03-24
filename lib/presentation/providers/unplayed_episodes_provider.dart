@@ -72,7 +72,9 @@ final unplayedEpisodesNotifierProvider = NotifierProvider<UnplayedEpisodesNotifi
 
 final unplayedEpisodesProvider = Provider<List<Episode>>((ref) {
   final state = ref.watch(unplayedEpisodesNotifierProvider);
-  return state.episodes;
+  final sortedEpisodes = [...state.episodes];
+  sortedEpisodes.sort((a, b) => b.pubDate.compareTo(a.pubDate));
+  return sortedEpisodes;
 });
 
 final unplayedEpisodesLoadingProvider = Provider<bool>((ref) {
