@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
+import 'package:intl/intl.dart';
 import 'package:rss_dart/dart_rss.dart';
 import 'package:rss_dart/domain/rss_itunes_category.dart';
 import '../../domain/entities/podcast.dart';
@@ -213,11 +214,38 @@ class RssParserService {
   }
 
   /// 解析日期时间
+  ///
+  /// 支持 RSS 标准格式 (RFC 822) 和 ISO 8601 格式
+  /// RSS 格式示例: "Mon, 06 Sep 2021 04:00:00 GMT"
   DateTime? _parseDateTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) {
       return null;
     }
 
+    // 尝试解析 RSS 标准格式 (RFC 822)
+    // 格式: "Mon, 06 Sep 2021 04:00:00 GMT" 或 "Mon, 06 Sep 2021 04:00:00 +0000"
+    final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss', 'en_US');
+    try {
+      // 移除时区名称或偏移量，因为 DateFormat 解析时区比较复杂
+      // 正则解释：
+      // \s+              : 匹配一个或多个空白字符（作为分隔符）
+      // (                : 开始捕获组（我们要移除的部分）
+      //   [+-]           : 匹配 + 或 -
+      //   \d{2}          : 匹配2位小时
+      //   :?             : 可选的冒号 (兼容 +0800 和 +08:00)
+      //   \d{2}          : 匹配2位分钟
+      //   |              : 或者
+      //   [A-Z]{2,4}     : 匹配2到4个大写字母 (覆盖 GMT, UTC, EST, PST, Z 等)
+      // )                : 结束捕获组
+      // \s*$             : 匹配末尾可能存在的任意空白字符，直到字符串结束
+      final timeZoneRegex = RegExp(r'\s+([+-]\d{2}:?\d{2}|[A-Z]{2,4})\s*$');
+      final cleanedDate = dateTimeString.replaceFirst(timeZoneRegex, '');
+      return rfc822Format.parse(cleanedDate, true);
+    } catch (e) {
+      // 继续尝试其他格式
+    }
+
+    // 尝试 ISO 8601 格式
     try {
       return DateTime.parse(dateTimeString);
     } catch (e) {
