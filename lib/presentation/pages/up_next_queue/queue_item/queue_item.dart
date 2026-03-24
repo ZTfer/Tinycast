@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/data/services/image_cache_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_control_bar.dart';
@@ -110,7 +111,7 @@ class QueueItem extends StatelessWidget {
   ///
   /// 包含更新时间、节目标题和节目描述。
   Widget _buildTextSection() {
-    final timeAgo = _formatTimeAgo(episode.pubDate);
+    final timeAgo = TimeFormatter.formatTimeAgo(episode.pubDate);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,27 +149,6 @@ class QueueItem extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatTimeAgo(DateTime pubDate) {
-    final now = DateTime.now();
-    final difference = now.difference(pubDate);
-
-    if (difference.inDays > 365) {
-      final years = (difference.inDays / 365).floor();
-      return '$years ${years == 1 ? 'year' : 'years'} ago';
-    } else if (difference.inDays > 30) {
-      final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} ${difference.inHours == 1 ? 'h' : 'h'} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'min' : 'min'} ago';
-    } else {
-      return 'Just now';
-    }
   }
 
   /// 构建操作区域

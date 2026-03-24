@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 enum PlaybackState { stopped, playing, paused, buffering }
@@ -126,6 +127,95 @@ class AudioPlayerService {
 
   void _onPlayerStateChange(PlayerState state) {
     _updatePlaybackState();
+
+    // 监听播放完成事件
+    if (state.processingState == ProcessingState.completed) {
+      _onPlaybackCompleted();
+    }
+  }
+
+  /// 播放完成后的处理
+  /// 1. 标记当前音频为已播放
+  /// 2. 自动播放下一个未播放的音频
+  Future<void> _onPlaybackCompleted() async {
+    if (_currentEpisode == null) return;
+
+    final completedEpisodeId = _currentEpisode!.id;
+    Logger.info('播放完成: ${_currentEpisode!.title}');
+
+    // 标记当前音频为已播放
+    await _markEpisodeAsPlayed(completedEpisodeId);
+
+    // 播放下一个未播放的音频
+    await _playNextUnplayedEpisode();
+  }
+
+  /// 标记 episode 为已播放
+  Future<void> _markEpisodeAsPlayed(int episodeId) async {
+    try {
+      await _isarService.isar.writeTxn(() async {
+        final episode = await _isarService.isar.episodes.get(episodeId);
+
+        if (episode != null) {
+          episode.isPlayed = true;
+          episode.playProgress = 1.0;
+          episode.updatedAt = DateTime.now();
+          await _isarService.isar.episodes.put(episode);
+          Logger.info('已标记为已播放: ${episode.title}');
+        }
+      });
+    } catch (e, stackTrace) {
+      Logger.error('标记已播放失败', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  /// 播放下一个未播放的音频
+  Future<void> _playNextUnplayedEpisode() async {
+    try {
+      // 使用 LocalPodcastDataSource 获取所有未播放的 episode
+      final localDataSource = LocalPodcastDataSource();
+      final unplayedEpisodes = await localDataSource.getUnplayedEpisodes();
+
+      if (unplayedEpisodes.isEmpty) {
+        Logger.info('没有更多未播放的音频');
+        _currentEpisode = null;
+        if (!_currentEpisodeController.isClosed) {
+          _currentEpisodeController.add(null);
+        }
+        return;
+      }
+
+      // 播放第一个未播放的 episode
+      final nextEpisode = unplayedEpisodes.first;
+      final domainEpisode = domain.Episode(
+        id: nextEpisode.id,
+        podcastId: nextEpisode.podcastId,
+        title: nextEpisode.title,
+        description: nextEpisode.description,
+        link: nextEpisode.link,
+        guid: nextEpisode.guid,
+        author: nextEpisode.author,
+        pubDate: nextEpisode.pubDate,
+        audioUrl: nextEpisode.audioUrl,
+        audioType: nextEpisode.audioType,
+        duration: nextEpisode.duration,
+        artworkUrl: nextEpisode.artworkUrl,
+        isExplicit: nextEpisode.isExplicit,
+        isPlayed: nextEpisode.isPlayed,
+        isDownloaded: nextEpisode.isDownloaded,
+        downloadedPath: nextEpisode.downloadedPath,
+        downloadProgress: nextEpisode.downloadProgress,
+        playProgress: nextEpisode.playProgress,
+        lastPlayedAt: nextEpisode.lastPlayedAt,
+        createdAt: nextEpisode.createdAt,
+        updatedAt: nextEpisode.updatedAt,
+      );
+
+      Logger.info('自动播放下一个: ${domainEpisode.title}');
+      await playEpisode(domainEpisode);
+    } catch (e, stackTrace) {
+      Logger.error('自动播放下一个失败', error: e, stackTrace: stackTrace);
+    }
   }
 
   void _updateProgress() {
