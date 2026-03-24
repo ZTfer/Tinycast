@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Library 节目封面组件
 ///
@@ -31,22 +32,34 @@ class LibraryShowCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        image: artworkUrl != null
-            ? DecorationImage(
-                image: NetworkImage(artworkUrl!),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: artworkUrl != null && artworkUrl!.isNotEmpty
+            ? Image.network(
+                artworkUrl!,
+                width: width,
+                height: height,
                 fit: BoxFit.cover,
-                onError: (exception, stackTrace) {
-                  // 图片加载失败时使用背景色
+                errorBuilder: (context, error, stackTrace) {
+                  // 图片加载失败时显示占位图
+                  return _buildPlaceholder();
                 },
               )
-            : null,
+            : _buildPlaceholder(),
       ),
+    );
+  }
+
+  /// 构建占位图
+  Widget _buildPlaceholder() {
+    return SvgPicture.asset(
+      'assets/images/image_placeholder.svg',
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
     );
   }
 }
