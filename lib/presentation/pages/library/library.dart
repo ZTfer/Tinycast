@@ -117,7 +117,7 @@ class _LibraryState extends ConsumerState<Library> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
-    final podcasts = state.podcasts ?? [];
+    final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),

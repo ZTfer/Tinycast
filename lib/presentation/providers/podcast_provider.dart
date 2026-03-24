@@ -173,7 +173,11 @@ final podcastStateProvider = Provider<PodcastState>((ref) {
 
 final subscribedPodcastsProvider = Provider<List<Podcast>?>((ref) {
   final state = ref.watch(podcastProvider);
-  return state.podcasts;
+  if (state.podcasts == null) return null;
+  // 按订阅时间（createdAt）倒序排列，最新的在前面
+  final sortedPodcasts = [...state.podcasts!];
+  sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return sortedPodcasts;
 });
 
 final currentPodcastProvider = Provider<Podcast?>((ref) {
