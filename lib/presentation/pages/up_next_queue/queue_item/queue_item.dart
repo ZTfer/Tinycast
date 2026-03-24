@@ -1,12 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/episode.dart';
-import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_control_bar.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_item/queue_episode_info.dart';
 
 /// Queue 列表项组件
 ///
 /// 用于显示待播放队列列表中的单个节目项。
-/// 每个列表项包含节目信息（QueueEpisodeInfo）和操作区域（QueueControlBar）。
+/// 每个列表项包含节目信息（QueueEpisodeInfo），其中已包含操作栏。
 class QueueItem extends StatelessWidget {
   /// Episode 对象
   final Episode episode;
@@ -33,29 +32,18 @@ class QueueItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 节目信息区域
-              QueueEpisodeInfo(episode: episode),
-              const SizedBox(height: 6),
-              // 操作区域
-              _buildActionSection(),
+              // 节目信息区域（包含封面、标题、描述和操作栏）
+              QueueEpisodeInfo(
+                episode: episode,
+                duration: _formatDuration(episode.duration),
+                onPlayPressed: onPlayPressed,
+              ),
               const SizedBox(height: 12),
               if (showDivider) _buildDivider(),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  /// 构建操作区域
-  ///
-  /// 使用 QueueControlBar 组件，包含播放按钮和更多选项。
-  Widget _buildActionSection() {
-    final durationStr = _formatDuration(episode.duration);
-    return QueueControlBar(
-      episodeId: episode.id,
-      duration: durationStr,
-      onPlayPressed: onPlayPressed,
     );
   }
 
