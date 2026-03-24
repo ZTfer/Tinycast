@@ -119,12 +119,9 @@ class _LibraryState extends ConsumerState<Library> {
     final state = ref.watch(podcastProvider);
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: _buildContent(state, podcasts),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _buildContent(state, podcasts),
     );
   }
 
@@ -176,9 +173,9 @@ class _LibraryState extends ConsumerState<Library> {
     }
 
     // 显示播客列表
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(podcasts.length, (index) {
+    return ListView.builder(
+      itemCount: podcasts.length,
+      itemBuilder: (context, index) {
         final podcast = podcasts[index];
         final showDivider = index < podcasts.length - 1;
 
@@ -189,7 +186,7 @@ class _LibraryState extends ConsumerState<Library> {
           onTap: () => _navigateToPodcastDetail(podcast),
           onMorePressed: () => _showMoreMenu(podcast),
         );
-      }),
+      },
     );
   }
 }
