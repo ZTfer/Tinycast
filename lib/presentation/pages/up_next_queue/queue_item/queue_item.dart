@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/data/services/image_cache_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_item/queue_episode_info.dart';
 
 /// Queue 列表项组件
 ///
 /// 用于显示待播放队列列表中的单个节目项。
-/// 每个列表项包含节目信息（QueueEpisodeInfo），其中已包含操作栏。
+/// 使用 Row 布局：左边是封面图，右边是节目信息（QueueEpisodeInfo）。
 class QueueItem extends StatelessWidget {
   /// Episode 对象
   final Episode episode;
@@ -32,11 +35,22 @@ class QueueItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 节目信息区域（包含封面、标题、描述和操作栏）
-              QueueEpisodeInfo(
-                episode: episode,
-                duration: _formatDuration(episode.duration),
-                onPlayPressed: onPlayPressed,
+              // Row 布局：左边封面图，右边节目信息
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 左边：封面图
+                  _buildArtwork(),
+                  const SizedBox(width: 8),
+                  // 右边：节目信息（包含标题、描述、操作栏）
+                  Expanded(
+                    child: QueueEpisodeInfo(
+                      episode: episode,
+                      duration: _formatDuration(episode.duration),
+                      onPlayPressed: onPlayPressed,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               if (showDivider) _buildDivider(),
@@ -44,6 +58,58 @@ class QueueItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildArtwork() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: FutureBuilder<File?>(
+        future: episode.artworkUrl != null
+            ? ImageCacheService.instance.getCachedImage(episode.artworkUrl!)
+            : Future.value(null),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return Image.file(
+              snapshot.data!,
+              width: 34,
+              height: 34,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  _buildPlaceholderArtwork(),
+            );
+          }
+
+          if (episode.artworkUrl != null) {
+            return Image.network(
+              episode.artworkUrl!,
+              width: 34,
+              height: 34,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  _buildPlaceholderArtwork(),
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return _buildPlaceholderArtwork();
+              },
+            );
+          }
+
+          return _buildPlaceholderArtwork();
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderArtwork() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: SvgPicture.asset(
+        'assets/images/image_placeholder.svg',
+        width: 34,
+        height: 34,
+        fit: BoxFit.cover,
+      ),
     );
   }
 
