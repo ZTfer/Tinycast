@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// 用于待播放队列列表项中的单图标按钮（如更多选项、删除等）。
 
-class QueueMoreButton extends StatefulWidget {
+class HorizontalMoreButton extends StatefulWidget {
   /// 按钮显示的图标
   final Widget icon;
 
@@ -17,7 +17,7 @@ class QueueMoreButton extends StatefulWidget {
   /// 内容颜色，默认 0xD9000000
   final Color contentColor;
 
-  const QueueMoreButton({
+  const HorizontalMoreButton({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -26,10 +26,10 @@ class QueueMoreButton extends StatefulWidget {
   });
 
   @override
-  State<QueueMoreButton> createState() => _QueueMoreButtonState();
+  State<HorizontalMoreButton> createState() => _HorizontalMoreButtonState();
 }
 
-class _QueueMoreButtonState extends State<QueueMoreButton> {
+class _HorizontalMoreButtonState extends State<HorizontalMoreButton> {
   // 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
   // 记录按钮是否正在被按下
