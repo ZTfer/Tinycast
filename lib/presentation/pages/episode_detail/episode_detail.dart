@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/widgets/molecules/mini_player/episode_info.dart';
+import 'episode_info.dart';
 import 'show_info.dart';
 import 'episode_description.dart';
 
@@ -12,6 +12,8 @@ class EpisodeDetail extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: const Color(0xFFFFFFFF),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 4,
         children: [
           const EpisodeInfo(),
           const SizedBox(height: 4),

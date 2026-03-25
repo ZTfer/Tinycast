@@ -8,8 +8,9 @@ class EpisodeInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 16),
         const Text(
-          '1天前',
+          '1天前111',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.normal,
@@ -17,9 +18,9 @@ class EpisodeInfo extends StatelessWidget {
             height: 16 / 12,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         const Text(
-          'Episode Title',
+          'Episode Title Episode Title Episode Title Episode Title Episode Title Episode Title Episode Title Episode Title',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,

@@ -11,8 +11,8 @@ class ShowInfo extends StatelessWidget {
       children: [
         SvgPicture.asset(
           'assets/images/image_placeholder.svg',
-          width: 16,
-          height: 16,
+          width: 24,
+          height: 24,
         ),
         const SizedBox(width: 4),
         const Text(
@@ -25,7 +25,7 @@ class ShowInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        const Icon(LucideIcons.arrowRight, size: 12),
+        const Icon(LucideIcons.chevronRight, size: 12),
       ],
     );
   }
