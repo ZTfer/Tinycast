@@ -1,10 +1,19 @@
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 import 'episode_info.dart';
 import 'show_info.dart';
 import 'episode_description.dart';
 
 class EpisodeDetail extends StatelessWidget {
-  const EpisodeDetail({super.key});
+  final Episode? episode;
+  final Podcast? podcast;
+
+  const EpisodeDetail({
+    super.key,
+    this.episode,
+    this.podcast,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +24,11 @@ class EpisodeDetail extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 4,
         children: [
-          const EpisodeInfo(),
+          EpisodeInfo(episode: episode),
           const SizedBox(height: 4),
-          const ShowInfo(),
+          ShowInfo(podcast: podcast),
           const SizedBox(height: 4),
-          const EpisodeDescription(),
+          EpisodeDescription(description: episode?.description),
         ],
       ),
     );

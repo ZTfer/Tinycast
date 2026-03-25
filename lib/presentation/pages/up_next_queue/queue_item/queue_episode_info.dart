@@ -1,15 +1,17 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_control_bar.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/main.dart';
 
 /// Queue 节目信息组件
 ///
 /// 用于显示待播放队列列表项中的节目文本信息。
 /// 包含发布时间、节目标题、节目描述和操作栏。
-class QueueEpisodeInfo extends StatefulWidget {
+class QueueEpisodeInfo extends ConsumerStatefulWidget {
   /// Episode 对象
   final Episode episode;
 
@@ -27,11 +29,23 @@ class QueueEpisodeInfo extends StatefulWidget {
   });
 
   @override
-  State<QueueEpisodeInfo> createState() => _QueueEpisodeInfoState();
+  ConsumerState<QueueEpisodeInfo> createState() => _QueueEpisodeInfoState();
 }
 
-class _QueueEpisodeInfoState extends State<QueueEpisodeInfo> {
+class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
   bool _isHovering = false;
+
+  void _handleTap() {
+    // 获取 podcast 数据并打开详情窗口
+    Future(() async {
+      final useCase = ref.read(getPodcastByIdUseCaseProvider);
+      final podcast = await useCase(widget.episode.podcastId);
+
+      if (podcast != null) {
+        await openEpisodeDetailWindow(widget.episode, podcast);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +70,7 @@ class _QueueEpisodeInfoState extends State<QueueEpisodeInfo> {
           onEnter: (_) => setState(() => _isHovering = true),
           onExit: (_) => setState(() => _isHovering = false),
           child: GestureDetector(
-            onTap: openEpisodeDetailWindow,
+            onTap: _handleTap,
             child: Text(
               widget.episode.title,
               style: TextStyle(

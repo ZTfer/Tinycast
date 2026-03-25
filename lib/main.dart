@@ -6,13 +6,26 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/core/router/app_router.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 
 /// 打开节目详情窗口
 ///
 /// 创建并显示一个新的窗口，用于展示节目详情
-Future<void> openEpisodeDetailWindow() async {
+/// [episode] 要展示的 episode 数据
+/// [podcast] 关联的 podcast 数据
+Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
+  final arguments = WindowArguments(
+    type: 'episode_detail',
+    episode: episode,
+    podcast: podcast,
+  );
+
   final controller = await WindowController.create(
-    WindowConfiguration(hiddenAtLaunch: true, arguments: 'episode_detail'),
+    WindowConfiguration(
+      hiddenAtLaunch: true,
+      arguments: arguments.toJson(),
+    ),
   );
   await controller.show();
 }
@@ -42,7 +55,12 @@ void main(List<String> args) async {
     case 'episode_detail':
       await initEpisodeDetailWindow();
       await _initializeApp();
-      runApp(const ProviderScope(child: EpisodeDetailWindowApp()));
+      runApp(ProviderScope(
+        child: EpisodeDetailWindowApp(
+          episode: arguments.episode,
+          podcast: arguments.podcast,
+        ),
+      ));
       break;
     default:
       await initMainWindow();

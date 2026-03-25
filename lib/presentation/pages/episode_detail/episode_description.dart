@@ -1,15 +1,23 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 class EpisodeDescription extends StatelessWidget {
-  const EpisodeDescription({super.key});
+  final String? description;
+
+  const EpisodeDescription({
+    super.key,
+    this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final htmlContent = description ?? '';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: Text(
-        '播客描述文字',
-        style: TextStyle(
+      child: HtmlWidget(
+        htmlContent,
+        textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: Color(0xFF999999),
