@@ -5,6 +5,7 @@ import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/pages/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/pages/library/library_empty_page/library_empty_page.dart';
+import 'package:tinycast/presentation/pages/podcast_detail/podcast_detail.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/core/utils/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
@@ -17,6 +18,9 @@ class Library extends ConsumerStatefulWidget {
 }
 
 class _LibraryState extends ConsumerState<Library> {
+  /// 当前选中的播客ID，为null时显示播客列表
+  int? _selectedPodcastId;
+
   @override
   void initState() {
     super.initState();
@@ -61,9 +65,18 @@ class _LibraryState extends ConsumerState<Library> {
     }
   }
 
-  /// 导航到播客详情页面
-  void _navigateToPodcastDetail(Podcast podcast) {
-    AppRouter.navigateTo(context, AppRoutes.podcastDetail, arguments: podcast);
+  /// 选中播客，在页面内显示详情
+  void _selectPodcast(Podcast podcast) {
+    setState(() {
+      _selectedPodcastId = podcast.id;
+    });
+  }
+
+  /// 返回播客列表
+  void _backToList() {
+    setState(() {
+      _selectedPodcastId = null;
+    });
   }
 
   /// 显示更多操作菜单
@@ -116,6 +129,47 @@ class _LibraryState extends ConsumerState<Library> {
 
   @override
   Widget build(BuildContext context) {
+    // 如果选中了播客，显示播客详情
+    if (_selectedPodcastId != null) {
+      return Column(
+        children: [
+          // 返回按钮
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: _backToList,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back_ios, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          '返回',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 播客详情
+          Expanded(
+            child: PodcastDetail(podcastId: _selectedPodcastId!),
+          ),
+        ],
+      );
+    }
+
+    // 显示播客列表
     final state = ref.watch(podcastProvider);
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
@@ -183,7 +237,7 @@ class _LibraryState extends ConsumerState<Library> {
           key: ValueKey(podcast.id),
           podcast: podcast,
           showDivider: showDivider,
-          onTap: () => _navigateToPodcastDetail(podcast),
+          onTap: () => _selectPodcast(podcast),
           onMorePressed: () => _showMoreMenu(podcast),
         );
       },
