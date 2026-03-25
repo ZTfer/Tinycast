@@ -40,8 +40,8 @@ dependencies:
   flutter_svg: ^2.2.4
   window_manager: ^0.5.1
   desktop_multi_window: ^0.3.0
-  isar_community: ^3.3.0
-  isar_community_flutter_libs: ^3.3.0
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
   riverpod: ^3.2.1
   flutter_riverpod: ^3.3.1
   just_audio: ^0.10.5
@@ -67,9 +67,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  isar_community_generator: ^3.3.0
-  build_runner: ^2.7.1
-  mockito: ^5.4.4
+  isar_community_generator: ^3.3.2
+  build_runner: ^2.13.1
+  mockito: ^5.6.4
   matcher: ^0.12.16
   test: ^1.30.0
 

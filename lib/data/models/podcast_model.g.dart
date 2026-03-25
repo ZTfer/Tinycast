@@ -154,7 +154,7 @@ const PodcastSchema = CollectionSchema(
   getId: _podcastGetId,
   getLinks: _podcastGetLinks,
   attach: _podcastAttach,
-  version: '3.3.0',
+  version: '3.3.2',
 );
 
 int _podcastEstimateSize(
