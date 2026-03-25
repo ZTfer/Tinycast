@@ -3,6 +3,7 @@ import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_control_bar.dart';
+import 'package:tinycast/main.dart';
 
 /// Queue 节目信息组件
 ///
@@ -50,23 +51,26 @@ class _QueueEpisodeInfoState extends State<QueueEpisodeInfo> {
           ),
         ),
         const SizedBox(height: 4),
-        // 节目标题（带 hover 下划线效果）
+        // 节目标题（带 hover 下划线效果，点击打开详情窗口）
         MouseRegion(
           onEnter: (_) => setState(() => _isHovering = true),
           onExit: (_) => setState(() => _isHovering = false),
-          child: Text(
-            widget.episode.title,
-            style: TextStyle(
-              fontSize: 14,
-              color: const Color(0xFF000000),
-              fontWeight: FontWeight.w500,
-              decoration: _isHovering
-                  ? TextDecoration.underline
-                  : TextDecoration.none,
-              decorationColor: const Color(0xFF000000),
+          child: GestureDetector(
+            onTap: openEpisodeDetailWindow,
+            child: Text(
+              widget.episode.title,
+              style: TextStyle(
+                fontSize: 14,
+                color: const Color(0xFF000000),
+                fontWeight: FontWeight.w500,
+                decoration: _isHovering
+                    ? TextDecoration.underline
+                    : TextDecoration.none,
+                decorationColor: const Color(0xFF000000),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(height: 4),

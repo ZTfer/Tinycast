@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/presentation/pages/settings/settings.dart';
 import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
+import 'package:tinycast/presentation/pages/episode_detail/episode_detail.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -93,6 +94,27 @@ Future<void> initSubscribeWindow() async {
   });
 }
 
+/// 初始化节目详情窗口
+///
+/// 配置并显示应用的节目详情窗口，使用隐藏标题栏样式
+/// 窗口大小为 600x700，居中显示
+/// 该窗口用于显示节目的详细信息
+Future<void> initEpisodeDetailWindow() async {
+  await windowManager.ensureInitialized();
+
+  WindowOptions windowOptions = WindowOptions(
+    size: Size(600, 700),
+    center: true,
+    backgroundColor: const Color(0xFFFFFFFF),
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+}
+
 /// 设置窗口应用组件
 ///
 /// 这是设置窗口的根组件，使用 WidgetsApp 作为基础
@@ -158,6 +180,46 @@ class SubscribeWindowApp extends StatelessWidget {
         decoration: TextDecoration.none,
       ),
       home: const Subscribe(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Container(
+            padding: const EdgeInsets.all(12.0),
+            color: const Color(0xFFFFFFFF),
+            child: child ?? const SizedBox(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 节目详情窗口应用组件
+///
+/// 这是节目详情窗口的根组件，使用 WidgetsApp 作为基础
+/// 显示 EpisodeDetail 页面作为主界面
+class EpisodeDetailWindowApp extends StatelessWidget {
+  const EpisodeDetailWindowApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetsApp(
+      title: 'Episode Detail',
+      color: const Color(0xFFFFFFFF),
+      onGenerateRoute: AppRouter.generateRoute,
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
+      textStyle: const TextStyle(
+        color: Color(0xFF000000),
+        fontSize: 16,
+        decoration: TextDecoration.none,
+      ),
+      home: const EpisodeDetail(),
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,

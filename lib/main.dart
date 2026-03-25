@@ -7,6 +7,16 @@ import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/core/router/app_router.dart';
 
+/// 打开节目详情窗口
+///
+/// 创建并显示一个新的窗口，用于展示节目详情
+Future<void> openEpisodeDetailWindow() async {
+  final controller = await WindowController.create(
+    WindowConfiguration(hiddenAtLaunch: true, arguments: 'episode_detail'),
+  );
+  await controller.show();
+}
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -28,6 +38,11 @@ void main(List<String> args) async {
       await initSubscribeWindow();
       await _initializeApp();
       runApp(const ProviderScope(child: SubscribeWindowApp()));
+      break;
+    case 'episode_detail':
+      await initEpisodeDetailWindow();
+      await _initializeApp();
+      runApp(const ProviderScope(child: EpisodeDetailWindowApp()));
       break;
     default:
       await initMainWindow();
