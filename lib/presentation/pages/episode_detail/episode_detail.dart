@@ -9,20 +9,14 @@ class EpisodeDetail extends StatelessWidget {
   final Episode? episode;
   final Podcast? podcast;
 
-  const EpisodeDetail({
-    super.key,
-    this.episode,
-    this.podcast,
-  });
+  const EpisodeDetail({super.key, this.episode, this.podcast});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: const Color(0xFFFFFFFF),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 4,
+      child: ListView(
         children: [
           EpisodeInfo(episode: episode),
           const SizedBox(height: 4),
