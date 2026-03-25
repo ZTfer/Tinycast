@@ -17,11 +17,15 @@ class LibraryShowInfo extends StatefulWidget {
   /// 更多按钮的回调
   final VoidCallback? onMorePressed;
 
+  /// 标题点击回调
+  final VoidCallback? onTitleTap;
+
   const LibraryShowInfo({
     super.key,
     required this.showName,
     required this.timeAgo,
     this.onMorePressed,
+    this.onTitleTap,
   });
 
   @override
@@ -37,6 +41,9 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
 
   /// 下拉菜单的 OverlayEntry，用于控制菜单的显示和移除
   OverlayEntry? _dropdownOverlay;
+
+  /// 标题 hover 状态
+  bool _isHovered = false;
 
   /// 全局当前显示的下拉菜单，用于确保同一时间只显示一个菜单
   static OverlayEntry? _currentDropdownOverlay;
@@ -158,12 +165,21 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              widget.showName,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _isHovered = true),
+              onExit: (_) => setState(() => _isHovered = false),
+              child: GestureDetector(
+                onTap: widget.onTitleTap,
+                child: Text(
+                  widget.showName,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF000000),
+                    decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
+                  ),
+                ),
               ),
             ),
             LibraryShowMoreButton(

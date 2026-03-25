@@ -26,6 +26,9 @@ class LibraryListItem extends StatelessWidget {
   /// 更多按钮的回调
   final VoidCallback? onMorePressed;
 
+  /// 点击标题时的回调
+  final VoidCallback? onTitleTap;
+
   /// 是否正在加载剧集数据
   final bool isLoading;
 
@@ -36,6 +39,7 @@ class LibraryListItem extends StatelessWidget {
     this.showDivider = true,
     this.onTap,
     this.onMorePressed,
+    this.onTitleTap,
     this.isLoading = false,
   });
 
@@ -62,6 +66,7 @@ class LibraryListItem extends StatelessWidget {
                         showName: podcast.title,
                         timeAgo: _formatTimeAgo(podcast.lastUpdated),
                         onMorePressed: onMorePressed,
+                        onTitleTap: onTitleTap,
                       ),
                       const SizedBox(height: 2),
                       Column(spacing: 1, children: _buildEpisodeItems()),

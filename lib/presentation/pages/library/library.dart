@@ -219,6 +219,7 @@ class _LibraryPodcastItem extends ConsumerWidget {
         showDivider: showDivider,
         onTap: onTap,
         onMorePressed: onMorePressed,
+        onTitleTap: onTap,
         isLoading: false,
       ),
       // 加载中状态：显示播客信息和加载骨架屏
@@ -228,6 +229,7 @@ class _LibraryPodcastItem extends ConsumerWidget {
         showDivider: showDivider,
         onTap: onTap,
         onMorePressed: onMorePressed,
+        onTitleTap: onTap,
         isLoading: true,
       ),
       // 错误状态：显示播客信息，但剧集列表为空，不影响其他播客展示
@@ -237,6 +239,7 @@ class _LibraryPodcastItem extends ConsumerWidget {
         showDivider: showDivider,
         onTap: onTap,
         onMorePressed: onMorePressed,
+        onTitleTap: onTap,
         isLoading: false,
       ),
     );

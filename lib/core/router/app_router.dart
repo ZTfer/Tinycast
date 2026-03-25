@@ -87,7 +87,7 @@ class AppRouter {
         return PageRouteBuilder(
           settings: settings,
           pageBuilder: (context, animation, secondaryAnimation) =>
-              PodcastDetailPage(podcastId: podcastId),
+              PodcastDetail(podcastId: podcastId),
           transitionDuration: Duration.zero,
         );
       case AppRoutes.databaseCleanup:
