@@ -4,10 +4,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 class EpisodeDescription extends StatelessWidget {
   final String? description;
 
-  const EpisodeDescription({
-    super.key,
-    this.description,
-  });
+  const EpisodeDescription({super.key, this.description});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +15,10 @@ class EpisodeDescription extends StatelessWidget {
       child: HtmlWidget(
         htmlContent,
         textStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.normal,
-          color: Color(0xFF999999),
-          height: 16 / 12,
+          color: Color(0xFF333333),
+          height: 20 / 14,
         ),
       ),
     );
