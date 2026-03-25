@@ -10,7 +10,7 @@ class EpisodeInfo extends StatelessWidget {
       children: [
         const SizedBox(height: 16),
         const Text(
-          '1天前111',
+          '1天前',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.normal,
