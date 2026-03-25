@@ -36,8 +36,8 @@ class QueueEpisodeInfo extends StatelessWidget {
         Text(
           timeAgo,
           style: const TextStyle(
-            fontSize: 9.75,
-            color: Color(0xD9000000),
+            fontSize: 10,
+            color: Color(0xFF999999),
             fontWeight: FontWeight.normal,
             decoration: TextDecoration.none,
           ),
@@ -47,7 +47,7 @@ class QueueEpisodeInfo extends StatelessWidget {
         Text(
           episode.title,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             color: Color(0xFF000000),
             fontWeight: FontWeight.w500,
             decoration: TextDecoration.none,
@@ -63,8 +63,8 @@ class QueueEpisodeInfo extends StatelessWidget {
             maxLength: 80,
           ),
           style: const TextStyle(
-            fontSize: 9.75,
-            color: Color(0xD9000000),
+            fontSize: 12,
+            color: Color(0xFF333333),
             fontWeight: FontWeight.normal,
             decoration: TextDecoration.none,
           ),
