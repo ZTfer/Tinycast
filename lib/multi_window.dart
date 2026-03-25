@@ -82,7 +82,7 @@ Future<void> initSubscribeWindow() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(600, 500),
+    size: Size(500, 600),
     center: true,
     backgroundColor: const Color(0xFFFFFFFF),
     skipTaskbar: false,
