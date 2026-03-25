@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/domain/entities/episode.dart';
-import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queue_control_bar.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_control_bar.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/main.dart';
 
@@ -105,7 +105,7 @@ class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
         ),
         const SizedBox(height: 6),
         // 操作栏
-        QueueControlBar(
+        EpisodeControlBar(
           episodeId: widget.episode.id,
           duration: widget.duration,
           onPlayPressed: widget.onPlayPressed,

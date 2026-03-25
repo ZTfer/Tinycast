@@ -6,12 +6,12 @@ import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_butt
 import 'package:tinycast/presentation/pages/up_next_queue/queue_episode_dropdown/queue_episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
-/// Queue 控制栏组件
+/// Episode 控制栏组件
 ///
 /// 用于待播放队列列表项中的操作区域。
 /// 包含播放按钮（带时长）和更多选项图标。
 /// 点击更多选项图标会显示下拉菜单。
-class QueueControlBar extends ConsumerStatefulWidget {
+class EpisodeControlBar extends ConsumerStatefulWidget {
   /// 节目 ID
   final int episodeId;
 
@@ -21,7 +21,7 @@ class QueueControlBar extends ConsumerStatefulWidget {
   /// 播放按钮点击回调（播放新音频）
   final VoidCallback? onPlayPressed;
 
-  const QueueControlBar({
+  const EpisodeControlBar({
     super.key,
     required this.episodeId,
     required this.duration,
@@ -29,13 +29,13 @@ class QueueControlBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<QueueControlBar> createState() => _QueueControlBarState();
+  ConsumerState<EpisodeControlBar> createState() => _EpisodeControlBarState();
 }
 
-/// [QueueControlBar] 的状态类
+/// [EpisodeControlBar] 的状态类
 ///
 /// 管理下拉菜单的显示和隐藏状态。
-class _QueueControlBarState extends ConsumerState<QueueControlBar> {
+class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   /// 更多按钮的 GlobalKey，用于获取按钮的位置和大小
   final GlobalKey _moreButtonKey = GlobalKey();
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/queue_empty_page/queue_empty_page.dart';
-import 'package:tinycast/presentation/pages/up_next_queue/queue_item/queue_item.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 
@@ -38,7 +38,7 @@ class UpNextQueue extends ConsumerWidget {
         final episode = episodes[index];
         final isLast = index == episodes.length - 1;
 
-        return QueueItem(
+        return EpisodeItem(
           episode: episode,
           showDivider: !isLast,
           onPlayPressed: () {

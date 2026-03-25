@@ -3,13 +3,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/data/services/image_cache_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
-import 'package:tinycast/presentation/pages/up_next_queue/queue_item/queue_episode_info.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
 
 /// Queue 列表项组件
 ///
 /// 用于显示待播放队列列表中的单个节目项。
-/// 使用 Row 布局：左边是封面图，右边是节目信息（QueueEpisodeInfo）。
-class QueueItem extends StatelessWidget {
+/// 使用 Row 布局：左边是封面图，右边是节目信息（EpisodeInfo）。
+class EpisodeItem extends StatelessWidget {
   /// Episode 对象
   final Episode episode;
 
@@ -19,7 +19,7 @@ class QueueItem extends StatelessWidget {
   /// 播放按钮点击回调
   final VoidCallback? onPlayPressed;
 
-  const QueueItem({
+  const EpisodeItem({
     super.key,
     required this.episode,
     this.showDivider = true,
