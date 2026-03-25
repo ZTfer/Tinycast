@@ -8,7 +8,7 @@ import 'package:tinycast/presentation/pages/up_next_queue/queue_control_bar/queu
 ///
 /// 用于显示待播放队列列表项中的节目文本信息。
 /// 包含发布时间、节目标题、节目描述和操作栏。
-class QueueEpisodeInfo extends StatelessWidget {
+class QueueEpisodeInfo extends StatefulWidget {
   /// Episode 对象
   final Episode episode;
 
@@ -26,8 +26,15 @@ class QueueEpisodeInfo extends StatelessWidget {
   });
 
   @override
+  State<QueueEpisodeInfo> createState() => _QueueEpisodeInfoState();
+}
+
+class _QueueEpisodeInfoState extends State<QueueEpisodeInfo> {
+  bool _isHovering = false;
+
+  @override
   Widget build(BuildContext context) {
-    final timeAgo = TimeFormatter.formatTimeAgo(episode.pubDate);
+    final timeAgo = TimeFormatter.formatTimeAgo(widget.episode.pubDate);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,23 +50,30 @@ class QueueEpisodeInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        // 节目标题
-        Text(
-          episode.title,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF000000),
-            fontWeight: FontWeight.w500,
-            decoration: TextDecoration.none,
+        // 节目标题（带 hover 下划线效果）
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovering = true),
+          onExit: (_) => setState(() => _isHovering = false),
+          child: Text(
+            widget.episode.title,
+            style: TextStyle(
+              fontSize: 14,
+              color: const Color(0xFF000000),
+              fontWeight: FontWeight.w500,
+              decoration: _isHovering
+                  ? TextDecoration.underline
+                  : TextDecoration.none,
+              decorationColor: const Color(0xFF000000),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         // 节目描述
         Text(
           HtmlTagRemoveUtils.getListItemSummary(
-            episode.description,
+            widget.episode.description,
             maxLength: 80,
           ),
           style: const TextStyle(
@@ -74,9 +88,9 @@ class QueueEpisodeInfo extends StatelessWidget {
         const SizedBox(height: 6),
         // 操作栏
         QueueControlBar(
-          episodeId: episode.id,
-          duration: duration,
-          onPlayPressed: onPlayPressed,
+          episodeId: widget.episode.id,
+          duration: widget.duration,
+          onPlayPressed: widget.onPlayPressed,
         ),
       ],
     );
