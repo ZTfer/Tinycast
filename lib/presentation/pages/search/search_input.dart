@@ -63,11 +63,7 @@ class _SearchInputState extends State<SearchInput> {
               size: 16.0,
               color: const Color(0xFF999999),
             ),
-            // 调整前缀图标约束，减少右侧间距
-            prefixIconConstraints: const BoxConstraints(
-              minWidth: 32.0,  // 默认是 48，减小这个值
-              minHeight: 32.0,
-            ),
+            
             /// 右侧清除按钮
             /// 仅在输入框有内容时显示，点击后清空输入内容
             suffixIcon: _controller.text.isNotEmpty
@@ -80,10 +76,7 @@ class _SearchInputState extends State<SearchInput> {
                     ),
                   )
                 : null,
-                suffixIconConstraints: const BoxConstraints(
-    minWidth: 32.0,  // 默认是 48，减小这个值
-    minHeight: 32.0,
-  ),
+                
             /// 占位提示文字
             hintText: '搜索播客',
             /// 占位文字样式
@@ -114,10 +107,10 @@ class _SearchInputState extends State<SearchInput> {
               borderSide: BorderSide.none,
             ),
             /// 内容区域内边距
-            // contentPadding: const EdgeInsets.symmetric(
-            //   horizontal: 80.0,
-            //   vertical: 8.0,
-            // ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 8.0,
+            ),
             /// 输入框尺寸约束
             constraints: const BoxConstraints(
               minHeight: 34.0,

@@ -13,7 +13,6 @@ import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_contr
 import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/presentation/pages/search/search_input.dart';
-import 'package:tinycast/presentation/pages/search/search_input_test.dart';
 
 // 用于测试的页面，不用于实际生产，测试写出来的widget样式是否正确的页面，不用于实际生产环境
 class TestPage extends StatefulWidget {
@@ -58,7 +57,6 @@ class _TestPageState extends State<TestPage> {
             VolumeControlBar(),
             PrimaryButton(label: '测试打开新窗口', onPressed: _openSettingsWindow),
             SearchInput(),
-            SearchInputTest(),
           ],
         ),
       ),
