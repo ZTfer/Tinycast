@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
 
 class ShowInfo extends StatelessWidget {
@@ -17,20 +18,23 @@ class ShowInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        artworkUrl != null
-            ? Image.network(
-                artworkUrl!,
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-              )
-            : SvgPicture.asset(
-                'assets/images/image_placeholder.svg',
-                width: 32,
-                height: 32,
-              ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: artworkUrl != null
+              ? Image.network(
+                  artworkUrl!,
+                  width: 32,
+                  height: 32,
+                  fit: BoxFit.cover,
+                )
+              : SvgPicture.asset(
+                  'assets/images/image_placeholder.svg',
+                  width: 32,
+                  height: 32,
+                ),
+        ),
         const SizedBox(width: 4),
         Expanded(
           child: Column(
@@ -44,22 +48,26 @@ class ShowInfo extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
+                      height: 20 / 14,
                     ),
                   ),
                   HorizontalMoreButton(
-                    icon: const Icon(LucideIcons.ellipsisVertical, size: 16),
+                    icon: const Icon(LucideIcons.ellipsisVertical, size: 14),
                     onPressed: _handleMorePressed,
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
-                description ?? '未知描述',
+                description != null
+                    ? HtmlTagRemoveUtils.stripHtml(description!)
+                    : '未知描述',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                 ),
               ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
