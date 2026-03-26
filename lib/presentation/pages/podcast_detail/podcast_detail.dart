@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
-import 'show_info.dart';
 import 'episodes_list.dart';
 
 /// 播客详情页面
@@ -50,12 +49,10 @@ class _PodcastDetailState extends ConsumerState<PodcastDetail> {
       return const Center(child: Text('播客不存在'));
     }
 
-    return Column(
-      children: [
-        const ShowInfo(),
-        if (episodes != null)
-          Expanded(child: EpisodesList(episodes: episodes)),
-      ],
-    );
+    if (episodes != null) {
+      return EpisodesList(episodes: episodes);
+    }
+
+    return const SizedBox();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
+import 'show_info.dart';
 
 class EpisodesList extends StatelessWidget {
   final List<Episode> episodes;
@@ -10,10 +11,17 @@ class EpisodesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: episodes.length,
+      itemCount: episodes.length + 1,
       itemBuilder: (context, index) {
-        final episode = episodes[index];
-        final isLast = index == episodes.length - 1;
+        // 第一项是 ShowInfo
+        if (index == 0) {
+          return const ShowInfo();
+        }
+
+        // 后续是剧集列表
+        final episodeIndex = index - 1;
+        final episode = episodes[episodeIndex];
+        final isLast = episodeIndex == episodes.length - 1;
 
         return EpisodeItem(episode: episode, showDivider: !isLast);
       },
