@@ -33,7 +33,11 @@ class EpisodesList extends StatelessWidget {
         final episode = episodes[episodeIndex];
         final isLast = episodeIndex == episodes.length - 1;
 
-        return EpisodeItem(episode: episode, showDivider: !isLast);
+        return EpisodeItem(
+          episode: episode,
+          showDivider: !isLast,
+          showCover: false,
+        );
       },
     );
   }

@@ -16,6 +16,9 @@ class EpisodeItem extends StatelessWidget {
   /// 是否显示分隔线，默认 true
   final bool showDivider;
 
+  /// 是否显示封面图，默认 true
+  final bool showCover;
+
   /// 播放按钮点击回调
   final VoidCallback? onPlayPressed;
 
@@ -23,6 +26,7 @@ class EpisodeItem extends StatelessWidget {
     super.key,
     required this.episode,
     this.showDivider = true,
+    this.showCover = true,
     this.onPlayPressed,
   });
 
@@ -35,13 +39,12 @@ class EpisodeItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Row 布局：左边封面图，右边节目信息
+              // Row 布局：左边封面图（可选），右边节目信息
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 左边：封面图
-                  _buildArtwork(),
-                  const SizedBox(width: 8),
+                  // 左边：封面图（根据 showCover 参数决定是否显示）
+                  if (showCover) ...[_buildArtwork(), const SizedBox(width: 8)],
                   // 右边：节目信息（包含标题、描述、操作栏）
                   Expanded(
                     child: QueueEpisodeInfo(
