@@ -19,20 +19,21 @@ class ShowInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 2,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: artworkUrl != null
               ? Image.network(
                   artworkUrl!,
-                  width: 32,
-                  height: 32,
+                  width: 64,
+                  height: 64,
                   fit: BoxFit.cover,
                 )
               : SvgPicture.asset(
                   'assets/images/image_placeholder.svg',
-                  width: 32,
-                  height: 32,
+                  width: 64,
+                  height: 64,
                 ),
         ),
         const SizedBox(width: 4),
@@ -46,9 +47,10 @@ class ShowInfo extends StatelessWidget {
                   Text(
                     title ?? '未知播客',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      height: 20 / 14,
+                      color: Color(0xFF333333),
+                      height: 20 / 15,
                     ),
                   ),
                   HorizontalMoreButton(
@@ -65,6 +67,8 @@ class ShowInfo extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
+                  color: Color(0xFF999999),
+                  height: 16 / 12,
                 ),
               ),
               const SizedBox(height: 8),

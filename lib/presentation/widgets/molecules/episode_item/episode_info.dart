@@ -75,12 +75,12 @@ class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
               widget.episode.title,
               style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF000000),
+                color: const Color(0xFF333333),
                 fontWeight: FontWeight.w500,
                 decoration: _isHovering
                     ? TextDecoration.underline
                     : TextDecoration.none,
-                decorationColor: const Color(0xFF000000),
+                decorationColor: const Color(0xFF333333),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -96,7 +96,7 @@ class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
           ),
           style: const TextStyle(
             fontSize: 12,
-            color: Color(0xFF333333),
+            color: Color(0xFF999999),
             fontWeight: FontWeight.normal,
             decoration: TextDecoration.none,
           ),
