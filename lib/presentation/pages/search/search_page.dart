@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'search_input.dart';
 import 'search_toolbar/search_toolbar.dart';
 // Todo: 搜索记录
 // import 'search_history/search_history_list.dart';
@@ -33,6 +34,7 @@ class SearchPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 8.0,
         children: [
+          SearchInput(),
           //Todo: 有搜索记录时展示搜索记录，没有时不展示
           // Flexible(child: SearchHistoryList()),
           //Todo: 有搜索结果时展示搜索结果，没有时不展示
