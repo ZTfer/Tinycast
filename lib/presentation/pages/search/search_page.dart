@@ -3,7 +3,7 @@ import 'search_input.dart';
 import 'search_toolbar/search_toolbar.dart';
 // Todo: 搜索记录
 // import 'search_history/search_history_list.dart';
-import 'search_results/search_results_success/search_results_success_list.dart';
+import 'search_results/search_results_episode/search_results_episode_list.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
@@ -38,7 +38,7 @@ class SearchPage extends StatelessWidget {
           //Todo: 有搜索记录时展示搜索记录，没有时不展示
           // Flexible(child: SearchHistoryList()),
           //Todo: 有搜索结果时展示搜索结果，没有时不展示
-          Flexible(child: SearchResultsSuccessList()),
+          Flexible(child: SearchResultsEpisodeList()),
           SearchToolbar(),
         ],
       ),

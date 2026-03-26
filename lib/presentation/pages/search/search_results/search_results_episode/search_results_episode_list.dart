@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'search_results_success_item.dart';
+import 'search_results_episode_item.dart';
 
-class SearchResultsSuccessList extends StatelessWidget {
-  const SearchResultsSuccessList({super.key});
+class SearchResultsEpisodeList extends StatelessWidget {
+  const SearchResultsEpisodeList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,7 +10,7 @@ class SearchResultsSuccessList extends StatelessWidget {
       shrinkWrap: true,
       itemCount: 10,
       itemBuilder: (context, index) {
-        return SearchResultsSuccessItem(
+        return SearchResultsEpisodeItem(
           episodeTitle: '剧集标题$index',
           podcastName: '播客名称$index',
           episodeDescription: '剧集简介$index',

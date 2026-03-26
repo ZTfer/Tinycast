@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class SearchResultsSuccessItem extends StatefulWidget {
+class SearchResultsEpisodeItem extends StatefulWidget {
   /// 剧集标题
   final String episodeTitle;
 
@@ -14,7 +14,7 @@ class SearchResultsSuccessItem extends StatefulWidget {
   /// 按钮点击的回调函数
   final VoidCallback? onPressed;
 
-  const SearchResultsSuccessItem({
+  const SearchResultsEpisodeItem({
     super.key,
     required this.episodeTitle,
     required this.podcastName,
@@ -23,11 +23,11 @@ class SearchResultsSuccessItem extends StatefulWidget {
   });
 
   @override
-  State<SearchResultsSuccessItem> createState() =>
-      _SearchResultsSuccessItemState();
+  State<SearchResultsEpisodeItem> createState() =>
+      _SearchResultsEpisodeItemState();
 }
 
-class _SearchResultsSuccessItemState extends State<SearchResultsSuccessItem> {
+class _SearchResultsEpisodeItemState extends State<SearchResultsEpisodeItem> {
   bool _isHovering = false;
   bool _isPressed = false;
 
