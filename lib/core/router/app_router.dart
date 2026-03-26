@@ -147,7 +147,7 @@ class AppRouter {
   /// 打开设置窗口
   static Future<void> openSettingsWindow() async {
     final controller = await WindowController.create(
-      WindowConfiguration(hiddenAtLaunch: true, arguments: 'settings'),
+      WindowConfiguration(hiddenAtLaunch: true, arguments: '{"type":"settings"}'),
     );
     await controller.show();
   }
@@ -155,7 +155,7 @@ class AppRouter {
   /// 打开订阅窗口
   static Future<void> openSubscribeWindow() async {
     final controller = await WindowController.create(
-      WindowConfiguration(hiddenAtLaunch: true, arguments: 'subscribe'),
+      WindowConfiguration(hiddenAtLaunch: true, arguments: '{"type":"subscribe"}'),
     );
     await controller.show();
   }
