@@ -1,12 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'show_info.dart';
 
 class EpisodesList extends StatelessWidget {
+  final Podcast? podcast;
   final List<Episode> episodes;
 
-  const EpisodesList({super.key, required this.episodes});
+  const EpisodesList({
+    super.key,
+    this.podcast,
+    required this.episodes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +21,11 @@ class EpisodesList extends StatelessWidget {
       itemBuilder: (context, index) {
         // 第一项是 ShowInfo
         if (index == 0) {
-          return const ShowInfo();
+          return ShowInfo(
+            title: podcast?.title,
+            artworkUrl: podcast?.artworkUrl,
+            description: podcast?.description,
+          );
         }
 
         // 后续是剧集列表

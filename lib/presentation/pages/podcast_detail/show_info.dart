@@ -4,7 +4,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
 
 class ShowInfo extends StatelessWidget {
-  const ShowInfo({super.key});
+  final String? title;
+  final String? artworkUrl;
+  final String? description;
+
+  const ShowInfo({super.key, this.title, this.artworkUrl, this.description});
 
   void _handleMorePressed() {
     // TODO: 实现更多按钮点击逻辑
@@ -13,12 +17,20 @@ class ShowInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        SvgPicture.asset(
-          'assets/images/image_placeholder.svg',
-          width: 24,
-          height: 24,
-        ),
+        artworkUrl != null
+            ? Image.network(
+                artworkUrl!,
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+              )
+            : SvgPicture.asset(
+                'assets/images/image_placeholder.svg',
+                width: 32,
+                height: 32,
+              ),
         const SizedBox(width: 4),
         Expanded(
           child: Column(
@@ -27,9 +39,12 @@ class ShowInfo extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '播客标题文字',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  Text(
+                    title ?? '未知播客',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   HorizontalMoreButton(
                     icon: const Icon(LucideIcons.ellipsisVertical, size: 16),
@@ -38,9 +53,12 @@ class ShowInfo extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
-                '播客描述文字',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+              Text(
+                description ?? '未知描述',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ],
           ),

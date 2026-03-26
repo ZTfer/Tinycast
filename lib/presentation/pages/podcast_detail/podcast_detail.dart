@@ -50,7 +50,7 @@ class _PodcastDetailState extends ConsumerState<PodcastDetail> {
     }
 
     if (episodes != null) {
-      return EpisodesList(episodes: episodes);
+      return EpisodesList(podcast: podcast, episodes: episodes);
     }
 
     return const SizedBox();
