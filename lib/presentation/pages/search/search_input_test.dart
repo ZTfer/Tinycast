@@ -57,29 +57,44 @@ class _SearchInputTestState extends State<SearchInputTest> {
             setState(() {});
           },
 
+          /// 文本垂直居中对齐
+          textAlignVertical: TextAlignVertical.center,
+
           /// 输入框装饰配置
           decoration: InputDecoration(
             /// 左侧搜索图标
             /// 使用 Lucide 图标库的 search 图标
-            prefix: Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 4.0), // 自定义间距
-              child: Icon(
-                LucideIcons.search,
-                size: 16.0,
-                color: const Color(0xFF999999),
+            prefixIcon: SizedBox(
+              width: 0.0,
+              height: 16.0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0), // 👈 图标距离左边缘的距离
+                    child: Icon(
+                      LucideIcons.search,
+                      size: 16.0,
+                      color: const Color(0xFF999999),
+                    ),
+                  ),
+                ],
               ),
             ),
 
             /// 右侧清除按钮
             /// 仅在输入框有内容时显示，点击后清空输入内容
-            suffix: _controller.text.isNotEmpty
+            suffixIcon: _controller.text.isNotEmpty
                 ? GestureDetector(
                     onTap: _clearInput,
                     child: Padding(
                       padding: const EdgeInsets.only(
                         left: 4.0,
                         right: 8.0,
-                      ), // 自定义间距
+                        top: 9.0,
+                        bottom: 9.0,
+                      ), // 自定义间距，垂直方向设置 padding 使图标居中
                       child: Icon(
                         LucideIcons.x,
                         size: 16.0,

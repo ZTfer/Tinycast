@@ -114,10 +114,10 @@ class _SearchInputState extends State<SearchInput> {
               borderSide: BorderSide.none,
             ),
             /// 内容区域内边距
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 0,
-              vertical: 8.0,
-            ),
+            // contentPadding: const EdgeInsets.symmetric(
+            //   horizontal: 80.0,
+            //   vertical: 8.0,
+            // ),
             /// 输入框尺寸约束
             constraints: const BoxConstraints(
               minHeight: 34.0,
