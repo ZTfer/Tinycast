@@ -1,29 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../../../../core/utils/html_tag_remove_utils.dart';
 
 class SearchResultsEpisodeItem extends StatefulWidget {
-  /// 剧集标题
   final String episodeTitle;
 
-  /// 播客名称
   final String podcastName;
 
-  /// 剧集简介
   final String episodeDescription;
 
-  /// 剧集ID
   final String episodeId;
 
-  /// 播客ID
   final String podcastId;
 
-  /// 是否被选中
   final bool isSelected;
 
-  /// 鼠标悬停回调
   final void Function(bool isHovering)? onHover;
 
-  /// 按钮点击的回调函数
   final VoidCallback? onPressed;
 
   const SearchResultsEpisodeItem({
@@ -121,7 +114,9 @@ class _SearchResultsEpisodeItemState extends State<SearchResultsEpisodeItem> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            widget.episodeDescription,
+                            HtmlTagRemoveUtils.getListItemSummary(
+                              widget.episodeDescription,
+                            ),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF888888),

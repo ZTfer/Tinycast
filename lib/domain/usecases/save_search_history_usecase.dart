@@ -1,4 +1,3 @@
-import '../entities/search_history.dart';
 import '../repositories/search_history_repository.dart';
 
 class SaveSearchHistoryUseCase {
