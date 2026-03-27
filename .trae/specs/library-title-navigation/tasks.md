@@ -18,6 +18,7 @@
   - [x] SubTask 4.1: 检查 HomePage 布局确保 MiniPlayer 在顶部
   - [x] SubTask 4.2: 验证页面滚动时 MiniPlayer 位置固定
 
-# Task Dependencies
+## Task Dependencies
+
 - Task 2 依赖于 Task 1
 - Task 3 依赖于 Task 2
