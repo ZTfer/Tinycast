@@ -37,6 +37,7 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 清除文本控制器中的内容，并触发界面刷新以隐藏清除按钮
   void _clearInput() {
     _controller.clear();
+    ref.read(searchProvider.notifier).resetToHistory();
     setState(() {});
   }
 
@@ -44,6 +45,8 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   Widget build(BuildContext context) {
     final searchKeyword = ref.watch(searchProvider).searchKeyword;
 
+    // 只有当 provider 中的关键词与 controller 不同，且不是用户正在输入时才同步
+    // 这避免了在用户输入时强制覆盖用户输入的问题
     if (_controller.text != searchKeyword && searchKeyword.isNotEmpty) {
       _controller.text = searchKeyword;
       _controller.selection = TextSelection.collapsed(
