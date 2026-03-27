@@ -25,6 +25,9 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 焦点节点，用于处理键盘事件
   final FocusNode _focusNode = FocusNode();
 
+  /// 用于追踪上次同步的搜索关键词，避免循环更新
+  String _lastSyncedKeyword = '';
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +74,7 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 清空输入框内容
   void _clearInput() {
     _controller.clear();
+    _lastSyncedKeyword = '';
     ref.read(searchProvider.notifier).resetToHistory();
     setState(() {});
   }
@@ -79,12 +83,16 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   Widget build(BuildContext context) {
     final searchKeyword = ref.watch(searchProvider).searchKeyword;
 
-    // 只有当 provider 中的关键词与 controller 不同，且不是用户正在输入时才同步
-    if (_controller.text != searchKeyword && searchKeyword.isNotEmpty) {
-      _controller.text = searchKeyword;
-      _controller.selection = TextSelection.collapsed(
-        offset: searchKeyword.length,
-      );
+    // 只有当 provider 中的关键词发生变化时才同步到 controller
+    // 这避免了在用户编辑时（如按 Backspace）强制覆盖用户输入
+    if (searchKeyword != _lastSyncedKeyword) {
+      _lastSyncedKeyword = searchKeyword;
+      if (_controller.text != searchKeyword) {
+        _controller.text = searchKeyword;
+        _controller.selection = TextSelection.collapsed(
+          offset: searchKeyword.length,
+        );
+      }
     }
 
     return Material(
@@ -97,6 +105,8 @@ class _SearchInputState extends ConsumerState<SearchInput> {
         ],
         child: Focus(
           focusNode: _focusNode,
+          canRequestFocus: false,
+          skipTraversal: true,
           child: TextField(
             controller: _controller,
             onChanged: (value) {
