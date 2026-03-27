@@ -32,7 +32,7 @@ class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
     final isar = IsarService.instance.isar;
 
     final models = await isar.searchHistoryModels
-        .filter()
+        .where()
         .sortBySearchedAtDesc()
         .findAll();
 
@@ -50,7 +50,7 @@ class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
     final isar = IsarService.instance.isar;
 
     await isar.writeTxn(() async {
-      await isar.searchHistoryModels.filter().deleteAll();
+      await isar.searchHistoryModels.clear();
     });
   }
 }

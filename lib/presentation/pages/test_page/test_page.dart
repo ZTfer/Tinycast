@@ -8,7 +8,7 @@ import 'package:tinycast/presentation/pages/subscribe/subscribe_search_result/su
 import 'package:tinycast/presentation/pages/settings/cloud_sync_settings/login/login_button/google_login_button.dart';
 import 'package:tinycast/presentation/pages/settings/cloud_sync_settings/login/login_button/apple_login_button.dart';
 import 'package:tinycast/presentation/pages/search/search_page.dart';
-import 'package:tinycast/presentation/pages/search/search_results/search_results_episode/search_results_episode_item.dart';
+
 import 'package:tinycast/presentation/widgets/molecules/mini_player/volume_control_bar/volume_control_bar.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -49,11 +49,6 @@ class _TestPageState extends State<TestPage> {
             AppleLoginButton(),
             SocialLoginButtonGroup(),
             SearchPage(),
-            SearchResultsEpisodeItem(
-              episodeTitle: '剧集标题',
-              podcastName: '播客名称',
-              episodeDescription: '剧集简介',
-            ),
             VolumeControlBar(),
             PrimaryButton(label: '测试打开新窗口', onPressed: _openSettingsWindow),
             SearchInput(),
