@@ -8,7 +8,7 @@ import 'package:tinycast/presentation/pages/search/search_page.dart';
 /// 主页工具栏
 ///
 /// 位于主页底部的工具栏，提供主要功能的快速访问入口。
-/// 包含添加任务、番茄钟/闹钟、以及侧边栏设置等功能按钮。
+/// 包含添加任务、闹钟、以及侧边栏设置等功能按钮。
 class HomeToolbar extends StatefulWidget {
   const HomeToolbar({super.key});
 
@@ -218,9 +218,7 @@ class _SearchPageWrapperState extends State<_SearchPageWrapper> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
+    // 不在这里请求焦点，让内部的 SearchInput 获取焦点
   }
 
   @override
@@ -243,6 +241,8 @@ class _SearchPageWrapperState extends State<_SearchPageWrapper> {
     return FocusScope(
       node: _focusNode,
       onKeyEvent: _handleKeyEvent,
+      // 使用 canRequestFocus: false 让子组件可以获取焦点
+      canRequestFocus: false,
       child: GestureDetector(
         onTap: () {},
         behavior: HitTestBehavior.opaque,
