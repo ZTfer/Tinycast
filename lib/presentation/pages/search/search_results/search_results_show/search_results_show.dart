@@ -13,6 +13,7 @@ class SearchResultsPodcastList extends StatelessWidget {
         return SearchResultsShowItem(
           podcastName: '节目名称$index',
           podcastDescription: '节目简介$index',
+          podcastId: 'podcast_$index',
         );
       },
     );

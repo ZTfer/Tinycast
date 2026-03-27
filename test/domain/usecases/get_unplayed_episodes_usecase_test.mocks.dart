@@ -88,4 +88,20 @@ class MockPodcastRepository extends _i1.Mock implements _i3.PodcastRepository {
             returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
           )
           as _i4.Future<List<_i5.Episode>>);
+
+  @override
+  _i4.Future<List<_i2.Podcast>> searchPodcasts(String? keyword) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchPodcasts, [keyword]),
+            returnValue: _i4.Future<List<_i2.Podcast>>.value(<_i2.Podcast>[]),
+          )
+          as _i4.Future<List<_i2.Podcast>>);
+
+  @override
+  _i4.Future<List<_i5.Episode>> searchEpisodes(String? keyword) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchEpisodes, [keyword]),
+            returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
+          )
+          as _i4.Future<List<_i5.Episode>>);
 }

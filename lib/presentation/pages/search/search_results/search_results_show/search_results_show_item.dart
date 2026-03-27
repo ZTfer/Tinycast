@@ -8,20 +8,30 @@ class SearchResultsShowItem extends StatefulWidget {
   /// 播客简介
   final String podcastDescription;
 
+  /// 播客ID
+  final String podcastId;
+
+  /// 是否被选中
+  final bool isSelected;
+
+  /// 鼠标悬停回调
+  final void Function(bool isHovering)? onHover;
+
   /// 按钮点击的回调函数
   final VoidCallback? onPressed;
 
   const SearchResultsShowItem({
     super.key,
-
     required this.podcastName,
     required this.podcastDescription,
+    required this.podcastId,
+    this.isSelected = false,
+    this.onHover,
     this.onPressed,
   });
 
   @override
-  State<SearchResultsShowItem> createState() =>
-      _SearchResultsShowItemState();
+  State<SearchResultsShowItem> createState() => _SearchResultsShowItemState();
 }
 
 class _SearchResultsShowItemState extends State<SearchResultsShowItem> {
@@ -31,8 +41,14 @@ class _SearchResultsShowItemState extends State<SearchResultsShowItem> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
+      onEnter: (_) {
+        setState(() => _isHovering = true);
+        widget.onHover?.call(true);
+      },
+      onExit: (_) {
+        setState(() => _isHovering = false);
+        widget.onHover?.call(false);
+      },
       cursor: widget.onPressed != null
           ? SystemMouseCursors.click
           : MouseCursor.defer,
@@ -42,7 +58,7 @@ class _SearchResultsShowItemState extends State<SearchResultsShowItem> {
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration: _isHovering
+          duration: _isHovering || widget.isSelected
               ? const Duration(milliseconds: 200)
               : Duration.zero,
           padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
@@ -124,7 +140,7 @@ class _SearchResultsShowItemState extends State<SearchResultsShowItem> {
 
   Color _getBackgroundColor() {
     if (_isPressed) return const Color(0xFFE0E0E0);
-    if (_isHovering) return const Color(0xFFF5F5F5);
+    if (_isHovering || widget.isSelected) return const Color(0xFFF5F5F5);
     return const Color(0x00F5F5F5);
   }
 }

@@ -247,6 +247,58 @@ class PodcastRepositoryImpl implements PodcastRepository {
     }
   }
 
+  @override
+  Future<List<Podcast>> searchPodcasts(String keyword) async {
+    try {
+      Logger.info('搜索播客: $keyword');
+
+      final podcastModels = await _localDataSource.searchPodcasts(keyword);
+
+      final podcasts = podcastModels
+          .map((model) => _convertPodcastModelToEntity(model))
+          .toList();
+
+      Logger.info('成功搜索到 ${podcasts.length} 个播客');
+
+      return podcasts;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('搜索播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '搜索播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<List<Episode>> searchEpisodes(String keyword) async {
+    try {
+      Logger.info('搜索节目: $keyword');
+
+      final episodeModels = await _localDataSource.searchEpisodes(keyword);
+
+      final episodes = episodeModels
+          .map((model) => _convertEpisodeModelToEntity(model))
+          .toList();
+
+      Logger.info('成功搜索到 ${episodes.length} 个节目');
+
+      return episodes;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('搜索节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '搜索节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Podcast _convertPodcastModelToEntity(model.Podcast model) {
     return Podcast(
       id: model.id,

@@ -1,15 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/search_provider.dart';
 import 'search_input.dart';
+import 'search_history/search_history_list.dart';
+import 'search_results/search_results_list.dart';
+import 'search_results/search_results_empty/search_results_empty.dart';
 import 'search_toolbar/search_toolbar.dart';
-// Todo: 搜索记录
-// import 'search_history/search_history_list.dart';
-import 'search_results/search_results_episode/search_results_episode_list.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
 
   @override
+  ConsumerState<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends ConsumerState<SearchPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(searchProvider.notifier).loadSearchHistory();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final searchState = ref.watch(searchStateProvider);
+    final showToolbar = ref.watch(showToolbarProvider);
+
     return Container(
       width: 300,
       constraints: const BoxConstraints(maxHeight: 400),
@@ -34,14 +52,24 @@ class SearchPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 8.0,
         children: [
-          SearchInput(),
-          //Todo: 有搜索记录时展示搜索记录，没有时不展示
-          // Flexible(child: SearchHistoryList()),
-          //Todo: 有搜索结果时展示搜索结果，没有时不展示
-          Flexible(child: SearchResultsEpisodeList()),
-          SearchToolbar(),
+          const SearchInput(),
+          ..._buildContent(searchState.status),
+          if (showToolbar) const SearchToolbar(),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildContent(SearchStatus status) {
+    switch (status) {
+      case SearchStatus.initial:
+        return [];
+      case SearchStatus.history:
+        return [const Flexible(child: SearchHistoryList())];
+      case SearchStatus.results:
+        return [const Flexible(child: SearchResultsList())];
+      case SearchStatus.empty:
+        return [const Flexible(child: SearchResultsEmpty())];
+    }
   }
 }

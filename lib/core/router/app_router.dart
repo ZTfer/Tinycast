@@ -11,7 +11,9 @@ import 'package:tinycast/presentation/pages/test_page/test_page.dart';
 import 'package:tinycast/presentation/pages/search/search_page.dart';
 import 'package:tinycast/presentation/pages/up_next_queue/up_next_queue.dart';
 import 'package:tinycast/presentation/pages/podcast_detail/podcast_detail.dart';
+import 'package:tinycast/presentation/pages/episode_detail/episode_detail.dart';
 import 'package:tinycast/presentation/pages/debug/database_cleanup_page.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class AppRouter {
@@ -88,6 +90,20 @@ class AppRouter {
           settings: settings,
           pageBuilder: (context, animation, secondaryAnimation) =>
               PodcastDetail(podcastId: podcastId),
+          transitionDuration: Duration.zero,
+        );
+      case AppRoutes.episodeDetail:
+        final args = settings.arguments;
+        Episode? episode;
+        if (args is Episode) {
+          episode = args;
+        } else if (args is Map<String, dynamic>) {
+          episode = args['episode'] as Episode?;
+        }
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              EpisodeDetail(episode: episode),
           transitionDuration: Duration.zero,
         );
       case AppRoutes.databaseCleanup:

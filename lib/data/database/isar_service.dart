@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
 import 'package:tinycast/data/models/episode_model.dart';
+import 'package:tinycast/data/models/search_history_model.dart';
 
 class IsarService {
   static IsarService? _instance;
@@ -37,7 +38,7 @@ class IsarService {
       final dir = await getApplicationDocumentsDirectory();
 
       _isar = await Isar.open(
-        [PodcastSchema, EpisodeSchema],
+        [PodcastSchema, EpisodeSchema, SearchHistoryModelSchema],
         directory: dir.path,
         name: _databaseName,
         inspector: true,

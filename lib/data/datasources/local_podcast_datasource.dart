@@ -404,6 +404,73 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<List<model.Podcast>> searchPodcasts(String keyword) async {
+    try {
+      Logger.info('搜索播客: $keyword');
+
+      final podcasts = await _isarService.isar.podcasts
+          .filter()
+          .isSubscribedEqualTo(true)
+          .and()
+          .group((q) => q
+              .titleContains(keyword, caseSensitive: false)
+              .or()
+              .descriptionContains(keyword, caseSensitive: false))
+          .findAll();
+
+      Logger.info('成功搜索到 ${podcasts.length} 个播客');
+
+      return podcasts;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('搜索播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '搜索播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('搜索播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '搜索播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<List<model.Episode>> searchEpisodes(String keyword) async {
+    try {
+      Logger.info('搜索节目: $keyword');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .group((q) => q
+              .titleContains(keyword, caseSensitive: false)
+              .or()
+              .descriptionContains(keyword, caseSensitive: false))
+          .sortByPubDateDesc()
+          .findAll();
+
+      Logger.info('成功搜索到 ${episodes.length} 个节目');
+
+      return episodes;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('搜索节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '搜索节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('搜索节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '搜索节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   model.Podcast _convertPodcastEntityToModel(Podcast entity) {
     return model.Podcast()
       ..title = entity.title

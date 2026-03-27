@@ -4,11 +4,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 class SearchHistoryItem extends StatefulWidget {
   final String historyKeyword;
   final VoidCallback? onPressed;
+  final bool isSelected;
+  final VoidCallback? onHover;
 
   const SearchHistoryItem({
     super.key,
     required this.historyKeyword,
     this.onPressed,
+    this.isSelected = false,
+    this.onHover,
   });
 
   @override
@@ -22,7 +26,10 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
+      onEnter: (_) {
+        setState(() => _isHovering = true);
+        widget.onHover?.call();
+      },
       onExit: (_) => setState(() => _isHovering = false),
       cursor: widget.onPressed != null
           ? SystemMouseCursors.click
@@ -33,7 +40,7 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration: _isHovering
+          duration: _isHovering || widget.isSelected
               ? const Duration(milliseconds: 200)
               : Duration.zero,
           padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
@@ -66,7 +73,7 @@ class _SearchHistoryItemState extends State<SearchHistoryItem> {
 
   Color _getBackgroundColor() {
     if (_isPressed) return const Color(0xFFE0E0E0);
-    if (_isHovering) return const Color(0xFFF5F5F5);
+    if (_isHovering || widget.isSelected) return const Color(0xFFF5F5F5);
     return const Color(0x00F5F5F5);
   }
 }

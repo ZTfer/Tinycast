@@ -14,6 +14,8 @@ class SearchResultsEpisodeList extends StatelessWidget {
           episodeTitle: '剧集标题$index',
           podcastName: '播客名称$index',
           episodeDescription: '剧集简介$index',
+          episodeId: 'episode_$index',
+          podcastId: 'podcast_$index',
         );
       },
     );
