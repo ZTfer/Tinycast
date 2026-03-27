@@ -213,7 +213,7 @@ class _SearchPageWrapper extends StatefulWidget {
 }
 
 class _SearchPageWrapperState extends State<_SearchPageWrapper> {
-  final FocusNode _focusNode = FocusNode();
+  final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
   void initState() {
@@ -240,13 +240,13 @@ class _SearchPageWrapperState extends State<_SearchPageWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: _focusNode,
+    return FocusScope(
+      node: _focusNode,
       onKeyEvent: _handleKeyEvent,
       child: GestureDetector(
         onTap: () {},
         behavior: HitTestBehavior.opaque,
-        child: const SearchPage(),
+        child: SearchPage(onClose: widget.onClose),
       ),
     );
   }
