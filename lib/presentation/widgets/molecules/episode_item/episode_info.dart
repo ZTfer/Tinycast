@@ -4,8 +4,6 @@ import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_control_bar.dart';
-import 'package:tinycast/presentation/providers/podcast_provider.dart';
-import 'package:tinycast/main.dart';
 
 /// Queue 节目信息组件
 ///
@@ -21,11 +19,15 @@ class QueueEpisodeInfo extends ConsumerStatefulWidget {
   /// 播放按钮点击回调
   final VoidCallback? onPlayPressed;
 
+  /// 点击标题回调（用于打开详情页）
+  final VoidCallback? onTap;
+
   const QueueEpisodeInfo({
     super.key,
     required this.episode,
     required this.duration,
     this.onPlayPressed,
+    this.onTap,
   });
 
   @override
@@ -36,15 +38,7 @@ class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
   bool _isHovering = false;
 
   void _handleTap() {
-    // 获取 podcast 数据并打开详情窗口
-    Future(() async {
-      final useCase = ref.read(getPodcastByIdUseCaseProvider);
-      final podcast = await useCase(widget.episode.podcastId);
-
-      if (podcast != null) {
-        await openEpisodeDetailWindow(widget.episode, podcast);
-      }
-    });
+    widget.onTap?.call();
   }
 
   @override

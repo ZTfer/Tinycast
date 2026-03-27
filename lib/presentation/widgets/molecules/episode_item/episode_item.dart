@@ -22,12 +22,16 @@ class EpisodeItem extends StatelessWidget {
   /// 播放按钮点击回调
   final VoidCallback? onPlayPressed;
 
+  /// 点击节目标题回调（用于打开详情页）
+  final VoidCallback? onEpisodeTap;
+
   const EpisodeItem({
     super.key,
     required this.episode,
     this.showDivider = true,
     this.showCover = true,
     this.onPlayPressed,
+    this.onEpisodeTap,
   });
 
   @override
@@ -51,6 +55,7 @@ class EpisodeItem extends StatelessWidget {
                       episode: episode,
                       duration: _formatDuration(episode.duration),
                       onPlayPressed: onPlayPressed,
+                      onTap: onEpisodeTap,
                     ),
                   ),
                 ],
