@@ -223,7 +223,23 @@ class SearchNotifier extends Notifier<SearchState> {
   }
 
   Future<void> resetToHistory() async {
-    await loadSearchHistory();
+    try {
+      final history = await _getSearchHistoryUseCase();
+      state = state.copyWith(
+        searchHistory: history,
+        status: history.isEmpty ? SearchStatus.initial : SearchStatus.history,
+        selectedIndex: 0,
+        searchKeyword: '',
+        searchResult: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        searchHistory: [],
+        status: SearchStatus.initial,
+        searchKeyword: '',
+        searchResult: null,
+      );
+    }
   }
 
   int get totalItemCount {
