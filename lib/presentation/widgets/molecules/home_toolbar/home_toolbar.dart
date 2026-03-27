@@ -119,9 +119,7 @@ class _HomeToolbarState extends State<HomeToolbar> {
           Positioned(
             left: left,
             top: top,
-            child: _SearchPageWrapper(
-              onClose: _hideDropdown,
-            ),
+            child: _SearchPageWrapper(onClose: _hideDropdown),
           ),
         ],
       ),
@@ -213,12 +211,12 @@ class _SearchPageWrapper extends StatefulWidget {
 }
 
 class _SearchPageWrapperState extends State<_SearchPageWrapper> {
-  final FocusScopeNode _focusNode = FocusScopeNode();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // 不在这里请求焦点，让内部的 SearchInput 获取焦点
+    _focusNode.onKeyEvent = _handleKeyEvent;
   }
 
   @override
@@ -238,11 +236,11 @@ class _SearchPageWrapperState extends State<_SearchPageWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusScope(
-      node: _focusNode,
-      onKeyEvent: _handleKeyEvent,
-      // 使用 canRequestFocus: false 让子组件可以获取焦点
+    return Focus(
+      focusNode: _focusNode,
       canRequestFocus: false,
+      skipTraversal: true,
+      onKeyEvent: _handleKeyEvent,
       child: GestureDetector(
         onTap: () {},
         behavior: HitTestBehavior.opaque,

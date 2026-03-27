@@ -32,12 +32,6 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   void initState() {
     super.initState();
     _focusNode.onKeyEvent = _handleKeyEvent;
-    // 在下一帧请求焦点，确保 widget 已经构建完成
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   @override
@@ -50,7 +44,7 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 处理键盘事件
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         ref.read(searchProvider.notifier).selectNext();
         return KeyEventResult.handled;
       } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -60,12 +54,6 @@ class _SearchInputState extends ConsumerState<SearchInput> {
         final keyword = _controller.text.trim();
         if (keyword.isNotEmpty) {
           ref.read(searchProvider.notifier).search(keyword);
-          // 搜索完成后重新请求焦点
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _focusNode.requestFocus();
-            }
-          });
         } else {
           final target = ref.read(searchProvider.notifier).confirmSelection();
           if (target != null) {
@@ -79,7 +67,6 @@ class _SearchInputState extends ConsumerState<SearchInput> {
         return KeyEventResult.handled;
       }
     }
-    // 对于其他按键（如 Delete、Backspace、字符输入），返回 ignored 让 TextField 处理
     return KeyEventResult.ignored;
   }
 
@@ -88,8 +75,6 @@ class _SearchInputState extends ConsumerState<SearchInput> {
     _controller.clear();
     _lastSyncedKeyword = '';
     ref.read(searchProvider.notifier).resetToHistory();
-    // 清空后重新请求焦点
-    _focusNode.requestFocus();
     setState(() {});
   }
 
@@ -117,64 +102,61 @@ class _SearchInputState extends ConsumerState<SearchInput> {
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        child: Focus(
+        child: TextField(
+          controller: _controller,
           focusNode: _focusNode,
-          // 移除 canRequestFocus: false，让 TextField 可以获取焦点
-          skipTraversal: true,
-          child: TextField(
-            controller: _controller,
-            onChanged: (value) {
-              setState(() {});
-            },
-            decoration: InputDecoration(
-              suffixIcon: _controller.text.isNotEmpty
-                  ? GestureDetector(
-                      onTap: _clearInput,
-                      child: Icon(
-                        LucideIcons.x,
-                        size: 16.0,
-                        color: const Color(0xFF333333),
+          autofocus: true,
+          onChanged: (value) {
+            setState(() {});
+          },
+          decoration: InputDecoration(
+            suffixIcon: _controller.text.isNotEmpty
+                ? GestureDetector(
+                    onTap: _clearInput,
+                    child: Icon(
+                      LucideIcons.x,
+                      size: 16.0,
+                      color: const Color(0xFF333333),
                       ),
-                    )
-                  : null,
-              hintText: '搜索播客',
-              hintStyle: const TextStyle(
-                fontSize: 12.0,
-                color: Color(0xFF999999),
-                height: 16.0 / 12.0,
-              ),
-              filled: true,
-              fillColor: const Color(0xFFF0F0F0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 8.0,
-              ),
-              constraints: const BoxConstraints(
-                minHeight: 34.0,
-                maxHeight: 34.0,
-              ),
-            ),
-            style: const TextStyle(
+                  )
+                : null,
+            hintText: '搜索播客',
+            hintStyle: const TextStyle(
               fontSize: 12.0,
-              color: Color(0xFF000000),
+              color: Color(0xFF999999),
               height: 16.0 / 12.0,
             ),
-            cursorColor: const Color(0xFF000000),
-            maxLines: 1,
-            minLines: 1,
+            filled: true,
+            fillColor: const Color(0xFFF0F0F0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 8.0,
+            ),
+            constraints: const BoxConstraints(
+              minHeight: 34.0,
+              maxHeight: 34.0,
+            ),
           ),
+          style: const TextStyle(
+            fontSize: 12.0,
+            color: Color(0xFF000000),
+            height: 16.0 / 12.0,
+          ),
+          cursorColor: const Color(0xFF000000),
+          maxLines: 1,
+          minLines: 1,
         ),
       ),
     );
