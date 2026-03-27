@@ -32,6 +32,12 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   void initState() {
     super.initState();
     _focusNode.onKeyEvent = _handleKeyEvent;
+    // 在下一帧请求焦点，确保 widget 已经构建完成
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -54,6 +60,12 @@ class _SearchInputState extends ConsumerState<SearchInput> {
         final keyword = _controller.text.trim();
         if (keyword.isNotEmpty) {
           ref.read(searchProvider.notifier).search(keyword);
+          // 搜索完成后重新请求焦点
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _focusNode.requestFocus();
+            }
+          });
         } else {
           final target = ref.read(searchProvider.notifier).confirmSelection();
           if (target != null) {
@@ -76,6 +88,8 @@ class _SearchInputState extends ConsumerState<SearchInput> {
     _controller.clear();
     _lastSyncedKeyword = '';
     ref.read(searchProvider.notifier).resetToHistory();
+    // 清空后重新请求焦点
+    _focusNode.requestFocus();
     setState(() {});
   }
 
@@ -105,7 +119,7 @@ class _SearchInputState extends ConsumerState<SearchInput> {
         ],
         child: Focus(
           focusNode: _focusNode,
-          canRequestFocus: false,
+          // 移除 canRequestFocus: false，让 TextField 可以获取焦点
           skipTraversal: true,
           child: TextField(
             controller: _controller,
