@@ -26,15 +26,49 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   final FocusNode _focusNode = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode.onKeyEvent = _handleKeyEvent;
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
+  /// 处理键盘事件
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        ref.read(searchProvider.notifier).selectNext();
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        ref.read(searchProvider.notifier).selectPrevious();
+        return KeyEventResult.handled;
+      } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+        final keyword = _controller.text.trim();
+        if (keyword.isNotEmpty) {
+          ref.read(searchProvider.notifier).search(keyword);
+        } else {
+          final target = ref.read(searchProvider.notifier).confirmSelection();
+          if (target != null) {
+            AppRouter.navigateTo(
+              context,
+              target.route,
+              arguments: target.arguments,
+            );
+          }
+        }
+        return KeyEventResult.handled;
+      }
+    }
+    // 对于其他按键（如 Delete、Backspace、字符输入），返回 ignored 让 TextField 处理
+    return KeyEventResult.ignored;
+  }
+
   /// 清空输入框内容
-  ///
-  /// 清除文本控制器中的内容，并触发界面刷新以隐藏清除按钮
   void _clearInput() {
     _controller.clear();
     ref.read(searchProvider.notifier).resetToHistory();
@@ -46,7 +80,6 @@ class _SearchInputState extends ConsumerState<SearchInput> {
     final searchKeyword = ref.watch(searchProvider).searchKeyword;
 
     // 只有当 provider 中的关键词与 controller 不同，且不是用户正在输入时才同步
-    // 这避免了在用户输入时强制覆盖用户输入的问题
     if (_controller.text != searchKeyword && searchKeyword.isNotEmpty) {
       _controller.text = searchKeyword;
       _controller.selection = TextSelection.collapsed(
@@ -62,33 +95,8 @@ class _SearchInputState extends ConsumerState<SearchInput> {
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        child: KeyboardListener(
+        child: Focus(
           focusNode: _focusNode,
-          onKeyEvent: (KeyEvent event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                ref.read(searchProvider.notifier).selectNext();
-              } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                ref.read(searchProvider.notifier).selectPrevious();
-              } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-                final keyword = _controller.text.trim();
-                if (keyword.isNotEmpty) {
-                  ref.read(searchProvider.notifier).search(keyword);
-                } else {
-                  final target = ref
-                      .read(searchProvider.notifier)
-                      .confirmSelection();
-                  if (target != null) {
-                    AppRouter.navigateTo(
-                      context,
-                      target.route,
-                      arguments: target.arguments,
-                    );
-                  }
-                }
-              }
-            }
-          },
           child: TextField(
             controller: _controller,
             onChanged: (value) {
