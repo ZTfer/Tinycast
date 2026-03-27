@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
+import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'show_info.dart';
 
-class EpisodesList extends StatelessWidget {
+class EpisodesList extends ConsumerWidget {
   final Podcast? podcast;
   final List<Episode> episodes;
 
@@ -15,11 +17,10 @@ class EpisodesList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       itemCount: episodes.length + 1,
       itemBuilder: (context, index) {
-        // 第一项是 ShowInfo
         if (index == 0) {
           return ShowInfo(
             title: podcast?.title,
@@ -28,7 +29,6 @@ class EpisodesList extends StatelessWidget {
           );
         }
 
-        // 后续是剧集列表
         final episodeIndex = index - 1;
         final episode = episodes[episodeIndex];
         final isLast = episodeIndex == episodes.length - 1;
@@ -37,6 +37,11 @@ class EpisodesList extends StatelessWidget {
           episode: episode,
           showDivider: !isLast,
           showCover: false,
+          onEpisodeTap: () {
+            if (podcast != null) {
+              ref.read(navigationProvider.notifier).showEpisodeDetail(episode, podcast!);
+            }
+          },
         );
       },
     );

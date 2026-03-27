@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/search_provider.dart';
-import '../../../../core/router/app_routes.dart';
-import '../../../../core/router/app_router.dart';
+import '../../../providers/navigation_provider.dart';
 import 'search_results_show/search_results_show_item.dart';
 import 'search_results_episode/search_results_episode_item.dart';
 
@@ -39,11 +38,7 @@ class SearchResultsList extends ConsumerWidget {
               }
             },
             onPressed: () {
-              AppRouter.navigateTo(
-                context,
-                AppRoutes.podcastDetail,
-                arguments: podcast.id,
-              );
+              ref.read(navigationProvider.notifier).showPodcastDetail(podcast);
             },
           );
         } else {
@@ -63,11 +58,9 @@ class SearchResultsList extends ConsumerWidget {
               }
             },
             onPressed: () {
-              AppRouter.navigateTo(
-                context,
-                AppRoutes.episodeDetail,
-                arguments: episode,
-              );
+              if (podcast != null) {
+                ref.read(navigationProvider.notifier).showEpisodeDetail(episode, podcast);
+              }
             },
           );
         }

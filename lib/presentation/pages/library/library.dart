@@ -5,8 +5,8 @@ import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/pages/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/pages/library/library_empty_page/library_empty_page.dart';
-import 'package:tinycast/presentation/pages/podcast_detail/podcast_detail.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/core/utils/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
 
@@ -18,24 +18,18 @@ class Library extends ConsumerStatefulWidget {
 }
 
 class _LibraryState extends ConsumerState<Library> {
-  /// 当前选中的播客ID，为null时显示播客列表
-  int? _selectedPodcastId;
-
   @override
   void initState() {
     super.initState();
-    // 初始化时加载订阅的播客
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPodcasts();
     });
   }
 
-  /// 加载播客列表
   Future<void> _loadPodcasts() async {
     try {
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
     } catch (e) {
-      // 处理加载错误
       AppException exception;
       if (e is AppException) {
         exception = e;
@@ -46,40 +40,26 @@ class _LibraryState extends ConsumerState<Library> {
         );
       }
 
-      // 显示错误提示
       if (mounted) {
         ErrorToast.showException(context, exception);
       }
     }
   }
 
-  /// 重试加载
   Future<void> _retryLoad() async {
     try {
-      await _loadPodcasts(); // 显示错误提示
+      await _loadPodcasts();
       if (mounted) {
         ErrorToast.showSuccess(context, '加载成功');
       }
     } catch (e) {
-      // 错误已在 _loadPodcasts 中处理
     }
   }
 
-  /// 选中播客，在页面内显示详情
   void _selectPodcast(Podcast podcast) {
-    setState(() {
-      _selectedPodcastId = podcast.id;
-    });
+    ref.read(navigationProvider.notifier).showPodcastDetail(podcast);
   }
 
-  /// 返回播客列表
-  void _backToList() {
-    setState(() {
-      _selectedPodcastId = null;
-    });
-  }
-
-  /// 显示更多操作菜单
   void _showMoreMenu(Podcast podcast) {
     showModalBottomSheet(
       context: context,
@@ -92,7 +72,6 @@ class _LibraryState extends ConsumerState<Library> {
               title: const Text('分享'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: 实现分享功能
               },
             ),
             ListTile(
@@ -100,7 +79,6 @@ class _LibraryState extends ConsumerState<Library> {
               title: const Text('标记为已读'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: 实现标记为已读功能
               },
             ),
             ListTile(
@@ -108,7 +86,6 @@ class _LibraryState extends ConsumerState<Library> {
               title: const Text('下载全部'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: 实现下载全部功能
               },
             ),
             ListTile(
@@ -129,47 +106,6 @@ class _LibraryState extends ConsumerState<Library> {
 
   @override
   Widget build(BuildContext context) {
-    // 如果选中了播客，显示播客详情
-    if (_selectedPodcastId != null) {
-      return Column(
-        children: [
-          // 返回按钮
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: _backToList,
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.arrow_back_ios, size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          '返回',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 播客详情
-          Expanded(
-            child: PodcastDetail(podcastId: _selectedPodcastId!),
-          ),
-        ],
-      );
-    }
-
-    // 显示播客列表
     final state = ref.watch(podcastProvider);
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
@@ -180,7 +116,6 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Widget _buildContent(PodcastState state, List<Podcast> podcasts) {
-    // 加载状态
     if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
       return const SizedBox(
         height: 400,
@@ -188,7 +123,6 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
-    // 错误状态
     if (state.status == PodcastStatus.error && podcasts.isEmpty) {
       return SizedBox(
         height: 400,
@@ -217,7 +151,6 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
-    // 空状态
     if (podcasts.isEmpty) {
       return LibraryEmptyPage(
         onRssSubscribe: () =>
@@ -226,7 +159,6 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
-    // 显示播客列表
     return ListView.builder(
       itemCount: podcasts.length,
       itemBuilder: (context, index) {
@@ -245,7 +177,6 @@ class _LibraryState extends ConsumerState<Library> {
   }
 }
 
-/// 播客列表项组件，负责加载和管理单个播客的剧集数据
 class _LibraryPodcastItem extends ConsumerWidget {
   final Podcast podcast;
   final bool showDivider;
@@ -262,11 +193,9 @@ class _LibraryPodcastItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 监听该播客的最新剧集数据
     final episodesAsync = ref.watch(latestEpisodesProvider(podcast.id));
 
     return episodesAsync.when(
-      // 数据加载成功
       data: (episodes) => LibraryListItem(
         podcast: podcast,
         episodes: episodes,
@@ -276,7 +205,6 @@ class _LibraryPodcastItem extends ConsumerWidget {
         onTitleTap: onTap,
         isLoading: false,
       ),
-      // 加载中状态：显示播客信息和加载骨架屏
       loading: () => LibraryListItem(
         podcast: podcast,
         episodes: [],
@@ -286,7 +214,6 @@ class _LibraryPodcastItem extends ConsumerWidget {
         onTitleTap: onTap,
         isLoading: true,
       ),
-      // 错误状态：显示播客信息，但剧集列表为空，不影响其他播客展示
       error: (error, stack) => LibraryListItem(
         podcast: podcast,
         episodes: [],
