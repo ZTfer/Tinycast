@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/molecules/home_toolbar/home_toolbar_button.dart';
 import 'package:tinycast/presentation/widgets/molecules/home_toolbar/sleep_dropdown/sleep_dropdown.dart';
@@ -118,10 +119,8 @@ class _HomeToolbarState extends State<HomeToolbar> {
           Positioned(
             left: left,
             top: top,
-            child: GestureDetector(
-              onTap: () {},
-              behavior: HitTestBehavior.opaque,
-              child: SearchPage(),
+            child: _SearchPageWrapper(
+              onClose: _hideDropdown,
             ),
           ),
         ],
@@ -198,6 +197,56 @@ class _HomeToolbarState extends State<HomeToolbar> {
           ),
           */
         ],
+      ),
+    );
+  }
+}
+
+/// 搜索页面包装器，用于处理 ESC 键关闭
+class _SearchPageWrapper extends StatefulWidget {
+  final VoidCallback onClose;
+
+  const _SearchPageWrapper({required this.onClose});
+
+  @override
+  State<_SearchPageWrapper> createState() => _SearchPageWrapperState();
+}
+
+class _SearchPageWrapperState extends State<_SearchPageWrapper> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      widget.onClose();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _handleKeyEvent,
+      child: GestureDetector(
+        onTap: () {},
+        behavior: HitTestBehavior.opaque,
+        child: const SearchPage(),
       ),
     );
   }
