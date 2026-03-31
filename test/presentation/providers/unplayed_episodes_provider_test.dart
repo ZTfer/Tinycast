@@ -4,7 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/usecases/get_unplayed_episodes_usecase.dart';
-import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
+import 'package:tinycast/presentation/features/library/unplayed_episodes_provider.dart';
 
 import 'unplayed_episodes_provider_test.mocks.dart';
 

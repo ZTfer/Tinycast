@@ -7,10 +7,10 @@ import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart';
 import 'package:tinycast/domain/usecases/get_subscribed_podcasts_usecase.dart';
-import 'package:tinycast/presentation/pages/library/library.dart';
-import 'package:tinycast/presentation/pages/library/library_episode_item/library_episode_item.dart';
-import 'package:tinycast/presentation/pages/library/library_episode_item/library_episode_item_skeleton.dart';
-import 'package:tinycast/presentation/pages/library/library_list_item/library_list_item.dart';
+import 'package:tinycast/presentation/features/library/library.dart';
+import 'package:tinycast/presentation/features/library/library_episode_item/library_episode_item.dart';
+import 'package:tinycast/presentation/features/library/library_episode_item/library_episode_item_skeleton.dart';
+import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 import 'library_test.mocks.dart';

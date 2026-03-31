@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'package:tinycast/presentation/pages/settings/settings.dart';
-import 'package:tinycast/presentation/pages/subscribe/subscribe.dart';
-import 'package:tinycast/presentation/pages/episode_detail/episode_detail.dart';
+import 'package:tinycast/presentation/features/settings/settings.dart';
+import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
+import 'package:tinycast/presentation/features/player/episode_detail.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
 
