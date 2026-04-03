@@ -684,24 +684,56 @@ class AudioDownloadService {
   }
 
   void _processQueue() {
+    Logger.info('🔄 [DEBUG] ====== Processing download queue ======');
+    Logger.debug('🔄 [DEBUG] Queue status:');
+    Logger.debug('   - Can start new: ${_downloadQueue.canStartNewDownload}');
+    Logger.debug('   - Queue length: ${_downloadQueue.queueLength}');
+    Logger.debug('   - Active downloads: ${_downloadQueue.activeDownloadsCount}');
+    Logger.debug('   - Max concurrent: ${_downloadQueue.maxConcurrentDownloads}');
+    
+    int processedCount = 0;
+    
     while (_downloadQueue.canStartNewDownload) {
       final task = _downloadQueue.dequeue();
-      if (task == null) break;
-
+      if (task == null) {
+        Logger.warning('🔄 [DEBUG] No more tasks in queue');
+        break;
+      }
+      
+      processedCount++;
+      Logger.info('🔄 [DEBUG] Dequeued task #$processedCount: ${task.episodeId} (status: ${task.status})');
+      
       _startDownloadFromQueue(task);
+    }
+    
+    if (processedCount == 0) {
+      Logger.warning('🔄 [DEBUG] No tasks were processed from queue!');
+      if (_downloadQueue.queueLength > 0) {
+        Logger.error('🔄 [DEBUG] ERROR: Queue has ${_downloadQueue.queueLength} items but cannot start new downloads');
+        Logger.error('🔄 [DEBUG] This might mean max concurrent downloads reached or queue logic issue');
+      }
+    } else {
+      Logger.info('✅ [DEBUG] Successfully started $processedCount download(s) from queue');
     }
   }
 
   Future<void> _startDownloadFromQueue(DownloadTask downloadTask) async {
     final episodeId = downloadTask.episodeId;
+    
+    Logger.info('⬇️ [DEBUG] ====== Starting queued download for episode: $episodeId ======');
 
     try {
+      Logger.debug('⬇️ [DEBUG] Fetching episode from database...');
       final episode = await _isarService.isar.episodes.get(
         int.parse(episodeId),
       );
+      
       if (episode == null) {
+        Logger.error('❌ [DEBUG] ERROR: Episode not found in database! ID: $episodeId');
         throw AppException.unknown('Episode not found: $episodeId');
       }
+      
+      Logger.debug('✅ [DEBUG] Episode found: ${episode.title}');
 
       downloadTask.status = DownloadStatus.downloading;
       _notifyStatusChange(episodeId, DownloadStatus.downloading);
