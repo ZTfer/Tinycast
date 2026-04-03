@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/services/file_storage_service.dart';
 import 'package:tinycast/data/database/isar_service.dart';
