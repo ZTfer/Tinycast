@@ -4,6 +4,7 @@ import '../../domain/repositories/podcast_repository.dart';
 import '../datasources/remote_podcast_datasource.dart';
 import '../datasources/local_podcast_datasource.dart';
 import '../services/file_storage_service.dart';
+import '../services/audio_download_service.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
 import '../../core/utils/app_exception.dart';
@@ -13,14 +14,17 @@ class PodcastRepositoryImpl implements PodcastRepository {
   final RemotePodcastDataSource _remoteDataSource;
   final LocalPodcastDataSource _localDataSource;
   final FileStorageService _fileStorageService;
+  final AudioDownloadService _audioDownloadService;
 
   PodcastRepositoryImpl({
     RemotePodcastDataSource? remoteDataSource,
     LocalPodcastDataSource? localDataSource,
     FileStorageService? fileStorageService,
+    AudioDownloadService? audioDownloadService,
   })  : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
         _localDataSource = localDataSource ?? LocalPodcastDataSource(),
-        _fileStorageService = fileStorageService ?? FileStorageService.instance;
+        _fileStorageService = fileStorageService ?? FileStorageService.instance,
+        _audioDownloadService = audioDownloadService ?? AudioDownloadService.instance;
 
   @override
   Future<Podcast> subscribe(String rssUrl) async {
@@ -84,6 +88,16 @@ class PodcastRepositoryImpl implements PodcastRepository {
       Logger.info('获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}');
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
+
+      // 自动下载最新 3 集
+      try {
+        Logger.info('开始自动下载播客 ${podcast.title} 的最新 3 集');
+        await _audioDownloadService.downloadPodcastEpisodes(podcastId, limit: 3);
+        Logger.info('自动下载任务已添加到队列');
+      } catch (e) {
+        Logger.warning('自动下载失败: $e');
+        // 不影响订阅流程
+      }
 
       Logger.info('成功订阅播客: ${podcast.title}');
 
