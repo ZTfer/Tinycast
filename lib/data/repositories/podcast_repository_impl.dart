@@ -21,10 +21,11 @@ class PodcastRepositoryImpl implements PodcastRepository {
     LocalPodcastDataSource? localDataSource,
     FileStorageService? fileStorageService,
     AudioDownloadService? audioDownloadService,
-  })  : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
-        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
-        _fileStorageService = fileStorageService ?? FileStorageService.instance,
-        _audioDownloadService = audioDownloadService ?? AudioDownloadService.instance;
+  }) : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
+       _localDataSource = localDataSource ?? LocalPodcastDataSource(),
+       _fileStorageService = fileStorageService ?? FileStorageService.instance,
+       _audioDownloadService =
+           audioDownloadService ?? AudioDownloadService.instance;
 
   @override
   Future<Podcast> subscribe(String rssUrl) async {
@@ -33,19 +34,19 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final isSubscribed = await _localDataSource.isPodcastSubscribed(rssUrl);
       if (isSubscribed) {
-        throw AppException.validation(
-          '该播客已订阅',
-        );
+        throw AppException.validation('该播客已订阅');
       }
 
       final result = await _remoteDataSource.getPodcastFromRss(rssUrl);
       final podcastEntity = result['podcast'] as Podcast;
       final episodes = result['episodes'] as List<Episode>;
 
-      Logger.info('播客实体: ${podcastEntity.title}, isSubscribed: ${podcastEntity.isSubscribed}');
+      Logger.info(
+        '播客实体: ${podcastEntity.title}, isSubscribed: ${podcastEntity.isSubscribed}',
+      );
 
       final podcastId = await _localDataSource.savePodcast(podcastEntity);
-      
+
       Logger.info('保存播客后获得的 ID: $podcastId');
 
       final episodesWithPodcastId = episodes.map((episode) {
@@ -78,24 +79,46 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       Logger.info('准备更新订阅状态，podcastId: $podcastId');
       await _localDataSource.updatePodcastSubscription(podcastId, true);
-      await _localDataSource.updatePodcastEpisodeCount(podcastId, episodes.length);
+      await _localDataSource.updatePodcastEpisodeCount(
+        podcastId,
+        episodes.length,
+      );
 
       final podcastModel = await _localDataSource.getPodcastById(podcastId);
       if (podcastModel == null) {
         throw AppException.unknown('保存播客后无法获取数据');
       }
-      
-      Logger.info('获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}');
+
+      Logger.info(
+        '获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}',
+      );
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
 
       // 自动下载最新 3 集
       try {
-        Logger.info('开始自动下载播客 ${podcast.title} 的最新 3 集');
-        await _audioDownloadService.downloadPodcastEpisodes(podcastId, limit: 3);
-        Logger.info('自动下载任务已添加到队列');
+        Logger.info(
+          '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
+        );
+        Logger.info('🎯 [DEBUG] Podcast: ${podcast.title} (ID: $podcastId)');
+        Logger.info('🎯 [DEBUG] Total episodes available: ${episodes.length}');
+        Logger.info('🎯 [DEBUG] Will download latest 3 episodes');
+
+        await _audioDownloadService.downloadPodcastEpisodes(
+          podcastId,
+          limit: 3,
+        );
+
+        Logger.info(
+          '✅ [DEBUG] Auto-download tasks added to queue successfully',
+        );
+        Logger.info(
+          '✅ [DEBUG] Check AudioDownloadService queue status for progress',
+        );
       } catch (e) {
-        Logger.warning('自动下载失败: $e');
+        Logger.warning(
+          '⚠️ [DEBUG] Auto-download failed but subscription succeeded: $e',
+        );
         // 不影响订阅流程
       }
 
@@ -214,7 +237,9 @@ class PodcastRepositoryImpl implements PodcastRepository {
     try {
       Logger.info('获取播客的节目列表: $podcastId');
 
-      final episodeModels = await _localDataSource.getEpisodesByPodcastId(podcastId);
+      final episodeModels = await _localDataSource.getEpisodesByPodcastId(
+        podcastId,
+      );
 
       final episodes = episodeModels
           .map((model) => _convertEpisodeModelToEntity(model))

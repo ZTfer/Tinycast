@@ -131,14 +131,20 @@ class AudioDownloadService {
 
   Future<void> downloadEpisode(Episode episode) async {
     final episodeId = episode.id.toString();
+    
+    Logger.debug('⬇️ [DEBUG] ====== Starting download for episode: $episodeId ======');
+    Logger.debug('⬇️ [DEBUG] Episode title: ${episode.title}');
+    Logger.debug('⬇️ [DEBUG] Audio URL: ${episode.audioUrl}');
+    Logger.debug('⬇️ [DEBUG] Podcast ID: ${episode.podcastId}');
 
     if (_downloadTasks.containsKey(episodeId)) {
       final existingTask = _downloadTasks[episodeId]!;
       if (existingTask.status == DownloadStatus.downloading) {
-        Logger.info('Download already in progress for episode: $episodeId');
+        Logger.warning('⚠️ [DEBUG] Download already in progress for episode: $episodeId');
         return;
       }
       if (existingTask.status == DownloadStatus.paused) {
+        Logger.info('⏸️ [DEBUG] Resuming paused download for episode: $episodeId');
         await resumeDownload(episodeId);
         return;
       }
@@ -153,6 +159,22 @@ class AudioDownloadService {
       final absoluteFilePath = '${audioDir.path}/$fileName';
       final tempFilePath = '${tempDir.path}/$fileName';
 
+      Logger.debug('📁 [DEBUG] File paths:');
+      Logger.debug('   - Audio directory: ${audioDir.path}');
+      Logger.debug('   - Temp directory: ${tempDir.path}');
+      Logger.debug('   - File name: $fileName');
+      Logger.debug('   - Relative path: $relativeFilePath');
+      Logger.debug('   - Absolute path: $absoluteFilePath');
+      Logger.debug('   - Temp path: $tempFilePath');
+
+      // 检查音频目录是否存在
+      if (!await audioDir.exists()) {
+        Logger.error('❌ [DEBUG] Audio directory does not exist!');
+        throw AppException.storage('Audio directory not found');
+      }
+      
+      Logger.debug('✅ [DEBUG] Audio directory exists and is ready');
+
       final cancelToken = CancelToken();
       final downloadTask = DownloadTask(
         episodeId: episodeId,
@@ -165,6 +187,8 @@ class AudioDownloadService {
       );
 
       _downloadTasks[episodeId] = downloadTask;
+      
+      Logger.info('📥 [DEBUG] Download task created, updating database...');
 
       await _updateEpisodeDownloadStatus(
         episodeId: episodeId,
@@ -182,6 +206,9 @@ class AudioDownloadService {
       if (exists) {
         downloadedBytes = await file.length();
         downloadTask.downloadedBytes = downloadedBytes;
+        Logger.info('🔄 [DEBUG] Found existing temp file, size: ${_formatFileSize(downloadedBytes)}');
+      } else {
+        Logger.debug('🆕 [DEBUG] No existing temp file, starting fresh download');
       }
 
       final options = Options(
@@ -190,6 +217,13 @@ class AudioDownloadService {
             ? {'Range': 'bytes=$downloadedBytes-'}
             : null,
       );
+      
+      if (downloadedBytes > 0) {
+        Logger.debug('🔄 [DEBUG] Using Range header for resume: bytes=$downloadedBytes-');
+      }
+
+      Logger.info('🌐 [DEBUG] Starting HTTP download from: ${episode.audioUrl}');
+      DateTime startTime = DateTime.now();
 
       await _dio.download(
         episode.audioUrl,
@@ -200,15 +234,29 @@ class AudioDownloadService {
           if (total != -1) {
             final totalProgress = downloadedBytes + received;
             final progress = totalProgress / total;
+            
+            // 每10%记录一次进度
+            if ((progress * 100).toInt() % 10 == 0 && (progress * 100).toInt() != 0) {
+              Logger.debug('📊 [DEBUG] Progress: ${(progress * 100).toStringAsFixed(1)}% (${_formatFileSize(totalProgress)} / ${_formatFileSize(total)})');
+            }
+            
             downloadTask.progress = progress;
             downloadTask.downloadedBytes = totalProgress;
             downloadTask.totalBytes = total;
 
             _notifyProgressChange(episodeId, progress);
             _updateEpisodeDownloadProgress(episodeId, progress);
+          } else {
+            Logger.debug('📊 [DEBUG] Received: ${_formatFileSize(received)}, Total: unknown');
           }
         },
       );
+
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime);
+      
+      Logger.info('✅ [DEBUG] Download completed successfully!');
+      Logger.info('⏱️ [DEBUG] Download duration: ${duration.inSeconds}s');
 
       downloadTask.status = DownloadStatus.completed;
       downloadTask.progress = 1.0;
@@ -216,9 +264,22 @@ class AudioDownloadService {
       final finalFile = File(absoluteFilePath);
       if (await finalFile.exists()) {
         await finalFile.delete();
+        Logger.debug('🗑️ [DEBUG] Deleted existing file at: $absoluteFilePath');
       }
 
       await File(tempFilePath).rename(absoluteFilePath);
+
+      // 验证文件是否成功保存
+      final savedFile = File(absoluteFilePath);
+      if (await savedFile.exists()) {
+        final fileSize = await savedFile.length();
+        Logger.info('💾 [DEBUG] File saved successfully:');
+        Logger.info('   - Path: $absoluteFilePath');
+        Logger.info('   - Size: ${_formatFileSize(fileSize)}');
+        Logger.info('   - Relative path: $relativeFilePath');
+      } else {
+        Logger.error('❌ [DEBUG] ERROR: File was not saved to destination!');
+      }
 
       await _updateEpisodeDownloadStatus(
         episodeId: episodeId,
@@ -540,7 +601,10 @@ class AudioDownloadService {
   }
 
   Future<void> downloadPodcastEpisodes(int podcastId, {int? limit}) async {
-    Logger.info('开始下载播客 $podcastId 的所有节目');
+    Logger.info('📦 [DEBUG] ====== Starting podcast download: $podcastId ======');
+    if (limit != null) {
+      Logger.info('📦 [DEBUG] Download limit: $limit episodes');
+    }
 
     try {
       final episodes = await _isarService.isar.episodes
@@ -549,21 +613,33 @@ class AudioDownloadService {
           .sortByPubDateDesc()
           .findAll();
 
+      Logger.info('📦 [DEBUG] Found ${episodes.length} total episodes for podcast $podcastId');
+      
       final episodesToDownload = limit != null
           ? episodes.take(limit).toList()
           : episodes;
 
-      Logger.info('找到 ${episodesToDownload.length} 个节目待下载');
+      Logger.info('📦 [DEBUG] Episodes to download: ${episodesToDownload.length}');
+      
+      // 列出要下载的节目信息
+      for (var i = 0; i < episodesToDownload.length; i++) {
+        final ep = episodesToDownload[i];
+        Logger.debug('📦 [DEBUG] Episode ${i + 1}/${episodesToDownload.length}: ID=${ep.id}, Title="${ep.title}"');
+      }
 
       await downloadEpisodesBatch(episodesToDownload);
     } catch (e, stackTrace) {
-      Logger.error('下载播客节目失败: $podcastId', error: e, stackTrace: stackTrace);
+      Logger.error('❌ [DEBUG] Failed to download podcast episodes: $podcastId', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
 
   Future<void> _enqueueDownload(Episode episode) async {
     final episodeId = episode.id.toString();
+    
+    Logger.info('📥 [DEBUG] Enqueuing download for episode: $episodeId');
+    Logger.debug('   - Title: ${episode.title}');
+    Logger.debug('   - Audio URL: ${episode.audioUrl}');
 
     try {
       final tempDir = await _fileStorageService.getTemporaryDirectory();
@@ -571,6 +647,10 @@ class AudioDownloadService {
       final fileName = _fileStorageService.generateAudioFileName(episodeId);
       final relativeFilePath = 'audio/$fileName';
       final tempFilePath = '${tempDir.path}/$fileName';
+
+      Logger.debug('   - File name: $fileName');
+      Logger.debug('   - Relative path: $relativeFilePath');
+      Logger.debug('   - Temp path: $tempFilePath');
 
       final cancelToken = CancelToken();
       final downloadTask = DownloadTask(
@@ -586,6 +666,8 @@ class AudioDownloadService {
       _downloadTasks[episodeId] = downloadTask;
       _downloadQueue.enqueue(downloadTask);
 
+      Logger.debug('✅ [DEBUG] Task enqueued, queue size: ${_downloadQueue.queueLength}');
+
       await _updateEpisodeDownloadStatus(
         episodeId: episodeId,
         isDownloaded: false,
@@ -594,7 +676,7 @@ class AudioDownloadService {
       );
 
       _notifyStatusChange(episodeId, DownloadStatus.queued);
-      Logger.info('节目已加入下载队列: $episodeId');
+      Logger.info('✅ [DEBUG] Episode added to queue successfully: $episodeId');
     } catch (e, stackTrace) {
       Logger.error('加入下载队列失败: $episodeId', error: e, stackTrace: stackTrace);
       rethrow;
@@ -758,5 +840,17 @@ class AudioDownloadService {
         .where((entry) => entry.value.status == DownloadStatus.paused)
         .map((entry) => entry.key)
         .toList();
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(2)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+    }
   }
 }

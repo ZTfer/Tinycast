@@ -15,7 +15,9 @@ class FileStorageService {
 
   Future<Directory> getTemporaryDirectory() async {
     try {
-      return await pp.getTemporaryDirectory();
+      final dir = await pp.getTemporaryDirectory();
+      Logger.debug('📁 [DEBUG] Temporary Directory: ${dir.path}');
+      return dir;
     } catch (e, stackTrace) {
       Logger.error(
         'Error getting temporary directory',
@@ -32,7 +34,9 @@ class FileStorageService {
 
   Future<Directory> getApplicationSupportDirectory() async {
     try {
-      return await pp.getApplicationSupportDirectory();
+      final dir = await pp.getApplicationSupportDirectory();
+      Logger.debug('📁 [DEBUG] Application Support Directory: ${dir.path}');
+      return dir;
     } catch (e, stackTrace) {
       Logger.error(
         'Error getting application support directory',
@@ -54,9 +58,12 @@ class FileStorageService {
 
       if (!await imagesDir.exists()) {
         await imagesDir.create(recursive: true);
-        Logger.info('Images directory created: ${imagesDir.path}');
+        Logger.info('🖼️ [DEBUG] Images directory created: ${imagesDir.path}');
+      } else {
+        Logger.debug('🖼️ [DEBUG] Images directory exists: ${imagesDir.path}');
       }
 
+      Logger.debug('🖼️ [DEBUG] Images Directory: ${imagesDir.path}');
       return imagesDir;
     } catch (e, stackTrace) {
       Logger.error(
@@ -79,9 +86,29 @@ class FileStorageService {
 
       if (!await audioDir.exists()) {
         await audioDir.create(recursive: true);
-        Logger.info('Audio directory created: ${audioDir.path}');
+        Logger.info('🎵 [DEBUG] Audio directory created: ${audioDir.path}');
+      } else {
+        Logger.debug('🎵 [DEBUG] Audio directory exists: ${audioDir.path}');
+        
+        // 列出音频目录中的文件
+        try {
+          final files = audioDir.listSync();
+          if (files.isEmpty) {
+            Logger.debug('🎵 [DEBUG] Audio directory is empty');
+          } else {
+            for (var file in files) {
+              if (file is File) {
+                final size = file.lengthSync();
+                Logger.debug('🎵 [DEBUG] Audio file found: ${file.path} (${_formatFileSize(size)})');
+              }
+            }
+          }
+        } catch (listError) {
+          Logger.warning('🎵 [DEBUG] Failed to list audio directory: $listError');
+        }
       }
 
+      Logger.debug('🎵 [DEBUG] Audio Directory: ${audioDir.path}');
       return audioDir;
     } catch (e, stackTrace) {
       Logger.error(
@@ -175,7 +202,9 @@ class FileStorageService {
   Future<String> getFullFilePath(String relativePath) async {
     try {
       final supportDir = await getApplicationSupportDirectory();
-      return p.join(supportDir.path, relativePath);
+      final fullPath = p.join(supportDir.path, relativePath);
+      Logger.debug('📄 [DEBUG] Full file path: $fullPath (relative: $relativePath)');
+      return fullPath;
     } catch (e, stackTrace) {
       Logger.error(
         'Error getting full file path: $relativePath',
@@ -187,6 +216,18 @@ class FileStorageService {
         originalError: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(2)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
     }
   }
 }
