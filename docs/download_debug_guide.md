@@ -2,37 +2,46 @@
 
 ## 📋 调试日志说明
 
-我已经为音频下载功能添加了详细的调试日志，使用 emoji 标识符让你更容易识别不同类型的日志信息。
+我已经为音频下载功能添加了详细的调试日志，使用 emoji 标识符
+让你更容易识别不同类型的日志信息。
 
 ## 🔍 日志标识符
 
 ### 📁 文件路径相关
+
 - `📁 [DEBUG]` - 文件目录和路径信息
 - `📄 [DEBUG]` - 完整文件路径
 
 ### 🎵 音频文件相关
+
 - `🎵 [DEBUG]` - 音频目录和文件操作
 - `🎯 [DEBUG]` - 自动下载触发
 
 ### ⬇️ 下载流程相关
+
 - `⬇️ [DEBUG]` - 下载开始
 - `📥 [DEBUG]` - 下载任务创建
 - `📦 [DEBUG]` - 批量下载
 - `📊 [DEBUG]` - 下载进度
 
 ### ✅ 成功状态
+
 - `✅ [DEBUG]` - 操作成功
 
 ### ❌ 错误状态
+
 - `❌ [DEBUG]` - 操作失败或错误
 
 ### ⚠️ 警告状态
+
 - `⚠️ [DEBUG]` - 非致命性问题
 
 ### 🔄 恢复/续传
+
 - `🔄 [DEBUG]` - 断点续传
 
 ### 📝 其他信息
+
 - `🖼️ [DEBUG]` - 图片相关
 - `💾 [DEBUG]` - 文件保存
 - `🗑️ [DEBUG]` - 文件删除
@@ -46,7 +55,7 @@
 
 当你订阅一个新播客时，你应该看到以下日志序列：
 
-```
+```text
 [INFO] 🎯 [DEBUG] ====== Auto-download triggered for new subscription ======
 [INFO] 🎯 [DEBUG] Podcast: 播客名称 (ID: 123)
 [INFO] 🎯 [DEBUG] Total episodes available: 50
@@ -62,7 +71,8 @@
 [DEBUG]    - Title: 第一集
 [DEBUG]    - Audio URL: https://example.com/audio.mp3
 [DEBUG] 📁 [DEBUG] Temporary Directory: /var/folders/xxx/T/tinycast
-[DEBUG] 📁 [DEBUG] Application Support Directory: /Users/user/Library/Application Support/tinycast
+[DEBUG] 📁 [DEBUG] Application Support Directory:
+       /Users/user/Library/Application Support/tinycast
 [DEBUG]    - File name: 456.mp3
 [DEBUG]    - Relative path: audio/456.mp3
 [DEBUG]    - Temp path: /var/folders/xxx/T/tinycast/456.mp3
@@ -76,17 +86,19 @@
 
 当下载任务开始执行时：
 
-```
+```text
 [DEBUG] ⬇️ [DEBUG] ====== Starting download for episode: 456 ======
 [DEBUG] ⬇️ [DEBUG] Episode title: 第一集
 [DEBUG] ⬇️ [DEBUG] Audio URL: https://example.com/audio.mp3
 [DEBUG] ⬇️ [DEBUG] Podcast ID: 123
 [DEBUG] 📁 [DEBUG] File paths:
-[DEBUG]    - Audio directory: /Users/user/Library/Application Support/tinycast/audio
+[DEBUG]    - Audio directory: /Users/user/Library/Application Support/
+              tinycast/audio
 [DEBUG]    - Temp directory: /var/folders/xxx/T/tinycast
 [DEBUG]    - File name: 456.mp3
 [DEBUG]    - Relative path: audio/456.mp3
-[DEBUG]    - Absolute path: /Users/user/Library/Application Support/tinycast/audio/456.mp3
+[DEBUG]    - Absolute path: /Users/user/Library/Application Support/
+              tinycast/audio/456.mp3
 [DEBUG]    - Temp path: /var/folders/xxx/T/tinycast/456.mp3
 [DEBUG] ✅ [DEBUG] Audio directory exists and is ready
 [INFO] 📥 [DEBUG] Download task created, updating database...
@@ -98,7 +110,8 @@
 ...
 [INFO] ✅ [DEBUG] Download completed successfully!
 [INFO] ⏱️ [DEBUG] Download duration: 25s
-[DEBUG] 🗑️ [DEBUG] Deleted existing file at: /Users/user/Library/Application Support/tinycast/audio/456.mp3
+[DEBUG] 🗑️ [DEBUG] Deleted existing file at:
+       /Users/user/Library/Application Support/tinycast/audio/456.mp3
 [INFO] 💾 [DEBUG] File saved successfully:
 [INFO]    - Path: /Users/user/Library/Application Support/tinycast/audio/456.mp3
 [INFO]    - Size: 50.00 MB
@@ -109,17 +122,24 @@
 
 当你调用获取音频目录的方法时：
 
-```
-[DEBUG] 📁 [DEBUG] Application Support Directory: /Users/user/Library/Application Support/tinycast
-[DEBUG] 🎵 [DEBUG] Audio directory exists: /Users/user/Library/Application Support/tinycast/audio
-[DEBUG] 🎵 [DEBUG] Audio file found: /Users/user/Library/Application Support/tinycast/audio/456.mp3 (50.00 MB)
-[DEBUG] 🎵 [DEBUG] Audio file found: /Users/user/Library/Application Support/tinycast/audio/789.mp3 (30.00 MB)
-[DEBUG] 🎵 [DEBUG] Audio Directory: /Users/user/Library/Application Support/tinycast/audio
+```text
+[DEBUG] 📁 [DEBUG] Application Support Directory:
+       /Users/user/Library/Application Support/tinycast
+[DEBUG] 🎵 [DEBUG] Audio directory exists:
+       /Users/user/Library/Application Support/tinycast/audio
+[DEBUG] 🎵 [DEBUG] Audio file found:
+       /Users/user/Library/Application Support/tinycast/audio/456.mp3 (50.00 MB)
+[DEBUG] 🎵 [DEBUG] Audio file found:
+       /Users/user/Library/Application Support/tinycast/audio/789.mp3 (30.00 MB)
+[DEBUG] 🎵 [DEBUG] Audio Directory:
+       /Users/user/Library/Application Support/tinycast/audio
 ```
 
 如果目录为空：
-```
-[DEBUG] 🎵 [DEBUG] Audio directory exists: /Users/user/Library/Application Support/tinycast/audio
+
+```text
+[DEBUG] 🎵 [DEBUG] Audio directory exists:
+       /Users/user/Library/Application Support/tinycast/audio
 [DEBUG] 🎵 [DEBUG] Audio directory is empty
 ```
 
@@ -130,8 +150,10 @@
 **症状**：订阅成功但找不到音频文件
 
 **排查步骤**：
+
 1. 查看是否有 `🎵 [DEBUG] Audio directory created` 日志
-2. 确认目录路径是否正确（macOS 应该在 `/Users/{用户名}/Library/Application Support/tinycast/audio/`）
+2. 确认目录路径是否正确（macOS 应该在
+   `/Users/{用户名}/Library/Application Support/tinycast/audio/`）
 3. 检查是否有 `💾 [DEBUG] File saved successfully` 日志
 4. 如果有错误，查看 `❌ [DEBUG] ERROR:` 相关日志
 
@@ -140,6 +162,7 @@
 **症状**：下载任务添加但未完成
 
 **排查步骤**：
+
 1. 查看 `🌐 [DEBUG] Starting HTTP download from:` 后的日志
 2. 检查网络请求是否成功
 3. 查看 DioException 相关的错误信息
@@ -150,7 +173,9 @@
 **症状**：文件已下载但数据库状态未更新
 
 **排查步骤**：
-1. 查看 `📥 [DEBUG] Download task created, updating database...` 日志
+
+1. 查看 `📥 [DEBUG] Download task created, updating database...`
+   日志
 2. 确认 Isar 数据库连接正常
 3. 检查 episode ID 是否有效
 
@@ -159,9 +184,12 @@
 **症状**：订阅播客后没有自动下载
 
 **排查步骤**：
-1. 查看 `🎯 [DEBUG] ====== Auto-download triggered for new subscription ======` 日志
+
+1. 查看 `🎯 [DEBUG] ====== Auto-download triggered for new
+   subscription ======` 日志
 2. 确认 podcastId 是否正确传递
-3. 检查是否有 `⚠️ [DEBUG] Auto-download failed but subscription succeeded` 警告
+3. 检查是否有 `⚠️ [DEBUG] Auto-download failed but subscription
+   succeeded` 警告
 
 ## 🛠️ 手动测试方法
 
@@ -190,7 +218,10 @@ final episode = await getTestEpisode();
 await AudioDownloadService.instance.downloadEpisode(episode);
 
 // 测试批量下载
-await AudioDownloadService.instance.downloadPodcastEpisodes(123, limit: 3);
+await AudioDownloadService.instance.downloadPodcastEpisodes(
+  123,
+  limit: 3,
+);
 ```
 
 ### 方法4：检查文件系统
@@ -231,6 +262,7 @@ open ~/Library/Application\ Support/tinycast/audio/
 ---
 
 **提示**：如果你在生产环境中不需要这么多日志，可以：
+
 1. 将 `Logger.debug()` 改为条件编译
 2. 使用不同的日志级别
 3. 创建一个 DebugService 来统一管理调试开关

@@ -44,7 +44,9 @@ Tinycast 使用 `path_provider` 的 `getApplicationSupportDirectory()` 来存储
 
 **当前配置**:
 
-- DebugProfile: `com.apple.security.app-sandbox`, `com.apple.security.cs.allow-jit`, `com.apple.security.network.server`
+- DebugProfile: `com.apple.security.app-sandbox`,
+  `com.apple.security.cs.allow-jit`,
+  `com.apple.security.network.server`
 - Release: `com.apple.security.app-sandbox`
 
 **如需访问沙盒外文件，可能需要添加**:
