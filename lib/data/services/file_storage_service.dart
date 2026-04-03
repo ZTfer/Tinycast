@@ -3,6 +3,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:math';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
 
@@ -190,7 +191,31 @@ class FileStorageService {
   }
 
   String generateAudioFileName(String episodeId) {
-    return '$episodeId.mp3';
+    final uuid = _generateUUID();
+    Logger.debug('🆔 [DEBUG] Generated UUID filename for episode $episodeId: $uuid.mp3');
+    return '$uuid.mp3';
+  }
+
+  String _generateUUID() {
+    final random = Random();
+    const hexChars = '0123456789abcdef';
+    
+    // 生成 UUID v4 格式：xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    final segments = [
+      // 8 个字符
+      List.generate(8, (_) => hexChars[random.nextInt(16)]).join(),
+      // 4 个字符
+      List.generate(4, (_) => hexChars[random.nextInt(16)]).join(),
+      // 4 个字符，第一位是 4（UUID v4）
+      '4' + List.generate(3, (_) => hexChars[random.nextInt(16)]).join(),
+      // 4 个字符，第一位是 8,9,a,b
+      ['8', '9', 'a', 'b'][random.nextInt(4)] + 
+          List.generate(3, (_) => hexChars[random.nextInt(16)]).join(),
+      // 12 个字符
+      List.generate(12, (_) => hexChars[random.nextInt(16)]).join(),
+    ];
+    
+    return segments.join('-');
   }
 
   String generateImageFileName(String url) {
