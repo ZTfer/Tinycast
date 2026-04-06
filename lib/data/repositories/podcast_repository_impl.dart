@@ -95,32 +95,34 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
 
-      // 自动下载最新 3 集
-      try {
-        Logger.info(
-          '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
-        );
-        Logger.info('🎯 [DEBUG] Podcast: ${podcast.title} (ID: $podcastId)');
-        Logger.info('🎯 [DEBUG] Total episodes available: ${episodes.length}');
-        Logger.info('🎯 [DEBUG] Will download latest 3 episodes');
+      // 自动下载最新 3 集（完全异步，不阻塞订阅流程）
+      Future.microtask(() async {
+        try {
+          Logger.info(
+            '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
+          );
+          Logger.info('🎯 [DEBUG] Podcast: ${podcast.title} (ID: $podcastId)');
+          Logger.info('🎯 [DEBUG] Total episodes available: ${episodes.length}');
+          Logger.info('🎯 [DEBUG] Will download latest 3 episodes');
 
-        await _audioDownloadService.downloadPodcastEpisodes(
-          podcastId,
-          limit: 3,
-        );
+          await _audioDownloadService.downloadPodcastEpisodes(
+            podcastId,
+            limit: 3,
+          );
 
-        Logger.info(
-          '✅ [DEBUG] Auto-download tasks added to queue successfully',
-        );
-        Logger.info(
-          '✅ [DEBUG] Check AudioDownloadService queue status for progress',
-        );
-      } catch (e) {
-        Logger.warning(
-          '⚠️ [DEBUG] Auto-download failed but subscription succeeded: $e',
-        );
-        // 不影响订阅流程
-      }
+          Logger.info(
+            '✅ [DEBUG] Auto-download tasks added to queue successfully',
+          );
+          Logger.info(
+            '✅ [DEBUG] Check AudioDownloadService queue status for progress',
+          );
+        } catch (e) {
+          Logger.warning(
+            '⚠️ [DEBUG] Auto-download failed but subscription succeeded: $e',
+          );
+          // 不影响订阅流程
+        }
+      });
 
       Logger.info('成功订阅播客: ${podcast.title}');
 
