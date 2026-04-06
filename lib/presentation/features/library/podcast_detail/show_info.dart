@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
@@ -23,12 +24,24 @@ class ShowInfo extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: artworkUrl != null
-              ? Image.network(
-                  artworkUrl!,
+          child: artworkUrl != null && artworkUrl!.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: artworkUrl!,
                   width: 64,
                   height: 64,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => SvgPicture.asset(
+                    'assets/images/image_placeholder.svg',
+                    width: 64,
+                    height: 64,
+                  ),
+                  errorWidget: (context, url, error) => SvgPicture.asset(
+                    'assets/images/image_placeholder.svg',
+                    width: 64,
+                    height: 64,
+                  ),
+                  memCacheWidth: 128,
+                  memCacheHeight: 128,
                 )
               : SvgPicture.asset(
                   'assets/images/image_placeholder.svg',

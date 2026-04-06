@@ -7,6 +7,7 @@ import '../../domain/usecases/unsubscribe_podcast_usecase.dart';
 import '../../domain/usecases/get_subscribed_podcasts_usecase.dart';
 import '../../domain/usecases/get_podcast_by_id_usecase.dart';
 import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
+import '../../domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
 
 enum PodcastStatus { initial, loading, success, error }
@@ -76,6 +77,12 @@ final getEpisodesByPodcastIdUseCaseProvider =
     Provider<GetEpisodesByPodcastIdUseCase>((ref) {
       final repository = ref.watch(podcastRepositoryProvider);
       return GetEpisodesByPodcastIdUseCase(repository);
+    });
+
+final getLatestEpisodesByPodcastIdUseCaseProvider =
+    Provider<GetLatestEpisodesByPodcastIdUseCase>((ref) {
+      final repository = ref.watch(podcastRepositoryProvider);
+      return GetLatestEpisodesByPodcastIdUseCase(repository);
     });
 
 class PodcastNotifier extends Notifier<PodcastState> {
@@ -196,7 +203,6 @@ final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>((
   ref,
   podcastId,
 ) async {
-  final useCase = ref.watch(getEpisodesByPodcastIdUseCaseProvider);
-  final episodes = await useCase(podcastId);
-  return episodes.take(3).toList();
+  final useCase = ref.watch(getLatestEpisodesByPodcastIdUseCaseProvider);
+  return await useCase(podcastId, limit: 3);
 });

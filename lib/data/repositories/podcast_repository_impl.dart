@@ -261,6 +261,38 @@ class PodcastRepositoryImpl implements PodcastRepository {
   }
 
   @override
+  Future<List<Episode>> getLatestEpisodesByPodcastId(
+    int podcastId, {
+    int limit = 3,
+  }) async {
+    try {
+      Logger.info('获取播客最新 $limit 个节目: $podcastId');
+
+      final episodeModels = await _localDataSource.getLatestEpisodesByPodcastId(
+        podcastId,
+        limit: limit,
+      );
+
+      final episodes = episodeModels
+          .map((model) => _convertEpisodeModelToEntity(model))
+          .toList();
+
+      Logger.info('成功获取 ${episodes.length} 个最新节目');
+
+      return episodes;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('获取最新节目列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取最新节目列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
   Future<List<Episode>> getUnplayedEpisodes() async {
     try {
       Logger.info('获取未播放节目列表');

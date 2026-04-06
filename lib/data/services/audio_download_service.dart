@@ -111,6 +111,20 @@ class DownloadQueue {
   }
 }
 
+class AudioDownloadEvent {
+  final String episodeId;
+  final DownloadStatus status;
+  final double? progress;
+  final DateTime timestamp;
+
+  AudioDownloadEvent({
+    required this.episodeId,
+    required this.status,
+    this.progress,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
+}
+
 class AudioDownloadService {
   AudioDownloadService._();
 
@@ -123,9 +137,15 @@ class AudioDownloadService {
   final Map<String, StreamController<double>> _progressControllers = {};
   final DownloadQueue _downloadQueue = DownloadQueue(maxConcurrentDownloads: 3);
 
+  late final StreamController<AudioDownloadEvent> _globalEventController =
+      StreamController<AudioDownloadEvent>.broadcast();
+
   final Dio _dio = Dio();
   final FileStorageService _fileStorageService = FileStorageService.instance;
   final IsarService _isarService = IsarService.instance;
+
+  Stream<AudioDownloadEvent> get globalEventStream =>
+      _globalEventController.stream;
 
   DownloadQueue get downloadQueue => _downloadQueue;
 
@@ -563,12 +583,27 @@ class AudioDownloadService {
     if (controller != null && !controller.isClosed) {
       controller.add(status);
     }
+
+    if (!_globalEventController.isClosed) {
+      _globalEventController.add(AudioDownloadEvent(
+        episodeId: episodeId,
+        status: status,
+      ));
+    }
   }
 
   void _notifyProgressChange(String episodeId, double progress) {
     final controller = _progressControllers[episodeId];
     if (controller != null && !controller.isClosed) {
       controller.add(progress);
+    }
+
+    if (!_globalEventController.isClosed) {
+      _globalEventController.add(AudioDownloadEvent(
+        episodeId: episodeId,
+        status: DownloadStatus.downloading,
+        progress: progress,
+      ));
     }
   }
 
@@ -607,27 +642,27 @@ class AudioDownloadService {
     }
 
     try {
-      final episodes = await _isarService.isar.episodes
+      final query = _isarService.isar.episodes
           .filter()
           .podcastIdEqualTo(podcastId)
-          .sortByPubDateDesc()
-          .findAll();
+          .sortByPubDateDesc();
 
-      Logger.info('📦 [DEBUG] Found ${episodes.length} total episodes for podcast $podcastId');
-      
-      final episodesToDownload = limit != null
-          ? episodes.take(limit).toList()
-          : episodes;
-
-      Logger.info('📦 [DEBUG] Episodes to download: ${episodesToDownload.length}');
-      
-      // 列出要下载的节目信息
-      for (var i = 0; i < episodesToDownload.length; i++) {
-        final ep = episodesToDownload[i];
-        Logger.debug('📦 [DEBUG] Episode ${i + 1}/${episodesToDownload.length}: ID=${ep.id}, Title="${ep.title}"');
+      final List<Episode> episodes;
+      if (limit != null) {
+        episodes = await query.limit(limit).findAll();
+      } else {
+        episodes = await query.findAll();
       }
 
-      await downloadEpisodesBatch(episodesToDownload);
+      Logger.info('📦 [DEBUG] Episodes to download: ${episodes.length}');
+
+      // 列出要下载的节目信息
+      for (var i = 0; i < episodes.length; i++) {
+        final ep = episodes[i];
+        Logger.debug('📦 [DEBUG] Episode ${i + 1}/${episodes.length}: ID=${ep.id}, Title="${ep.title}"');
+      }
+
+      await downloadEpisodesBatch(episodes);
     } catch (e, stackTrace) {
       Logger.error('❌ [DEBUG] Failed to download podcast episodes: $podcastId', error: e, stackTrace: stackTrace);
       rethrow;
@@ -858,6 +893,7 @@ class AudioDownloadService {
     }
     _downloadTasks.clear();
     _downloadQueue.clear();
+    await _globalEventController.close();
   }
 
   List<String> getActiveDownloads() {

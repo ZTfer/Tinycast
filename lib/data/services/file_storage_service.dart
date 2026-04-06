@@ -14,9 +14,23 @@ class FileStorageService {
 
   static FileStorageService get instance => _instance;
 
+  Directory? _cachedTempDir;
+  Directory? _cachedSupportDir;
+  Directory? _cachedAudioDir;
+  Directory? _cachedImagesDir;
+
+  void clearCache() {
+    _cachedTempDir = null;
+    _cachedSupportDir = null;
+    _cachedAudioDir = null;
+    _cachedImagesDir = null;
+  }
+
   Future<Directory> getTemporaryDirectory() async {
+    if (_cachedTempDir != null) return _cachedTempDir!;
     try {
       final dir = await pp.getTemporaryDirectory();
+      _cachedTempDir = dir;
       Logger.debug('📁 [DEBUG] Temporary Directory: ${dir.path}');
       return dir;
     } catch (e, stackTrace) {
@@ -34,8 +48,10 @@ class FileStorageService {
   }
 
   Future<Directory> getApplicationSupportDirectory() async {
+    if (_cachedSupportDir != null) return _cachedSupportDir!;
     try {
       final dir = await pp.getApplicationSupportDirectory();
+      _cachedSupportDir = dir;
       Logger.debug('📁 [DEBUG] Application Support Directory: ${dir.path}');
       return dir;
     } catch (e, stackTrace) {
@@ -53,6 +69,7 @@ class FileStorageService {
   }
 
   Future<Directory> getImagesDirectory() async {
+    if (_cachedImagesDir != null) return _cachedImagesDir!;
     try {
       final supportDir = await getApplicationSupportDirectory();
       final imagesDir = Directory(p.join(supportDir.path, 'images'));
@@ -64,6 +81,7 @@ class FileStorageService {
         Logger.debug('🖼️ [DEBUG] Images directory exists: ${imagesDir.path}');
       }
 
+      _cachedImagesDir = imagesDir;
       Logger.debug('🖼️ [DEBUG] Images Directory: ${imagesDir.path}');
       return imagesDir;
     } catch (e, stackTrace) {
@@ -81,6 +99,10 @@ class FileStorageService {
   }
 
   Future<Directory> getAudioDirectory() async {
+    if (_cachedAudioDir != null && await _cachedAudioDir!.exists()) {
+      return _cachedAudioDir!;
+    }
+
     try {
       final supportDir = await getApplicationSupportDirectory();
       final audioDir = Directory(p.join(supportDir.path, 'audio'));
@@ -114,6 +136,7 @@ class FileStorageService {
       }
 
       Logger.debug('🎵 [DEBUG] Audio Directory: ${audioDir.path}');
+      _cachedAudioDir = audioDir;
       return audioDir;
     } catch (e, stackTrace) {
       Logger.error(

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Library 节目封面组件
 ///
@@ -38,15 +39,15 @@ class LibraryShowCover extends StatelessWidget {
         width: width,
         height: height,
         child: artworkUrl != null && artworkUrl!.isNotEmpty
-            ? Image.network(
-                artworkUrl!,
+            ? CachedNetworkImage(
+                imageUrl: artworkUrl!,
                 width: width,
                 height: height,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // 图片加载失败时显示占位图
-                  return _buildPlaceholder();
-                },
+                placeholder: (context, url) => _buildPlaceholder(),
+                errorWidget: (context, url, error) => _buildPlaceholder(),
+                memCacheWidth: (width * 2).round(),
+                memCacheHeight: (height * 2).round(),
               )
             : _buildPlaceholder(),
       ),

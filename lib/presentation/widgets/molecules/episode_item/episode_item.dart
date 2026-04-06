@@ -1,7 +1,6 @@
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:tinycast/data/services/image_cache_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
 
@@ -72,40 +71,18 @@ class EpisodeItem extends StatelessWidget {
   Widget _buildArtwork() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
-      child: FutureBuilder<File?>(
-        future: episode.artworkUrl != null
-            ? ImageCacheService.instance.getCachedImage(episode.artworkUrl!)
-            : Future.value(null),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            return Image.file(
-              snapshot.data!,
+      child: episode.artworkUrl != null && episode.artworkUrl!.isNotEmpty
+          ? CachedNetworkImage(
+              imageUrl: episode.artworkUrl!,
               width: 34,
               height: 34,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildPlaceholderArtwork(),
-            );
-          }
-
-          if (episode.artworkUrl != null) {
-            return Image.network(
-              episode.artworkUrl!,
-              width: 34,
-              height: 34,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildPlaceholderArtwork(),
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return _buildPlaceholderArtwork();
-              },
-            );
-          }
-
-          return _buildPlaceholderArtwork();
-        },
-      ),
+              placeholder: (context, url) => _buildPlaceholderArtwork(),
+              errorWidget: (context, url, error) => _buildPlaceholderArtwork(),
+              memCacheWidth: 68,
+              memCacheHeight: 68,
+            )
+          : _buildPlaceholderArtwork(),
     );
   }
 

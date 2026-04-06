@@ -270,6 +270,40 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<List<model.Episode>> getLatestEpisodesByPodcastId(
+    int podcastId, {
+    int limit = 3,
+  }) async {
+    try {
+      Logger.info('获取播客最新 $limit 个节目: $podcastId');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .podcastIdEqualTo(podcastId)
+          .sortByPubDateDesc()
+          .limit(limit)
+          .findAll();
+
+      Logger.info('成功获取 ${episodes.length} 个最新节目');
+
+      return episodes;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('获取最新节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '获取最新节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('获取最新节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取最新节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<model.Podcast?> getPodcastByRssUrl(String rssUrl) async {
     try {
       Logger.info('根据 RSS URL 查询播客: $rssUrl');
