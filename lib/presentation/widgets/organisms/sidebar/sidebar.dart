@@ -34,7 +34,7 @@ class Sidebar extends StatelessWidget {
                   children: [
                     _buildMenuButton(
                       icon: LucideIcons.listMusic,
-                      label: 'Queue',
+                      // label: 'Queue',
                       route: AppRoutes.queue,
                       state: currentPage == AppRoutes.queue
                           ? SidebarButtonState.iconActive
@@ -43,7 +43,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.layoutGrid,
-                      label: 'Library',
+                      // label: 'Library',
                       route: AppRoutes.library,
                       state: currentPage == AppRoutes.library
                           ? SidebarButtonState.iconActive
@@ -52,7 +52,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.star,
-                      label: 'Favorite',
+                      // label: 'Favorite',
                       route: AppRoutes.favorite,
                       state: currentPage == AppRoutes.favorite
                           ? SidebarButtonState.iconActive
@@ -61,7 +61,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.download,
-                      label: 'Downloads',
+                      // label: 'Downloads',
                       route: AppRoutes.downloads,
                       state: currentPage == AppRoutes.downloads
                           ? SidebarButtonState.iconActive
@@ -70,7 +70,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.plus,
-                      label: 'Subscribe',
+                      // label: 'Subscribe',
                       route: AppRoutes.subscribe,
                       state: currentPage == AppRoutes.subscribe
                           ? SidebarButtonState.iconActive
@@ -79,7 +79,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.flaskConical,
-                      label: 'Test Page',
+                      // label: 'Test Page',
                       route: AppRoutes.testPage,
                       state: currentPage == AppRoutes.testPage
                           ? SidebarButtonState.iconActive
@@ -91,7 +91,7 @@ class Sidebar extends StatelessWidget {
               ),
               _buildMenuButton(
                 icon: LucideIcons.settings,
-                label: 'Settings',
+                // label: 'Settings',
                 route: AppRoutes.settings,
                 state: currentPage == AppRoutes.settings
                     ? SidebarButtonState.iconActive

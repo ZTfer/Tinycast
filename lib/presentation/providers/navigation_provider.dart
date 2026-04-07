@@ -62,8 +62,9 @@ class NavigationState {
 class NavigationNotifier extends Notifier<NavigationState> {
   @override
   NavigationState build() {
-    Logger.info('🧭 [NAV] NavigationNotifier initialized, current page: ${state.currentPage}');
-    return NavigationState();
+    final initialState = NavigationState();
+    Logger.info('🧭 [NAV] NavigationNotifier initialized, current page: ${initialState.currentPage}');
+    return initialState;
   }
 
   void navigateToPage(String page) {

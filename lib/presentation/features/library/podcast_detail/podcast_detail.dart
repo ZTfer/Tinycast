@@ -25,7 +25,14 @@ class _PodcastDetailState extends ConsumerState<PodcastDetail> {
   }
 
   Future<void> _loadData() async {
+    // 检查 Widget 是否仍然 mounted
+    if (!mounted) return;
+    
     await ref.read(podcastProvider.notifier).loadPodcastById(widget.podcastId);
+    
+    // 再次检查 Widget 是否仍然 mounted
+    if (!mounted) return;
+    
     await ref
         .read(podcastProvider.notifier)
         .loadEpisodesByPodcastId(widget.podcastId);
