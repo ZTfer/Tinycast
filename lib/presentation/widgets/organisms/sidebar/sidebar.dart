@@ -75,7 +75,7 @@ class Sidebar extends StatelessWidget {
                       state: currentPage == AppRoutes.subscribe
                           ? SidebarButtonState.iconActive
                           : SidebarButtonState.defaultState,
-                      onPressed: () => AppRouter.openSubscribeWindow(),
+                      onPressed: () => onPageChanged(AppRoutes.subscribe),
                     ),
                     _buildMenuButton(
                       icon: LucideIcons.flaskConical,
