@@ -27,9 +27,15 @@ class ShowInfo extends StatelessWidget {
           child: artworkUrl != null && artworkUrl!.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl: artworkUrl!,
+                  cacheKey: artworkUrl,
                   width: 64,
                   height: 64,
                   fit: BoxFit.cover,
+                  memCacheWidth: 128,
+                  memCacheHeight: 128,
+                  maxWidthDiskCache: 400,
+                  maxHeightDiskCache: 400,
+                  fadeInDuration: const Duration(milliseconds: 200),
                   placeholder: (context, url) => SvgPicture.asset(
                     'assets/images/image_placeholder.svg',
                     width: 64,
@@ -40,8 +46,6 @@ class ShowInfo extends StatelessWidget {
                     width: 64,
                     height: 64,
                   ),
-                  memCacheWidth: 128,
-                  memCacheHeight: 128,
                 )
               : SvgPicture.asset(
                   'assets/images/image_placeholder.svg',

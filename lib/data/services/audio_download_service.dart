@@ -136,11 +136,22 @@ class AudioDownloadService {
   final Map<String, StreamController<DownloadStatus>> _statusControllers = {};
   final Map<String, StreamController<double>> _progressControllers = {};
   final DownloadQueue _downloadQueue = DownloadQueue(maxConcurrentDownloads: 3);
+  
+  // 进度更新节流：每5秒最多更新一次数据库
+  final Map<String, DateTime> _lastProgressUpdate = {};
 
   late final StreamController<AudioDownloadEvent> _globalEventController =
       StreamController<AudioDownloadEvent>.broadcast();
 
-  final Dio _dio = Dio();
+  final Dio _dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(minutes: 30),
+      sendTimeout: const Duration(seconds: 10),
+      receiveDataWhenStatusError: true,
+      maxRedirects: 5,
+    ),
+  );
   final FileStorageService _fileStorageService = FileStorageService.instance;
   final IsarService _isarService = IsarService.instance;
 
@@ -255,7 +266,7 @@ class AudioDownloadService {
             final totalProgress = downloadedBytes + received;
             final progress = totalProgress / total;
             
-            // 每10%记录一次进度
+            // 每10%记录一次进度日志
             if ((progress * 100).toInt() % 10 == 0 && (progress * 100).toInt() != 0) {
               Logger.debug('📊 [DEBUG] Progress: ${(progress * 100).toStringAsFixed(1)}% (${_formatFileSize(totalProgress)} / ${_formatFileSize(total)})');
             }
@@ -265,7 +276,14 @@ class AudioDownloadService {
             downloadTask.totalBytes = total;
 
             _notifyProgressChange(episodeId, progress);
-            _updateEpisodeDownloadProgress(episodeId, progress);
+            
+            // 节流：每5秒最多更新一次数据库（避免阻塞主线程）
+            final now = DateTime.now();
+            final lastUpdate = _lastProgressUpdate[episodeId];
+            if (lastUpdate == null || now.difference(lastUpdate).inSeconds >= 5 || progress >= 1.0) {
+              _lastProgressUpdate[episodeId] = now;
+              _updateEpisodeDownloadProgress(episodeId, progress);
+            }
           } else {
             Logger.debug('📊 [DEBUG] Received: ${_formatFileSize(received)}, Total: unknown');
           }

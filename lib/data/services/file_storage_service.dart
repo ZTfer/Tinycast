@@ -18,12 +18,34 @@ class FileStorageService {
   Directory? _cachedSupportDir;
   Directory? _cachedAudioDir;
   Directory? _cachedImagesDir;
+  
+  bool _isInitialized = false;
 
   void clearCache() {
     _cachedTempDir = null;
     _cachedSupportDir = null;
     _cachedAudioDir = null;
     _cachedImagesDir = null;
+    _isInitialized = false;
+  }
+  
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    
+    Logger.info('🚀 [FILE_STORAGE] Initializing all directories...');
+    final startTime = DateTime.now();
+    
+    // 并行加载所有目录
+    await Future.wait([
+      getTemporaryDirectory(),
+      getApplicationSupportDirectory(),
+      getAudioDirectory(),
+      getImagesDirectory(),
+    ]);
+    
+    _isInitialized = true;
+    final duration = DateTime.now().difference(startTime);
+    Logger.info('✅ [FILE_STORAGE] All directories initialized in ${duration.inMilliseconds}ms');
   }
 
   Future<Directory> getTemporaryDirectory() async {

@@ -74,13 +74,17 @@ class EpisodeItem extends StatelessWidget {
       child: episode.artworkUrl != null && episode.artworkUrl!.isNotEmpty
           ? CachedNetworkImage(
               imageUrl: episode.artworkUrl!,
+              cacheKey: episode.artworkUrl,
               width: 34,
               height: 34,
               fit: BoxFit.cover,
-              placeholder: (context, url) => _buildPlaceholderArtwork(),
-              errorWidget: (context, url, error) => _buildPlaceholderArtwork(),
               memCacheWidth: 68,
               memCacheHeight: 68,
+              maxWidthDiskCache: 200,
+              maxHeightDiskCache: 200,
+              fadeInDuration: const Duration(milliseconds: 200),
+              placeholder: (context, url) => _buildPlaceholderArtwork(),
+              errorWidget: (context, url, error) => _buildPlaceholderArtwork(),
             )
           : _buildPlaceholderArtwork(),
     );

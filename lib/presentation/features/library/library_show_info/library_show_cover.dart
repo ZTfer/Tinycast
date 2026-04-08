@@ -41,13 +41,17 @@ class LibraryShowCover extends StatelessWidget {
         child: artworkUrl != null && artworkUrl!.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: artworkUrl!,
+                cacheKey: artworkUrl,
                 width: width,
                 height: height,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => _buildPlaceholder(),
-                errorWidget: (context, url, error) => _buildPlaceholder(),
                 memCacheWidth: (width * 2).round(),
                 memCacheHeight: (height * 2).round(),
+                maxWidthDiskCache: (width * 4).round(),
+                maxHeightDiskCache: (height * 4).round(),
+                fadeInDuration: const Duration(milliseconds: 200),
+                placeholder: (context, url) => _buildPlaceholder(),
+                errorWidget: (context, url, error) => _buildPlaceholder(),
               )
             : _buildPlaceholder(),
       ),

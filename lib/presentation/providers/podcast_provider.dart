@@ -9,6 +9,7 @@ import '../../domain/usecases/get_podcast_by_id_usecase.dart';
 import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
 import '../../domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
+import '../../core/utils/logger.dart';
 
 enum PodcastStatus { initial, loading, success, error }
 
@@ -180,10 +181,24 @@ final podcastStateProvider = Provider<PodcastState>((ref) {
 
 final subscribedPodcastsProvider = Provider<List<Podcast>?>((ref) {
   final state = ref.watch(podcastProvider);
-  if (state.podcasts == null) return null;
+  if (state.podcasts == null || state.podcasts!.isEmpty) return null;
+  
   // 按订阅时间（createdAt）倒序排列，最新的在前面
   final sortedPodcasts = [...state.podcasts!];
   sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return sortedPodcasts;
+});
+
+/// 缓存的已订阅播客列表 - 避免每次重建都重新查询
+final cachedSubscribedPodcastsProvider = FutureProvider<List<Podcast>>((ref) async {
+  final useCase = ref.watch(getSubscribedPodcastsUseCaseProvider);
+  final podcasts = await useCase();
+  
+  // 按订阅时间倒序排列
+  final sortedPodcasts = [...podcasts];
+  sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  
+  Logger.info('📦 [PROVIDER] Cached subscribed podcasts: ${sortedPodcasts.length} items');
   return sortedPodcasts;
 });
 
