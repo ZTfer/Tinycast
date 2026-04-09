@@ -438,6 +438,36 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<List<model.Episode>> getDownloadedEpisodes() async {
+    try {
+      Logger.info('获取所有已下载节目');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .isDownloadedEqualTo(true)
+          .sortByPubDateDesc()
+          .findAll();
+
+      Logger.info('成功获取 ${episodes.length} 个已下载节目');
+
+      return episodes;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('获取已下载节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '获取已下载节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('获取已下载节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取已下载节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<List<model.Podcast>> searchPodcasts(String keyword) async {
     try {
       Logger.info('搜索播客: $keyword');

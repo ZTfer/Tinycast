@@ -19,6 +19,8 @@ abstract class PodcastRepository {
 
   Future<List<Episode>> getUnplayedEpisodes();
 
+  Future<List<Episode>> getDownloadedEpisodes();
+
   Future<List<Podcast>> searchPodcasts(String keyword);
 
   Future<List<Episode>> searchEpisodes(String keyword);
