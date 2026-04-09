@@ -82,9 +82,32 @@ class MockPodcastRepository extends _i1.Mock implements _i3.PodcastRepository {
           as _i4.Future<List<_i5.Episode>>);
 
   @override
+  _i4.Future<List<_i5.Episode>> getLatestEpisodesByPodcastId(
+    int? podcastId, {
+    int? limit = 3,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getLatestEpisodesByPodcastId,
+              [podcastId],
+              {#limit: limit},
+            ),
+            returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
+          )
+          as _i4.Future<List<_i5.Episode>>);
+
+  @override
   _i4.Future<List<_i5.Episode>> getUnplayedEpisodes() =>
       (super.noSuchMethod(
             Invocation.method(#getUnplayedEpisodes, []),
+            returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
+          )
+          as _i4.Future<List<_i5.Episode>>);
+
+  @override
+  _i4.Future<List<_i5.Episode>> getDownloadedEpisodes() =>
+      (super.noSuchMethod(
+            Invocation.method(#getDownloadedEpisodes, []),
             returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
           )
           as _i4.Future<List<_i5.Episode>>);

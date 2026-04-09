@@ -10,7 +10,18 @@ class EpisodeDropdown extends StatelessWidget {
   /// 菜单项选中时的回调函数
   final VoidCallback? onItemSelected;
 
-  const EpisodeDropdown({super.key, this.onItemSelected});
+  /// 当前 episode 的收藏状态，默认值 false
+  final bool isFavorite;
+
+  /// 收藏切换回调，默认值 null
+  final VoidCallback? onToggleFavorite;
+
+  const EpisodeDropdown({
+    super.key,
+    this.onItemSelected,
+    this.isFavorite = false,
+    this.onToggleFavorite,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +54,9 @@ class EpisodeDropdown extends StatelessWidget {
               onPressed: () => _handleItemSelected(),
             ),
             EpisodeDropdownItem(
-              icon: Icon(LucideIcons.star),
-              text: '收藏',
-              onPressed: () => _handleItemSelected(),
+              icon: Icon(isFavorite ? LucideIcons.starOff : LucideIcons.star),
+              text: isFavorite ? '取消收藏' : '收藏',
+              onPressed: () => onToggleFavorite ?? _handleItemSelected(),
             ),
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.share2),
@@ -72,7 +83,7 @@ class EpisodeDropdown extends StatelessWidget {
               text: '添加到队列',
               onPressed: () => _handleItemSelected(),
             ),
-            EpisodeDropdownItem(    
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.circleCheck),
               text: '标记为已播放',
               onPressed: () => _handleItemSelected(),
