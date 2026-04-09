@@ -5,6 +5,8 @@ import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_but
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/episode_dropdown/episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_provider.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// Episode 控制栏组件
 ///
@@ -110,9 +112,26 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
               /// 阻止事件冒泡，点击菜单内部不关闭
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: EpisodeDropdown( 
-                /// 菜单项选中时关闭下拉菜单
+              child: EpisodeDropdown(
                 onItemSelected: _hideDropdown,
+                isFavorite: ref
+                    .read(favoriteProvider)
+                    .isEpisodeFavorite(widget.episodeId),
+                onToggleFavorite: () async {
+                  Logger.info(
+                    '⭐ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
+                  );
+                  try {
+                    await ref
+                        .read(favoriteProvider.notifier)
+                        .toggleFavorite(widget.episodeId);
+                    Logger.info('⭐ [EPISODE-CONTROL-BAR] 收藏切换成功, 关闭下拉菜单');
+                    _hideDropdown();
+                  } catch (e) {
+                    Logger.error('⭐ [EPISODE-CONTROL-BAR] 收藏切换失败', error: e);
+                    _hideDropdown();
+                  }
+                },
               ),
             ),
           ),
