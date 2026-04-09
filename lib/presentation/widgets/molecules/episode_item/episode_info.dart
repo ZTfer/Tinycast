@@ -9,7 +9,7 @@ import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_con
 ///
 /// 用于显示待播放队列列表项中的节目文本信息。
 /// 包含发布时间、节目标题、节目描述和操作栏。
-class QueueEpisodeInfo extends ConsumerStatefulWidget {
+class EpisodeInfo extends ConsumerStatefulWidget {
   /// Episode 对象
   final Episode episode;
 
@@ -22,7 +22,7 @@ class QueueEpisodeInfo extends ConsumerStatefulWidget {
   /// 点击标题回调（用于打开详情页）
   final VoidCallback? onTap;
 
-  const QueueEpisodeInfo({
+  const EpisodeInfo({
     super.key,
     required this.episode,
     required this.duration,
@@ -31,10 +31,10 @@ class QueueEpisodeInfo extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<QueueEpisodeInfo> createState() => _QueueEpisodeInfoState();
+  ConsumerState<EpisodeInfo> createState() => _EpisodeInfoState();
 }
 
-class _QueueEpisodeInfoState extends ConsumerState<QueueEpisodeInfo> {
+class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
   bool _isHovering = false;
 
   void _handleTap() {

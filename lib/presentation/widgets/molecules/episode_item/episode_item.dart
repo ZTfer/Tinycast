@@ -4,9 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
 
-/// Queue 列表项组件
+/// Episode 项组件
 ///
-/// 用于显示待播放队列列表中的单个节目项。
+/// 用于显示单个节目项。
 /// 使用 Row 布局：左边是封面图，右边是节目信息（EpisodeInfo）。
 class EpisodeItem extends StatelessWidget {
   /// Episode 对象
@@ -50,7 +50,7 @@ class EpisodeItem extends StatelessWidget {
                   if (showCover) ...[_buildArtwork(), const SizedBox(width: 8)],
                   // 右边：节目信息（包含标题、描述、操作栏）
                   Expanded(
-                    child: QueueEpisodeInfo(
+                    child: EpisodeInfo(
                       episode: episode,
                       duration: _formatDuration(episode.duration),
                       onPlayPressed: onPlayPressed,

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/features/queue/queue_episode_dropdown/queue_episode_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/organisms/episode_dropdown/episode_dropdown_item.dart';
 
-/// 队列剧集下拉菜单
+/// 剧集下拉菜单
 ///
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
-class QueueEpisodeDropdown extends StatelessWidget {
+class EpisodeDropdown extends StatelessWidget {
   /// 菜单项选中时的回调函数
   final VoidCallback? onItemSelected;
 
-  const QueueEpisodeDropdown({super.key, this.onItemSelected});
+  const EpisodeDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +37,17 @@ class QueueEpisodeDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
               onPressed: () => _handleItemSelected(),
             ),
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.star),
               text: '收藏',
               onPressed: () => _handleItemSelected(),
             ),
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.share2),
               text: '分享',
               onPressed: () => _handleItemSelected(),
@@ -62,17 +62,17 @@ class QueueEpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.listStart),
               text: '插播',
               onPressed: () => _handleItemSelected(),
             ),
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.listEnd),
               text: '添加到队列',
               onPressed: () => _handleItemSelected(),
             ),
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(    
               icon: Icon(LucideIcons.circleCheck),
               text: '标记为已播放',
               onPressed: () => _handleItemSelected(),
@@ -87,12 +87,12 @@ class QueueEpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.trash2),
               text: '移除下载',
               onPressed: () => _handleItemSelected(),
             ),
-            QueueEpisodeDropdownItem(
+            EpisodeDropdownItem(
               icon: Icon(LucideIcons.x),
               text: '从待播清单移除',
               onPressed: () => _handleItemSelected(),

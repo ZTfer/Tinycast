@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
-import 'package:tinycast/presentation/features/queue/queue_episode_dropdown/queue_episode_dropdown.dart';
+import 'package:tinycast/presentation/widgets/organisms/episode_dropdown/episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 /// Episode 控制栏组件
@@ -110,7 +110,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
               /// 阻止事件冒泡，点击菜单内部不关闭
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: QueueEpisodeDropdown(
+              child: EpisodeDropdown( 
                 /// 菜单项选中时关闭下拉菜单
                 onItemSelected: _hideDropdown,
               ),

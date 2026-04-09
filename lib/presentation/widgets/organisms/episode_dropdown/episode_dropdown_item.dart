@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-class QueueEpisodeDropdownItem extends StatefulWidget {
+class EpisodeDropdownItem extends StatefulWidget {
   /// 按钮显示的图标
   final Widget icon;
 
@@ -16,7 +16,7 @@ class QueueEpisodeDropdownItem extends StatefulWidget {
   /// 内容颜色，默认 0xD9000000
   final Color contentColor;
 
-  const QueueEpisodeDropdownItem({
+  const EpisodeDropdownItem({
     super.key,
     required this.icon,
     required this.text,
@@ -26,14 +26,13 @@ class QueueEpisodeDropdownItem extends StatefulWidget {
   });
 
   @override
-  State<QueueEpisodeDropdownItem> createState() =>
-      _QueueEpisodeDropdownItemState();
+  State<EpisodeDropdownItem> createState() => _EpisodeDropdownItemState();
 }
 
-/// [QueueEpisodeDropdownItem] 的状态类
+/// [EpisodeDropdownItem] 的状态类
 ///
 /// 管理按钮的交互状态，包括悬停和按下状态。
-class _QueueEpisodeDropdownItemState extends State<QueueEpisodeDropdownItem> {
+class _EpisodeDropdownItemState extends State<EpisodeDropdownItem> {
   /// 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
 
