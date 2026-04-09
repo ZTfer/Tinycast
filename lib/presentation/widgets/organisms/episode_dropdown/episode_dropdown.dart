@@ -25,6 +25,10 @@ class EpisodeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      '🔍 [EPISODE-DROPDOWN] build() called, isFavorite=$isFavorite, onToggleFavorite=${onToggleFavorite != null}',
+    );
+
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -56,7 +60,20 @@ class EpisodeDropdown extends StatelessWidget {
             EpisodeDropdownItem(
               icon: Icon(isFavorite ? LucideIcons.starOff : LucideIcons.star),
               text: isFavorite ? '取消收藏' : '收藏',
-              onPressed: () => onToggleFavorite ?? _handleItemSelected(),
+              onPressed: () {
+                print(
+                  '🔍 [EPISODE-DROPDOWN] 收藏按钮被点击! isFavorite=$isFavorite, onToggleFavorite=${onToggleFavorite != null}',
+                );
+                if (onToggleFavorite != null) {
+                  print('🔍 [EPISODE-DROPDOWN] 调用 onToggleFavorite...');
+                  onToggleFavorite!();
+                } else {
+                  print(
+                    '🔍 [EPISODE-DROPDOWN] onToggleFavorite 为 null, fallback 到 _handleItemSelected',
+                  );
+                  _handleItemSelected();
+                }
+              },
             ),
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.share2),

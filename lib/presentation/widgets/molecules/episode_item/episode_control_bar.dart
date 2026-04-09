@@ -48,12 +48,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   static OverlayEntry? _currentDropdownOverlay;
 
   /// 显示下拉菜单
-  ///
-  /// 获取更多按钮的位置和大小，在按钮下方显示下拉菜单。
-  /// 菜单位置：按钮下方 4px 处。
-  /// 自动调整位置，避免菜单超出屏幕边界。
-  /// 如果已有下拉菜单显示，先关闭它。
   void _showDropdown() {
+    print(
+      '🔍 [EPISODE-CONTROL-BAR] _showDropdown() 被调用, episodeId: ${widget.episodeId}',
+    );
+
     /// 如果已有下拉菜单显示，先关闭它（包括当前按钮的菜单）
     if (_currentDropdownOverlay != null) {
       _currentDropdownOverlay?.remove();
@@ -114,20 +113,32 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
               behavior: HitTestBehavior.opaque,
               child: EpisodeDropdown(
                 onItemSelected: _hideDropdown,
-                isFavorite: ref
-                    .read(favoriteProvider)
-                    .isEpisodeFavorite(widget.episodeId),
+                isFavorite: (() {
+                  final fav = ref
+                      .read(favoriteProvider)
+                      .isEpisodeFavorite(widget.episodeId);
+                  print(
+                    '🔍 [EPISODE-CONTROL-BAR] 创建 EpisodeDropdown, episodeId: ${widget.episodeId}, isFavorite: $fav',
+                  );
+                  return fav;
+                })(),
                 onToggleFavorite: () async {
+                  print(
+                    '🔍 [EPISODE-CONTROL-BAR] ★★★ onToggleFavorite 回调执行! episodeId: ${widget.episodeId} ★★★',
+                  );
                   Logger.info(
                     '⭐ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
                   );
                   try {
+                    print('🔍 [EPISODE-CONTROL-BAR] 即将调用 toggleFavorite...');
                     await ref
                         .read(favoriteProvider.notifier)
                         .toggleFavorite(widget.episodeId);
+                    print('🔍 [EPISODE-CONTROL-BAR] toggleFavorite 返回成功');
                     Logger.info('⭐ [EPISODE-CONTROL-BAR] 收藏切换成功, 关闭下拉菜单');
                     _hideDropdown();
                   } catch (e) {
+                    print('🔍 [EPISODE-CONTROL-BAR] toggleFavorite 异常: $e');
                     Logger.error('⭐ [EPISODE-CONTROL-BAR] 收藏切换失败', error: e);
                     _hideDropdown();
                   }

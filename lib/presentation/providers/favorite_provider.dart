@@ -70,6 +70,7 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
 
   /// 切换收藏状态（核心方法）
   Future<void> toggleFavorite(int episodeId) async {
+    print('🔍 [FAVORITE-PROVIDER] ★★★ toggleFavorite 被调用! episodeId: $episodeId ★★★');
     final currentlyFavorite = state.isEpisodeFavorite(episodeId);
     Logger.info('⭐ [FAVORITE-PROVIDER] ====== toggleFavorite 开始 ======');
     Logger.info('⭐ [FAVORITE-PROVIDER] episodeId: $episodeId, 当前状态: ${currentlyFavorite ? "已收藏" : "未收藏"}');
