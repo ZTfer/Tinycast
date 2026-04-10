@@ -3,6 +3,7 @@ class AppRoutes {
   static const String queue = '/queue';
   static const String library = '/library';
   static const String favorite = '/favorite';
+  static const String history = '/history';
   static const String downloads = '/downloads';
   static const String subscribe = '/subscribe';
   static const String settings = '/settings';

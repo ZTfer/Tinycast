@@ -4,6 +4,7 @@ import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/presentation/features/library/library.dart';
 import 'package:tinycast/presentation/features/favorite/favorite.dart';
+import 'package:tinycast/presentation/features/history/history.dart';
 import 'package:tinycast/presentation/features/downloads/downloads.dart';
 import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';
@@ -45,6 +46,13 @@ class AppRouter {
           settings: settings,
           pageBuilder: (context, animation, secondaryAnimation) =>
               const Favorite(),
+          transitionDuration: Duration.zero,
+        );
+      case AppRoutes.history:
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const History(),
           transitionDuration: Duration.zero,
         );
       case AppRoutes.downloads:

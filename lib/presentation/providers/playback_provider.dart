@@ -1,5 +1,10 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/episode_model.dart' as episode_model;
+import 'package:tinycast/data/models/play_history_model.dart';
+import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 
@@ -52,11 +57,24 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   StreamSubscription? _currentEpisodeSubscription;
 
   AudioPlayerService get _audioPlayerService => AudioPlayerService.instance;
+  PlayHistoryRepository get _playHistoryRepository => PlayHistoryRepository();
+  Timer? _progressSaveTimer;
+  int _lastSavedPositionMs = 0;
+  DateTime? _lastSaveTime;
+  int? _currentEpisodeId;
 
   @override
   PlayerState build() {
     _initListeners();
-    ref.onDispose(_disposeListeners);
+    _initProgressAutoSave();
+
+    _restoreLastPlaybackState();
+
+    ref.onDispose(() {
+      _disposeListeners();
+      _disposeAutoSave();
+      _saveCurrentProgress();
+    });
     return PlayerState();
   }
 
@@ -101,7 +119,144 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _currentEpisodeSubscription?.cancel();
   }
 
+  void _initProgressAutoSave() {
+    _progressSaveTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _autoSaveProgressIfNeeded();
+    });
+  }
+
+  Future<void> _autoSaveProgressIfNeeded() async {
+    final currentEpisode = state.currentEpisode;
+    if (currentEpisode == null) return;
+
+    final positionMs = state.currentPosition.inMilliseconds;
+    final now = DateTime.now();
+
+    final timeCondition = _lastSaveTime == null ||
+        now.difference(_lastSaveTime!).inSeconds >= 10;
+
+    final progressDelta = (positionMs - _lastSavedPositionMs).abs();
+    final durationMs = state.duration.inMilliseconds;
+    final progressCondition = durationMs > 0 &&
+        (progressDelta >= durationMs * 0.05 || progressDelta >= 5000);
+
+    if (timeCondition || progressCondition) {
+      await _saveCurrentProgress();
+    }
+  }
+
+  Future<void> _saveCurrentProgress() async {
+    final currentEpisode = state.currentEpisode;
+    if (currentEpisode == null) return;
+
+    final positionMs = state.currentPosition.inMilliseconds;
+
+    try {
+      await _playHistoryRepository.updateProgress(
+        currentEpisode.id,
+        positionMs,
+        positionMs - _lastSavedPositionMs,
+      );
+
+      _lastSavedPositionMs = positionMs;
+      _lastSaveTime = DateTime.now();
+    } catch (e) {
+      debugPrint('Error saving play progress: $e');
+    }
+  }
+
+  Future<void> _createOrUpdatePlayHistory(Episode episode) async {
+    try {
+      final history = PlayHistory()
+        ..episodeId = episode.id
+        ..podcastId = episode.podcastId
+        ..title = episode.title
+        ..artworkUrl = episode.artworkUrl
+        ..lastPlayedPositionMs = state.currentPosition.inMilliseconds
+        ..isPlayed = false
+        ..playedDuration = 0
+        ..status = PlayHistoryStatus.playing
+        ..lastUpdateTime = DateTime.now()
+        ..isDeleted = false;
+
+      await _playHistoryRepository.saveOrUpdate(history);
+      _currentEpisodeId = episode.id;
+      _lastSavedPositionMs = state.currentPosition.inMilliseconds;
+      _lastSaveTime = DateTime.now();
+    } catch (e) {
+      debugPrint('Error creating play history: $e');
+    }
+  }
+
+  void _disposeAutoSave() {
+    _progressSaveTimer?.cancel();
+    _progressSaveTimer = null;
+  }
+
+  Future<void> _restoreLastPlaybackState() async {
+    try {
+      final latestHistory =
+          await _playHistoryRepository.getLatestPlayingHistory();
+
+      if (latestHistory == null) {
+        debugPrint('No previous playback history found');
+        return;
+      }
+
+      debugPrint('Restoring last playback: ${latestHistory.title}');
+
+      final isar = IsarService.instance.isar;
+      final episode = await isar.episodes.get(latestHistory.episodeId);
+
+      if (episode == null) {
+        debugPrint('Episode not found in database (may be deleted)');
+        return;
+      }
+
+      final domainEpisode = Episode(
+        id: episode.id,
+        podcastId: episode.podcastId,
+        title: episode.title,
+        description: episode.description,
+        link: episode.link,
+        guid: episode.guid,
+        author: episode.author,
+        pubDate: episode.pubDate,
+        audioUrl: episode.audioUrl,
+        audioType: episode.audioType,
+        duration: episode.duration,
+        artworkUrl: episode.artworkUrl,
+        isExplicit: episode.isExplicit,
+        isPlayed: episode.isPlayed,
+        isDownloaded: episode.isDownloaded,
+        isFavorite: false,
+        downloadedPath: episode.downloadedPath,
+        downloadProgress: episode.downloadProgress,
+        playProgress: episode.playProgress,
+        lastPlayedAt: episode.lastPlayedAt,
+        createdAt: episode.createdAt,
+        updatedAt: episode.updatedAt,
+      );
+
+      state = state.copyWith(
+        currentEpisode: domainEpisode,
+        currentPosition:
+            Duration(milliseconds: latestHistory.lastPlayedPositionMs),
+      );
+
+      debugPrint('Playback state restored successfully');
+    } catch (e) {
+      debugPrint('Error restoring playback state: $e');
+    }
+  }
+
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
+    if (_currentEpisodeId != null && _currentEpisodeId != episode.id) {
+      await _saveCurrentProgress();
+    }
+
+    await _createOrUpdatePlayHistory(episode);
+
     await _audioPlayerService.playEpisode(
       episode,
       startPosition: startPosition,
@@ -145,6 +300,18 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> stop() async {
+    await _saveCurrentProgress();
+
+    final currentEpisode = state.currentEpisode;
+    if (currentEpisode != null) {
+      final progressRatio = state.progressRatio;
+      if (progressRatio >= 0.95) {
+        await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+      }
+    }
+
+    _currentEpisodeId = null;
+
     await _audioPlayerService.stop();
   }
 }
