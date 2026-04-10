@@ -1,55 +1,60 @@
-import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/features/favorite/favorite_list_item/favorite_list_item.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/presentation/features/favorite/favorite_empty_page/favorite_empty_page.dart';
+import 'package:tinycast/presentation/features/favorite/favorite_episodes_provider.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/navigation_provider.dart';
 
-class Favorite extends StatelessWidget {
+/// 收藏页面
+///
+/// 显示用户收藏的节目列表。
+/// 每个列表项包含节目封面、文本信息（时间、标题、描述）和操作区域（播放按钮、更多选项）。
+
+class Favorite extends ConsumerWidget {
   const Favorite({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: const [
-          FavoriteItem(
-            timeAgo: '1 h ago',
-            title: '标题文字标题文字',
-            description:
-                '介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍文字介绍',
-            duration: '32 min',
-          ),
-          FavoriteItem(
-            timeAgo: '2 h ago',
-            title: '更新标题更新标题',
-            description: '这是一个更新的介绍文本，用于说明最近的变化和进展。这是一个更新的介绍文本，用于说明最近的变化和进展。',
-            duration: '45 min',
-          ),
-          FavoriteItem(
-            timeAgo: '3 h ago',
-            title: '新功能介绍新功能',
-            description:
-                '这个模块介绍了我们的新功能，帮助用户更好地使用我们的产品。这是一个关于新功能的详细介绍，充满了亮点和好处。',
-            duration: '1 h',
-          ),
-          FavoriteItem(
-            timeAgo: '4 h ago',
-            title: '用户反馈总结',
-            description: '我们收到了很多用户的反馈，以下是总结和建议。这是一个关于用户反馈的详细总结，帮助我们改进产品。',
-            duration: '30 min',
-          ),
-          FavoriteItem(
-            timeAgo: '5 h ago',
-            title: '产品更新日志',
-            description: '本次更新包括多个重要修复和性能提升，确保用户体验更佳。产品更新日志详细列出了所有的变更和修复。',
-            duration: '1.5 h',
-          ),
-          FavoriteItem(
-            timeAgo: '6 h ago',
-            title: '即将发布的功能预览',
-            description: '我们即将发布的新功能将极大提升用户体验，敬请期待！这是对即将到来的功能的预览，激动人心的变化即将来临。',
-            duration: '2 h',
-            showDivider: false,
-          ),
-        ],
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final episodes = ref.watch(favoriteEpisodesProvider);
+    final isLoading = ref.watch(favoriteEpisodesLoadingProvider);
+
+    if (isLoading) {
+      return const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (episodes.isEmpty) {
+      return const FavoriteEmptyPage();
+    }
+
+    return ListView.builder(
+      itemCount: episodes.length,
+      itemBuilder: (context, index) {
+        final episode = episodes[index];
+        final isLast = index == episodes.length - 1;
+
+        return EpisodeItem(
+          episode: episode,
+          showDivider: !isLast,
+          onPlayPressed: () {
+            ref.read(playbackProvider.notifier).playEpisode(episode);
+          },
+          onEpisodeTap: () async {
+            final useCase = ref.read(getPodcastByIdUseCaseProvider);
+            final podcast = await useCase(episode.podcastId);
+            if (podcast != null) {
+              ref.read(navigationProvider.notifier).showEpisodeDetail(episode, podcast);
+            }
+          },
+        );
+      },
     );
   }
 }
