@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tinycast/data/database/isar_service.dart';
-import 'package:tinycast/data/models/episode_model.dart' as episode_model;
 import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
@@ -203,50 +201,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         return;
       }
 
-      debugPrint('Restoring last playback: ${latestHistory.title}');
-
-      final isar = IsarService.instance.isar;
-      final episode = await isar.episodes.get(latestHistory.episodeId);
-
-      if (episode == null) {
-        debugPrint('Episode not found in database (may be deleted)');
-        return;
-      }
-
-      final domainEpisode = Episode(
-        id: episode.id,
-        podcastId: episode.podcastId,
-        title: episode.title,
-        description: episode.description,
-        link: episode.link,
-        guid: episode.guid,
-        author: episode.author,
-        pubDate: episode.pubDate,
-        audioUrl: episode.audioUrl,
-        audioType: episode.audioType,
-        duration: episode.duration,
-        artworkUrl: episode.artworkUrl,
-        isExplicit: episode.isExplicit,
-        isPlayed: episode.isPlayed,
-        isDownloaded: episode.isDownloaded,
-        isFavorite: false,
-        downloadedPath: episode.downloadedPath,
-        downloadProgress: episode.downloadProgress,
-        playProgress: episode.playProgress,
-        lastPlayedAt: episode.lastPlayedAt,
-        createdAt: episode.createdAt,
-        updatedAt: episode.updatedAt,
-      );
-
-      state = state.copyWith(
-        currentEpisode: domainEpisode,
-        currentPosition:
-            Duration(milliseconds: latestHistory.lastPlayedPositionMs),
-      );
-
-      debugPrint('Playback state restored successfully');
+      debugPrint('Found last playback: ${latestHistory.title} (not auto-restoring to avoid control issues)');
     } catch (e) {
-      debugPrint('Error restoring playback state: $e');
+      debugPrint('Error checking playback state: $e');
     }
   }
 
