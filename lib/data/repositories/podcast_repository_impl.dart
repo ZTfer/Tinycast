@@ -321,6 +321,32 @@ class PodcastRepositoryImpl implements PodcastRepository {
   }
 
   @override
+  Future<List<Episode>> getEpisodesByIds(List<int> ids) async {
+    try {
+      Logger.info('根据 IDs 获取节目列表');
+
+      final episodeModels = await _localDataSource.getEpisodesByIds(ids);
+
+      final episodes = episodeModels
+          .map((model) => _convertEpisodeModelToEntity(model))
+          .toList();
+
+      Logger.info('成功获取 ${episodes.length} 个节目');
+
+      return episodes;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error('根据 IDs 获取节目列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '根据 IDs 获取节目列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
   Future<List<Episode>> getDownloadedEpisodes() async {
     try {
       Logger.info('获取已下载节目列表');

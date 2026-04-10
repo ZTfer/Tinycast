@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/episode.dart';
 import '../../../domain/usecases/get_favorite_episodes_usecase.dart';
 import '../../providers/podcast_provider.dart';
+import '../../providers/favorite_provider.dart';
 
 enum FavoriteEpisodesStatus { initial, loading, success, error }
 
@@ -30,8 +31,9 @@ class FavoriteEpisodesState {
 }
 
 final getFavoriteEpisodesUseCaseProvider = Provider<GetFavoriteEpisodesUseCase>((ref) {
-  final repository = ref.watch(podcastRepositoryProvider);
-  return GetFavoriteEpisodesUseCase(repository);
+  final podcastRepository = ref.watch(podcastRepositoryProvider);
+  final favoriteRepository = ref.watch(favoriteRepositoryProvider);
+  return GetFavoriteEpisodesUseCase(podcastRepository, favoriteRepository);
 });
 
 class FavoriteEpisodesNotifier extends Notifier<FavoriteEpisodesState> {

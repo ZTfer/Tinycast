@@ -535,6 +535,36 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<List<model.Episode>> getEpisodesByIds(List<int> ids) async {
+    try {
+      Logger.info('根据 IDs 获取节目，数量: ${ids.length}');
+
+      final allEpisodes = await _isarService.isar.episodes
+          .where()
+          .sortByPubDateDesc()
+          .findAll();
+
+      final episodes = allEpisodes.where((e) => ids.contains(e.id)).toList();
+
+      Logger.info('成功获取 ${episodes.length} 个节目');
+      return episodes;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('根据 IDs 获取节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '根据 IDs 获取节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('根据 IDs 获取节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '根据 IDs 获取节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   model.Podcast _convertPodcastEntityToModel(Podcast entity) {
     return model.Podcast()
       ..title = entity.title
