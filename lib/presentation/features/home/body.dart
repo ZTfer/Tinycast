@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/widgets/organisms/sidebar/sidebar.dart';
 import 'package:tinycast/presentation/features/downloads/downloads.dart';
 import 'package:tinycast/presentation/features/favorite/favorite.dart';
+import 'package:tinycast/presentation/features/history/history.dart';
 import 'package:tinycast/presentation/features/library/library.dart';
 import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/debug/test_page.dart';
@@ -56,6 +57,8 @@ class Body extends ConsumerWidget {
         return const Library();
       case AppRoutes.favorite:
         return const Favorite();
+      case AppRoutes.history:
+        return const History();
       case AppRoutes.downloads:
         return const Downloads();
       case AppRoutes.subscribe:
