@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/episode.dart';
-import '../../../domain/usecases/get_unplayed_episodes_usecase.dart';
-import '../../providers/podcast_provider.dart';
+import '../../domain/entities/episode.dart';
+import '../../domain/usecases/get_unplayed_episodes_usecase.dart';
+import 'podcast_provider.dart';
 
 enum UnplayedEpisodesStatus { initial, loading, success, error }
 

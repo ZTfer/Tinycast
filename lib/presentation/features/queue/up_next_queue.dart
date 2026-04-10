@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/queue/queue_empty_page/queue_empty_page.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
-import 'package:tinycast/presentation/features/library/unplayed_episodes_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
 
