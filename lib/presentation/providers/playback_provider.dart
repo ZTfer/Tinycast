@@ -7,6 +7,7 @@ import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
+import 'package:tinycast/presentation/providers/play_history_provider.dart';
 
 class PlayerState {
   final Episode? currentEpisode;
@@ -305,6 +306,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         if (progressRatio >= 0.95) {
           debugPrint('🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed');
           await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+          
+          debugPrint('🔄 [Playback] Auto-refreshing History list...');
+          ref.read(completedHistoriesProvider.notifier).refresh();
         }
       }
     }
@@ -325,7 +329,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     if (currentEpisode != null) {
       final progressRatio = state.progressRatio;
       if (progressRatio >= 0.95) {
+        debugPrint('🎯 [Playback] Stop: Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed');
         await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+        
+        debugPrint('🔄 [Playback] Auto-refreshing History list...');
+        ref.read(completedHistoriesProvider.notifier).refresh();
       }
     }
 

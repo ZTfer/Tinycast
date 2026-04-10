@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/history/history_empty_page/history_empty_page.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/data/models/play_history_model.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 
 class History extends ConsumerWidget {
   const History({super.key});
@@ -20,25 +23,19 @@ class History extends ConsumerWidget {
     }
 
     debugPrint('🔍 [History] 📝 Building list with ${histories.length} items');
-    return RefreshIndicator(
-      onRefresh: () async {
-        debugPrint('🔍 [History] 🔄 Manual refresh triggered');
-        await ref.read(completedHistoriesProvider.notifier).refresh();
-      },
-      child: ListView.builder(
-        itemCount: histories.length,
-        itemBuilder: (context, index) {
-          final history = histories[index];
-          final isLast = index == histories.length - 1;
+    return ListView.builder(
+      itemCount: histories.length,
+      itemBuilder: (context, index) {
+        final history = histories[index];
+        final isLast = index == histories.length - 1;
 
-          return _buildHistoryItem(
-            context,
-            ref,
-            history,
-            showDivider: !isLast,
-          );
-        },
-      ),
+        return _buildHistoryItem(
+          context,
+          ref,
+          history,
+          showDivider: !isLast,
+        );
+      },
     );
   }
 
@@ -48,77 +45,39 @@ class History extends ConsumerWidget {
     PlayHistory history, {
     required bool showDivider,
   }) {
-    return Column(
-      children: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: history.artworkUrl != null
-                ? Image.network(
-                    history.artworkUrl!,
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 56,
-                      height: 56,
-                      color: Colors.grey.shade300,
-                      child: Icon(Icons.podcasts, color: Colors.grey.shade600),
-                    ),
-                  )
-                : Container(
-                    width: 56,
-                    height: 56,
-                    color: Colors.grey.shade300,
-                    child: Icon(Icons.podcasts, color: Colors.grey.shade600),
-                  ),
-          ),
-          title: Text(
-            history.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              _formatDateTime(history.lastUpdateTime),
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            ),
-          ),
-          trailing: IconButton(
-            icon: const Icon(Icons.play_circle_outline, size: 32),
-            onPressed: () => _onPlayPressed(ref, history),
-          ),
-          onTap: () => _onPlayPressed(ref, history),
-        ),
-        if (showDivider)
-          const Divider(height: 1, indent: 88, endIndent: 16),
-      ],
+    final episode = _convertToEpisode(history);
+
+    return EpisodeItem(
+      episode: episode,
+      showDivider: showDivider,
+      onPlayPressed: () => _onPlayPressed(ref, episode),
+      onEpisodeTap: () => _onPlayPressed(ref, episode),
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays == 0) {
-      return 'Today at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
-    }
+  Episode _convertToEpisode(PlayHistory history) {
+    return Episode(
+      id: history.episodeId,
+      podcastId: history.podcastId,
+      title: history.title,
+      description: '',
+      audioUrl: '',
+      duration: (history.playedDuration / 1000).round(),
+      artworkUrl: history.artworkUrl,
+      pubDate: history.lastUpdateTime,
+      isPlayed: history.isPlayed,
+      isFavorite: false,
+      createdAt: history.createdAt,
+      updatedAt: history.lastUpdateTime,
+    );
   }
 
-  Future<void> _onPlayPressed(WidgetRef ref, PlayHistory history) async {
+  Future<void> _onPlayPressed(WidgetRef ref, Episode episode) async {
     try {
-      debugPrint('Play episode: ${history.episodeId}');
+      debugPrint('▶️ [History] Playing episode: ${episode.title}');
+      await ref.read(playbackProvider.notifier).playEpisode(episode);
     } catch (e) {
-      debugPrint('Error playing episode: $e');
+      debugPrint('❌ [History] Error playing episode: $e');
     }
   }
 }
