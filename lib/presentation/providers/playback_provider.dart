@@ -241,7 +241,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       final startPosition = Duration(milliseconds: latestHistory.lastPlayedPositionMs);
 
       debugPrint('Initializing AudioPlayerService with restored episode...');
-      await _audioPlayerService.playEpisode(
+      await _audioPlayerService.loadEpisode(
         domainEpisode,
         startPosition: startPosition,
       );

@@ -302,6 +302,51 @@ class AudioPlayerService {
     }
   }
 
+  Future<void> loadEpisode(
+    domain.Episode episode, {
+    Duration? startPosition,
+  }) async {
+    try {
+      final audioPath = episode.downloadedPath ?? episode.audioUrl;
+
+      Logger.info('Loading episode: ${episode.title} from $audioPath (without auto-play)');
+
+      if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
+        await _player.setUrl(audioPath);
+      } else {
+        final file = File(audioPath);
+        if (await file.exists()) {
+          await _player.setFilePath(audioPath);
+        } else {
+          Logger.warning(
+            'Local file not found: $audioPath, falling back to remote URL',
+          );
+          await _player.setUrl(episode.audioUrl);
+        }
+      }
+
+      _currentEpisode = episode;
+      if (!_currentEpisodeController.isClosed) {
+        _currentEpisodeController.add(episode);
+      }
+
+      if (startPosition != null) {
+        await _player.seek(startPosition);
+      }
+
+      await _updateMediaItem(episode);
+
+      Logger.info('Loaded episode: ${episode.title} (paused, waiting for user action)');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to load episode: ${episode.title}',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> _updateMediaItem(domain.Episode episode) async {
     if (_audioHandler == null) return;
 
