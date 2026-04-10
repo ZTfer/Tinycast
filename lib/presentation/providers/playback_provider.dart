@@ -172,6 +172,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         ..episodeId = episode.id
         ..podcastId = episode.podcastId
         ..title = episode.title
+        ..description = episode.description
         ..artworkUrl = episode.artworkUrl
         ..lastPlayedPositionMs = state.currentPosition.inMilliseconds
         ..isPlayed = false

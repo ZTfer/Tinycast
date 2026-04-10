@@ -27,44 +27,49 @@ const PlayHistorySchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'episodeId': PropertySchema(
+    r'description': PropertySchema(
       id: 2,
+      name: r'description',
+      type: IsarType.string,
+    ),
+    r'episodeId': PropertySchema(
+      id: 3,
       name: r'episodeId',
       type: IsarType.long,
     ),
     r'isDeleted': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isDeleted',
       type: IsarType.bool,
     ),
-    r'isPlayed': PropertySchema(id: 4, name: r'isPlayed', type: IsarType.bool),
+    r'isPlayed': PropertySchema(id: 5, name: r'isPlayed', type: IsarType.bool),
     r'lastPlayedPositionMs': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'lastPlayedPositionMs',
       type: IsarType.long,
     ),
     r'lastUpdateTime': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lastUpdateTime',
       type: IsarType.dateTime,
     ),
     r'playedDuration': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'playedDuration',
       type: IsarType.long,
     ),
     r'podcastId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'podcastId',
       type: IsarType.long,
     ),
     r'status': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'status',
       type: IsarType.byte,
       enumMap: _PlayHistorystatusEnumValueMap,
     ),
-    r'title': PropertySchema(id: 10, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 11, name: r'title', type: IsarType.string),
   },
 
   estimateSize: _playHistoryEstimateSize,
@@ -134,6 +139,12 @@ int _playHistoryEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.description;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.title.length * 3;
   return bytesCount;
 }
@@ -146,15 +157,16 @@ void _playHistorySerialize(
 ) {
   writer.writeString(offsets[0], object.artworkUrl);
   writer.writeDateTime(offsets[1], object.createdAt);
-  writer.writeLong(offsets[2], object.episodeId);
-  writer.writeBool(offsets[3], object.isDeleted);
-  writer.writeBool(offsets[4], object.isPlayed);
-  writer.writeLong(offsets[5], object.lastPlayedPositionMs);
-  writer.writeDateTime(offsets[6], object.lastUpdateTime);
-  writer.writeLong(offsets[7], object.playedDuration);
-  writer.writeLong(offsets[8], object.podcastId);
-  writer.writeByte(offsets[9], object.status.index);
-  writer.writeString(offsets[10], object.title);
+  writer.writeString(offsets[2], object.description);
+  writer.writeLong(offsets[3], object.episodeId);
+  writer.writeBool(offsets[4], object.isDeleted);
+  writer.writeBool(offsets[5], object.isPlayed);
+  writer.writeLong(offsets[6], object.lastPlayedPositionMs);
+  writer.writeDateTime(offsets[7], object.lastUpdateTime);
+  writer.writeLong(offsets[8], object.playedDuration);
+  writer.writeLong(offsets[9], object.podcastId);
+  writer.writeByte(offsets[10], object.status.index);
+  writer.writeString(offsets[11], object.title);
 }
 
 PlayHistory _playHistoryDeserialize(
@@ -165,18 +177,19 @@ PlayHistory _playHistoryDeserialize(
 ) {
   final object = PlayHistory();
   object.artworkUrl = reader.readStringOrNull(offsets[0]);
-  object.episodeId = reader.readLong(offsets[2]);
+  object.description = reader.readStringOrNull(offsets[2]);
+  object.episodeId = reader.readLong(offsets[3]);
   object.id = id;
-  object.isDeleted = reader.readBool(offsets[3]);
-  object.isPlayed = reader.readBool(offsets[4]);
-  object.lastPlayedPositionMs = reader.readLong(offsets[5]);
-  object.lastUpdateTime = reader.readDateTime(offsets[6]);
-  object.playedDuration = reader.readLong(offsets[7]);
-  object.podcastId = reader.readLong(offsets[8]);
+  object.isDeleted = reader.readBool(offsets[4]);
+  object.isPlayed = reader.readBool(offsets[5]);
+  object.lastPlayedPositionMs = reader.readLong(offsets[6]);
+  object.lastUpdateTime = reader.readDateTime(offsets[7]);
+  object.playedDuration = reader.readLong(offsets[8]);
+  object.podcastId = reader.readLong(offsets[9]);
   object.status =
-      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[10])] ??
       PlayHistoryStatus.playing;
-  object.title = reader.readString(offsets[10]);
+  object.title = reader.readString(offsets[11]);
   return object;
 }
 
@@ -192,24 +205,26 @@ P _playHistoryDeserializeProp<P>(
     case 1:
       return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 4:
       return (reader.readBool(offset)) as P;
     case 5:
-      return (reader.readLong(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 6:
-      return (reader.readDateTime(offset)) as P;
-    case 7:
       return (reader.readLong(offset)) as P;
+    case 7:
+      return (reader.readDateTime(offset)) as P;
     case 8:
       return (reader.readLong(offset)) as P;
     case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
       return (_PlayHistorystatusValueEnumMap[reader.readByteOrNull(offset)] ??
               PlayHistoryStatus.playing)
           as P;
-    case 10:
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -875,6 +890,165 @@ extension PlayHistoryQueryFilter
   }
 
   QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'description'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'description'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'description',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'description',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'description', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  descriptionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'description', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
   episodeIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1468,6 +1642,18 @@ extension PlayHistoryQuerySortBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'episodeId', Sort.asc);
@@ -1604,6 +1790,18 @@ extension PlayHistoryQuerySortThenBy
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
     });
   }
 
@@ -1748,6 +1946,14 @@ extension PlayHistoryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByDescription({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'episodeId');
@@ -1823,6 +2029,12 @@ extension PlayHistoryQueryProperty
   QueryBuilder<PlayHistory, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<PlayHistory, String?, QQueryOperations> descriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'description');
     });
   }
 

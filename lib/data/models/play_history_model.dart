@@ -16,6 +16,8 @@ class PlayHistory {
 
   late String title;
 
+  String? description;
+
   String? artworkUrl;
 
   int lastPlayedPositionMs = 0;

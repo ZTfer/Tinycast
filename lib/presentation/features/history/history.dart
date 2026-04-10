@@ -7,6 +7,7 @@ import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 
 class History extends ConsumerWidget {
   const History({super.key});
@@ -56,11 +57,16 @@ class History extends ConsumerWidget {
   }
 
   Episode _convertToEpisode(PlayHistory history) {
+    final rawDescription = history.description ?? '';
+    final processedDescription = rawDescription.isNotEmpty
+        ? HtmlTagRemoveUtils.getListItemSummary(rawDescription)
+        : '';
+
     return Episode(
       id: history.episodeId,
       podcastId: history.podcastId,
       title: history.title,
-      description: '',
+      description: processedDescription,
       audioUrl: '',
       duration: (history.playedDuration / 1000).round(),
       artworkUrl: history.artworkUrl,
