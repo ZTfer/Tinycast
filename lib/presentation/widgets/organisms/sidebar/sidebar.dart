@@ -51,6 +51,15 @@ class Sidebar extends StatelessWidget {
                       onPressed: () => onPageChanged(AppRoutes.library),
                     ),
                     _buildMenuButton(
+                      icon: LucideIcons.history,
+                      // label: 'History',
+                      route: AppRoutes.favorite,
+                      state: currentPage == AppRoutes.favorite
+                          ? SidebarButtonState.iconActive
+                          : SidebarButtonState.defaultState,
+                      onPressed: () => onPageChanged(AppRoutes.favorite),
+                    ),
+                    _buildMenuButton(
                       icon: LucideIcons.star,
                       // label: 'Favorite',
                       route: AppRoutes.favorite,
