@@ -295,6 +295,19 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   Future<void> seekTo(Duration position) async {
     await _audioPlayerService.seek(position);
+    await _saveCurrentProgress();
+
+    final currentEpisode = state.currentEpisode;
+    if (currentEpisode != null) {
+      final durationMs = state.duration.inMilliseconds;
+      if (durationMs > 0) {
+        final progressRatio = position.inMilliseconds / durationMs;
+        if (progressRatio >= 0.95) {
+          debugPrint('🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed');
+          await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+        }
+      }
+    }
   }
 
   Future<void> setSpeed(double speed) async {

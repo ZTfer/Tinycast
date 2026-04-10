@@ -11,57 +11,34 @@ class History extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('🔍 [History] ====== BUILD METHOD CALLED ======');
-    final historiesAsync = ref.watch(completedHistoriesProvider);
-    debugPrint('🔍 [History] Provider type: ${historiesAsync.runtimeType}');
+    final histories = ref.watch(completedHistoriesProvider);
+    debugPrint('🔍 [History] 📊 Current state length: ${histories.length}');
 
-    return historiesAsync.when(
-      data: (histories) {
-        debugPrint('🔍 [History] ✅ DATA RECEIVED');
-        debugPrint('🔍 [History] 📊 Total records from provider: ${histories.length}');
+    if (histories.isEmpty) {
+      debugPrint('🔍 [History] 📭 Showing empty page (no completed records)');
+      return const HistoryEmptyPage();
+    }
 
-        for (int i = 0; i < histories.length; i++) {
-          final h = histories[i];
-          debugPrint('🔍 [History]   [$i] ID: ${h.id}, Title: "${h.title}", Status: ${h.status}, isPlayed: ${h.isPlayed}, isDeleted: ${h.isDeleted}');
-        }
-
-        if (histories.isEmpty) {
-          debugPrint('🔍 [History] 📭 Showing empty page (no completed records)');
-          return const HistoryEmptyPage();
-        }
-
-        debugPrint('🔍 [History] 📝 Building list with ${histories.length} items');
-        return ListView.builder(
-          itemCount: histories.length,
-          itemBuilder: (context, index) {
-            final history = histories[index];
-            final isLast = index == histories.length - 1;
-
-            return _buildHistoryItem(
-              context,
-              ref,
-              history,
-              showDivider: !isLast,
-            );
-          },
-        );
+    debugPrint('🔍 [History] 📝 Building list with ${histories.length} items');
+    return RefreshIndicator(
+      onRefresh: () async {
+        debugPrint('🔍 [History] 🔄 Manual refresh triggered');
+        await ref.read(completedHistoriesProvider.notifier).refresh();
       },
-      loading: () {
-        debugPrint('🔍 [History] ⏳ LOADING STATE');
-        return const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        );
-      },
-      error: (error, stack) {
-        debugPrint('🔍 [History] ❌ ERROR STATE: $error');
-        debugPrint('🔍 [History] Stack: $stack');
-        return Center(
-          child: Text('Error: $error'),
-        );
-      },
+      child: ListView.builder(
+        itemCount: histories.length,
+        itemBuilder: (context, index) {
+          final history = histories[index];
+          final isLast = index == histories.length - 1;
+
+          return _buildHistoryItem(
+            context,
+            ref,
+            history,
+            showDivider: !isLast,
+          );
+        },
+      ),
     );
   }
 
