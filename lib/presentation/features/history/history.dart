@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/history/history_empty_page/history_empty_page.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
@@ -9,14 +10,26 @@ class History extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('🔍 [History] ====== BUILD METHOD CALLED ======');
     final historiesAsync = ref.watch(completedHistoriesProvider);
+    debugPrint('🔍 [History] Provider type: ${historiesAsync.runtimeType}');
 
     return historiesAsync.when(
       data: (histories) {
+        debugPrint('🔍 [History] ✅ DATA RECEIVED');
+        debugPrint('🔍 [History] 📊 Total records from provider: ${histories.length}');
+
+        for (int i = 0; i < histories.length; i++) {
+          final h = histories[i];
+          debugPrint('🔍 [History]   [$i] ID: ${h.id}, Title: "${h.title}", Status: ${h.status}, isPlayed: ${h.isPlayed}, isDeleted: ${h.isDeleted}');
+        }
+
         if (histories.isEmpty) {
+          debugPrint('🔍 [History] 📭 Showing empty page (no completed records)');
           return const HistoryEmptyPage();
         }
 
+        debugPrint('🔍 [History] 📝 Building list with ${histories.length} items');
         return ListView.builder(
           itemCount: histories.length,
           itemBuilder: (context, index) {
@@ -32,16 +45,23 @@ class History extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-      error: (error, stack) => Center(
-        child: Text('Error: $error'),
-      ),
+      loading: () {
+        debugPrint('🔍 [History] ⏳ LOADING STATE');
+        return const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        );
+      },
+      error: (error, stack) {
+        debugPrint('🔍 [History] ❌ ERROR STATE: $error');
+        debugPrint('🔍 [History] Stack: $stack');
+        return Center(
+          child: Text('Error: $error'),
+        );
+      },
     );
   }
 

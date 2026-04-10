@@ -1,17 +1,28 @@
 import 'package:isar_community/isar.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/play_history_model.dart';
+import 'package:flutter/foundation.dart';
 
 class PlayHistoryRepository {
   Future<List<PlayHistory>> getCompletedHistories() async {
     final isar = IsarService.instance.isar;
-    return isar.playHistorys
-        .filter()
-        .statusEqualTo(PlayHistoryStatus.completed)
-        .and()
-        .isDeletedEqualTo(false)
-        .sortByLastUpdateTimeDesc()
-        .findAll();
+
+    final allRecords = await isar.playHistorys.where().findAll();
+    debugPrint('📊 [PlayHistory] 总记录数: ${allRecords.length}');
+    for (final record in allRecords) {
+      debugPrint('   - ID: ${record.id}, Status: ${record.status}, Title: ${record.title}, isDeleted: ${record.isDeleted}');
+    }
+
+    final completedRecords = allRecords
+        .where((record) =>
+            record.status == PlayHistoryStatus.completed &&
+            record.isDeleted == false)
+        .toList()
+      ..sort((a, b) => b.lastUpdateTime.compareTo(a.lastUpdateTime));
+
+    debugPrint('✅ [PlayHistory] Completed 记录数: ${completedRecords.length}');
+
+    return completedRecords;
   }
 
   Future<PlayHistory?> getLatestPlayingHistory() async {
