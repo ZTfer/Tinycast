@@ -23,11 +23,15 @@ class EpisodeControlBar extends ConsumerStatefulWidget {
   /// 播放按钮点击回调（播放新音频）
   final VoidCallback? onPlayPressed;
 
+  /// episode 的链接地址（用于拷贝链接功能）
+  final String? link;
+
   const EpisodeControlBar({
     super.key,
     required this.episodeId,
     required this.duration,
     this.onPlayPressed,
+    this.link,
   });
 
   @override
@@ -127,6 +131,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     _hideDropdown();
                   }
                 },
+                link: widget.link,
               ),
             ),
           ),

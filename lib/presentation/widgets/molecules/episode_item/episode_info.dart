@@ -103,6 +103,7 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
           episodeId: widget.episode.id,
           duration: widget.duration,
           onPlayPressed: widget.onPlayPressed,
+          link: widget.episode.link,
         ),
       ],
     );
