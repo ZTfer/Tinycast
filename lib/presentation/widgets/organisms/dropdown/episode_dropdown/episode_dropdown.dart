@@ -128,12 +128,27 @@ class EpisodeDropdown extends StatelessWidget {
   }
 
   void _handleCopyLink(BuildContext context) {
+    print('📋 [EPISODE-DROPDOWN] _handleCopyLink 被调用');
+    print('📋 [EPISODE-DROPDOWN] link 值: $link');
+
     if (link == null || link!.isEmpty) {
+      print('⚠️ [EPISODE-DROPDOWN] link 为空，不执行复制');
       _handleItemSelected();
       return;
     }
+
+    print('✅ [EPISODE-DROPDOWN] 开始复制链接: $link');
     Clipboard.setData(ClipboardData(text: link!));
-    onShowCopySuccessToast?.call();
+    print('✅ [EPISODE-DROPDOWN] 链接已复制到剪贴板');
+
+    if (onShowCopySuccessToast != null) {
+      print('📋 [EPISODE-DROPDOWN] 调用 onShowCopySuccessToast 回调');
+      onShowCopySuccessToast!();
+    } else {
+      print('⚠️ [EPISODE-DROPDOWN] onShowCopySuccessToast 为 null，跳过 Toast');
+    }
+
+    print('❌ [EPISODE-DROPDOWN] 调用 _handleItemSelected 关闭菜单');
     _handleItemSelected();
   }
 }

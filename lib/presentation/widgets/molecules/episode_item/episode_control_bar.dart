@@ -133,7 +133,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                   }
                 },
                 link: widget.link,
-                onShowCopySuccessToast: () => _showCopySuccessToast(),
+                onShowCopySuccessToast: () {
+                  Logger.info('📋 [EPISODE-CONTROL-BAR] onShowCopySuccessToast 回调触发');
+                  _showCopySuccessToast();
+                },
               ),
             ),
           ),
@@ -152,18 +155,34 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   ///
   /// 移除 OverlayEntry 并清空引用。
   void _hideDropdown() {
+    Logger.info('❌ [EPISODE-CONTROL-BAR] _hideDropdown 被调用');
+
     /// 如果隐藏的是当前全局菜单，清空全局引用
     if (_currentDropdownOverlay == _dropdownOverlay) {
       _currentDropdownOverlay = null;
     }
 
-    _dropdownOverlay?.remove();
-    _dropdownOverlay = null;
+    if (_dropdownOverlay != null) {
+      _dropdownOverlay!.remove();
+      _dropdownOverlay = null;
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 下拉菜单已成功移除');
+    } else {
+      Logger.warning('⚠️ [EPISODE-CONTROL-BAR] _dropdownOverlay 为 null，无需移除');
+    }
   }
 
   /// 显示拷贝成功 Toast
   void _showCopySuccessToast() {
-    ScaffoldMessenger.of(context).showSnackBar(
+    Logger.info('📋 [EPISODE-CONTROL-BAR] _showCopySuccessToast 被调用');
+
+    final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+    if (scaffoldMessenger == null) {
+      Logger.warning('⚠️ [EPISODE-CONTROL-BAR] 未找到 ScaffoldMessenger，无法显示 Toast');
+      return;
+    }
+
+    Logger.info('✅ [EPISODE-CONTROL-BAR] 找到 ScaffoldMessenger，正在显示 Toast');
+    scaffoldMessenger.showSnackBar(
       SnackBar(
         content: VerticalIconToast(
           icon: Icon(LucideIcons.check, size: 36.0),
