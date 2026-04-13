@@ -133,6 +133,7 @@ class EpisodeDropdown extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: link!));
     onCopyLink?.call();
     _showCopySuccessToast(context);
+    onItemSelected?.call();
   }
 
   void _showCopySuccessToast(BuildContext context) {
