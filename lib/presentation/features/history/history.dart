@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/history/history_empty_page/history_empty_page.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
@@ -32,10 +31,7 @@ class History extends ConsumerWidget {
         final history = histories[index];
         final isLast = index == histories.length - 1;
 
-        return _HistoryItem(
-          history: history,
-          showDivider: !isLast,
-        );
+        return _HistoryItem(history: history, showDivider: !isLast);
       },
     );
   }
@@ -45,10 +41,7 @@ class _HistoryItem extends ConsumerWidget {
   final PlayHistory history;
   final bool showDivider;
 
-  const _HistoryItem({
-    required this.history,
-    required this.showDivider,
-  });
+  const _HistoryItem({required this.history, required this.showDivider});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -81,11 +74,13 @@ class _HistoryItem extends ConsumerWidget {
       final episodeModel = await isar.episodes.get(history.episodeId);
 
       if (episodeModel == null) {
-        debugPrint('⚠️ [History] Episode ${history.episodeId} not found in database, using cached data');
+        debugPrint(
+          '⚠️ [History] Episode ${history.episodeId} not found in database, using cached data',
+        );
         return null;
       }
 
-      final rawDescription = episodeModel.description ?? '';
+      final rawDescription = episodeModel.description;
       final processedDescription = rawDescription.isNotEmpty
           ? HtmlTagRemoveUtils.getListItemSummary(rawDescription)
           : '';
@@ -95,14 +90,14 @@ class _HistoryItem extends ConsumerWidget {
         podcastId: episodeModel.podcastId,
         title: episodeModel.title,
         description: processedDescription,
-        audioUrl: episodeModel.audioUrl ?? '',
+        audioUrl: episodeModel.audioUrl,
         duration: episodeModel.duration ?? 0,
-        artworkUrl: episodeModel.artworkUrl,
-        pubDate: episodeModel.pubDate ?? DateTime.now(),
+        artworkUrl: episodeModel.artworkUrl ?? '',
+        pubDate: episodeModel.pubDate,
         isPlayed: episodeModel.isPlayed,
         isFavorite: false,
         createdAt: episodeModel.createdAt,
-        updatedAt: episodeModel.updatedAt ?? DateTime.now(),
+        updatedAt: episodeModel.updatedAt,
       );
     } catch (e) {
       debugPrint('❌ [History] Error loading episode: $e');
@@ -135,7 +130,7 @@ class _HistoryItem extends ConsumerWidget {
   Future<void> _onPlayPressed(WidgetRef ref, Episode episode) async {
     try {
       debugPrint('▶️ [History] Playing episode: ${episode.title}');
-      
+
       if (episode.audioUrl.isEmpty) {
         final fullEpisode = await _loadEpisode();
         if (fullEpisode != null) {
