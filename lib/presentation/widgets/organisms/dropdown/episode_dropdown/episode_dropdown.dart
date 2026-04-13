@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/dialogs/toast/vertical_icon_toast.dart';
 import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown_item.dart';
 
 /// 剧集下拉菜单
@@ -21,8 +20,8 @@ class EpisodeDropdown extends StatelessWidget {
   /// episode 的链接地址
   final String? link;
 
-  /// 拷贝链接回调
-  final VoidCallback? onCopyLink;
+  /// 拷贝链接成功后的回调（用于显示 Toast）
+  final VoidCallback? onShowCopySuccessToast;
 
   const EpisodeDropdown({
     super.key,
@@ -30,7 +29,7 @@ class EpisodeDropdown extends StatelessWidget {
     this.isFavorite = false,
     this.onToggleFavorite,
     this.link,
-    this.onCopyLink,
+    this.onShowCopySuccessToast,
   });
 
   @override
@@ -129,23 +128,12 @@ class EpisodeDropdown extends StatelessWidget {
   }
 
   void _handleCopyLink(BuildContext context) {
-    if (link == null || link!.isEmpty) return;
+    if (link == null || link!.isEmpty) {
+      _handleItemSelected();
+      return;
+    }
     Clipboard.setData(ClipboardData(text: link!));
-    onCopyLink?.call();
-    _showCopySuccessToast(context);
-    onItemSelected?.call();
-  }
-
-  void _showCopySuccessToast(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: VerticalIconToast(
-          icon: Icon(LucideIcons.check),
-          text: '链接已复制',
-        ),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    onShowCopySuccessToast?.call();
+    _handleItemSelected();
   }
 }

@@ -7,6 +7,7 @@ import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdow
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/presentation/dialogs/toast/vertical_icon_toast.dart';
 
 /// Episode 控制栏组件
 ///
@@ -132,6 +133,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                   }
                 },
                 link: widget.link,
+                onShowCopySuccessToast: () => _showCopySuccessToast(),
               ),
             ),
           ),
@@ -157,6 +159,21 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
     _dropdownOverlay?.remove();
     _dropdownOverlay = null;
+  }
+
+  /// 显示拷贝成功 Toast
+  void _showCopySuccessToast() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: VerticalIconToast(
+          icon: Icon(LucideIcons.check, size: 36.0),
+          text: '链接已复制',
+          textSize: 12,
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   /// 组件销毁时的清理工作
