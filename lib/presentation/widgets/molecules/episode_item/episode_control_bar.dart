@@ -175,24 +175,42 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   void _showCopySuccessToast() {
     Logger.info('📋 [EPISODE-CONTROL-BAR] _showCopySuccessToast 被调用');
 
-    final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
-    if (scaffoldMessenger == null) {
-      Logger.warning('⚠️ [EPISODE-CONTROL-BAR] 未找到 ScaffoldMessenger，无法显示 Toast');
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) {
+      Logger.warning('⚠️ [EPISODE-CONTROL-BAR] 未找到 Overlay，无法显示 Toast');
       return;
     }
 
-    Logger.info('✅ [EPISODE-CONTROL-BAR] 找到 ScaffoldMessenger，正在显示 Toast');
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: VerticalIconToast(
-          icon: Icon(LucideIcons.check, size: 36.0),
-          text: '链接已复制',
-          textSize: 12,
+    Logger.info('✅ [EPISODE-CONTROL-BAR] 找到 Overlay，正在显示 Toast');
+
+    late OverlayEntry toastEntry;
+    toastEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).size.height * 0.7,
+        left: 0,
+        right: 0,
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: VerticalIconToast(
+              icon: Icon(LucideIcons.check, size: 36.0),
+              text: '链接已复制',
+              textSize: 12,
+            ),
+          ),
         ),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
       ),
     );
+
+    overlay.insert(toastEntry);
+    Logger.info('✅ [EPISODE-CONTROL-BAR] Toast 已插入到 Overlay');
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (toastEntry.mounted) {
+        toastEntry.remove();
+        Logger.info('✅ [EPISODE-CONTROL-BAR] Toast 已移除');
+      }
+    });
   }
 
   /// 组件销毁时的清理工作
