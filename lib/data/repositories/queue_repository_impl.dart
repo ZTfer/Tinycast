@@ -22,6 +22,12 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
+  Future<void> insertToQueueFront(int episodeId) async {
+    Logger.info('📋 [QUEUE-REPO] insertToQueueFront 调用, episodeId: $episodeId');
+    await _dataSource.insertToQueueFront(episodeId);
+  }
+
+  @override
   Future<void> removeFromQueue(int id) async {
     Logger.info('📋 [QUEUE-REPO] removeFromQueue 调用, id: $id');
     await _dataSource.removeFromQueue(id);

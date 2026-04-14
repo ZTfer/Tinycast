@@ -23,6 +23,12 @@ class EpisodeDropdown extends StatelessWidget {
   /// 拷贝链接成功后的回调（用于显示 Toast）
   final VoidCallback? onShowCopySuccessToast;
 
+  /// 插播回调（添加到队列最前面）
+  final VoidCallback? onInsertToFront;
+
+  /// 添加到队列回调（添加到队列最后面）
+  final VoidCallback? onAddToQueue;
+
   const EpisodeDropdown({
     super.key,
     this.onItemSelected,
@@ -30,6 +36,8 @@ class EpisodeDropdown extends StatelessWidget {
     this.onToggleFavorite,
     this.link,
     this.onShowCopySuccessToast,
+    this.onInsertToFront,
+    this.onAddToQueue,
   });
 
   @override
@@ -85,12 +93,18 @@ class EpisodeDropdown extends StatelessWidget {
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.listStart),
               text: '插播',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () {
+                onInsertToFront ?? _handleItemSelected();
+                _handleItemSelected();
+              },
             ),
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.listEnd),
               text: '添加到队列',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () {
+                onAddToQueue ?? _handleItemSelected();
+                _handleItemSelected();
+              },
             ),
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.circleCheck),

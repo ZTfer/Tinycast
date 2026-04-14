@@ -63,6 +63,47 @@ class LocalQueueDataSource {
     }
   }
 
+  Future<void> insertToQueueFront(int episodeId) async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始插播到队列最前, episodeId: $episodeId');
+
+      final existing = await _isarService.isar.queues
+          .where()
+          .episodeIdEqualTo(episodeId)
+          .findFirst();
+
+      if (existing != null) {
+        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 已存在于队列中, 先移除再插播');
+        await removeFromQueue(existing.id);
+      }
+
+      final allItems = await _isarService.isar.queues.where().findAll();
+
+      for (final item in allItems) {
+        item.position += 1;
+      }
+
+      final queueItem = Queue()
+        ..episodeId = episodeId
+        ..position = 0;
+
+      await _isarService.isar.writeTxn(() async {
+        if (allItems.isNotEmpty) {
+          await _isarService.isar.queues.putAll(allItems);
+        }
+        await _isarService.isar.queues.put(queueItem);
+      });
+
+      Logger.info('📋 [QUEUE-DS] 插播成功, episodeId: $episodeId, position: 0, id: ${queueItem.id}, 更新了 ${allItems.length} 条后续记录');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 插播到队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('插播到队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 插播到队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('插播到队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> removeFromQueue(int id) async {
     try {
       Logger.info('📋 [QUEUE-DS] 开始从队列移除, id: $id');

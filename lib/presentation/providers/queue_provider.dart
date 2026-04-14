@@ -5,6 +5,7 @@ import '../../domain/usecases/get_queue_usecase.dart';
 import '../../domain/usecases/add_to_queue_usecase.dart';
 import '../../domain/usecases/remove_from_queue_usecase.dart';
 import '../../domain/usecases/clear_queue_usecase.dart';
+import '../../domain/usecases/insert_to_queue_front_usecase.dart';
 import '../../data/repositories/queue_repository_impl.dart';
 import 'podcast_provider.dart';
 import '../../core/utils/logger.dart';
@@ -22,6 +23,11 @@ final getQueueUseCaseProvider = Provider<GetQueueUseCase>((ref) {
 final addToQueueUseCaseProvider = Provider<AddToQueueUseCase>((ref) {
   final repository = ref.watch(queueRepositoryProvider);
   return AddToQueueUseCase(repository);
+});
+
+final insertToQueueFrontUseCaseProvider = Provider<InsertToQueueFrontUseCase>((ref) {
+  final repository = ref.watch(queueRepositoryProvider);
+  return InsertToQueueFrontUseCase(repository);
 });
 
 final removeFromQueueUseCaseProvider = Provider<RemoveFromQueueUseCase>((ref) {
@@ -72,6 +78,9 @@ class QueueNotifier extends Notifier<QueueState> {
   AddToQueueUseCase get _addToQueueUseCase =>
       ref.read(addToQueueUseCaseProvider);
 
+  InsertToQueueFrontUseCase get _insertToQueueFrontUseCase =>
+      ref.read(insertToQueueFrontUseCaseProvider);
+
   RemoveFromQueueUseCase get _removeFromQueueUseCase =>
       ref.read(removeFromQueueUseCaseProvider);
 
@@ -116,6 +125,25 @@ class QueueNotifier extends Notifier<QueueState> {
     await refresh();
     Logger.info(
         '📋 [QUEUE-PROVIDER] ====== addToQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+  }
+
+  Future<void> insertToQueueFront(int episodeId) async {
+    Logger.info(
+        '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 开始, episodeId: $episodeId ======');
+
+    try {
+      await _insertToQueueFrontUseCase(episodeId);
+      Logger.info(
+          '📋 [QUEUE-PROVIDER] insertToQueueFront 成功! episodeId: $episodeId');
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-PROVIDER] insertToQueueFront 失败!',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+
+    await refresh();
+    Logger.info(
+        '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 结束, 最终队列数: ${state.queueEpisodes.length} ======');
   }
 
   Future<void> removeFromQueue(int id) async {

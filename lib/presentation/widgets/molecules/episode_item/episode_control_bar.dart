@@ -6,6 +6,7 @@ import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_butt
 import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
+import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 
@@ -134,6 +135,8 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 },
                 link: widget.link,
                 onShowCopySuccessToast: _showCopySuccessToast,
+                onInsertToFront: _handleInsertToFront,
+                onAddToQueue: _handleAddToQueue,
               ),
             ),
           ),
@@ -163,6 +166,32 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   /// 显示拷贝成功 Toast
   void _showCopySuccessToast() {
     ToastUtils.showCopySuccessToast(context);
+  }
+
+  /// 处理插播操作（添加到队列最前面）
+  Future<void> _handleInsertToFront() async {
+    Logger.info('📋 [EPISODE-CONTROL-BAR] 用户点击插播, episodeId: ${widget.episodeId}');
+    try {
+      await ref.read(queueNotifierProvider.notifier).insertToQueueFront(widget.episodeId);
+      Logger.info('📋 [EPISODE-CONTROL-BAR] 插播成功');
+      ToastUtils.showSuccessToast(context, message: '已插播到队列最前');
+    } catch (e) {
+      Logger.error('📋 [EPISODE-CONTROL-BAR] 插播失败', error: e);
+      ToastUtils.showErrorToast(context, message: '插播失败');
+    }
+  }
+
+  /// 处理添加到队列操作（添加到队列最后面）
+  Future<void> _handleAddToQueue() async {
+    Logger.info('📋 [EPISODE-CONTROL-BAR] 用户点击添加到队列, episodeId: ${widget.episodeId}');
+    try {
+      await ref.read(queueNotifierProvider.notifier).addToQueue(widget.episodeId);
+      Logger.info('📋 [EPISODE-CONTROL-BAR] 添加到队列成功');
+      ToastUtils.showSuccessToast(context, message: '已添加到队列末尾');
+    } catch (e) {
+      Logger.error('📋 [EPISODE-CONTROL-BAR] 添加到队列失败', error: e);
+      ToastUtils.showErrorToast(context, message: '添加失败');
+    }
   }
 
   /// 组件销毁时的清理工作
