@@ -240,6 +240,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         updatedAt: episode.updatedAt,
       );
 
+      _currentEpisodeId = domainEpisode.id;
+      _lastSavedPositionMs = latestHistory.lastPlayedPositionMs;
+      _lastSaveTime = DateTime.now();
+
+      state = state.copyWith(currentEpisode: domainEpisode);
+
       final startPosition = Duration(milliseconds: latestHistory.lastPlayedPositionMs);
 
       debugPrint('Initializing AudioPlayerService with restored episode...');
@@ -247,10 +253,6 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         domainEpisode,
         startPosition: startPosition,
       );
-
-      _currentEpisodeId = domainEpisode.id;
-      _lastSavedPositionMs = latestHistory.lastPlayedPositionMs;
-      _lastSaveTime = DateTime.now();
 
       debugPrint('Playback state restored successfully - all controls should work');
     } catch (e) {
