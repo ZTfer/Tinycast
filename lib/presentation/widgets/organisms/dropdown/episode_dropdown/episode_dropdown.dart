@@ -94,7 +94,7 @@ class EpisodeDropdown extends StatelessWidget {
               icon: Icon(LucideIcons.listStart),
               text: '插播',
               onPressed: () {
-                onInsertToFront ?? _handleItemSelected();
+                onInsertToFront?.call();
                 _handleItemSelected();
               },
             ),
@@ -102,7 +102,7 @@ class EpisodeDropdown extends StatelessWidget {
               icon: Icon(LucideIcons.listEnd),
               text: '添加到队列',
               onPressed: () {
-                onAddToQueue ?? _handleItemSelected();
+                onAddToQueue?.call();
                 _handleItemSelected();
               },
             ),
