@@ -1,0 +1,143 @@
+import 'package:isar_community/isar.dart';
+import '../../core/utils/logger.dart';
+import '../../core/utils/app_exception.dart';
+import '../database/isar_service.dart';
+import '../models/queue_model.dart';
+
+class LocalQueueDataSource {
+  final IsarService _isarService;
+
+  LocalQueueDataSource({IsarService? isarService})
+    : _isarService = isarService ?? IsarService.instance;
+
+  Future<List<Queue>> getAll() async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 获取所有队列项');
+
+      final items = await _isarService.isar.queues.where().findAll();
+      items.sort((a, b) => a.position.compareTo(b.position));
+
+      Logger.info('📋 [QUEUE-DS] 共获取 ${items.length} 条队列记录');
+      return items;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 获取队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('获取队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 获取队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('获取队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> addToQueue(int episodeId) async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始添加到队列, episodeId: $episodeId');
+
+      final existing = await _isarService.isar.queues
+          .where()
+          .episodeIdEqualTo(episodeId)
+          .findFirst();
+
+      if (existing != null) {
+        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 已存在于队列中, 跳过添加');
+        return;
+      }
+
+      final allItems = await _isarService.isar.queues.where().findAll();
+      final maxPosition = allItems.isEmpty ? 0 : allItems.map((e) => e.position).reduce((a, b) => a > b ? a : b);
+
+      final queueItem = Queue()
+        ..episodeId = episodeId
+        ..position = maxPosition + 1;
+
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.queues.put(queueItem);
+      });
+
+      Logger.info('📋 [QUEUE-DS] 队列添加成功, episodeId: $episodeId, position: ${queueItem.position}, id: ${queueItem.id}');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 添加到队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('添加到队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 添加到队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('添加到队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> removeFromQueue(int id) async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始从队列移除, id: $id');
+
+      final item = await _isarService.isar.queues.get(id);
+
+      if (item == null) {
+        Logger.warning('📋 [QUEUE-DS] id: $id 不在队列中, 跳过移除');
+        return;
+      }
+
+      final removedPosition = item.position;
+
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.queues.delete(id);
+      });
+
+      final itemsToUpdate = await _isarService.isar.queues.where().findAll();
+      final needUpdate = itemsToUpdate.where((e) => e.position > removedPosition).toList();
+
+      if (needUpdate.isNotEmpty) {
+        for (final item in needUpdate) {
+          item.position -= 1;
+        }
+        await _isarService.isar.writeTxn(() async {
+          await _isarService.isar.queues.putAll(needUpdate);
+        });
+      }
+
+      Logger.info('📋 [QUEUE-DS] 队列移除成功, id: $id, 原position: $removedPosition, 更新了 ${needUpdate.length} 条后续记录');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 从队列移除失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('从队列移除失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 从队列移除异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('从队列移除失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> clearQueue() async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始清空队列');
+
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.queues.clear();
+      });
+
+      Logger.info('📋 [QUEUE-DS] 队列清空成功');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 清空队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('清空队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 清空队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('清空队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<bool> isInQueue(int episodeId) async {
+    try {
+      Logger.debug('📋 [QUEUE-DS] 检查是否在队列中, episodeId: $episodeId');
+
+      final count = await _isarService.isar.queues
+          .where()
+          .episodeIdEqualTo(episodeId)
+          .count();
+
+      final result = count > 0;
+      Logger.debug('📋 [QUEUE-DS] 队列检查结果, episodeId: $episodeId, isInQueue: $result, count: $count');
+      return result;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 检查队列状态失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('检查队列状态失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 检查队列状态异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('检查队列状态失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+}
