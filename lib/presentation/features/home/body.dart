@@ -7,7 +7,7 @@ import 'package:tinycast/presentation/features/history/history.dart';
 import 'package:tinycast/presentation/features/library/library.dart';
 import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/debug/test_page.dart';
-import 'package:tinycast/presentation/features/queue/queue_list/up_next_queue.dart';
+import 'package:tinycast/presentation/features/queue/queue.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';
 import 'package:tinycast/presentation/features/library/podcast_detail/podcast_detail.dart';
 import 'package:tinycast/presentation/features/player/episode_detail.dart';
@@ -69,7 +69,7 @@ class Body extends ConsumerWidget {
         return const Settings();
       case AppRoutes.queue:
       default:
-        return const UpNextQueue();
+        return const Queue();
     }
   }
 
