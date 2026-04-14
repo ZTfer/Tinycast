@@ -247,14 +247,17 @@ class AudioPlayerService {
     }
   }
 
-  Future<void> playEpisode(
+  Future<void> _loadEpisodeAudio(
     domain.Episode episode, {
     Duration? startPosition,
+    bool autoPlay = true,
+    bool updateLastPlayedAt = true,
   }) async {
     try {
       final audioPath = episode.downloadedPath ?? episode.audioUrl;
+      final action = autoPlay ? 'Playing' : 'Loading';
 
-      Logger.info('Playing episode: ${episode.title} from $audioPath');
+      Logger.info('$action episode: ${episode.title} from $audioPath');
 
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
@@ -275,26 +278,32 @@ class AudioPlayerService {
         _currentEpisodeController.add(episode);
       }
 
-      final playProgress = episode.playProgress;
       if (startPosition != null) {
         await _player.seek(startPosition);
-      } else if (playProgress > 0 && playProgress < 1.0) {
-        final savedPosition = Duration(
-          milliseconds: (playProgress * (episode.duration ?? 0) * 1000).round(),
-        );
-        await _player.seek(savedPosition);
+      } else if (autoPlay) {
+        final playProgress = episode.playProgress;
+        if (playProgress > 0 && playProgress < 1.0) {
+          final savedPosition = Duration(
+            milliseconds: (playProgress * (episode.duration ?? 0) * 1000).round(),
+          );
+          await _player.seek(savedPosition);
+        }
       }
 
-      await _player.play();
+      if (autoPlay) {
+        await _player.play();
+      }
 
-      await _updateEpisodeLastPlayedAt(episode.id);
+      if (updateLastPlayedAt) {
+        await _updateEpisodeLastPlayedAt(episode.id);
+      }
 
       await _updateMediaItem(episode);
 
-      Logger.info('Started playing episode: ${episode.title}');
+      Logger.info('${autoPlay ? "Started playing" : "Loaded"} episode: ${episode.title}');
     } catch (e, stackTrace) {
       Logger.error(
-        'Failed to play episode: ${episode.title}',
+        'Failed to ${autoPlay ? "play" : "load"} episode: ${episode.title}',
         error: e,
         stackTrace: stackTrace,
       );
@@ -302,49 +311,28 @@ class AudioPlayerService {
     }
   }
 
+  Future<void> playEpisode(
+    domain.Episode episode, {
+    Duration? startPosition,
+  }) async {
+    await _loadEpisodeAudio(
+      episode,
+      startPosition: startPosition,
+      autoPlay: true,
+      updateLastPlayedAt: true,
+    );
+  }
+
   Future<void> loadEpisode(
     domain.Episode episode, {
     Duration? startPosition,
   }) async {
-    try {
-      final audioPath = episode.downloadedPath ?? episode.audioUrl;
-
-      Logger.info('Loading episode: ${episode.title} from $audioPath (without auto-play)');
-
-      if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
-        await _player.setUrl(audioPath);
-      } else {
-        final file = File(audioPath);
-        if (await file.exists()) {
-          await _player.setFilePath(audioPath);
-        } else {
-          Logger.warning(
-            'Local file not found: $audioPath, falling back to remote URL',
-          );
-          await _player.setUrl(episode.audioUrl);
-        }
-      }
-
-      _currentEpisode = episode;
-      if (!_currentEpisodeController.isClosed) {
-        _currentEpisodeController.add(episode);
-      }
-
-      if (startPosition != null) {
-        await _player.seek(startPosition);
-      }
-
-      await _updateMediaItem(episode);
-
-      Logger.info('Loaded episode: ${episode.title} (paused, waiting for user action)');
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Failed to load episode: ${episode.title}',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      rethrow;
-    }
+    await _loadEpisodeAudio(
+      episode,
+      startPosition: startPosition,
+      autoPlay: false,
+      updateLastPlayedAt: false,
+    );
   }
 
   Future<void> _updateMediaItem(domain.Episode episode) async {
