@@ -108,7 +108,11 @@ class Queue extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: Color(0xFF888888),
+        ),
       ),
     );
   }
