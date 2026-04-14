@@ -75,12 +75,14 @@ class EpisodeDropdown extends StatelessWidget {
               text: isFavorite ? '取消收藏' : '收藏',
               onPressed: () => onToggleFavorite ?? _handleItemSelected(),
             ),
-            EpisodeDropdownItem(
-              icon: Icon(LucideIcons.share2),
-              text: '分享',
-              onPressed: () => _handleItemSelected(),
-            ),
-
+            /*
+            // 桌面端暂时不需要分享功能，因为复制链接即可
+              EpisodeDropdownItem(
+                icon: Icon(LucideIcons.share2),
+                text: '分享',
+                onPressed: () => _handleItemSelected(),
+              ),
+            */
             // 分割线
             SizedBox(height: 2),
             Divider(
