@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown.dart';
@@ -9,6 +10,8 @@ import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
+import 'package:tinycast/presentation/providers/download_provider.dart';
+import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
@@ -126,6 +129,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 isFavorite: ref
                     .read(favoriteProvider)
                     .isEpisodeFavorite(widget.episodeId),
+                isDownloaded: widget.isDownloaded,
                 onToggleFavorite: () async {
                   Logger.info(
                     '⭐ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
@@ -141,6 +145,9 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     _hideDropdown();
                   }
                 },
+                onToggleDownload: widget.isDownloaded
+                    ? _handleRemoveDownload
+                    : _handleDownload,
                 link: widget.link,
                 onShowCopySuccessToast: _showCopySuccessToast,
                 onInsertToFront: _handleInsertToFront,
@@ -259,6 +266,46 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     }
   }
 
+  Future<void> _handleDownload() async {
+    Logger.info(
+      '⬇️ [EPISODE-CONTROL-BAR] 用户点击下载, episodeId: ${widget.episodeId}',
+    );
+    try {
+      AudioDownloadService.instance.downloadEpisodeById(widget.episodeId);
+      Logger.info('⬇️ [EPISODE-CONTROL-BAR] 下载任务已启动');
+    } catch (e) {
+      Logger.error('⬇️ [EPISODE-CONTROL-BAR] 下载启动失败', error: e);
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '下载启动失败');
+      }
+    }
+  }
+
+  Future<void> _handleRemoveDownload() async {
+    Logger.info(
+      '🗑️ [EPISODE-CONTROL-BAR] 用户点击移除下载, episodeId: ${widget.episodeId}',
+    );
+    if (!mounted) return;
+    try {
+      await AudioDownloadService.instance.deleteDownloadedEpisode(
+        widget.episodeId.toString(),
+      );
+      Logger.info('🗑️ [EPISODE-CONTROL-BAR] 移除下载成功');
+
+      ref.invalidate(downloadedEpisodesNotifierProvider);
+      Logger.info('🗑️ [EPISODE-CONTROL-BAR] 已刷新 Downloads Provider');
+
+      if (mounted) {
+        ToastUtils.showSuccessToast(context, message: '已移除下载');
+      }
+    } catch (e) {
+      Logger.error('🗑️ [EPISODE-CONTROL-BAR] 移除下载失败', error: e);
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '移除下载失败');
+      }
+    }
+  }
+
   /// 组件销毁时的清理工作
   ///
   /// 移除下拉菜单的 OverlayEntry，防止内存泄漏。
@@ -280,6 +327,15 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     final currentEpisodeId = playerState.currentEpisode?.id;
     final isCurrentEpisode = currentEpisodeId == widget.episodeId;
 
+    // 获取下载状态和进度
+    final downloadState = ref.watch(downloadNotifierProvider);
+    final episodeIdStr = widget.episodeId.toString();
+    final downloadStatus = downloadState.episodeStatuses[episodeIdStr];
+    final isDownloading =
+        downloadStatus == DownloadStatus.downloading ||
+        downloadStatus == DownloadStatus.queued;
+    final downloadProgress = downloadState.episodeProgress[episodeIdStr];
+
     // 处理播放/暂停切换
     void handlePlayPause() {
       if (isCurrentEpisode) {
@@ -290,6 +346,9 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
         widget.onPlayPressed?.call();
       }
     }
+
+    // 是否展示下载图标（已下载 或 正在下载）
+    final showDownloadIcon = widget.isDownloaded || isDownloading;
 
     return Row(
       /// 主轴尺寸最小，根据内容自适应
@@ -312,9 +371,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
         /// 占位符，将播放按钮和更多按钮分开
         const Spacer(),
 
-        /// 下载状态图标（仅已下载时展示）
-        if (widget.isDownloaded) DownloadStatusIcon(),
-        if (widget.isDownloaded) const SizedBox(width: 4.0),
+        /// 下载状态图标（已下载时展示箭头，下载中时展示进度圆环）
+        if (showDownloadIcon)
+          DownloadStatusIcon(progress: isDownloading ? downloadProgress : null),
+        if (showDownloadIcon) const SizedBox(width: 4.0),
 
         /// 更多选项按钮
         HorizontalMoreButton(

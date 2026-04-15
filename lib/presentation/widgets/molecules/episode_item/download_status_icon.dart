@@ -1,11 +1,25 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DownloadStatusIcon extends StatelessWidget {
-  const DownloadStatusIcon({super.key});
+  const DownloadStatusIcon({super.key, this.progress});
+
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
+    if (progress != null) {
+      return SizedBox(
+        width: 12,
+        height: 12,
+        child: CircularProgressIndicator(
+          value: progress,
+          strokeWidth: 1.5,
+          color: Color(0xFF999999),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(2.0),
       decoration: BoxDecoration(

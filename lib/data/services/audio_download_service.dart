@@ -412,6 +412,36 @@ class AudioDownloadService {
     }
   }
 
+  Future<void> downloadEpisodeById(int episodeId) async {
+    final idStr = episodeId.toString();
+
+    if (_downloadTasks.containsKey(idStr)) {
+      final existingTask = _downloadTasks[idStr]!;
+      if (existingTask.status == DownloadStatus.downloading ||
+          existingTask.status == DownloadStatus.queued) {
+        Logger.info('Episode already in download queue: $idStr');
+        return;
+      }
+    }
+
+    try {
+      final episode = await _isarService.isar.episodes.get(episodeId);
+
+      if (episode == null) {
+        throw AppException.unknown('Episode not found: $episodeId');
+      }
+
+      await downloadEpisode(episode);
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Error downloading episode by ID: $episodeId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> cancelDownload(String episodeId) async {
     final task = _downloadTasks[episodeId];
     if (task == null) {

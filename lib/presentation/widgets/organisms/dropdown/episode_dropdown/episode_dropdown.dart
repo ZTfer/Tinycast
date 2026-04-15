@@ -32,6 +32,12 @@ class EpisodeDropdown extends StatelessWidget {
   /// 标记为已播放回调
   final VoidCallback? onMarkAsPlayed;
 
+  /// 当前 episode 的下载状态，默认值 false
+  final bool isDownloaded;
+
+  /// 下载切换回调，默认值 null
+  final VoidCallback? onToggleDownload;
+
   const EpisodeDropdown({
     super.key,
     this.onItemSelected,
@@ -42,6 +48,8 @@ class EpisodeDropdown extends StatelessWidget {
     this.onInsertToFront,
     this.onAddToQueue,
     this.onMarkAsPlayed,
+    this.isDownloaded = false,
+    this.onToggleDownload,
   });
 
   @override
@@ -131,11 +139,16 @@ class EpisodeDropdown extends StatelessWidget {
             SizedBox(height: 2),
 
             EpisodeDropdownItem(
-              icon: Icon(LucideIcons.trash2),
-              text: '移除下载',
-              onPressed: () => _handleItemSelected(),
+              icon: Icon(
+                isDownloaded ? LucideIcons.trash2 : LucideIcons.arrowDown,
+              ),
+              text: isDownloaded ? '移除下载' : '下载',
+              onPressed: () {
+                onToggleDownload?.call();
+                _handleItemSelected();
+              },
             ),
-            
+
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.x),
               text: '从待播清单移除',

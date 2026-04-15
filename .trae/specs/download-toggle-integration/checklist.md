@@ -1,8 +1,8 @@
-- [ ] EpisodeDropdown 新增 isDownloaded 和 onToggleDownload 参数，菜单项根据状态动态切换"下载"/"移除下载"
-- [ ] DownloadStatusIcon 支持 progress 参数，非空时展示圆环 CircularProgressIndicator
-- [ ] EpisodeControlBar 新增 episode 参数，实现 _handleDownload 和 _handleRemoveDownload 方法
-- [ ] EpisodeControlBar 中 DownloadStatusIcon 在下载中时展示进度圆环，已下载时展示箭头图标
-- [ ] EpisodeInfo 向 EpisodeControlBar 传递 episode 对象
-- [ ] 移除下载后 downloadedEpisodesNotifierProvider 被 invalidate，Downloads 页面 UI 更新
-- [ ] 下载完成后 isDownloaded 更新为 true，所有使用 EpisodeItem 的 UI 自动刷新并展示 DownloadStatusIcon
-- [ ] flutter analyze 无错误
+- [x] EpisodeDropdown 新增 isDownloaded 和 onToggleDownload 参数，菜单项根据状态动态切换"下载"/"移除下载"
+- [x] DownloadStatusIcon 支持 progress 参数，非空时展示圆环 CircularProgressIndicator
+- [x] EpisodeControlBar 实现 _handleDownload (通过 downloadEpisodeById) 和 _handleRemoveDownload 方法
+- [x] EpisodeControlBar 中 DownloadStatusIcon 在下载中时展示进度圆环，已下载时展示箭头图标
+- [x] EpisodeInfo 向 EpisodeControlBar 传递 isDownloaded 参数
+- [x] 移除下载后 downloadedEpisodesNotifierProvider 被 invalidate，Downloads 页面 UI 更新
+- [x] 下载完成后 AudioDownloadService 自动更新 isDownloaded=true，所有使用 EpisodeItem 的 UI 通过 Riverpod 自动刷新并展示 DownloadStatusIcon
+- [x] flutter analyze 无错误
