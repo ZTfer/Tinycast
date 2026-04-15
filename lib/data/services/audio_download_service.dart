@@ -201,20 +201,14 @@ class AudioDownloadService {
     Logger.debug('⬇️ [DEBUG] Audio URL: ${episode.audioUrl}');
     Logger.debug('⬇️ [DEBUG] Podcast ID: ${episode.podcastId}');
 
-    // 防护1: 检查是否有正在进行的下载（并发保护）
-    if (_activeDownloads.contains(episodeId)) {
-      Logger.warning('🛡️ [GUARD] Episode $episodeId is already being downloaded, skipping duplicate request');
-      return;
-    }
-
-    // 防护2: 检查是否已下载完成（文件存在于目标路径）
+    // 防护：检查目标文件是否已存在（防止重复下载）
     try {
       final audioDir = await _fileStorageService.getAudioDirectory();
       final fileName = _fileStorageService.generateAudioFileName(episodeId);
       final destinationFile = File('${audioDir.path}/$fileName');
       if (await destinationFile.exists()) {
         final fileSize = await destinationFile.length();
-        Logger.info('✅ [GUARD] Episode $episodeId file already exists at destination (${_formatFileSize(fileSize)}), marking as completed');
+        Logger.info('✅ [GUARD] Episode $episodeId file already exists (${_formatFileSize(fileSize)}), marking completed');
         _downloadTasks[episodeId] = DownloadTask(
           episodeId: episodeId,
           audioUrl: episode.audioUrl,
@@ -237,23 +231,18 @@ class AudioDownloadService {
       Logger.warning('⚠️ [GUARD] Failed to check existing file for $episodeId: $e');
     }
 
-    // 防护3: 检查现有任务状态
+    // 防护：检查现有任务状态
     if (_downloadTasks.containsKey(episodeId)) {
       final existingTask = _downloadTasks[episodeId]!;
       if (existingTask.status == DownloadStatus.downloading ||
           existingTask.status == DownloadStatus.queued) {
         Logger.warning(
-            '⚠️ [GUARD] Download already in progress for episode: $episodeId (status=${existingTask.status.name})');
+            '⚠️ [GUARD] Download already in progress for $episodeId (status=${existingTask.status.name})');
         return;
       }
       if (existingTask.status == DownloadStatus.paused) {
         Logger.info('⏸️ [DEBUG] Resuming paused download for episode: $episodeId');
-        _activeDownloads.add(episodeId);
-        try {
-          await resumeDownload(episodeId);
-        } finally {
-          _activeDownloads.remove(episodeId);
-        }
+        await resumeDownload(episodeId);
         return;
       }
       if (existingTask.status == DownloadStatus.completed) {
@@ -264,9 +253,6 @@ class AudioDownloadService {
     }
 
     try {
-      _activeDownloads.add(episodeId);
-      Logger.info('🔒 [GUARD] Active download lock acquired for episode: $episodeId (active count: ${_activeDownloads.length})');
-
       final audioDir = await _fileStorageService.getAudioDirectory();
       final tempDir = await _fileStorageService.getTemporaryDirectory();
 
@@ -494,9 +480,6 @@ class AudioDownloadService {
         error: e,
         stackTrace: stackTrace,
       );
-    } finally {
-      _activeDownloads.remove(episodeId);
-      Logger.debug('🔓 [GUARD] Active download lock released for episode: $episodeId (remaining: ${_activeDownloads.length})');
     }
   }
 
@@ -563,20 +546,43 @@ class AudioDownloadService {
   Future<void> downloadEpisodeById(int episodeId) async {
     final idStr = episodeId.toString();
 
-    if (_downloadTasks.containsKey(idStr)) {
-      final existingTask = _downloadTasks[idStr]!;
-      if (existingTask.status == DownloadStatus.downloading ||
-          existingTask.status == DownloadStatus.queued) {
-        Logger.info('Episode already in download queue: $idStr');
-        return;
-      }
+    // 立即加锁，防止并发重复调用（在任何 async 操作之前）
+    if (_activeDownloads.contains(idStr)) {
+      Logger.warning('🛡️ [GUARD-ByID] Episode $idStr already has active download, skipping');
+      return;
     }
+    _activeDownloads.add(idStr);
+    Logger.info('🔒 [GUARD-ByID] Lock acquired for episode $idStr');
 
     try {
+      if (_downloadTasks.containsKey(idStr)) {
+        final existingTask = _downloadTasks[idStr]!;
+        if (existingTask.status == DownloadStatus.downloading ||
+            existingTask.status == DownloadStatus.queued) {
+          Logger.info('Episode already in download queue: $idStr');
+          return;
+        }
+        if (existingTask.status == DownloadStatus.completed) {
+          Logger.info('✅ [GUARD-ByID] Episode $idStr already completed, re-emitting');
+          _notifyStatusChange(idStr, DownloadStatus.completed);
+          return;
+        }
+      }
+
       final episode = await _isarService.isar.episodes.get(episodeId);
 
       if (episode == null) {
         throw AppException.unknown('Episode not found: $episodeId');
+      }
+
+      // 防护：文件已存在则直接完成
+      final audioDir = await _fileStorageService.getAudioDirectory();
+      final fileName = _fileStorageService.generateAudioFileName(idStr);
+      final destinationFile = File('${audioDir.path}/$fileName');
+      if (await destinationFile.exists()) {
+        Logger.info('✅ [GUARD-ByID] File exists, marking completed for $idStr');
+        _notifyStatusChange(idStr, DownloadStatus.completed);
+        return;
       }
 
       await downloadEpisode(episode);
@@ -587,6 +593,9 @@ class AudioDownloadService {
         stackTrace: stackTrace,
       );
       rethrow;
+    } finally {
+      _activeDownloads.remove(idStr);
+      Logger.debug('🔓 [GUARD-BYID] Lock released for episode $idStr');
     }
   }
 
