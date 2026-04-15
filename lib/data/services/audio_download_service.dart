@@ -143,17 +143,47 @@ class AudioDownloadService {
   late final StreamController<AudioDownloadEvent> _globalEventController =
       StreamController<AudioDownloadEvent>.broadcast();
 
-  final Dio _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(minutes: 30),
-      sendTimeout: const Duration(seconds: 10),
-      receiveDataWhenStatusError: true,
-      maxRedirects: 5,
-    ),
-  );
+  late final Dio _dio = _createDio();
   final FileStorageService _fileStorageService = FileStorageService.instance;
   final IsarService _isarService = IsarService.instance;
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(minutes: 30),
+        sendTimeout: const Duration(seconds: 10),
+        receiveDataWhenStatusError: true,
+        maxRedirects: 5,
+      ),
+    );
+
+    final adapter = dio.httpClientAdapter;
+    Logger.debug('🌐 [DIO-CONFIG] Adapter type: ${adapter.runtimeType}');
+
+    try {
+      (adapter as dynamic).onHttpClientCreate = (HttpClient client) {
+        client.autoUncompress = true;
+        Logger.debug('🌐 [DIO-CONFIG] HttpClient created (via onHttpClientCreate)');
+        Logger.debug('🌐 [DIO-CONFIG] autoUncompress=${client.autoUncompress}');
+        Logger.debug('🌐 [DIO-CONFIG] connectionTimeout=${client.connectionTimeout}');
+        Logger.debug('🌐 [DIO-CONFIG] findProxyFromEnvironment result:');
+        try {
+          final proxyInfo =
+              HttpClient.findProxyFromEnvironment(Uri.parse('https://example.com'));
+          Logger.debug('🌐 [DIO-CONFIG]   findProxy=$proxyInfo');
+        } catch (e) {
+          Logger.warning('🌐 [DIO-CONFIG] Failed to check findProxy: $e');
+        }
+        return client;
+      };
+    } catch (e) {
+      Logger.warning(
+          '🌐 [DIO-CONFIG] Could not set onHttpClientCreate callback: $e (${e.runtimeType})');
+    }
+
+    return dio;
+  }
 
   Stream<AudioDownloadEvent> get globalEventStream =>
       _globalEventController.stream;
@@ -254,41 +284,97 @@ class AudioDownloadService {
       }
 
       Logger.info('🌐 [DEBUG] Starting HTTP download from: ${episode.audioUrl}');
+
+      final uri = Uri.tryParse(episode.audioUrl);
+      Logger.debug('🔍 [NETWORK-CHECK] Parsed URI scheme=${uri?.scheme}, host=${uri?.host}, port=${uri?.port}, hasAuthority=${uri?.hasAuthority}');
+
+      try {
+        final testResponse = await _dio.head(
+          episode.audioUrl,
+          options: Options(
+            receiveTimeout: const Duration(seconds: 10),
+            sendTimeout: const Duration(seconds: 5),
+          ),
+        );
+        Logger.debug('🔍 [NETWORK-CHECK] HEAD request succeeded! status=${testResponse.statusCode}, contentType=${testResponse.headers.value("content-type")}, contentLength=${testResponse.headers.value("content-length")}');
+      } on DioException catch (headErr) {
+        Logger.warning('🔍 [NETWORK-CHECK] HEAD request FAILED: type=${headErr.type.name}, message=${headErr.message ?? "null"}, error=${headErr.error}');
+        if (headErr.error != null) {
+          Logger.warning('🔍 [NETWORK-CHECK] Underlying error type: ${headErr.error.runtimeType}, msg: ${headErr.error}');
+        }
+      } catch (headErr) {
+        Logger.warning('🔍 [NETWORK-CHECK] HEAD request unexpected error: $headErr');
+      }
+
+      Logger.debug('🌐 [DEBUG] Dio BaseOptions:');
+      Logger.debug('   - connectTimeout: ${_dio.options.connectTimeout}');
+      Logger.debug('   - receiveTimeout: ${_dio.options.receiveTimeout}');
+      Logger.debug('   - sendTimeout: ${_dio.options.sendTimeout}');
+      Logger.debug('   - maxRedirects: ${_dio.options.maxRedirects}');
+      Logger.debug('   - followRedirects: ${_dio.options.followRedirects}');
+      Logger.debug('🌐 [DEBUG] Request Options:');
+      Logger.debug('   - URL: ${episode.audioUrl}');
+      Logger.debug('   - savePath: $tempFilePath');
+      Logger.debug('   - headers: ${options.headers}');
+      Logger.debug('   - receiveDataWhenStatusError: ${options.receiveDataWhenStatusError}');
       DateTime startTime = DateTime.now();
 
-      await _dio.download(
-        episode.audioUrl,
-        tempFilePath,
-        cancelToken: cancelToken,
-        options: options,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            final totalProgress = downloadedBytes + received;
-            final progress = totalProgress / total;
-            
-            // 每10%记录一次进度日志
-            if ((progress * 100).toInt() % 10 == 0 && (progress * 100).toInt() != 0) {
-              Logger.debug('📊 [DEBUG] Progress: ${(progress * 100).toStringAsFixed(1)}% (${_formatFileSize(totalProgress)} / ${_formatFileSize(total)})');
-            }
-            
-            downloadTask.progress = progress;
-            downloadTask.downloadedBytes = totalProgress;
-            downloadTask.totalBytes = total;
+      try {
+        await _dio.download(
+          episode.audioUrl,
+          tempFilePath,
+          cancelToken: cancelToken,
+          options: options,
+          onReceiveProgress: (received, total) {
+            if (total != -1) {
+              final totalProgress = downloadedBytes + received;
+              final progress = totalProgress / total;
 
-            _notifyProgressChange(episodeId, progress);
-            
-            // 节流：每5秒最多更新一次数据库（避免阻塞主线程）
-            final now = DateTime.now();
-            final lastUpdate = _lastProgressUpdate[episodeId];
-            if (lastUpdate == null || now.difference(lastUpdate).inSeconds >= 5 || progress >= 1.0) {
-              _lastProgressUpdate[episodeId] = now;
-              _updateEpisodeDownloadProgress(episodeId, progress);
+              // 每10%记录一次进度日志
+              if ((progress * 100).toInt() % 10 == 0 && (progress * 100).toInt() != 0) {
+                Logger.debug('📊 [DEBUG] Progress: ${(progress * 100).toStringAsFixed(1)}% (${_formatFileSize(totalProgress)} / ${_formatFileSize(total)})');
+              }
+
+              downloadTask.progress = progress;
+              downloadTask.downloadedBytes = totalProgress;
+              downloadTask.totalBytes = total;
+
+              _notifyProgressChange(episodeId, progress);
+
+              // 节流：每5秒最多更新一次数据库（避免阻塞主线程）
+              final now = DateTime.now();
+              final lastUpdate = _lastProgressUpdate[episodeId];
+              if (lastUpdate == null || now.difference(lastUpdate).inSeconds >= 5 || progress >= 1.0) {
+                _lastProgressUpdate[episodeId] = now;
+                _updateEpisodeDownloadProgress(episodeId, progress);
+              }
+            } else {
+              Logger.debug('📊 [DEBUG] Received: ${_formatFileSize(received)}, Total: unknown');
             }
-          } else {
-            Logger.debug('📊 [DEBUG] Received: ${_formatFileSize(received)}, Total: unknown');
-          }
-        },
-      );
+          },
+        );
+      } on DioException catch (e) {
+        Logger.error('🔴 [DOWNLOAD-ERROR] ====== DioException Details ======');
+        Logger.error('🔴 [DOWNLOAD-ERROR] Episode: $episodeId');
+        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.type: ${e.type.name} (${e.type.index})');
+        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.message: ${e.message ?? "null"}');
+        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.error (underlying): ${e.error}');
+        if (e.error != null) {
+          Logger.error('🔴 [DOWNLOAD-ERROR] Underlying error type: ${e.error.runtimeType}');
+          Logger.error('🔴 [DOWNLOAD-ERROR] Underlying error toString: ${e.error.toString()}');
+        }
+        Logger.error('🔴 [DOWNLOAD-ERROR] Request URL: ${e.requestOptions.uri}');
+        Logger.error('🔴 [DOWNLOAD-ERROR] Request method: ${e.requestOptions.method}');
+        if (e.response != null) {
+          Logger.error('🔴 [DOWNLOAD-ERROR] Response status: ${e.response?.statusCode}');
+          Logger.error('🔴 [DOWNLOAD-ERROR] Response statusMessage: ${e.response?.statusMessage}');
+          Logger.error('🔴 [DOWNLOAD-ERROR] Response headers: ${e.response?.headers.map}');
+        } else {
+          Logger.error('🔴 [DOWNLOAD-ERROR] Response: null (no response received)');
+        }
+        Logger.error('🔴 [DOWNLOAD-ERROR] StackTrace: ${e.stackTrace}');
+        rethrow;
+      }
 
       final endTime = DateTime.now();
       final duration = endTime.difference(startTime);
@@ -336,16 +422,17 @@ class AudioDownloadService {
         Logger.info('Download cancelled for episode: $episodeId');
       } else {
         _downloadTasks[episodeId]?.status = DownloadStatus.failed;
-        _downloadTasks[episodeId]?.errorMessage = e.message;
+        _downloadTasks[episodeId]?.errorMessage = e.message ?? e.error?.toString() ?? 'Unknown error';
         _notifyStatusChange(episodeId, DownloadStatus.failed);
-        Logger.error('Download failed for episode: $episodeId', error: e);
+        Logger.error('🔴 [DOWNLOAD-FAIL] Download failed for episode: $episodeId');
+        Logger.error('🔴 [DOWNLOAD-FAIL] type=${e.type.name}, message=${e.message ?? "null"}, underlyingError=${e.error}');
       }
     } catch (e, stackTrace) {
       _downloadTasks[episodeId]?.status = DownloadStatus.failed;
       _downloadTasks[episodeId]?.errorMessage = e.toString();
       _notifyStatusChange(episodeId, DownloadStatus.failed);
       Logger.error(
-        'Download error for episode: $episodeId',
+        '🔴 [DOWNLOAD-FAIL] Unexpected download error for episode: $episodeId',
         error: e,
         stackTrace: stackTrace,
       );
