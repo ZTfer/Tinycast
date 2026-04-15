@@ -8,6 +8,7 @@ import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
@@ -173,9 +174,13 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
   /// 处理插播操作（添加到队列最前面）
   Future<void> _handleInsertToFront() async {
-    Logger.info('📋 [EPISODE-CONTROL-BAR] 用户点击插播, episodeId: ${widget.episodeId}');
+    Logger.info(
+      '📋 [EPISODE-CONTROL-BAR] 用户点击插播, episodeId: ${widget.episodeId}',
+    );
     try {
-      await ref.read(queueNotifierProvider.notifier).insertToQueueFront(widget.episodeId);
+      await ref
+          .read(queueNotifierProvider.notifier)
+          .insertToQueueFront(widget.episodeId);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 插播成功');
       ToastUtils.showSuccessToast(context, message: '已插播到队列最前');
     } catch (e) {
@@ -186,9 +191,13 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
   /// 处理添加到队列操作（添加到队列最后面）
   Future<void> _handleAddToQueue() async {
-    Logger.info('📋 [EPISODE-CONTROL-BAR] 用户点击添加到队列, episodeId: ${widget.episodeId}');
+    Logger.info(
+      '📋 [EPISODE-CONTROL-BAR] 用户点击添加到队列, episodeId: ${widget.episodeId}',
+    );
     try {
-      await ref.read(queueNotifierProvider.notifier).addToQueue(widget.episodeId);
+      await ref
+          .read(queueNotifierProvider.notifier)
+          .addToQueue(widget.episodeId);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 添加到队列成功');
       ToastUtils.showSuccessToast(context, message: '已添加到队列末尾');
     } catch (e) {
@@ -198,21 +207,30 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   }
 
   Future<void> _handleMarkAsPlayed() async {
-    Logger.info('✅ [EPISODE-CONTROL-BAR] 用户点击标记为已播放, episodeId: ${widget.episodeId}');
+    Logger.info(
+      '✅ [EPISODE-CONTROL-BAR] 用户点击标记为已播放, episodeId: ${widget.episodeId}',
+    );
     try {
       final podcastRepository = ref.read(podcastRepositoryProvider);
       await podcastRepository.updateIsPlayed(widget.episodeId, true);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 episode isPlayed');
 
       final playHistoryRepository = ref.read(playHistoryRepositoryProvider);
-      await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(widget.episodeId);
+      await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(
+        widget.episodeId,
+      );
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
 
-      await ref.read(queueNotifierProvider.notifier).removeFromQueueByEpisodeId(widget.episodeId);
+      await ref
+          .read(queueNotifierProvider.notifier)
+          .removeFromQueueByEpisodeId(widget.episodeId);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 已从 queue 移除');
 
       ref.invalidate(completedHistoriesProvider);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 已刷新 History Provider');
+
+      ref.invalidate(unplayedEpisodesNotifierProvider);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 已刷新 Unplayed Episodes Provider');
 
       ToastUtils.showSuccessToast(context, message: '已标记为已播放');
     } catch (e) {
