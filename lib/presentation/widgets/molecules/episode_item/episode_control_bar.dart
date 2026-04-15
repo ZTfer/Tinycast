@@ -336,7 +336,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
         downloadStatus == DownloadStatus.queued;
     final downloadProgress = downloadState.episodeProgress[episodeIdStr];
 
-    // 监听下载完成事件，刷新 queue/unplayed provider 以同步 isDownloaded 状态
+    // 监听下载完成事件，刷新所有相关 provider 以同步 isDownloaded 状态
     ref.listen<DownloadState>(downloadNotifierProvider, (prev, next) {
       if (prev == null) return;
       final prevStatus = prev.episodeStatuses[episodeIdStr];
@@ -351,10 +351,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
       if (wasInProgress && nowCompleted && !widget.isDownloaded) {
         Logger.info(
-          '🔄 [EPISODE-CONTROL-BAR] 下载完成，刷新列表 Provider, episodeId: $episodeIdStr',
+          '🔄 [EPISODE-CONTROL-BAR] 下载完成，刷新所有列表 Provider, episodeId: $episodeIdStr',
         );
-        ref.invalidate(queueEpisodesProvider);
-        ref.invalidate(unplayedEpisodesNotifierProvider);
+        ref.invalidate(downloadedEpisodesNotifierProvider);
+        ref.read(queueNotifierProvider.notifier).refresh();
+        ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
       }
     });
 

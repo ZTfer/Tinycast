@@ -5,6 +5,7 @@ import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
@@ -22,10 +23,7 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
   );
 
   final controller = await WindowController.create(
-    WindowConfiguration(
-      hiddenAtLaunch: true,
-      arguments: arguments.toJson(),
-    ),
+    WindowConfiguration(hiddenAtLaunch: true, arguments: arguments.toJson()),
   );
   await controller.show();
 }
@@ -55,12 +53,14 @@ void main(List<String> args) async {
     case 'episode_detail':
       await initEpisodeDetailWindow();
       await _initializeApp();
-      runApp(ProviderScope(
-        child: EpisodeDetailWindowApp(
-          episode: arguments.episode,
-          podcast: arguments.podcast,
+      runApp(
+        ProviderScope(
+          child: EpisodeDetailWindowApp(
+            episode: arguments.episode,
+            podcast: arguments.podcast,
+          ),
         ),
-      ));
+      );
       break;
     default:
       await initMainWindow();
@@ -72,6 +72,7 @@ void main(List<String> args) async {
 Future<void> _initializeApp() async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
+  await Logger.initFileLogging();
 }
 
 class MyApp extends StatelessWidget {

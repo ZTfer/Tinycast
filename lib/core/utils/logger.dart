@@ -1,13 +1,18 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as path;
 
 /// 日志级别枚举
 enum LogLevel {
   /// 调试级别
   debug,
+
   /// 信息级别
   info,
+
   /// 警告级别
   warning,
+
   /// 错误级别
   error,
 }
@@ -22,9 +27,42 @@ class Logger {
   /// 最小日志级别（调试模式下为 debug，否则为 info）
   static LogLevel _minLevel = kDebugMode ? LogLevel.debug : LogLevel.info;
 
+  /// 文件日志目录
+  static const String _logDir = '.trae/log';
+
+  /// 是否启用文件日志
+  static bool _fileLoggingEnabled = false;
+
+  /// 日志文件句柄
+  static late File _logFile;
+
   /// 设置最小日志级别
   static void setMinLevel(LogLevel level) {
     _minLevel = level;
+  }
+
+  /// 初始化文件日志（在 main.dart 中调用一次即可）
+  static Future<void> initFileLogging() async {
+    try {
+      final logDirPath = path.join(Directory.current.path, _logDir);
+      final logDir = Directory(logDirPath);
+      if (!await logDir.exists()) {
+        await logDir.create(recursive: true);
+      }
+
+      final dateStr = DateTime.now().toIso8601String().substring(0, 10);
+      final logFilePath = path.join(logDirPath, '$dateStr.log');
+      _logFile = File(logFilePath);
+
+      if (!await _logFile.exists()) {
+        await _logFile.create(recursive: true);
+      }
+
+      _fileLoggingEnabled = true;
+      info('📝 [LOGGER] File logging initialized: $logFilePath');
+    } catch (e) {
+      _fileLoggingEnabled = false;
+    }
   }
 
   /// 输出调试日志
@@ -43,8 +81,10 @@ class Logger {
   }
 
   /// 输出错误日志
-  static void error(String message, {Object? error, StackTrace? stackTrace, String? tag}) {
-    _log(LogLevel.error, message, error: error, stackTrace: stackTrace, tag: tag);
+  static void error(String message,
+      {Object? error, StackTrace? stackTrace, String? tag}) {
+    _log(LogLevel.error, message,
+        error: error, stackTrace: stackTrace, tag: tag);
   }
 
   /// 内部日志记录方法
@@ -70,6 +110,31 @@ class Logger {
       if (stackTrace != null) {
         debugPrint('堆栈跟踪: $stackTrace');
       }
+    }
+
+    // 异步写入文件，不阻塞主线程
+    if (_fileLoggingEnabled) {
+      _writeToFile(logMessage, error: error, stackTrace: stackTrace);
+    }
+  }
+
+  static void _writeToFile(String logMessage,
+      {Object? error, StackTrace? stackTrace}) {
+    try {
+      final sb = StringBuffer();
+      sb.writeln(logMessage);
+      if (error != null) {
+        sb.writeln('  Error: $error');
+      }
+      if (stackTrace != null) {
+        sb.writeln('  StackTrace: $stackTrace');
+      }
+      _logFile.writeAsString(sb.toString(), mode: FileMode.append).catchError((_) {
+        _fileLoggingEnabled = false;
+        return _logFile;
+      });
+    } catch (_) {
+      _fileLoggingEnabled = false;
     }
   }
 }
