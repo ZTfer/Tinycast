@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/play_history_model.dart';
+import 'package:tinycast/data/models/episode_model.dart';
 import 'package:flutter/foundation.dart';
 
 class PlayHistoryRepository {
@@ -97,15 +98,25 @@ class PlayHistoryRepository {
         await isar.playHistorys.put(history);
         debugPrint('✅ [PlayHistory] 已更新 episodeId=$episodeId 为 completed 状态');
       } else {
+        final episode = await isar.episodes.get(episodeId);
+        if (episode == null) {
+          debugPrint('⚠️ [PlayHistory] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
+          return;
+        }
+
         final newHistory = PlayHistory()
           ..episodeId = episodeId
+          ..podcastId = episode.podcastId
+          ..title = episode.title
+          ..description = episode.description
+          ..artworkUrl = episode.artworkUrl
           ..isPlayed = true
           ..status = PlayHistoryStatus.completed
           ..playedDuration = 0
           ..lastUpdateTime = DateTime.now()
           ..isDeleted = false;
         await isar.playHistorys.put(newHistory);
-        debugPrint('🆕 [PlayHistory] 已创建新记录 episodeId=$episodeId, 状态为 completed');
+        debugPrint('🆕 [PlayHistory] 已创建新记录 episodeId=$episodeId, 标题: ${episode.title}, 状态为 completed');
       }
     });
   }
