@@ -449,6 +449,12 @@ class PodcastRepositoryImpl implements PodcastRepository {
     );
   }
 
+  @override
+  Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
+    Logger.info('📋 [PODCAST-REPO] updateIsPlayed 调用, episodeId: $episodeId, isPlayed: $isPlayed');
+    await _localDataSource.updateIsPlayed(episodeId, isPlayed);
+  }
+
   Episode _convertEpisodeModelToEntity(model.Episode model) {
     return Episode(
       id: model.id,

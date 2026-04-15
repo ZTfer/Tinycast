@@ -587,6 +587,37 @@ class LocalPodcastDataSource {
       ..subscribedAt = entity.subscribedAt;
   }
 
+  Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
+    try {
+      Logger.info('📋 [PODCAST-DS] 更新 episode isPlayed, episodeId: $episodeId, isPlayed: $isPlayed');
+
+      final episode = await _isarService.isar.episodes
+          .where()
+          .idEqualTo(episodeId)
+          .findFirst();
+
+      if (episode == null) {
+        Logger.warning('📋 [PODCAST-DS] 未找到 episode: $episodeId');
+        return;
+      }
+
+      episode.isPlayed = isPlayed;
+      episode.updatedAt = DateTime.now();
+
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.episodes.put(episode);
+      });
+
+      Logger.info('📋 [PODCAST-DS] 成功更新 episode isPlayed, episodeId: $episodeId');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [PODCAST-DS] 更新 isPlayed 失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('更新播放状态失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [PODCAST-DS] 更新 isPlayed 异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('更新播放状态失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
   model.Episode _convertEpisodeEntityToModel(Episode entity) {
     return model.Episode()
       ..podcastId = entity.podcastId

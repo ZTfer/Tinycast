@@ -9,6 +9,9 @@ import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
+import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 /// Episode 控制栏组件
 ///
@@ -137,6 +140,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 onShowCopySuccessToast: _showCopySuccessToast,
                 onInsertToFront: _handleInsertToFront,
                 onAddToQueue: _handleAddToQueue,
+                onMarkAsPlayed: _handleMarkAsPlayed,
               ),
             ),
           ),
@@ -191,6 +195,27 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     } catch (e) {
       Logger.error('📋 [EPISODE-CONTROL-BAR] 添加到队列失败', error: e);
       ToastUtils.showErrorToast(context, message: '添加失败');
+    }
+  }
+
+  Future<void> _handleMarkAsPlayed() async {
+    Logger.info('✅ [EPISODE-CONTROL-BAR] 用户点击标记为已播放, episodeId: ${widget.episodeId}');
+    try {
+      final podcastRepository = ref.read(podcastRepositoryProvider);
+      await podcastRepository.updateIsPlayed(widget.episodeId, true);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 episode isPlayed');
+
+      final playHistoryRepository = PlayHistoryRepository();
+      await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(widget.episodeId);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
+
+      await ref.read(queueNotifierProvider.notifier).removeFromQueue(widget.episodeId);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 已从 queue 移除');
+
+      ToastUtils.showSuccessToast(context, message: '已标记为已播放');
+    } catch (e) {
+      Logger.error('✅ [EPISODE-CONTROL-BAR] 标记已播放失败', error: e);
+      ToastUtils.showErrorToast(context, message: '标记失败');
     }
   }
 

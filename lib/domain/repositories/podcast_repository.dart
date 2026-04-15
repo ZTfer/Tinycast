@@ -26,4 +26,6 @@ abstract class PodcastRepository {
   Future<List<Podcast>> searchPodcasts(String keyword);
 
   Future<List<Episode>> searchEpisodes(String keyword);
+
+  Future<void> updateIsPlayed(int episodeId, bool isPlayed);
 }

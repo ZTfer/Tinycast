@@ -29,6 +29,9 @@ class EpisodeDropdown extends StatelessWidget {
   /// 添加到队列回调（添加到队列最后面）
   final VoidCallback? onAddToQueue;
 
+  /// 标记为已播放回调
+  final VoidCallback? onMarkAsPlayed;
+
   const EpisodeDropdown({
     super.key,
     this.onItemSelected,
@@ -38,6 +41,7 @@ class EpisodeDropdown extends StatelessWidget {
     this.onShowCopySuccessToast,
     this.onInsertToFront,
     this.onAddToQueue,
+    this.onMarkAsPlayed,
   });
 
   @override
@@ -111,7 +115,10 @@ class EpisodeDropdown extends StatelessWidget {
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.circleCheck),
               text: '标记为已播放',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () {
+                onMarkAsPlayed?.call();
+                _handleItemSelected();
+              },
             ),
 
             // 分割线

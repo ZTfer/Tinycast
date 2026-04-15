@@ -86,6 +86,30 @@ class PlayHistoryRepository {
     });
   }
 
+  Future<void> updateOrCreatePlayHistoryAsCompleted(int episodeId) async {
+    final isar = IsarService.instance.isar;
+    await isar.writeTxn(() async {
+      final history = await getByEpisodeId(episodeId);
+      if (history != null) {
+        history.isPlayed = true;
+        history.status = PlayHistoryStatus.completed;
+        history.lastUpdateTime = DateTime.now();
+        await isar.playHistorys.put(history);
+        debugPrint('✅ [PlayHistory] 已更新 episodeId=$episodeId 为 completed 状态');
+      } else {
+        final newHistory = PlayHistory()
+          ..episodeId = episodeId
+          ..isPlayed = true
+          ..status = PlayHistoryStatus.completed
+          ..playedDuration = 0
+          ..lastUpdateTime = DateTime.now()
+          ..isDeleted = false;
+        await isar.playHistorys.put(newHistory);
+        debugPrint('🆕 [PlayHistory] 已创建新记录 episodeId=$episodeId, 状态为 completed');
+      }
+    });
+  }
+
   Future<void> softDelete(int episodeId) async {
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
