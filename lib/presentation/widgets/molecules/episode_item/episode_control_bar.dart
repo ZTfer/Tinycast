@@ -177,15 +177,20 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '📋 [EPISODE-CONTROL-BAR] 用户点击插播, episodeId: ${widget.episodeId}',
     );
+    if (!mounted) return;
     try {
       await ref
           .read(queueNotifierProvider.notifier)
           .insertToQueueFront(widget.episodeId);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 插播成功');
-      ToastUtils.showSuccessToast(context, message: '已插播到队列最前');
+      if (mounted) {
+        ToastUtils.showSuccessToast(context, message: '已插播到队列最前');
+      }
     } catch (e) {
       Logger.error('📋 [EPISODE-CONTROL-BAR] 插播失败', error: e);
-      ToastUtils.showErrorToast(context, message: '插播失败');
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '插播失败');
+      }
     }
   }
 
@@ -194,15 +199,20 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '📋 [EPISODE-CONTROL-BAR] 用户点击添加到队列, episodeId: ${widget.episodeId}',
     );
+    if (!mounted) return;
     try {
       await ref
           .read(queueNotifierProvider.notifier)
           .addToQueue(widget.episodeId);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 添加到队列成功');
-      ToastUtils.showSuccessToast(context, message: '已添加到队列末尾');
+      if (mounted) {
+        ToastUtils.showSuccessToast(context, message: '已添加到队列末尾');
+      }
     } catch (e) {
       Logger.error('📋 [EPISODE-CONTROL-BAR] 添加到队列失败', error: e);
-      ToastUtils.showErrorToast(context, message: '添加失败');
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '添加失败');
+      }
     }
   }
 
@@ -210,6 +220,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '✅ [EPISODE-CONTROL-BAR] 用户点击标记为已播放, episodeId: ${widget.episodeId}',
     );
+    if (!mounted) return;
     try {
       final podcastRepository = ref.read(podcastRepositoryProvider);
       await podcastRepository.updateIsPlayed(widget.episodeId, true);
@@ -232,10 +243,14 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       ref.invalidate(unplayedEpisodesNotifierProvider);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 已刷新 Unplayed Episodes Provider');
 
-      ToastUtils.showSuccessToast(context, message: '已标记为已播放');
+      if (mounted) {
+        ToastUtils.showSuccessToast(context, message: '已标记为已播放');
+      }
     } catch (e) {
       Logger.error('✅ [EPISODE-CONTROL-BAR] 标记已播放失败', error: e);
-      ToastUtils.showErrorToast(context, message: '标记失败');
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '标记失败');
+      }
     }
   }
 
