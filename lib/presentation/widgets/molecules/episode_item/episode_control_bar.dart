@@ -12,6 +12,7 @@ import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart'
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/download_status_icon.dart';
 
 /// Episode 控制栏组件
 ///
@@ -31,12 +32,16 @@ class EpisodeControlBar extends ConsumerStatefulWidget {
   /// episode 的链接地址（用于拷贝链接功能）
   final String? link;
 
+  /// 是否已下载
+  final bool isDownloaded;
+
   const EpisodeControlBar({
     super.key,
     required this.episodeId,
     required this.duration,
     this.onPlayPressed,
     this.link,
+    required this.isDownloaded,
   });
 
   @override
@@ -306,6 +311,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
         /// 占位符，将播放按钮和更多按钮分开
         const Spacer(),
+
+        /// 下载状态图标（仅已下载时展示）
+        if (widget.isDownloaded) DownloadStatusIcon(),
+        if (widget.isDownloaded) const SizedBox(width: 4.0),
 
         /// 更多选项按钮
         HorizontalMoreButton(

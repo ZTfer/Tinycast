@@ -7,12 +7,12 @@ class DownloadStatusIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(2.0),
       decoration: BoxDecoration(
-        color: Color(0xFFE5E5E5),
-        borderRadius: BorderRadius.circular(4.0),
+        color: Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(8.0),
       ),
-      child: const Icon(LucideIcons.arrowDown, size: 10.0),
+      child: const Icon(LucideIcons.arrowDown, size: 8.0),
     );
   }
 }
