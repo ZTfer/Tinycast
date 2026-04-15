@@ -10,7 +10,6 @@ import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
-import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/repositories/podcast_repository.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
@@ -206,7 +205,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       await podcastRepository.updateIsPlayed(widget.episodeId, true);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 episode isPlayed');
 
-      final playHistoryRepository = PlayHistoryRepository();
+      final playHistoryRepository = ref.read(playHistoryRepositoryProvider);
       await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(widget.episodeId);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
 

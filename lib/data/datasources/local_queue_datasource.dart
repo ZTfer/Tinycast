@@ -42,18 +42,20 @@ class LocalQueueDataSource {
         return;
       }
 
-      final allItems = await _isarService.isar.queues.where().findAll();
-      final maxPosition = allItems.isEmpty ? 0 : allItems.map((e) => e.position).reduce((a, b) => a > b ? a : b);
-
-      final queueItem = Queue()
-        ..episodeId = episodeId
-        ..position = maxPosition + 1;
+      Queue? queueItem;
 
       await _isarService.isar.writeTxn(() async {
-        await _isarService.isar.queues.put(queueItem);
+        final allItems = await _isarService.isar.queues.where().findAll();
+        final maxPosition = allItems.isEmpty ? 0 : allItems.map((e) => e.position).reduce((a, b) => a > b ? a : b);
+
+        queueItem = Queue()
+          ..episodeId = episodeId
+          ..position = maxPosition + 1;
+
+        await _isarService.isar.queues.put(queueItem!);
       });
 
-      Logger.info('📋 [QUEUE-DS] 队列添加成功, episodeId: $episodeId, position: ${queueItem.position}, id: ${queueItem.id}');
+      Logger.info('📋 [QUEUE-DS] 队列添加成功, episodeId: $episodeId, position: ${queueItem?.position}, id: ${queueItem?.id}');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 添加到队列失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('添加到队列失败', originalError: e, stackTrace: stackTrace);
@@ -116,24 +118,27 @@ class LocalQueueDataSource {
       }
 
       final removedPosition = item.position;
+      int updatedCount = 0;
 
       await _isarService.isar.writeTxn(() async {
         await _isarService.isar.queues.delete(id);
-      });
 
-      final itemsToUpdate = await _isarService.isar.queues.where().findAll();
-      final needUpdate = itemsToUpdate.where((e) => e.position > removedPosition).toList();
+        final itemsToUpdate = await _isarService.isar.queues
+            .where()
+            .positionGreaterThan(removedPosition)
+            .findAll();
 
-      if (needUpdate.isNotEmpty) {
-        for (final item in needUpdate) {
+        for (final item in itemsToUpdate) {
           item.position -= 1;
         }
-        await _isarService.isar.writeTxn(() async {
-          await _isarService.isar.queues.putAll(needUpdate);
-        });
-      }
 
-      Logger.info('📋 [QUEUE-DS] 队列移除成功, id: $id, 原position: $removedPosition, 更新了 ${needUpdate.length} 条后续记录');
+        if (itemsToUpdate.isNotEmpty) {
+          await _isarService.isar.queues.putAll(itemsToUpdate);
+          updatedCount = itemsToUpdate.length;
+        }
+      });
+
+      Logger.info('📋 [QUEUE-DS] 队列移除成功, id: $id, 原position: $removedPosition, 更新了 $updatedCount 条后续记录');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 从队列移除失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('从队列移除失败', originalError: e, stackTrace: stackTrace);
