@@ -135,6 +135,7 @@ class EpisodeDropdown extends StatelessWidget {
               text: '移除下载',
               onPressed: () => _handleItemSelected(),
             ),
+            
             EpisodeDropdownItem(
               icon: Icon(LucideIcons.x),
               text: '从待播清单移除',
