@@ -10,7 +10,6 @@ import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
-import 'package:tinycast/domain/repositories/podcast_repository.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 /// Episode 控制栏组件
