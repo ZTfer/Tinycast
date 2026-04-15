@@ -143,6 +143,33 @@ class LocalQueueDataSource {
     }
   }
 
+  Future<void> removeFromQueueByEpisodeId(int episodeId) async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始根据 episodeId 从队列移除, episodeId: $episodeId');
+
+      final item = await _isarService.isar.queues
+          .where()
+          .episodeIdEqualTo(episodeId)
+          .findFirst();
+
+      if (item == null) {
+        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 不在队列中, 跳过移除');
+        return;
+      }
+
+      Logger.info('📋 [QUEUE-DS] 找到队列记录, queueId: ${item.id}, position: ${item.position}, 开始移除');
+      await removeFromQueue(item.id);
+
+      Logger.info('📋 [QUEUE-DS] 根据 episodeId 移除队列成功, episodeId: $episodeId');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 根据 episodeId 移除队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('根据 episodeId 移除队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 根据 episodeId 移除队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('根据 episodeId 移除队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> clearQueue() async {
     try {
       Logger.info('📋 [QUEUE-DS] 开始清空队列');

@@ -4,6 +4,7 @@ import '../../domain/repositories/queue_repository.dart';
 import '../../domain/usecases/get_queue_usecase.dart';
 import '../../domain/usecases/add_to_queue_usecase.dart';
 import '../../domain/usecases/remove_from_queue_usecase.dart';
+import '../../domain/usecases/remove_from_queue_by_episode_id_usecase.dart';
 import '../../domain/usecases/clear_queue_usecase.dart';
 import '../../domain/usecases/insert_to_queue_front_usecase.dart';
 import '../../data/repositories/queue_repository_impl.dart';
@@ -33,6 +34,11 @@ final insertToQueueFrontUseCaseProvider = Provider<InsertToQueueFrontUseCase>((r
 final removeFromQueueUseCaseProvider = Provider<RemoveFromQueueUseCase>((ref) {
   final repository = ref.watch(queueRepositoryProvider);
   return RemoveFromQueueUseCase(repository);
+});
+
+final removeFromQueueByEpisodeIdUseCaseProvider = Provider<RemoveFromQueueByEpisodeIdUseCase>((ref) {
+  final repository = ref.watch(queueRepositoryProvider);
+  return RemoveFromQueueByEpisodeIdUseCase(repository);
 });
 
 final clearQueueUseCaseProvider = Provider<ClearQueueUseCase>((ref) {
@@ -83,6 +89,9 @@ class QueueNotifier extends Notifier<QueueState> {
 
   RemoveFromQueueUseCase get _removeFromQueueUseCase =>
       ref.read(removeFromQueueUseCaseProvider);
+
+  RemoveFromQueueByEpisodeIdUseCase get _removeFromQueueByEpisodeIdUseCase =>
+      ref.read(removeFromQueueByEpisodeIdUseCaseProvider);
 
   ClearQueueUseCase get _clearQueueUseCase =>
       ref.read(clearQueueUseCaseProvider);
@@ -162,6 +171,24 @@ class QueueNotifier extends Notifier<QueueState> {
     await refresh();
     Logger.info(
         '📋 [QUEUE-PROVIDER] ====== removeFromQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+  }
+
+  Future<void> removeFromQueueByEpisodeId(int episodeId) async {
+    Logger.info(
+        '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 开始, episodeId: $episodeId ======');
+
+    try {
+      await _removeFromQueueByEpisodeIdUseCase(episodeId);
+      Logger.info('📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 成功! episodeId: $episodeId');
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 失败!',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+
+    await refresh();
+    Logger.info(
+        '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 结束, 最终队列数: ${state.queueEpisodes.length} ======');
   }
 
   Future<void> clearQueue() async {

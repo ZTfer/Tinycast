@@ -7,6 +7,7 @@ import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdow
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
+import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
@@ -209,8 +210,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(widget.episodeId);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
 
-      await ref.read(queueNotifierProvider.notifier).removeFromQueue(widget.episodeId);
+      await ref.read(queueNotifierProvider.notifier).removeFromQueueByEpisodeId(widget.episodeId);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 已从 queue 移除');
+
+      ref.invalidate(completedHistoriesProvider);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 已刷新 History Provider');
 
       ToastUtils.showSuccessToast(context, message: '已标记为已播放');
     } catch (e) {

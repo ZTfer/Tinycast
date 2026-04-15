@@ -5,6 +5,7 @@ abstract class QueueRepository {
   Future<void> addToQueue(int episodeId);
   Future<void> insertToQueueFront(int episodeId);
   Future<void> removeFromQueue(int id);
+  Future<void> removeFromQueueByEpisodeId(int episodeId);
   Future<void> clearQueue();
   Future<bool> isInQueue(int episodeId);
 }
