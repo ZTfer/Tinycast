@@ -544,11 +544,8 @@ class AudioDownloadService {
       }
 
       if (episode.downloadedPath != null) {
-        final file = File(episode.downloadedPath!);
-        if (await file.exists()) {
-          await file.delete();
-          Logger.info('Downloaded file deleted for episode: $episodeId');
-        }
+        await _fileStorageService.deleteFile(episode.downloadedPath!);
+        Logger.info('Downloaded file deleted for episode: $episodeId');
       }
 
       await _updateEpisodeDownloadStatus(

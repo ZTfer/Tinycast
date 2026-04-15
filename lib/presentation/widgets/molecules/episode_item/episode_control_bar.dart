@@ -373,7 +373,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
         /// 下载状态图标（已下载时展示箭头，下载中时展示进度圆环）
         if (showDownloadIcon)
-          DownloadStatusIcon(progress: isDownloading ? downloadProgress : null),
+          DownloadStatusIcon(
+            progress: isDownloading ? downloadProgress : null,
+            isIndeterminate: isDownloading && downloadProgress == null,
+          ),
         if (showDownloadIcon) const SizedBox(width: 4.0),
 
         /// 更多选项按钮

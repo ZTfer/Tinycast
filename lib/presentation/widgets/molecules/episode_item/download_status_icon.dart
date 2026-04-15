@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DownloadStatusIcon extends StatelessWidget {
-  const DownloadStatusIcon({super.key, this.progress});
+  const DownloadStatusIcon({
+    super.key,
+    this.progress,
+    this.isIndeterminate = false,
+  });
 
   final double? progress;
 
+  final bool isIndeterminate;
+
   @override
   Widget build(BuildContext context) {
-    if (progress != null) {
+    if (progress != null || isIndeterminate) {
       return SizedBox(
         width: 12,
         height: 12,
