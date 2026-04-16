@@ -127,8 +127,7 @@ class ImageCacheService {
       }
 
       if (episode.artworkPath != null && episode.artworkPath!.isNotEmpty) {
-        final imagesDir = await _fileStorageService.getImagesDirectory();
-        final existingFile = File('${imagesDir.path}/${episode.artworkPath!.split('/').last}');
+        final existingFile = File(await _fileStorageService.getFullFilePath(episode.artworkPath!));
         if (await existingFile.exists()) {
           Logger.info('🖼️ [INFO] Episode artwork already exists: ${existingFile.path}');
           return existingFile;
@@ -204,8 +203,7 @@ class ImageCacheService {
       }
 
       if (podcast.artworkPath != null && podcast.artworkPath!.isNotEmpty) {
-        final imagesDir = await _fileStorageService.getImagesDirectory();
-        final existingFile = File('${imagesDir.path}/${podcast.artworkPath!.split('/').last}');
+        final existingFile = File(await _fileStorageService.getFullFilePath(podcast.artworkPath!));
         if (await existingFile.exists()) {
           Logger.info('🖼️ [INFO] Podcast artwork already exists: ${existingFile.path}');
           return existingFile;
