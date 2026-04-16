@@ -161,28 +161,13 @@ class AudioDownloadService {
       ),
     );
 
-    final adapter = dio.httpClientAdapter;
-    Logger.debug('🌐 [DIO-CONFIG] Adapter type: ${adapter.runtimeType}');
-
     try {
-      (adapter as dynamic).onHttpClientCreate = (HttpClient client) {
+      (dio.httpClientAdapter as dynamic).onHttpClientCreate = (HttpClient client) {
         client.autoUncompress = true;
-        Logger.debug('🌐 [DIO-CONFIG] HttpClient created (via onHttpClientCreate)');
-        Logger.debug('🌐 [DIO-CONFIG] autoUncompress=${client.autoUncompress}');
-        Logger.debug('🌐 [DIO-CONFIG] connectionTimeout=${client.connectionTimeout}');
-        Logger.debug('🌐 [DIO-CONFIG] findProxyFromEnvironment result:');
-        try {
-          final proxyInfo =
-              HttpClient.findProxyFromEnvironment(Uri.parse('https://example.com'));
-          Logger.debug('🌐 [DIO-CONFIG]   findProxy=$proxyInfo');
-        } catch (e) {
-          Logger.warning('🌐 [DIO-CONFIG] Failed to check findProxy: $e');
-        }
         return client;
       };
     } catch (e) {
-      Logger.warning(
-          '🌐 [DIO-CONFIG] Could not set onHttpClientCreate callback: $e (${e.runtimeType})');
+      Logger.warning('Dio HttpClient 配置失败: $e');
     }
 
     return dio;
@@ -196,19 +181,15 @@ class AudioDownloadService {
   Future<void> downloadEpisode(Episode episode) async {
     final episodeId = episode.id.toString();
 
-    Logger.debug('⬇️ [DEBUG] ====== Starting download for episode: $episodeId ======');
-    Logger.debug('⬇️ [DEBUG] Episode title: ${episode.title}');
-    Logger.debug('⬇️ [DEBUG] Audio URL: ${episode.audioUrl}');
-    Logger.debug('⬇️ [DEBUG] Podcast ID: ${episode.podcastId}');
+    Logger.info('⬇️ 开始下载: ${episode.title} ($episodeId)');
 
-    // 防护：检查目标文件是否已存在（防止重复下载）
+    // 防护：检查目标文件是否已存在
     try {
       final audioDir = await _fileStorageService.getAudioDirectory();
       final fileName = _fileStorageService.generateAudioFileName(episodeId);
       final destinationFile = File('${audioDir.path}/$fileName');
       if (await destinationFile.exists()) {
-        final fileSize = await destinationFile.length();
-        Logger.info('✅ [GUARD] Episode $episodeId file already exists (${_formatFileSize(fileSize)}), marking completed');
+        Logger.info('✅ 文件已存在, 标记完成: $episodeId');
         _downloadTasks[episodeId] = DownloadTask(
           episodeId: episodeId,
           audioUrl: episode.audioUrl,
@@ -228,7 +209,7 @@ class AudioDownloadService {
         return;
       }
     } catch (e) {
-      Logger.warning('⚠️ [GUARD] Failed to check existing file for $episodeId: $e');
+      Logger.warning('检查已存在文件失败: $e');
     }
 
     // 防护：检查现有任务状态
@@ -236,17 +217,16 @@ class AudioDownloadService {
       final existingTask = _downloadTasks[episodeId]!;
       if (existingTask.status == DownloadStatus.downloading ||
           existingTask.status == DownloadStatus.queued) {
-        Logger.warning(
-            '⚠️ [GUARD] Download already in progress for $episodeId (status=${existingTask.status.name})');
+        Logger.info('⚠️ 下载已在进行中: $episodeId');
         return;
       }
       if (existingTask.status == DownloadStatus.paused) {
-        Logger.info('⏸️ [DEBUG] Resuming paused download for episode: $episodeId');
+        Logger.info('⏸️ 恢复暂停的下载: $episodeId');
         await resumeDownload(episodeId);
         return;
       }
       if (existingTask.status == DownloadStatus.completed) {
-        Logger.info('✅ [GUARD] Episode $episodeId already completed, re-emitting completed event');
+        Logger.info('✅ 已完成, 重新发送事件: $episodeId');
         _notifyStatusChange(episodeId, DownloadStatus.completed);
         return;
       }
@@ -255,27 +235,14 @@ class AudioDownloadService {
     try {
       final audioDir = await _fileStorageService.getAudioDirectory();
       final tempDir = await _fileStorageService.getTemporaryDirectory();
-
       final fileName = _fileStorageService.generateAudioFileName(episodeId);
       final relativeFilePath = 'audio/$fileName';
       final absoluteFilePath = '${audioDir.path}/$fileName';
       final tempFilePath = '${tempDir.path}/$fileName';
 
-      Logger.debug('📁 [DEBUG] File paths:');
-      Logger.debug('   - Audio directory: ${audioDir.path}');
-      Logger.debug('   - Temp directory: ${tempDir.path}');
-      Logger.debug('   - File name: $fileName');
-      Logger.debug('   - Relative path: $relativeFilePath');
-      Logger.debug('   - Absolute path: $absoluteFilePath');
-      Logger.debug('   - Temp path: $tempFilePath');
-
-      // 检查音频目录是否存在
       if (!await audioDir.exists()) {
-        Logger.error('❌ [DEBUG] Audio directory does not exist!');
         throw AppException.storage('Audio directory not found');
       }
-      
-      Logger.debug('✅ [DEBUG] Audio directory exists and is ready');
 
       final cancelToken = CancelToken();
       final downloadTask = DownloadTask(
@@ -289,8 +256,6 @@ class AudioDownloadService {
       );
 
       _downloadTasks[episodeId] = downloadTask;
-      
-      Logger.info('📥 [DEBUG] Download task created, updating database...');
 
       await _updateEpisodeDownloadStatus(
         episodeId: episodeId,
@@ -302,15 +267,12 @@ class AudioDownloadService {
       _notifyStatusChange(episodeId, DownloadStatus.downloading);
 
       final file = File(tempFilePath);
-      final exists = await file.exists();
       int downloadedBytes = 0;
 
-      if (exists) {
+      if (await file.exists()) {
         downloadedBytes = await file.length();
         downloadTask.downloadedBytes = downloadedBytes;
-        Logger.info('🔄 [DEBUG] Found existing temp file, size: ${_formatFileSize(downloadedBytes)}');
-      } else {
-        Logger.debug('🆕 [DEBUG] No existing temp file, starting fresh download');
+        Logger.info('🔄 发现临时文件, 断点续传: ${_formatFileSize(downloadedBytes)}');
       }
 
       final options = Options(
@@ -319,45 +281,9 @@ class AudioDownloadService {
             ? {'Range': 'bytes=$downloadedBytes-'}
             : null,
       );
-      
-      if (downloadedBytes > 0) {
-        Logger.debug('🔄 [DEBUG] Using Range header for resume: bytes=$downloadedBytes-');
-      }
 
-      Logger.info('🌐 [DEBUG] Starting HTTP download from: ${episode.audioUrl}');
+      Logger.info('🌐 开始下载: ${episode.audioUrl}');
 
-      final uri = Uri.tryParse(episode.audioUrl);
-      Logger.debug('🔍 [NETWORK-CHECK] Parsed URI scheme=${uri?.scheme}, host=${uri?.host}, port=${uri?.port}, hasAuthority=${uri?.hasAuthority}');
-
-      try {
-        final testResponse = await _dio.head(
-          episode.audioUrl,
-          options: Options(
-            receiveTimeout: const Duration(seconds: 10),
-            sendTimeout: const Duration(seconds: 5),
-          ),
-        );
-        Logger.debug('🔍 [NETWORK-CHECK] HEAD request succeeded! status=${testResponse.statusCode}, contentType=${testResponse.headers.value("content-type")}, contentLength=${testResponse.headers.value("content-length")}');
-      } on DioException catch (headErr) {
-        Logger.warning('🔍 [NETWORK-CHECK] HEAD request FAILED: type=${headErr.type.name}, message=${headErr.message ?? "null"}, error=${headErr.error}');
-        if (headErr.error != null) {
-          Logger.warning('🔍 [NETWORK-CHECK] Underlying error type: ${headErr.error.runtimeType}, msg: ${headErr.error}');
-        }
-      } catch (headErr) {
-        Logger.warning('🔍 [NETWORK-CHECK] HEAD request unexpected error: $headErr');
-      }
-
-      Logger.debug('🌐 [DEBUG] Dio BaseOptions:');
-      Logger.debug('   - connectTimeout: ${_dio.options.connectTimeout}');
-      Logger.debug('   - receiveTimeout: ${_dio.options.receiveTimeout}');
-      Logger.debug('   - sendTimeout: ${_dio.options.sendTimeout}');
-      Logger.debug('   - maxRedirects: ${_dio.options.maxRedirects}');
-      Logger.debug('   - followRedirects: ${_dio.options.followRedirects}');
-      Logger.debug('🌐 [DEBUG] Request Options:');
-      Logger.debug('   - URL: ${episode.audioUrl}');
-      Logger.debug('   - savePath: $tempFilePath');
-      Logger.debug('   - headers: ${options.headers}');
-      Logger.debug('   - receiveDataWhenStatusError: ${options.receiveDataWhenStatusError}');
       DateTime startTime = DateTime.now();
 
       try {
@@ -371,9 +297,8 @@ class AudioDownloadService {
               final totalProgress = downloadedBytes + received;
               final progress = totalProgress / total;
 
-              // 每10%记录一次进度日志
-              if ((progress * 100).toInt() % 10 == 0 && (progress * 100).toInt() != 0) {
-                Logger.debug('📊 [DEBUG] Progress: ${(progress * 100).toStringAsFixed(1)}% (${_formatFileSize(totalProgress)} / ${_formatFileSize(total)})');
+              if ((progress * 100).toInt() % 25 == 0 && progress > 0 && progress < 1.0) {
+                Logger.debug('📊 ${(progress * 100).toInt()}%');
               }
 
               downloadTask.progress = progress;
@@ -382,46 +307,21 @@ class AudioDownloadService {
 
               _notifyProgressChange(episodeId, progress);
 
-              // 节流：每5秒最多更新一次数据库（避免阻塞主线程）
               final now = DateTime.now();
               final lastUpdate = _lastProgressUpdate[episodeId];
               if (lastUpdate == null || now.difference(lastUpdate).inSeconds >= 5 || progress >= 1.0) {
                 _lastProgressUpdate[episodeId] = now;
                 _updateEpisodeDownloadProgress(episodeId, progress);
               }
-            } else {
-              Logger.debug('📊 [DEBUG] Received: ${_formatFileSize(received)}, Total: unknown');
             }
           },
         );
       } on DioException catch (e) {
-        Logger.error('🔴 [DOWNLOAD-ERROR] ====== DioException Details ======');
-        Logger.error('🔴 [DOWNLOAD-ERROR] Episode: $episodeId');
-        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.type: ${e.type.name} (${e.type.index})');
-        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.message: ${e.message ?? "null"}');
-        Logger.error('🔴 [DOWNLOAD-ERROR] DioException.error (underlying): ${e.error}');
-        if (e.error != null) {
-          Logger.error('🔴 [DOWNLOAD-ERROR] Underlying error type: ${e.error.runtimeType}');
-          Logger.error('🔴 [DOWNLOAD-ERROR] Underlying error toString: ${e.error.toString()}');
-        }
-        Logger.error('🔴 [DOWNLOAD-ERROR] Request URL: ${e.requestOptions.uri}');
-        Logger.error('🔴 [DOWNLOAD-ERROR] Request method: ${e.requestOptions.method}');
-        if (e.response != null) {
-          Logger.error('🔴 [DOWNLOAD-ERROR] Response status: ${e.response?.statusCode}');
-          Logger.error('🔴 [DOWNLOAD-ERROR] Response statusMessage: ${e.response?.statusMessage}');
-          Logger.error('🔴 [DOWNLOAD-ERROR] Response headers: ${e.response?.headers.map}');
-        } else {
-          Logger.error('🔴 [DOWNLOAD-ERROR] Response: null (no response received)');
-        }
-        Logger.error('🔴 [DOWNLOAD-ERROR] StackTrace: ${e.stackTrace}');
+        Logger.error('🔴 下载失败 $episodeId: type=${e.type.name}, msg=${e.message ?? e.error}');
         rethrow;
       }
 
-      final endTime = DateTime.now();
-      final duration = endTime.difference(startTime);
-      
-      Logger.info('✅ [DEBUG] Download completed successfully!');
-      Logger.info('⏱️ [DEBUG] Download duration: ${duration.inSeconds}s');
+      final duration = DateTime.now().difference(startTime);
 
       downloadTask.status = DownloadStatus.completed;
       downloadTask.progress = 1.0;
@@ -429,21 +329,16 @@ class AudioDownloadService {
       final finalFile = File(absoluteFilePath);
       if (await finalFile.exists()) {
         await finalFile.delete();
-        Logger.debug('🗑️ [DEBUG] Deleted existing file at: $absoluteFilePath');
       }
 
       await File(tempFilePath).rename(absoluteFilePath);
 
-      // 验证文件是否成功保存
       final savedFile = File(absoluteFilePath);
       if (await savedFile.exists()) {
         final fileSize = await savedFile.length();
-        Logger.info('💾 [DEBUG] File saved successfully:');
-        Logger.info('   - Path: $absoluteFilePath');
-        Logger.info('   - Size: ${_formatFileSize(fileSize)}');
-        Logger.info('   - Relative path: $relativeFilePath');
+        Logger.info('✅ 下载完成: $episodeId (${_formatFileSize(fileSize)}, ${duration.inSeconds}s)');
       } else {
-        Logger.error('❌ [DEBUG] ERROR: File was not saved to destination!');
+        Logger.error('❌ 文件保存失败: $absoluteFilePath');
       }
 
       await _updateEpisodeDownloadStatus(
@@ -454,32 +349,23 @@ class AudioDownloadService {
       );
 
       _notifyStatusChange(episodeId, DownloadStatus.completed);
-
-      Logger.info('✅ [COMPLETE] ====== Download COMPLETED for episode: $episodeId ======');
-      Logger.info('✅ [COMPLETE] Status: completed, DB updated, event emitted');
     } on DioException catch (e) {
-      Logger.error('🔴 [DOWNLOAD-FAIL] DioException caught for episode: $episodeId');
       if (e.type == DioExceptionType.cancel) {
         _downloadTasks[episodeId]?.status = DownloadStatus.cancelled;
         _notifyStatusChange(episodeId, DownloadStatus.cancelled);
-        Logger.info('🚫 [COMPLETE] Download cancelled for episode: $episodeId');
+        Logger.info('🚫 下载取消: $episodeId');
       } else {
         _downloadTasks[episodeId]?.status = DownloadStatus.failed;
         _downloadTasks[episodeId]?.errorMessage =
             e.message ?? e.error?.toString() ?? 'Unknown error';
         _notifyStatusChange(episodeId, DownloadStatus.failed);
-        Logger.error('❌ [COMPLETE] Download FAILED for episode: $episodeId');
-        Logger.error('❌ [COMPLETE] type=${e.type.name}, message=${e.message ?? "null"}');
+        Logger.error('❌ 下载失败: $episodeId, ${e.message ?? e.error}');
       }
     } catch (e, stackTrace) {
       _downloadTasks[episodeId]?.status = DownloadStatus.failed;
       _downloadTasks[episodeId]?.errorMessage = e.toString();
       _notifyStatusChange(episodeId, DownloadStatus.failed);
-      Logger.error(
-        '💥 [COMPLETE] UNEXPECTED ERROR for episode: $episodeId: $e',
-        error: e,
-        stackTrace: stackTrace,
-      );
+      Logger.error('💥 下载异常: $episodeId, $e', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -523,17 +409,28 @@ class AudioDownloadService {
       return;
     }
 
+    task.status = DownloadStatus.idle;
+    Logger.info('🔄 [RESUME] Status changed to idle synchronously for episode: $episodeId');
+
     try {
       final episode = await _isarService.isar.episodes.get(
         int.parse(episodeId),
       );
 
       if (episode == null) {
+        task.status = DownloadStatus.paused;
+        _notifyStatusChange(episodeId, DownloadStatus.paused);
         throw AppException.unknown('Episode not found: $episodeId');
       }
 
       await downloadEpisode(episode);
     } catch (e, stackTrace) {
+      if (task.status != DownloadStatus.downloading &&
+          task.status != DownloadStatus.completed &&
+          task.status != DownloadStatus.queued) {
+        task.status = DownloadStatus.paused;
+        _notifyStatusChange(episodeId, DownloadStatus.paused);
+      }
       Logger.error(
         'Error resuming download for episode: $episodeId',
         error: e,
@@ -546,24 +443,19 @@ class AudioDownloadService {
   Future<void> downloadEpisodeById(int episodeId) async {
     final idStr = episodeId.toString();
 
-    // 立即加锁，防止并发重复调用（在任何 async 操作之前）
     if (_activeDownloads.contains(idStr)) {
-      Logger.warning('🛡️ [GUARD-ByID] Episode $idStr already has active download, skipping');
       return;
     }
     _activeDownloads.add(idStr);
-    Logger.info('🔒 [GUARD-ByID] Lock acquired for episode $idStr');
 
     try {
       if (_downloadTasks.containsKey(idStr)) {
         final existingTask = _downloadTasks[idStr]!;
         if (existingTask.status == DownloadStatus.downloading ||
             existingTask.status == DownloadStatus.queued) {
-          Logger.info('Episode already in download queue: $idStr');
           return;
         }
         if (existingTask.status == DownloadStatus.completed) {
-          Logger.info('✅ [GUARD-ByID] Episode $idStr already completed, re-emitting');
           _notifyStatusChange(idStr, DownloadStatus.completed);
           return;
         }
@@ -575,12 +467,12 @@ class AudioDownloadService {
         throw AppException.unknown('Episode not found: $episodeId');
       }
 
-      // 防护：文件已存在则直接完成
+      // 文件已存在则直接完成
       final audioDir = await _fileStorageService.getAudioDirectory();
       final fileName = _fileStorageService.generateAudioFileName(idStr);
       final destinationFile = File('${audioDir.path}/$fileName');
       if (await destinationFile.exists()) {
-        Logger.info('✅ [GUARD-ByID] File exists, marking completed for $idStr');
+        Logger.info('✅ 文件已存在, 标记完成: $idStr');
         _notifyStatusChange(idStr, DownloadStatus.completed);
         return;
       }
@@ -595,7 +487,6 @@ class AudioDownloadService {
       rethrow;
     } finally {
       _activeDownloads.remove(idStr);
-      Logger.debug('🔓 [GUARD-BYID] Lock released for episode $idStr');
     }
   }
 

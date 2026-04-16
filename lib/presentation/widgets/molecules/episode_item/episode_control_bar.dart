@@ -267,14 +267,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   }
 
   Future<void> _handleDownload() async {
-    Logger.info(
-      '⬇️ [EPISODE-CONTROL-BAR] 用户点击下载, episodeId: ${widget.episodeId}',
-    );
+    if (!mounted) return;
     try {
       AudioDownloadService.instance.downloadEpisodeById(widget.episodeId);
-      Logger.info('⬇️ [EPISODE-CONTROL-BAR] 下载任务已启动');
     } catch (e) {
-      Logger.error('⬇️ [EPISODE-CONTROL-BAR] 下载启动失败', error: e);
+      Logger.error('下载启动失败', error: e);
       if (mounted) {
         ToastUtils.showErrorToast(context, message: '下载启动失败');
       }
@@ -282,24 +279,21 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   }
 
   Future<void> _handleRemoveDownload() async {
-    Logger.info(
-      '🗑️ [EPISODE-CONTROL-BAR] 用户点击移除下载, episodeId: ${widget.episodeId}',
-    );
     if (!mounted) return;
     try {
       await AudioDownloadService.instance.deleteDownloadedEpisode(
         widget.episodeId.toString(),
       );
-      Logger.info('🗑️ [EPISODE-CONTROL-BAR] 移除下载成功');
 
       ref.invalidate(downloadedEpisodesNotifierProvider);
-      Logger.info('🗑️ [EPISODE-CONTROL-BAR] 已刷新 Downloads Provider');
+      ref.read(queueNotifierProvider.notifier).refresh();
+      ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
 
       if (mounted) {
         ToastUtils.showSuccessToast(context, message: '已移除下载');
       }
     } catch (e) {
-      Logger.error('🗑️ [EPISODE-CONTROL-BAR] 移除下载失败', error: e);
+      Logger.error('移除下载失败', error: e);
       if (mounted) {
         ToastUtils.showErrorToast(context, message: '移除下载失败');
       }
@@ -350,9 +344,6 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       final nowCompleted = nextStatus == DownloadStatus.completed;
 
       if (wasInProgress && nowCompleted && !widget.isDownloaded) {
-        Logger.info(
-          '🔄 [EPISODE-CONTROL-BAR] 下载完成，刷新所有列表 Provider, episodeId: $episodeIdStr',
-        );
         ref.invalidate(downloadedEpisodesNotifierProvider);
         ref.read(queueNotifierProvider.notifier).refresh();
         ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();

@@ -25,10 +25,7 @@ class Logger {
   static const String _defaultTag = 'TinyCast';
 
   /// 最小日志级别（调试模式下为 debug，否则为 info）
-  static LogLevel _minLevel = kDebugMode ? LogLevel.debug : LogLevel.info;
-
-  /// 文件日志目录
-  static const String _logDir = '.trae/log';
+  static LogLevel _minLevel = kDebugMode ? LogLevel.info : LogLevel.error;
 
   /// 是否启用文件日志
   static bool _fileLoggingEnabled = false;
@@ -42,16 +39,18 @@ class Logger {
   }
 
   /// 初始化文件日志（在 main.dart 中调用一次即可）
-  static Future<void> initFileLogging() async {
+  static Future<void> initFileLogging({String? logDirPath}) async {
     try {
-      final logDirPath = path.join(Directory.current.path, _logDir);
-      final logDir = Directory(logDirPath);
+      final dir = logDirPath != null
+          ? Directory(logDirPath)
+          : Directory.systemTemp;
+      final logDir = Directory(path.join(dir.path, 'tinycast', 'log'));
       if (!await logDir.exists()) {
         await logDir.create(recursive: true);
       }
 
       final dateStr = DateTime.now().toIso8601String().substring(0, 10);
-      final logFilePath = path.join(logDirPath, '$dateStr.log');
+      final logFilePath = path.join(logDir.path, '$dateStr.log');
       _logFile = File(logFilePath);
 
       if (!await _logFile.exists()) {
@@ -112,7 +111,6 @@ class Logger {
       }
     }
 
-    // 异步写入文件，不阻塞主线程
     if (_fileLoggingEnabled) {
       _writeToFile(logMessage, error: error, stackTrace: stackTrace);
     }
