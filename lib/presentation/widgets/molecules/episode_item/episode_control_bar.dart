@@ -139,14 +139,13 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     await ref
                         .read(favoriteProvider.notifier)
                         .toggleFavorite(widget.episodeId);
-                    // 刷新收藏列表
                     ref
                         .read(favoriteEpisodesNotifierProvider.notifier)
                         .refresh();
                     _hideDropdown();
                     if (mounted) {
                       ToastUtils.showSuccessToast(
-                        context,
+                        this.context,
                         message: isFav ? '已取消收藏' : '已收藏',
                       );
                     }
@@ -154,7 +153,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     Logger.error('收藏切换失败', error: e);
                     _hideDropdown();
                     if (mounted) {
-                      ToastUtils.showErrorToast(context, message: '操作失败');
+                      ToastUtils.showErrorToast(this.context, message: '操作失败');
                     }
                   }
                 },
