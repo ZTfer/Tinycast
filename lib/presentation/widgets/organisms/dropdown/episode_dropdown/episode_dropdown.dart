@@ -85,7 +85,10 @@ class EpisodeDropdown extends StatelessWidget {
             EpisodeDropdownItem(
               icon: Icon(isFavorite ? LucideIcons.starOff : LucideIcons.star),
               text: isFavorite ? '取消收藏' : '收藏',
-              onPressed: () => onToggleFavorite ?? _handleItemSelected(),
+              onPressed: () {
+                onToggleFavorite?.call();
+                _handleItemSelected();
+              },
             ),
             /*
             // 桌面端暂时不需要分享功能，因为复制链接即可
