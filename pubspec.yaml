@@ -33,10 +33,10 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.9
   lucide_icons: ^0.257.0
-  file_picker: ^10.3.10
-  lucide_icons_flutter: ^3.1.10
+  file_picker: ^11.0.2
+  lucide_icons_flutter: ^3.1.12
   flutter_svg: ^2.2.4
   window_manager: ^0.5.1
   desktop_multi_window: ^0.3.0
@@ -56,7 +56,7 @@ dependencies:
   crypto: ^3.0.3
   intl: ^0.20.2
   html: ^0.15.4
-  flutter_widget_from_html: ^0.16.0
+  flutter_widget_from_html: ^0.17.2
 
 dev_dependencies:
   flutter_test:

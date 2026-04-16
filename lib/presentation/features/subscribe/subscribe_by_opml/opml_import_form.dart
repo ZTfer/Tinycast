@@ -253,7 +253,7 @@ class _OpmlImportFormState extends State<OpmlImportForm> {
   Future<void> _handleTap() async {
     try {
       /// 使用文件选择器选择文件
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         /// 文件类型：自定义
         type: FileType.custom,
 
