@@ -7,6 +7,7 @@ import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_butt
 import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
@@ -138,6 +139,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     await ref
                         .read(favoriteProvider.notifier)
                         .toggleFavorite(widget.episodeId);
+                    // 刷新收藏列表
+                    ref
+                        .read(favoriteEpisodesNotifierProvider.notifier)
+                        .refresh();
                     _hideDropdown();
                     if (mounted) {
                       ToastUtils.showSuccessToast(
