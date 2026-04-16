@@ -131,18 +131,26 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     .isEpisodeFavorite(widget.episodeId),
                 isDownloaded: widget.isDownloaded,
                 onToggleFavorite: () async {
-                  Logger.info(
-                    '⭐ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
-                  );
                   try {
+                    final isFav = ref
+                        .read(favoriteProvider)
+                        .isEpisodeFavorite(widget.episodeId);
                     await ref
                         .read(favoriteProvider.notifier)
                         .toggleFavorite(widget.episodeId);
-                    Logger.info('⭐ [EPISODE-CONTROL-BAR] 收藏切换成功, 关闭下拉菜单');
                     _hideDropdown();
+                    if (mounted) {
+                      ToastUtils.showSuccessToast(
+                        context,
+                        message: isFav ? '已取消收藏' : '已收藏',
+                      );
+                    }
                   } catch (e) {
-                    Logger.error('⭐ [EPISODE-CONTROL-BAR] 收藏切换失败', error: e);
+                    Logger.error('收藏切换失败', error: e);
                     _hideDropdown();
+                    if (mounted) {
+                      ToastUtils.showErrorToast(context, message: '操作失败');
+                    }
                   }
                 },
                 onToggleDownload: widget.isDownloaded
