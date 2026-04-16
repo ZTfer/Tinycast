@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
 /// Library 节目封面组件
 ///
@@ -38,22 +38,14 @@ class LibraryShowCover extends StatelessWidget {
       child: SizedBox(
         width: width,
         height: height,
-        child: artworkUrl != null && artworkUrl!.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: artworkUrl!,
-                cacheKey: artworkUrl,
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
-                memCacheWidth: (width * 2).round(),
-                memCacheHeight: (height * 2).round(),
-                maxWidthDiskCache: (width * 4).round(),
-                maxHeightDiskCache: (height * 4).round(),
-                fadeInDuration: const Duration(milliseconds: 200),
-                placeholder: (context, url) => _buildPlaceholder(),
-                errorWidget: (context, url, error) => _buildPlaceholder(),
-              )
-            : _buildPlaceholder(),
+        child: ArtworkImage(
+          artworkUrl: artworkUrl,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          placeholder: _buildPlaceholder(),
+          errorWidget: _buildPlaceholder(),
+        ),
       ),
     );
   }

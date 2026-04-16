@@ -8,6 +8,7 @@ import 'package:tinycast/data/services/file_storage_service.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/data/services/image_cache_service.dart';
 
 enum DownloadStatus {
   idle,
@@ -136,7 +137,7 @@ class AudioDownloadService {
   final Map<String, StreamController<DownloadStatus>> _statusControllers = {};
   final Map<String, StreamController<double>> _progressControllers = {};
   final DownloadQueue _downloadQueue = DownloadQueue(maxConcurrentDownloads: 3);
-  
+
   // 进度更新节流：每5秒最多更新一次数据库
   final Map<String, DateTime> _lastProgressUpdate = {};
 
@@ -149,6 +150,7 @@ class AudioDownloadService {
   late final Dio _dio = _createDio();
   final FileStorageService _fileStorageService = FileStorageService.instance;
   final IsarService _isarService = IsarService.instance;
+  final ImageCacheService _imageCacheService = ImageCacheService.instance;
 
   static Dio _createDio() {
     final dio = Dio(
@@ -162,10 +164,11 @@ class AudioDownloadService {
     );
 
     try {
-      (dio.httpClientAdapter as dynamic).onHttpClientCreate = (HttpClient client) {
-        client.autoUncompress = true;
-        return client;
-      };
+      (dio.httpClientAdapter as dynamic).onHttpClientCreate =
+          (HttpClient client) {
+            client.autoUncompress = true;
+            return client;
+          };
     } catch (e) {
       Logger.warning('Dio HttpClient 配置失败: $e');
     }
@@ -206,6 +209,18 @@ class AudioDownloadService {
           downloadProgress: 1.0,
         );
         _notifyStatusChange(episodeId, DownloadStatus.completed);
+
+        try {
+          final episode = await _isarService.isar.episodes.get(
+            int.parse(episodeId),
+          );
+          if (episode != null && episode.artworkUrl != null) {
+            Logger.info('🖼️ 开始下载 episode 封面图: ${episode.title}');
+            await _imageCacheService.downloadAndSaveEpisodeArtwork(episode);
+          }
+        } catch (e) {
+          Logger.warning('⚠️ 封面图下载失败（不影响音频）: $e');
+        }
         return;
       }
     } catch (e) {
@@ -297,7 +312,9 @@ class AudioDownloadService {
               final totalProgress = downloadedBytes + received;
               final progress = totalProgress / total;
 
-              if ((progress * 100).toInt() % 25 == 0 && progress > 0 && progress < 1.0) {
+              if ((progress * 100).toInt() % 25 == 0 &&
+                  progress > 0 &&
+                  progress < 1.0) {
                 Logger.debug('📊 ${(progress * 100).toInt()}%');
               }
 
@@ -309,7 +326,9 @@ class AudioDownloadService {
 
               final now = DateTime.now();
               final lastUpdate = _lastProgressUpdate[episodeId];
-              if (lastUpdate == null || now.difference(lastUpdate).inSeconds >= 5 || progress >= 1.0) {
+              if (lastUpdate == null ||
+                  now.difference(lastUpdate).inSeconds >= 5 ||
+                  progress >= 1.0) {
                 _lastProgressUpdate[episodeId] = now;
                 _updateEpisodeDownloadProgress(episodeId, progress);
               }
@@ -317,7 +336,9 @@ class AudioDownloadService {
           },
         );
       } on DioException catch (e) {
-        Logger.error('🔴 下载失败 $episodeId: type=${e.type.name}, msg=${e.message ?? e.error}');
+        Logger.error(
+          '🔴 下载失败 $episodeId: type=${e.type.name}, msg=${e.message ?? e.error}',
+        );
         rethrow;
       }
 
@@ -336,7 +357,9 @@ class AudioDownloadService {
       final savedFile = File(absoluteFilePath);
       if (await savedFile.exists()) {
         final fileSize = await savedFile.length();
-        Logger.info('✅ 下载完成: $episodeId (${_formatFileSize(fileSize)}, ${duration.inSeconds}s)');
+        Logger.info(
+          '✅ 下载完成: $episodeId (${_formatFileSize(fileSize)}, ${duration.inSeconds}s)',
+        );
       } else {
         Logger.error('❌ 文件保存失败: $absoluteFilePath');
       }
@@ -349,6 +372,18 @@ class AudioDownloadService {
       );
 
       _notifyStatusChange(episodeId, DownloadStatus.completed);
+
+      try {
+        final episode = await _isarService.isar.episodes.get(
+          int.parse(episodeId),
+        );
+        if (episode != null && episode.artworkUrl != null) {
+          Logger.info('🖼️ 开始下载 episode 封面图: ${episode.title}');
+          await _imageCacheService.downloadAndSaveEpisodeArtwork(episode);
+        }
+      } catch (e) {
+        Logger.warning('⚠️ 封面图下载失败（不影响音频）: $e');
+      }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
         _downloadTasks[episodeId]?.status = DownloadStatus.cancelled;
@@ -410,7 +445,9 @@ class AudioDownloadService {
     }
 
     task.status = DownloadStatus.idle;
-    Logger.info('🔄 [RESUME] Status changed to idle synchronously for episode: $episodeId');
+    Logger.info(
+      '🔄 [RESUME] Status changed to idle synchronously for episode: $episodeId',
+    );
 
     try {
       final episode = await _isarService.isar.episodes.get(
@@ -678,10 +715,9 @@ class AudioDownloadService {
     }
 
     if (!_globalEventController.isClosed) {
-      _globalEventController.add(AudioDownloadEvent(
-        episodeId: episodeId,
-        status: status,
-      ));
+      _globalEventController.add(
+        AudioDownloadEvent(episodeId: episodeId, status: status),
+      );
     }
   }
 
@@ -692,11 +728,13 @@ class AudioDownloadService {
     }
 
     if (!_globalEventController.isClosed) {
-      _globalEventController.add(AudioDownloadEvent(
-        episodeId: episodeId,
-        status: DownloadStatus.downloading,
-        progress: progress,
-      ));
+      _globalEventController.add(
+        AudioDownloadEvent(
+          episodeId: episodeId,
+          status: DownloadStatus.downloading,
+          progress: progress,
+        ),
+      );
     }
   }
 
@@ -729,7 +767,9 @@ class AudioDownloadService {
   }
 
   Future<void> downloadPodcastEpisodes(int podcastId, {int? limit}) async {
-    Logger.info('📦 [DEBUG] ====== Starting podcast download: $podcastId ======');
+    Logger.info(
+      '📦 [DEBUG] ====== Starting podcast download: $podcastId ======',
+    );
     if (limit != null) {
       Logger.info('📦 [DEBUG] Download limit: $limit episodes');
     }
@@ -752,19 +792,25 @@ class AudioDownloadService {
       // 列出要下载的节目信息
       for (var i = 0; i < episodes.length; i++) {
         final ep = episodes[i];
-        Logger.debug('📦 [DEBUG] Episode ${i + 1}/${episodes.length}: ID=${ep.id}, Title="${ep.title}"');
+        Logger.debug(
+          '📦 [DEBUG] Episode ${i + 1}/${episodes.length}: ID=${ep.id}, Title="${ep.title}"',
+        );
       }
 
       await downloadEpisodesBatch(episodes);
     } catch (e, stackTrace) {
-      Logger.error('❌ [DEBUG] Failed to download podcast episodes: $podcastId', error: e, stackTrace: stackTrace);
+      Logger.error(
+        '❌ [DEBUG] Failed to download podcast episodes: $podcastId',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
 
   Future<void> _enqueueDownload(Episode episode) async {
     final episodeId = episode.id.toString();
-    
+
     Logger.info('📥 [DEBUG] Enqueuing download for episode: $episodeId');
     Logger.debug('   - Title: ${episode.title}');
     Logger.debug('   - Audio URL: ${episode.audioUrl}');
@@ -794,7 +840,9 @@ class AudioDownloadService {
       _downloadTasks[episodeId] = downloadTask;
       _downloadQueue.enqueue(downloadTask);
 
-      Logger.debug('✅ [DEBUG] Task enqueued, queue size: ${_downloadQueue.queueLength}');
+      Logger.debug(
+        '✅ [DEBUG] Task enqueued, queue size: ${_downloadQueue.queueLength}',
+      );
 
       await _updateEpisodeDownloadStatus(
         episodeId: episodeId,
@@ -816,51 +864,67 @@ class AudioDownloadService {
     Logger.debug('🔄 [DEBUG] Queue status:');
     Logger.debug('   - Can start new: ${_downloadQueue.canStartNewDownload}');
     Logger.debug('   - Queue length: ${_downloadQueue.queueLength}');
-    Logger.debug('   - Active downloads: ${_downloadQueue.activeDownloadsCount}');
-    Logger.debug('   - Max concurrent: ${_downloadQueue.maxConcurrentDownloads}');
-    
+    Logger.debug(
+      '   - Active downloads: ${_downloadQueue.activeDownloadsCount}',
+    );
+    Logger.debug(
+      '   - Max concurrent: ${_downloadQueue.maxConcurrentDownloads}',
+    );
+
     int processedCount = 0;
-    
+
     while (_downloadQueue.canStartNewDownload) {
       final task = _downloadQueue.dequeue();
       if (task == null) {
         Logger.warning('🔄 [DEBUG] No more tasks in queue');
         break;
       }
-      
+
       processedCount++;
-      Logger.info('🔄 [DEBUG] Dequeued task #$processedCount: ${task.episodeId} (status: ${task.status})');
-      
+      Logger.info(
+        '🔄 [DEBUG] Dequeued task #$processedCount: ${task.episodeId} (status: ${task.status})',
+      );
+
       _startDownloadFromQueue(task);
     }
-    
+
     if (processedCount == 0) {
       Logger.warning('🔄 [DEBUG] No tasks were processed from queue!');
       if (_downloadQueue.queueLength > 0) {
-        Logger.error('🔄 [DEBUG] ERROR: Queue has ${_downloadQueue.queueLength} items but cannot start new downloads');
-        Logger.error('🔄 [DEBUG] This might mean max concurrent downloads reached or queue logic issue');
+        Logger.error(
+          '🔄 [DEBUG] ERROR: Queue has ${_downloadQueue.queueLength} items but cannot start new downloads',
+        );
+        Logger.error(
+          '🔄 [DEBUG] This might mean max concurrent downloads reached or queue logic issue',
+        );
       }
     } else {
-      Logger.info('✅ [DEBUG] Successfully started $processedCount download(s) from queue');
+      Logger.info(
+        '✅ [DEBUG] Successfully started $processedCount download(s) from queue',
+      );
     }
   }
 
   Future<void> _startDownloadFromQueue(DownloadTask downloadTask) async {
     final episodeId = downloadTask.episodeId;
-    
-    Logger.info('⬇️ [DEBUG] ====== Starting queued download for episode: $episodeId ======');
+
+    Logger.info(
+      '⬇️ [DEBUG] ====== Starting queued download for episode: $episodeId ======',
+    );
 
     try {
       Logger.debug('⬇️ [DEBUG] Fetching episode from database...');
       final episode = await _isarService.isar.episodes.get(
         int.parse(episodeId),
       );
-      
+
       if (episode == null) {
-        Logger.error('❌ [DEBUG] ERROR: Episode not found in database! ID: $episodeId');
+        Logger.error(
+          '❌ [DEBUG] ERROR: Episode not found in database! ID: $episodeId',
+        );
         throw AppException.unknown('Episode not found: $episodeId');
       }
-      
+
       Logger.debug('✅ [DEBUG] Episode found: ${episode.title}');
 
       downloadTask.status = DownloadStatus.downloading;

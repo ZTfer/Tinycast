@@ -45,5 +45,7 @@ class Podcast {
 
   DateTime? subscribedAt;
 
+  String? artworkPath;
+
   final DateTime createdAt = DateTime.now();
 }

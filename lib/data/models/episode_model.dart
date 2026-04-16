@@ -38,6 +38,8 @@ class Episode {
 
   String? downloadedPath;
 
+  String? artworkPath;
+
   late double downloadProgress;
 
   late double playProgress;

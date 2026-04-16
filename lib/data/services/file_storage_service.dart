@@ -247,6 +247,14 @@ class FileStorageService {
     return '$uuid.mp3';
   }
 
+  String generateArtworkFileName() {
+    final uuid = _generateUUID();
+    Logger.debug(
+      '🆔 [DEBUG] Generated UUID filename for artwork: $uuid.jpg',
+    );
+    return '$uuid.jpg';
+  }
+
   String _generateUUID() {
     final random = Random();
     const hexChars = '0123456789abcdef';

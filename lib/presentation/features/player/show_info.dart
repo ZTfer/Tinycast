@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
 class ShowInfo extends StatelessWidget {
   final Podcast? podcast;
@@ -36,21 +36,21 @@ class ShowInfo extends StatelessWidget {
   Widget _buildArtwork() {
     final artworkUrl = podcast?.artworkUrl;
 
-    if (artworkUrl != null && artworkUrl.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: CachedNetworkImage(
-          imageUrl: artworkUrl,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: ArtworkImage(
+          artworkUrl: artworkUrl,
           width: 24,
           height: 24,
           fit: BoxFit.cover,
-          placeholder: (context, url) => _buildPlaceholder(),
-          errorWidget: (context, url, error) => _buildPlaceholder(),
+          placeholder: _buildPlaceholder(),
+          errorWidget: _buildPlaceholder(),
         ),
-      );
-    }
-
-    return _buildPlaceholder();
+      ),
+    );
   }
 
   Widget _buildPlaceholder() {

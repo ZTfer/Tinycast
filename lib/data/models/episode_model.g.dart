@@ -17,79 +17,84 @@ const EpisodeSchema = CollectionSchema(
   name: r'Episode',
   id: -3258565036328751473,
   properties: {
-    r'artworkUrl': PropertySchema(
+    r'artworkPath': PropertySchema(
       id: 0,
+      name: r'artworkPath',
+      type: IsarType.string,
+    ),
+    r'artworkUrl': PropertySchema(
+      id: 1,
       name: r'artworkUrl',
       type: IsarType.string,
     ),
     r'audioType': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'audioType',
       type: IsarType.string,
     ),
     r'audioUrl': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'audioUrl',
       type: IsarType.string,
     ),
-    r'author': PropertySchema(id: 3, name: r'author', type: IsarType.string),
+    r'author': PropertySchema(id: 4, name: r'author', type: IsarType.string),
     r'createdAt': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'description',
       type: IsarType.string,
     ),
     r'downloadProgress': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'downloadProgress',
       type: IsarType.double,
     ),
     r'downloadedPath': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'downloadedPath',
       type: IsarType.string,
     ),
-    r'duration': PropertySchema(id: 8, name: r'duration', type: IsarType.long),
-    r'guid': PropertySchema(id: 9, name: r'guid', type: IsarType.string),
+    r'duration': PropertySchema(id: 9, name: r'duration', type: IsarType.long),
+    r'guid': PropertySchema(id: 10, name: r'guid', type: IsarType.string),
     r'isDownloaded': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'isDownloaded',
       type: IsarType.bool,
     ),
     r'isExplicit': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'isExplicit',
       type: IsarType.bool,
     ),
-    r'isPlayed': PropertySchema(id: 12, name: r'isPlayed', type: IsarType.bool),
+    r'isPlayed': PropertySchema(id: 13, name: r'isPlayed', type: IsarType.bool),
     r'lastPlayedAt': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'lastPlayedAt',
       type: IsarType.dateTime,
     ),
-    r'link': PropertySchema(id: 14, name: r'link', type: IsarType.string),
+    r'link': PropertySchema(id: 15, name: r'link', type: IsarType.string),
     r'playProgress': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'playProgress',
       type: IsarType.double,
     ),
     r'podcastId': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'podcastId',
       type: IsarType.long,
     ),
     r'pubDate': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'pubDate',
       type: IsarType.dateTime,
     ),
-    r'title': PropertySchema(id: 18, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 19, name: r'title', type: IsarType.string),
     r'updatedAt': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
@@ -144,6 +149,12 @@ int _episodeEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.artworkPath;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.artworkUrl;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -186,26 +197,27 @@ void _episodeSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.artworkUrl);
-  writer.writeString(offsets[1], object.audioType);
-  writer.writeString(offsets[2], object.audioUrl);
-  writer.writeString(offsets[3], object.author);
-  writer.writeDateTime(offsets[4], object.createdAt);
-  writer.writeString(offsets[5], object.description);
-  writer.writeDouble(offsets[6], object.downloadProgress);
-  writer.writeString(offsets[7], object.downloadedPath);
-  writer.writeLong(offsets[8], object.duration);
-  writer.writeString(offsets[9], object.guid);
-  writer.writeBool(offsets[10], object.isDownloaded);
-  writer.writeBool(offsets[11], object.isExplicit);
-  writer.writeBool(offsets[12], object.isPlayed);
-  writer.writeDateTime(offsets[13], object.lastPlayedAt);
-  writer.writeString(offsets[14], object.link);
-  writer.writeDouble(offsets[15], object.playProgress);
-  writer.writeLong(offsets[16], object.podcastId);
-  writer.writeDateTime(offsets[17], object.pubDate);
-  writer.writeString(offsets[18], object.title);
-  writer.writeDateTime(offsets[19], object.updatedAt);
+  writer.writeString(offsets[0], object.artworkPath);
+  writer.writeString(offsets[1], object.artworkUrl);
+  writer.writeString(offsets[2], object.audioType);
+  writer.writeString(offsets[3], object.audioUrl);
+  writer.writeString(offsets[4], object.author);
+  writer.writeDateTime(offsets[5], object.createdAt);
+  writer.writeString(offsets[6], object.description);
+  writer.writeDouble(offsets[7], object.downloadProgress);
+  writer.writeString(offsets[8], object.downloadedPath);
+  writer.writeLong(offsets[9], object.duration);
+  writer.writeString(offsets[10], object.guid);
+  writer.writeBool(offsets[11], object.isDownloaded);
+  writer.writeBool(offsets[12], object.isExplicit);
+  writer.writeBool(offsets[13], object.isPlayed);
+  writer.writeDateTime(offsets[14], object.lastPlayedAt);
+  writer.writeString(offsets[15], object.link);
+  writer.writeDouble(offsets[16], object.playProgress);
+  writer.writeLong(offsets[17], object.podcastId);
+  writer.writeDateTime(offsets[18], object.pubDate);
+  writer.writeString(offsets[19], object.title);
+  writer.writeDateTime(offsets[20], object.updatedAt);
 }
 
 Episode _episodeDeserialize(
@@ -215,26 +227,27 @@ Episode _episodeDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Episode();
-  object.artworkUrl = reader.readStringOrNull(offsets[0]);
-  object.audioType = reader.readString(offsets[1]);
-  object.audioUrl = reader.readString(offsets[2]);
-  object.author = reader.readStringOrNull(offsets[3]);
-  object.description = reader.readString(offsets[5]);
-  object.downloadProgress = reader.readDouble(offsets[6]);
-  object.downloadedPath = reader.readStringOrNull(offsets[7]);
-  object.duration = reader.readLongOrNull(offsets[8]);
-  object.guid = reader.readStringOrNull(offsets[9]);
+  object.artworkPath = reader.readStringOrNull(offsets[0]);
+  object.artworkUrl = reader.readStringOrNull(offsets[1]);
+  object.audioType = reader.readString(offsets[2]);
+  object.audioUrl = reader.readString(offsets[3]);
+  object.author = reader.readStringOrNull(offsets[4]);
+  object.description = reader.readString(offsets[6]);
+  object.downloadProgress = reader.readDouble(offsets[7]);
+  object.downloadedPath = reader.readStringOrNull(offsets[8]);
+  object.duration = reader.readLongOrNull(offsets[9]);
+  object.guid = reader.readStringOrNull(offsets[10]);
   object.id = id;
-  object.isDownloaded = reader.readBool(offsets[10]);
-  object.isExplicit = reader.readBool(offsets[11]);
-  object.isPlayed = reader.readBool(offsets[12]);
-  object.lastPlayedAt = reader.readDateTimeOrNull(offsets[13]);
-  object.link = reader.readStringOrNull(offsets[14]);
-  object.playProgress = reader.readDouble(offsets[15]);
-  object.podcastId = reader.readLong(offsets[16]);
-  object.pubDate = reader.readDateTime(offsets[17]);
-  object.title = reader.readString(offsets[18]);
-  object.updatedAt = reader.readDateTime(offsets[19]);
+  object.isDownloaded = reader.readBool(offsets[11]);
+  object.isExplicit = reader.readBool(offsets[12]);
+  object.isPlayed = reader.readBool(offsets[13]);
+  object.lastPlayedAt = reader.readDateTimeOrNull(offsets[14]);
+  object.link = reader.readStringOrNull(offsets[15]);
+  object.playProgress = reader.readDouble(offsets[16]);
+  object.podcastId = reader.readLong(offsets[17]);
+  object.pubDate = reader.readDateTime(offsets[18]);
+  object.title = reader.readString(offsets[19]);
+  object.updatedAt = reader.readDateTime(offsets[20]);
   return object;
 }
 
@@ -248,42 +261,44 @@ P _episodeDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTime(offset)) as P;
     case 6:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 8:
-      return (reader.readLongOrNull(offset)) as P;
-    case 9:
       return (reader.readStringOrNull(offset)) as P;
+    case 9:
+      return (reader.readLongOrNull(offset)) as P;
     case 10:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 11:
       return (reader.readBool(offset)) as P;
     case 12:
       return (reader.readBool(offset)) as P;
     case 13:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 14:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 15:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 16:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 17:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 18:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 19:
+      return (reader.readString(offset)) as P;
+    case 20:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -608,6 +623,169 @@ extension EpisodeQueryWhere on QueryBuilder<Episode, Episode, QWhereClause> {
 
 extension EpisodeQueryFilter
     on QueryBuilder<Episode, Episode, QFilterCondition> {
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'artworkPath'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'artworkPath'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'artworkPath',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'artworkPath',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'artworkPath', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  artworkPathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'artworkPath', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkUrlIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2637,6 +2815,18 @@ extension EpisodeQueryLinks
     on QueryBuilder<Episode, Episode, QFilterCondition> {}
 
 extension EpisodeQuerySortBy on QueryBuilder<Episode, Episode, QSortBy> {
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByArtworkPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByArtworkPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterSortBy> sortByArtworkUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkUrl', Sort.asc);
@@ -2880,6 +3070,18 @@ extension EpisodeQuerySortBy on QueryBuilder<Episode, Episode, QSortBy> {
 
 extension EpisodeQuerySortThenBy
     on QueryBuilder<Episode, Episode, QSortThenBy> {
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByArtworkPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByArtworkPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterSortBy> thenByArtworkUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkUrl', Sort.asc);
@@ -3135,6 +3337,14 @@ extension EpisodeQuerySortThenBy
 
 extension EpisodeQueryWhereDistinct
     on QueryBuilder<Episode, Episode, QDistinct> {
+  QueryBuilder<Episode, Episode, QDistinct> distinctByArtworkPath({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'artworkPath', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Episode, Episode, QDistinct> distinctByArtworkUrl({
     bool caseSensitive = true,
   }) {
@@ -3282,6 +3492,12 @@ extension EpisodeQueryProperty
   QueryBuilder<Episode, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<Episode, String?, QQueryOperations> artworkPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'artworkPath');
     });
   }
 

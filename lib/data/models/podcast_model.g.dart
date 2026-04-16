@@ -17,86 +17,91 @@ const PodcastSchema = CollectionSchema(
   name: r'Podcast',
   id: -1143728065732125040,
   properties: {
-    r'artworkUrl': PropertySchema(
+    r'artworkPath': PropertySchema(
       id: 0,
+      name: r'artworkPath',
+      type: IsarType.string,
+    ),
+    r'artworkUrl': PropertySchema(
+      id: 1,
       name: r'artworkUrl',
       type: IsarType.string,
     ),
-    r'author': PropertySchema(id: 1, name: r'author', type: IsarType.string),
+    r'author': PropertySchema(id: 2, name: r'author', type: IsarType.string),
     r'categories': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'categories',
       type: IsarType.stringList,
     ),
     r'copyright': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'copyright',
       type: IsarType.string,
     ),
     r'createdAt': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'description',
       type: IsarType.string,
     ),
     r'episodeCount': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'episodeCount',
       type: IsarType.long,
     ),
     r'isExplicit': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'isExplicit',
       type: IsarType.bool,
     ),
     r'isSubscribed': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'isSubscribed',
       type: IsarType.bool,
     ),
     r'keywords': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'keywords',
       type: IsarType.stringList,
     ),
     r'language': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'language',
       type: IsarType.string,
     ),
     r'lastUpdated': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'ownerEmail': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'ownerEmail',
       type: IsarType.string,
     ),
     r'ownerName': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'ownerName',
       type: IsarType.string,
     ),
-    r'rssUrl': PropertySchema(id: 14, name: r'rssUrl', type: IsarType.string),
+    r'rssUrl': PropertySchema(id: 15, name: r'rssUrl', type: IsarType.string),
     r'subscribedAt': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'subscribedAt',
       type: IsarType.dateTime,
     ),
     r'subtitle': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'subtitle',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 17, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 18, name: r'title', type: IsarType.string),
     r'websiteUrl': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'websiteUrl',
       type: IsarType.string,
     ),
@@ -163,6 +168,12 @@ int _podcastEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.artworkPath;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.artworkUrl.length * 3;
   bytesCount += 3 + object.author.length * 3;
   {
@@ -237,25 +248,26 @@ void _podcastSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.artworkUrl);
-  writer.writeString(offsets[1], object.author);
-  writer.writeStringList(offsets[2], object.categories);
-  writer.writeString(offsets[3], object.copyright);
-  writer.writeDateTime(offsets[4], object.createdAt);
-  writer.writeString(offsets[5], object.description);
-  writer.writeLong(offsets[6], object.episodeCount);
-  writer.writeBool(offsets[7], object.isExplicit);
-  writer.writeBool(offsets[8], object.isSubscribed);
-  writer.writeStringList(offsets[9], object.keywords);
-  writer.writeString(offsets[10], object.language);
-  writer.writeDateTime(offsets[11], object.lastUpdated);
-  writer.writeString(offsets[12], object.ownerEmail);
-  writer.writeString(offsets[13], object.ownerName);
-  writer.writeString(offsets[14], object.rssUrl);
-  writer.writeDateTime(offsets[15], object.subscribedAt);
-  writer.writeString(offsets[16], object.subtitle);
-  writer.writeString(offsets[17], object.title);
-  writer.writeString(offsets[18], object.websiteUrl);
+  writer.writeString(offsets[0], object.artworkPath);
+  writer.writeString(offsets[1], object.artworkUrl);
+  writer.writeString(offsets[2], object.author);
+  writer.writeStringList(offsets[3], object.categories);
+  writer.writeString(offsets[4], object.copyright);
+  writer.writeDateTime(offsets[5], object.createdAt);
+  writer.writeString(offsets[6], object.description);
+  writer.writeLong(offsets[7], object.episodeCount);
+  writer.writeBool(offsets[8], object.isExplicit);
+  writer.writeBool(offsets[9], object.isSubscribed);
+  writer.writeStringList(offsets[10], object.keywords);
+  writer.writeString(offsets[11], object.language);
+  writer.writeDateTime(offsets[12], object.lastUpdated);
+  writer.writeString(offsets[13], object.ownerEmail);
+  writer.writeString(offsets[14], object.ownerName);
+  writer.writeString(offsets[15], object.rssUrl);
+  writer.writeDateTime(offsets[16], object.subscribedAt);
+  writer.writeString(offsets[17], object.subtitle);
+  writer.writeString(offsets[18], object.title);
+  writer.writeString(offsets[19], object.websiteUrl);
 }
 
 Podcast _podcastDeserialize(
@@ -265,25 +277,26 @@ Podcast _podcastDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Podcast();
-  object.artworkUrl = reader.readString(offsets[0]);
-  object.author = reader.readString(offsets[1]);
-  object.categories = reader.readStringList(offsets[2]);
-  object.copyright = reader.readStringOrNull(offsets[3]);
-  object.description = reader.readString(offsets[5]);
-  object.episodeCount = reader.readLong(offsets[6]);
+  object.artworkPath = reader.readStringOrNull(offsets[0]);
+  object.artworkUrl = reader.readString(offsets[1]);
+  object.author = reader.readString(offsets[2]);
+  object.categories = reader.readStringList(offsets[3]);
+  object.copyright = reader.readStringOrNull(offsets[4]);
+  object.description = reader.readString(offsets[6]);
+  object.episodeCount = reader.readLong(offsets[7]);
   object.id = id;
-  object.isExplicit = reader.readBool(offsets[7]);
-  object.isSubscribed = reader.readBool(offsets[8]);
-  object.keywords = reader.readStringList(offsets[9]);
-  object.language = reader.readStringOrNull(offsets[10]);
-  object.lastUpdated = reader.readDateTime(offsets[11]);
-  object.ownerEmail = reader.readStringOrNull(offsets[12]);
-  object.ownerName = reader.readStringOrNull(offsets[13]);
-  object.rssUrl = reader.readString(offsets[14]);
-  object.subscribedAt = reader.readDateTimeOrNull(offsets[15]);
-  object.subtitle = reader.readStringOrNull(offsets[16]);
-  object.title = reader.readString(offsets[17]);
-  object.websiteUrl = reader.readStringOrNull(offsets[18]);
+  object.isExplicit = reader.readBool(offsets[8]);
+  object.isSubscribed = reader.readBool(offsets[9]);
+  object.keywords = reader.readStringList(offsets[10]);
+  object.language = reader.readStringOrNull(offsets[11]);
+  object.lastUpdated = reader.readDateTime(offsets[12]);
+  object.ownerEmail = reader.readStringOrNull(offsets[13]);
+  object.ownerName = reader.readStringOrNull(offsets[14]);
+  object.rssUrl = reader.readString(offsets[15]);
+  object.subscribedAt = reader.readDateTimeOrNull(offsets[16]);
+  object.subtitle = reader.readStringOrNull(offsets[17]);
+  object.title = reader.readString(offsets[18]);
+  object.websiteUrl = reader.readStringOrNull(offsets[19]);
   return object;
 }
 
@@ -295,42 +308,44 @@ P _podcastDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readStringList(offset)) as P;
-    case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
+    case 3:
+      return (reader.readStringList(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTime(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readBool(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 8:
       return (reader.readBool(offset)) as P;
     case 9:
-      return (reader.readStringList(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 10:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 11:
-      return (reader.readDateTime(offset)) as P;
-    case 12:
       return (reader.readStringOrNull(offset)) as P;
+    case 12:
+      return (reader.readDateTime(offset)) as P;
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
-      return (reader.readString(offset)) as P;
-    case 15:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 16:
       return (reader.readStringOrNull(offset)) as P;
-    case 17:
+    case 15:
       return (reader.readString(offset)) as P;
+    case 16:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 17:
+      return (reader.readStringOrNull(offset)) as P;
     case 18:
+      return (reader.readString(offset)) as P;
+    case 19:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -705,6 +720,169 @@ extension PodcastQueryWhere on QueryBuilder<Podcast, Podcast, QWhereClause> {
 
 extension PodcastQueryFilter
     on QueryBuilder<Podcast, Podcast, QFilterCondition> {
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'artworkPath'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'artworkPath'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'artworkPath',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'artworkPath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'artworkPath',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'artworkPath', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  artworkPathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'artworkPath', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkUrlEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -3170,6 +3348,18 @@ extension PodcastQueryLinks
     on QueryBuilder<Podcast, Podcast, QFilterCondition> {}
 
 extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByArtworkPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByArtworkPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByArtworkUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkUrl', Sort.asc);
@@ -3377,6 +3567,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
 
 extension PodcastQuerySortThenBy
     on QueryBuilder<Podcast, Podcast, QSortThenBy> {
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByArtworkPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByArtworkPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'artworkPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByArtworkUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkUrl', Sort.asc);
@@ -3596,6 +3798,14 @@ extension PodcastQuerySortThenBy
 
 extension PodcastQueryWhereDistinct
     on QueryBuilder<Podcast, Podcast, QDistinct> {
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctByArtworkPath({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'artworkPath', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QDistinct> distinctByArtworkUrl({
     bool caseSensitive = true,
   }) {
@@ -3738,6 +3948,12 @@ extension PodcastQueryProperty
   QueryBuilder<Podcast, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<Podcast, String?, QQueryOperations> artworkPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'artworkPath');
     });
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
 
 /// Episode 项组件
@@ -71,22 +71,18 @@ class EpisodeItem extends StatelessWidget {
   Widget _buildArtwork() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
-      child: episode.artworkUrl != null && episode.artworkUrl!.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: episode.artworkUrl!,
-              cacheKey: episode.artworkUrl,
-              width: 34,
-              height: 34,
-              fit: BoxFit.cover,
-              memCacheWidth: 68,
-              memCacheHeight: 68,
-              maxWidthDiskCache: 200,
-              maxHeightDiskCache: 200,
-              fadeInDuration: const Duration(milliseconds: 200),
-              placeholder: (context, url) => _buildPlaceholderArtwork(),
-              errorWidget: (context, url, error) => _buildPlaceholderArtwork(),
-            )
-          : _buildPlaceholderArtwork(),
+      child: SizedBox(
+        width: 34,
+        height: 34,
+        child: ArtworkImage(
+          artworkUrl: episode.artworkUrl,
+          width: 34,
+          height: 34,
+          fit: BoxFit.cover,
+          placeholder: _buildPlaceholderArtwork(),
+          errorWidget: _buildPlaceholderArtwork(),
+        ),
+      ),
     );
   }
 

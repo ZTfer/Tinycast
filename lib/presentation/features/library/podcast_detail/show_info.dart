@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
 
 class ShowInfo extends StatelessWidget {
@@ -24,34 +24,26 @@ class ShowInfo extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: artworkUrl != null && artworkUrl!.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: artworkUrl!,
-                  cacheKey: artworkUrl,
-                  width: 64,
-                  height: 64,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 128,
-                  memCacheHeight: 128,
-                  maxWidthDiskCache: 400,
-                  maxHeightDiskCache: 400,
-                  fadeInDuration: const Duration(milliseconds: 200),
-                  placeholder: (context, url) => SvgPicture.asset(
-                    'assets/images/image_placeholder.svg',
-                    width: 64,
-                    height: 64,
-                  ),
-                  errorWidget: (context, url, error) => SvgPicture.asset(
-                    'assets/images/image_placeholder.svg',
-                    width: 64,
-                    height: 64,
-                  ),
-                )
-              : SvgPicture.asset(
-                  'assets/images/image_placeholder.svg',
-                  width: 64,
-                  height: 64,
-                ),
+          child: SizedBox(
+            width: 64,
+            height: 64,
+            child: ArtworkImage(
+              artworkUrl: artworkUrl,
+              width: 64,
+              height: 64,
+              fit: BoxFit.cover,
+              placeholder: SvgPicture.asset(
+                'assets/images/image_placeholder.svg',
+                width: 64,
+                height: 64,
+              ),
+              errorWidget: SvgPicture.asset(
+                'assets/images/image_placeholder.svg',
+                width: 64,
+                height: 64,
+              ),
+            ),
+          ),
         ),
         const SizedBox(width: 4),
         Expanded(

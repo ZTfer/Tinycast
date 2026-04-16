@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
 class SubscribeEpisodeInfo extends StatelessWidget {
   /// 播客信息
@@ -21,10 +21,12 @@ class SubscribeEpisodeInfo extends StatelessWidget {
           child: SizedBox(
             width: 40,
             height: 40,
-            child: CachedNetworkImage(
-              imageUrl: podcast.artworkUrl,
+            child: ArtworkImage(
+              artworkUrl: podcast.artworkUrl,
+              width: 40,
+              height: 40,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
+              placeholder: Container(
                 width: 40,
                 height: 40,
                 color: const Color(0xFFE0E0E0),
@@ -32,7 +34,7 @@ class SubscribeEpisodeInfo extends StatelessWidget {
                   child: Text('Cover', style: TextStyle(fontSize: 8)),
                 ),
               ),
-              errorWidget: (context, url, error) => Container(
+              errorWidget: Container(
                 width: 40,
                 height: 40,
                 color: const Color(0xFFE0E0E0),

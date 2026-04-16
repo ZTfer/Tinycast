@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
 class EpisodeInfo extends StatelessWidget {
   final String? title;
@@ -26,14 +26,14 @@ class EpisodeInfo extends StatelessWidget {
             child: SizedBox(
               width: 40,
               height: 40,
-              child: artworkUrl != null && artworkUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: artworkUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => _buildPlaceholder(),
-                      errorWidget: (context, url, error) => _buildPlaceholder(),
-                    )
-                  : _buildPlaceholder(),
+              child: ArtworkImage(
+                artworkUrl: artworkUrl,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                placeholder: _buildPlaceholder(),
+                errorWidget: _buildPlaceholder(),
+              ),
             ),
           ),
           const SizedBox(width: 12),

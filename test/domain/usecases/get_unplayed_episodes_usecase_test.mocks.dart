@@ -135,4 +135,13 @@ class MockPodcastRepository extends _i1.Mock implements _i3.PodcastRepository {
             returnValue: _i4.Future<List<_i5.Episode>>.value(<_i5.Episode>[]),
           )
           as _i4.Future<List<_i5.Episode>>);
+
+  @override
+  _i4.Future<void> updateIsPlayed(int? episodeId, bool? isPlayed) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateIsPlayed, [episodeId, isPlayed]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }
