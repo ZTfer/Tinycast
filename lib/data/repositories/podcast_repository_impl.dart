@@ -445,6 +445,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
       episodeCount: model.episodeCount,
       isSubscribed: model.isSubscribed,
       subscribedAt: model.subscribedAt,
+      artworkPath: model.artworkPath,
       createdAt: model.createdAt,
     );
   }
@@ -473,6 +474,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
       isPlayed: model.isPlayed,
       isDownloaded: model.isDownloaded,
       downloadedPath: model.downloadedPath,
+      artworkPath: model.artworkPath,
       downloadProgress: model.downloadProgress,
       playProgress: model.playProgress,
       lastPlayedAt: model.lastPlayedAt,

@@ -16,6 +16,7 @@ class Episode {
   final bool isDownloaded;
   final bool isFavorite;
   final String? downloadedPath;
+  final String? artworkPath;
   final double downloadProgress;
   final double playProgress;
   final DateTime? lastPlayedAt;
@@ -40,6 +41,7 @@ class Episode {
     this.isDownloaded = false,
     this.isFavorite = false,
     this.downloadedPath,
+    this.artworkPath,
     this.downloadProgress = 0.0,
     this.playProgress = 0.0,
     this.lastPlayedAt,

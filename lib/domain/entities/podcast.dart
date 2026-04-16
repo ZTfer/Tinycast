@@ -18,6 +18,7 @@ class Podcast {
   final int episodeCount;
   final bool isSubscribed;
   final DateTime? subscribedAt;
+  final String? artworkPath;
   final DateTime createdAt;
 
   Podcast({
@@ -40,6 +41,7 @@ class Podcast {
     this.episodeCount = 0,
     this.isSubscribed = false,
     this.subscribedAt,
+    this.artworkPath,
     required this.createdAt,
   });
 }

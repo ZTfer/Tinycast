@@ -74,8 +74,8 @@ class EpisodeItem extends StatelessWidget {
       child: SizedBox(
         width: 34,
         height: 34,
-        child: ArtworkImage(
-          artworkUrl: episode.artworkUrl,
+        child: ArtworkImage.fromEpisode(
+          episode,
           width: 34,
           height: 34,
           fit: BoxFit.cover,
