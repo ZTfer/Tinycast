@@ -27,17 +27,11 @@ class WindowArguments {
   /// Podcast 数据（用于 episode_detail 窗口）
   final Podcast? podcast;
 
-  WindowArguments({
-    required this.type,
-    this.episode,
-    this.podcast,
-  });
+  WindowArguments({required this.type, this.episode, this.podcast});
 
   /// 将 WindowArguments 序列化为 JSON 字符串
   String toJson() {
-    final Map<String, dynamic> data = {
-      'type': type,
-    };
+    final Map<String, dynamic> data = {'type': type};
 
     if (episode != null) {
       data['episode'] = {
@@ -168,11 +162,7 @@ WindowArguments parseArguments(String arguments) {
       );
     }
 
-    return WindowArguments(
-      type: type,
-      episode: episode,
-      podcast: podcast,
-    );
+    return WindowArguments(type: type, episode: episode, podcast: podcast);
   } catch (e) {
     // 解析失败时返回主窗口类型
     return WindowArguments(type: 'main');
@@ -209,7 +199,7 @@ Future<void> initSettingsWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 380),
     center: true,
-    backgroundColor: const Color(0xFFFFFFFF),
+    backgroundColor: const Color(0xFFEBEBEB),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -272,7 +262,7 @@ class SettingsWindowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Settings',
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0xFFEBEBEB),
       onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
@@ -291,8 +281,9 @@ class SettingsWindowApp extends StatelessWidget {
         return Directionality(
           textDirection: TextDirection.ltr,
           child: Container(
+            // 设置窗口背景颜色为 #EBEBEB, 窗口内边距为 12px
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFFFFFFF),
+            color: const Color(0xFFEBEBEB),
             child: child ?? const SizedBox(),
           ),
         );
@@ -348,11 +339,7 @@ class EpisodeDetailWindowApp extends StatelessWidget {
   final Episode? episode;
   final Podcast? podcast;
 
-  const EpisodeDetailWindowApp({
-    super.key,
-    this.episode,
-    this.podcast,
-  });
+  const EpisodeDetailWindowApp({super.key, this.episode, this.podcast});
 
   @override
   Widget build(BuildContext context) {
@@ -372,10 +359,7 @@ class EpisodeDetailWindowApp extends StatelessWidget {
         fontSize: 16,
         decoration: TextDecoration.none,
       ),
-      home: EpisodeDetail(
-        episode: episode,
-        podcast: podcast,
-      ),
+      home: EpisodeDetail(episode: episode, podcast: podcast),
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
