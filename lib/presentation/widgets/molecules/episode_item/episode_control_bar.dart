@@ -141,32 +141,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 isDownloaded: widget.isDownloaded,
                 showRemoveFromQueue: widget.showRemoveFromQueue,
                 onRemoveFromQueue: widget.onRemoveFromQueue,
-                onToggleFavorite: () async {
-                  try {
-                    final isFav = ref
-                        .read(favoriteProvider)
-                        .isEpisodeFavorite(widget.episodeId);
-                    await ref
-                        .read(favoriteProvider.notifier)
-                        .toggleFavorite(widget.episodeId);
-                    ref
-                        .read(favoriteEpisodesNotifierProvider.notifier)
-                        .refresh();
-                    _hideDropdown();
-                    if (mounted) {
-                      ToastUtils.showSuccessToast(
-                        context,
-                        message: isFav ? '已取消收藏' : '已收藏',
-                      );
-                    }
-                  } catch (e) {
-                    Logger.error('收藏切换失败', error: e);
-                    _hideDropdown();
-                    if (mounted) {
-                      ToastUtils.showErrorToast(context, message: '操作失败');
-                    }
-                  }
-                },
+                onToggleFavorite: _handleToggleFavorite,
                 onToggleDownload: widget.isDownloaded
                     ? _handleRemoveDownload
                     : _handleDownload,
@@ -204,6 +179,33 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   /// 显示拷贝成功 Toast
   void _showCopySuccessToast() {
     ToastUtils.showCopySuccessToast(context);
+  }
+
+  Future<void> _handleToggleFavorite() async {
+    Logger.info(
+      '❤️ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
+    );
+    if (!mounted) return;
+    try {
+      final isFav = ref
+          .read(favoriteProvider)
+          .isEpisodeFavorite(widget.episodeId);
+      final successMessage = isFav ? '已取消收藏' : '已收藏';
+      await ref
+          .read(favoriteProvider.notifier)
+          .toggleFavorite(widget.episodeId);
+      ref.read(favoriteEpisodesNotifierProvider.notifier).refresh();
+      _hideDropdown();
+      if (mounted) {
+        ToastUtils.showSuccessToast(context, message: successMessage);
+      }
+    } catch (e) {
+      Logger.error('❤️ [EPISODE-CONTROL-BAR] 收藏切换失败', error: e);
+      _hideDropdown();
+      if (mounted) {
+        ToastUtils.showErrorToast(context, message: '操作失败');
+      }
+    }
   }
 
   /// 处理插播操作（添加到队列最前面）
