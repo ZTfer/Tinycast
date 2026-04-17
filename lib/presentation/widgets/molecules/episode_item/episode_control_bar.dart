@@ -39,6 +39,12 @@ class EpisodeControlBar extends ConsumerStatefulWidget {
   /// 是否已下载
   final bool isDownloaded;
 
+  /// 是否显示'从待播清单移除'菜单项，默认值 false
+  final bool showRemoveFromQueue;
+
+  /// 从队列移除回调
+  final VoidCallback? onRemoveFromQueue;
+
   const EpisodeControlBar({
     super.key,
     required this.episodeId,
@@ -46,6 +52,8 @@ class EpisodeControlBar extends ConsumerStatefulWidget {
     this.onPlayPressed,
     this.link,
     required this.isDownloaded,
+    this.showRemoveFromQueue = false,
+    this.onRemoveFromQueue,
   });
 
   @override
@@ -131,6 +139,8 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                     .read(favoriteProvider)
                     .isEpisodeFavorite(widget.episodeId),
                 isDownloaded: widget.isDownloaded,
+                showRemoveFromQueue: widget.showRemoveFromQueue,
+                onRemoveFromQueue: widget.onRemoveFromQueue,
                 onToggleFavorite: () async {
                   try {
                     final isFav = ref

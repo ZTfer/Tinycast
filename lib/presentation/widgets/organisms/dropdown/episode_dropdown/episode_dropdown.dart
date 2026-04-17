@@ -38,6 +38,12 @@ class EpisodeDropdown extends StatelessWidget {
   /// 下载切换回调，默认值 null
   final VoidCallback? onToggleDownload;
 
+  /// 是否显示'从待播清单移除'菜单项，默认值 false
+  final bool showRemoveFromQueue;
+
+  /// 从队列移除回调
+  final VoidCallback? onRemoveFromQueue;
+
   const EpisodeDropdown({
     super.key,
     this.onItemSelected,
@@ -50,6 +56,8 @@ class EpisodeDropdown extends StatelessWidget {
     this.onMarkAsPlayed,
     this.isDownloaded = false,
     this.onToggleDownload,
+    this.showRemoveFromQueue = false,
+    this.onRemoveFromQueue,
   });
 
   @override
@@ -155,11 +163,15 @@ class EpisodeDropdown extends StatelessWidget {
               },
             ),
 
-            EpisodeDropdownItem(
-              icon: Icon(LucideIcons.x),
-              text: '从待播清单移除',
-              onPressed: () => _handleItemSelected(),
-            ),
+            if (showRemoveFromQueue)
+              EpisodeDropdownItem(
+                icon: Icon(LucideIcons.x),
+                text: '从待播清单移除',
+                onPressed: () {
+                  onRemoveFromQueue?.call();
+                  _handleItemSelected();
+                },
+              ),
           ],
         ),
       ),

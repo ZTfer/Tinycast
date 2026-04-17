@@ -24,6 +24,12 @@ class EpisodeItem extends StatelessWidget {
   /// 点击节目标题回调（用于打开详情页）
   final VoidCallback? onEpisodeTap;
 
+  /// 是否显示'从待播清单移除'菜单项，默认值 false
+  final bool showRemoveFromQueue;
+
+  /// 从队列移除回调
+  final VoidCallback? onRemoveFromQueue;
+
   const EpisodeItem({
     super.key,
     required this.episode,
@@ -31,6 +37,8 @@ class EpisodeItem extends StatelessWidget {
     this.showCover = true,
     this.onPlayPressed,
     this.onEpisodeTap,
+    this.showRemoveFromQueue = false,
+    this.onRemoveFromQueue,
   });
 
   @override
@@ -55,6 +63,8 @@ class EpisodeItem extends StatelessWidget {
                       duration: _formatDuration(episode.duration),
                       onPlayPressed: onPlayPressed,
                       onTap: onEpisodeTap,
+                      showRemoveFromQueue: showRemoveFromQueue,
+                      onRemoveFromQueue: onRemoveFromQueue,
                     ),
                   ),
                 ],

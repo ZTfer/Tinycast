@@ -52,6 +52,12 @@ class Queue extends ConsumerWidget {
           return EpisodeItem(
             episode: episode,
             showDivider: !isLast,
+            showRemoveFromQueue: true,
+            onRemoveFromQueue: () async {
+              await ref
+                  .read(queueNotifierProvider.notifier)
+                  .removeFromQueueByEpisodeId(episode.id);
+            },
             onPlayPressed: () {
               ref.read(playbackProvider.notifier).playEpisode(episode);
             },

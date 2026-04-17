@@ -22,12 +22,20 @@ class EpisodeInfo extends ConsumerStatefulWidget {
   /// 点击标题回调（用于打开详情页）
   final VoidCallback? onTap;
 
+  /// 是否显示'从待播清单移除'菜单项，默认值 false
+  final bool showRemoveFromQueue;
+
+  /// 从队列移除回调
+  final VoidCallback? onRemoveFromQueue;
+
   const EpisodeInfo({
     super.key,
     required this.episode,
     required this.duration,
     this.onPlayPressed,
     this.onTap,
+    this.showRemoveFromQueue = false,
+    this.onRemoveFromQueue,
   });
 
   @override
@@ -105,6 +113,8 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
           onPlayPressed: widget.onPlayPressed,
           link: widget.episode.link,
           isDownloaded: widget.episode.isDownloaded,
+          showRemoveFromQueue: widget.showRemoveFromQueue,
+          onRemoveFromQueue: widget.onRemoveFromQueue,
         ),
       ],
     );
