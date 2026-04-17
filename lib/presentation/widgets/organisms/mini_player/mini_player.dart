@@ -25,6 +25,7 @@ class MiniPlayer extends ConsumerWidget {
             child: EpisodeInfo(
               title: episode?.title,
               artworkUrl: episode?.artworkUrl,
+              podcastId: episode?.podcastId,
             ),
           ),
           EpisodeControlBar(

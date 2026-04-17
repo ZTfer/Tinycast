@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
-class EpisodeInfo extends StatelessWidget {
+class EpisodeInfo extends ConsumerWidget {
   final String? title;
   final String? artworkUrl;
-  final String? podcastTitle;
+  final int? podcastId;
 
-  const EpisodeInfo({
-    super.key,
-    this.title,
-    this.artworkUrl,
-    this.podcastTitle,
-  });
+  const EpisodeInfo({super.key, this.title, this.artworkUrl, this.podcastId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final podcastAsync = podcastId != null
+        ? ref.watch(podcastByIdProvider(podcastId!))
+        : null;
+
+    final podcastTitle = podcastAsync?.hasValue == true
+        ? podcastAsync!.value?.title
+        : null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(

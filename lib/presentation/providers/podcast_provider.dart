@@ -221,3 +221,12 @@ final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>((
   final useCase = ref.watch(getLatestEpisodesByPodcastIdUseCaseProvider);
   return await useCase(podcastId, limit: 3);
 });
+
+/// 根据 ID 查询单个播客的 Provider
+final podcastByIdProvider = FutureProvider.family<Podcast?, int>((
+  ref,
+  id,
+) async {
+  final useCase = ref.watch(getPodcastByIdUseCaseProvider);
+  return await useCase.call(id);
+});
