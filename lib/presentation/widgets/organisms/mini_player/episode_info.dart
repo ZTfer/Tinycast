@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
@@ -17,9 +18,10 @@ class EpisodeInfo extends ConsumerWidget {
         ? ref.watch(podcastByIdProvider(podcastId!))
         : null;
 
-    final podcastTitle = podcastAsync?.hasValue == true
-        ? podcastAsync!.value?.title
-        : null;
+    final podcastTitle = switch (podcastAsync) {
+      AsyncValue<Podcast?>(:final value) when value != null => value.title,
+      _ => null,
+    };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
