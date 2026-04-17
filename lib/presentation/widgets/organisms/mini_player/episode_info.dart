@@ -19,6 +19,8 @@ class EpisodeInfo extends ConsumerWidget {
         : null;
 
     final podcastTitle = switch (podcastAsync) {
+      AsyncLoading() => null,
+      AsyncError() => null,
       AsyncValue<Podcast?>(:final value) when value != null => value.title,
       _ => null,
     };
