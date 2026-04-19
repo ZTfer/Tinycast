@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/features/library/library_show_dropdown/library_show_dropdown_item.dart';
+import 'package:tinycast/presentation/features/library/library_show_dropdown/library_dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
 /// 显示剧集操作选项的纵向列表菜单。
 /// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
-class LibraryShowDropdown extends StatelessWidget {
+class LibraryDropdown extends StatelessWidget {
   /// 菜单项选中时的回调函数
   final VoidCallback? onItemSelected;
 
-  const LibraryShowDropdown({super.key, this.onItemSelected});
+  const LibraryDropdown({super.key, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -37,18 +37,18 @@ class LibraryShowDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            LibraryShowDropdownItem(
+            LibraryDropdownItem(
               icon: Icon(LucideIcons.info),
               text: '查看详情',
               onPressed: () => _handleItemSelected(),
             ),
 
-            LibraryShowDropdownItem(
+            LibraryDropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
               onPressed: () => _handleItemSelected(),
             ),
-            LibraryShowDropdownItem(
+            LibraryDropdownItem(
               icon: Icon(LucideIcons.share2),
               text: '分享',
               onPressed: () => _handleItemSelected(),
@@ -60,12 +60,12 @@ class LibraryShowDropdown extends StatelessWidget {
               color: const Color(0xFFE0E0E0),
             ),
             SizedBox(height: 2),
-            LibraryShowDropdownItem(
+            LibraryDropdownItem(
               icon: Icon(LucideIcons.circleMinus),
               text: '取消关注',
               onPressed: () => _handleItemSelected(),
             ),
-            LibraryShowDropdownItem(
+            LibraryDropdownItem(
               icon: Icon(LucideIcons.trash2),
               text: '移除下载',
               onPressed: () => _handleItemSelected(),

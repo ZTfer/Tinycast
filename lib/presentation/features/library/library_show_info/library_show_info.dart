@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_show_more_button.dart';
-import 'package:tinycast/presentation/features/library/library_show_dropdown/library_show_dropdown.dart';
+import 'package:tinycast/presentation/features/library/library_show_dropdown/library_dropdown.dart';
 
 /// Library 节目信息组件
 ///
@@ -113,7 +113,7 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
               /// 阻止事件冒泡，点击菜单内部不关闭
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: LibraryShowDropdown(
+              child: LibraryDropdown(
                 /// 菜单项选中时关闭下拉菜单
                 onItemSelected: _hideDropdown,
               ),
