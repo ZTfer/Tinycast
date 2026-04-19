@@ -283,7 +283,7 @@ class SettingsWindowApp extends StatelessWidget {
           child: Container(
             // 设置窗口背景颜色为 #EBEBEB, 窗口内边距为 12px
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFEBEBEB),
+            color: const Color(0xFFFFFFFF),
             child: child ?? const SizedBox(),
           ),
         );
