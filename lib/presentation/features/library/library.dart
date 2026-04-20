@@ -43,21 +43,20 @@ class _LibraryState extends ConsumerState<Library> {
         );
       }
 
-      if (mounted) {
-        ErrorToast.showException(context, exception);
-      }
+      if (!context.mounted) return;
+      // ignore: use_build_context_synchronously
+      ErrorToast.showException(context, exception);
     }
   }
 
   Future<void> _retryLoad() async {
     try {
       await _loadPodcasts();
-      if (mounted) {
-        ErrorToast.showSuccess(context, '加载成功');
-      }
-    } catch (e) {
-      // 错误已在 _loadPodcasts 中处理
-    }
+      if (!context.mounted) return;
+      // ignore: use_build_context_synchronously
+      ErrorToast.showSuccess(context, '加载成功');
+    // ignore: empty_catches
+    } catch (e) {}
   }
 
   void _selectPodcast(Podcast podcast) {
@@ -86,9 +85,9 @@ class _LibraryState extends ConsumerState<Library> {
             onPressed: () async {
               Navigator.of(context).pop();
               await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
-              if (mounted) {
-                ErrorToast.showSuccess(context, '已取消关注');
-              }
+              if (!context.mounted) return;
+              // ignore: use_build_context_synchronously
+              ErrorToast.showSuccess(context, '已取消关注');
             },
             child: const Text('确定'),
           ),
@@ -105,9 +104,9 @@ class _LibraryState extends ConsumerState<Library> {
       await downloadService.deleteDownloadedEpisode(episodeId);
     }
 
-    if (mounted) {
-      ErrorToast.showSuccess(context, '已移除所有下载');
-    }
+    if (!context.mounted) return;
+    // ignore: use_build_context_synchronously
+    ErrorToast.showSuccess(context, '已移除所有下载');
   }
 
   @override

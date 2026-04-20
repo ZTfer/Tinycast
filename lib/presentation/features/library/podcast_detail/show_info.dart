@@ -12,9 +12,7 @@ class ShowInfo extends StatelessWidget {
 
   const ShowInfo({super.key, this.title, this.artworkUrl, this.description});
 
-  void _handleMorePressed() {
-    // TODO: 实现更多按钮点击逻辑
-  }
+  void _handleMorePressed() {}
 
   @override
   Widget build(BuildContext context) {
