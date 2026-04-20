@@ -690,6 +690,28 @@ class AudioDownloadService {
     Logger.info('已移除播客 $podcastId 的 ${downloadedEpisodes.length} 个下载');
   }
 
+  Future<void> unfollowPodcast(int podcastId) async {
+    final episodes = await _isarService.isar.episodes
+        .filter()
+        .podcastIdEqualTo(podcastId)
+        .findAll();
+
+    for (final episode in episodes) {
+      if (episode.downloadedPath != null) {
+        try {
+          await _fileStorageService.deleteFile(episode.downloadedPath!);
+        } catch (_) {}
+      }
+      if (episode.artworkPath != null) {
+        try {
+          await _fileStorageService.deleteFile(episode.artworkPath!);
+        } catch (_) {}
+      }
+    }
+
+    Logger.info('已清理播客 $podcastId 的所有文件');
+  }
+
   Future<void> _updateEpisodeDownloadStatus({
     required String episodeId,
     required bool isDownloaded,

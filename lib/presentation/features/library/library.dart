@@ -83,7 +83,10 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
+    final downloadService = AudioDownloadService.instance;
+    await downloadService.unfollowPodcast(podcast.id);
     await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
     ErrorToast.showSuccess(context, '已取消关注');
