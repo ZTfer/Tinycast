@@ -171,7 +171,6 @@ class _LibraryState extends ConsumerState<Library> {
           podcast: podcast,
           showDivider: showDivider,
           onTap: () => _selectPodcast(podcast),
-          onMorePressed: () => _showMoreMenu(podcast),
         );
       },
     );
@@ -182,14 +181,14 @@ class _LibraryPodcastItem extends ConsumerWidget {
   final Podcast podcast;
   final bool showDivider;
   final VoidCallback onTap;
-  final VoidCallback onMorePressed;
+  final VoidCallback? onMorePressed;
 
   const _LibraryPodcastItem({
     super.key,
     required this.podcast,
     required this.showDivider,
     required this.onTap,
-    required this.onMorePressed,
+    this.onMorePressed,
   });
 
   @override
