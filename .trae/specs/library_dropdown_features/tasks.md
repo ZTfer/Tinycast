@@ -1,6 +1,6 @@
 # Library Dropdown Menu Features - The Implementation Plan (Decomposed and Prioritized Task List)
 
-## [ ] Task 1: Update LibraryDropdown widget to accept necessary parameters
+## [x] Task 1: Update LibraryDropdown widget to accept necessary parameters
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -11,7 +11,7 @@
   - `human-judgment` TR-1.1: Widget parameters are correctly defined and documented
 - **Notes**: This is the foundation for all other functionality
 
-## [ ] Task 2: Implement View Details functionality
+## [x] Task 2: Implement View Details functionality
 - **Priority**: P0
 - **Depends On**: Task 1
 - **Description**:
@@ -22,7 +22,7 @@
   - `human-judgment` TR-2.1: Clicking "查看详情" opens the podcast details page
 - **Notes**: Use the same navigation method as the title click in LibraryShowInfo
 
-## [ ] Task 3: Implement Copy Link functionality
+## [x] Task 3: Implement Copy Link functionality
 - **Priority**: P0
 - **Depends On**: Task 1
 - **Description**:
@@ -36,7 +36,7 @@
   - `human-judgment` TR-3.2: Success toast notification appears after copying
 - **Notes**: Reference the implementation in EpisodeDropdown
 
-## [ ] Task 4: Implement Unfollow functionality
+## [x] Task 4: Implement Unfollow functionality
 - **Priority**: P0
 - **Depends On**: Task 1
 - **Description**:
@@ -50,7 +50,7 @@
   - `human-judgment` TR-4.2: Confirming the action deletes the podcast from database
 - **Notes**: The onUnfollow callback should handle the actual database deletion
 
-## [ ] Task 5: Implement Remove Downloads functionality
+## [x] Task 5: Implement Remove Downloads functionality
 - **Priority**: P0
 - **Depends On**: Task 1
 - **Description**:
@@ -65,7 +65,7 @@
   - `human-judgment` TR-5.3: Success toast notification appears after removal
 - **Notes**: The onRemoveDownloads callback should handle the actual removal
 
-## [ ] Task 6: Update LibraryShowInfo to pass necessary parameters
+## [x] Task 6: Update LibraryShowInfo to pass necessary parameters
 - **Priority**: P1
 - **Depends On**: Task 1
 - **Description**:
@@ -76,7 +76,7 @@
   - `human-judgment` TR-6.1: LibraryShowInfo correctly passes all required parameters to LibraryDropdown
 - **Notes**: Ensure all callbacks are properly connected
 
-## [ ] Task 7: Test all functionality
+## [x] Task 7: Test all functionality
 - **Priority**: P1
 - **Depends On**: Tasks 2-6
 - **Description**:
