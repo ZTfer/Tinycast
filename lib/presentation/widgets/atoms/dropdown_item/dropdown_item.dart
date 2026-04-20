@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-class EpisodeDropdownItem extends StatefulWidget {
+class DropdownItem extends StatefulWidget {
   /// 按钮显示的图标
   final Widget icon;
 
@@ -16,7 +16,7 @@ class EpisodeDropdownItem extends StatefulWidget {
   /// 内容颜色，默认 0xD9000000
   final Color contentColor;
 
-  const EpisodeDropdownItem({
+  const DropdownItem({
     super.key,
     required this.icon,
     required this.text,
@@ -26,13 +26,13 @@ class EpisodeDropdownItem extends StatefulWidget {
   });
 
   @override
-  State<EpisodeDropdownItem> createState() => _EpisodeDropdownItemState();
+  State<DropdownItem> createState() => _DropdownItemState();
 }
 
-/// [EpisodeDropdownItem] 的状态类
+/// [DropdownItem] 的状态类
 ///
 /// 管理按钮的交互状态，包括悬停和按下状态。
-class _EpisodeDropdownItemState extends State<EpisodeDropdownItem> {
+class _DropdownItemState extends State<DropdownItem> {
   /// 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
 

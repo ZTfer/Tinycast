@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/queue_play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/horizontal_more_button.dart';
-import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown.dart';
+import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';

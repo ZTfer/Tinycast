@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/widgets/organisms/dropdown/episode_dropdown/episode_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
 /// 剧集下拉菜单
 ///
@@ -85,12 +85,12 @@ class EpisodeDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            EpisodeDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
               onPressed: () => _handleCopyLink(context),
             ),
-            EpisodeDropdownItem(
+            DropdownItem(
               icon: Icon(isFavorite ? LucideIcons.starOff : LucideIcons.star),
               text: isFavorite ? '取消收藏' : '收藏',
               onPressed: () {
@@ -118,7 +118,7 @@ class EpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            EpisodeDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.listStart),
               text: '插播',
               onPressed: () {
@@ -126,7 +126,7 @@ class EpisodeDropdown extends StatelessWidget {
                 _handleItemSelected();
               },
             ),
-            EpisodeDropdownItem(
+            DropdownItem( 
               icon: Icon(LucideIcons.listEnd),
               text: '添加到队列',
               onPressed: () {
@@ -134,7 +134,7 @@ class EpisodeDropdown extends StatelessWidget {
                 _handleItemSelected();
               },
             ),
-            EpisodeDropdownItem(
+            DropdownItem( 
               icon: Icon(LucideIcons.circleCheck),
               text: '标记为已播放',
               onPressed: () {
@@ -152,7 +152,7 @@ class EpisodeDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            EpisodeDropdownItem(
+            DropdownItem(
               icon: Icon(
                 isDownloaded ? LucideIcons.trash2 : LucideIcons.arrowDown,
               ),
@@ -164,7 +164,7 @@ class EpisodeDropdown extends StatelessWidget {
             ),
 
             if (showRemoveFromQueue)
-              EpisodeDropdownItem(
+              DropdownItem(
                 icon: Icon(LucideIcons.x),
                 text: '从待播清单移除',
                 onPressed: () {
