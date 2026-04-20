@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/features/library/library_show_dropdown/library_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
@@ -37,18 +37,18 @@ class LibraryDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            LibraryDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.info),
               text: '查看详情',
               onPressed: () => _handleItemSelected(),
             ),
 
-            LibraryDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.copy),
               text: '拷贝链接',
               onPressed: () => _handleItemSelected(),
             ),
-            LibraryDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.share2),
               text: '分享',
               onPressed: () => _handleItemSelected(),
@@ -60,12 +60,12 @@ class LibraryDropdown extends StatelessWidget {
               color: const Color(0xFFE0E0E0),
             ),
             SizedBox(height: 2),
-            LibraryDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.circleMinus),
               text: '取消关注',
               onPressed: () => _handleItemSelected(),
             ),
-            LibraryDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.trash2),
               text: '移除下载',
               onPressed: () => _handleItemSelected(),

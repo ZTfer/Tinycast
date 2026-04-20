@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_show_more_button.dart';
-import 'package:tinycast/presentation/features/library/library_show_dropdown/library_dropdown.dart';
+import 'package:tinycast/presentation/widgets/organisms/dropdown/library_dropdown.dart';
 
 /// Library 节目信息组件
 ///
