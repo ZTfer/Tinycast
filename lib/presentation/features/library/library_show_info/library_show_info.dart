@@ -20,12 +20,36 @@ class LibraryShowInfo extends StatefulWidget {
   /// 标题点击回调
   final VoidCallback? onTitleTap;
 
+  /// 查看详情回调
+  final VoidCallback? onViewDetails;
+
+  /// 节目 RSS URL
+  final String? rssUrl;
+
+  /// 拷贝链接成功回调
+  final VoidCallback? onCopyLinkSuccess;
+
+  /// 是否有已下载的剧集
+  final bool hasDownloadedEpisodes;
+
+  /// 移除下载回调
+  final VoidCallback? onRemoveDownloads;
+
+  /// 取消关注回调
+  final VoidCallback? onUnfollow;
+
   const LibraryShowInfo({
     super.key,
     required this.showName,
     required this.timeAgo,
     this.onMorePressed,
     this.onTitleTap,
+    this.onViewDetails,
+    this.rssUrl,
+    this.onCopyLinkSuccess,
+    this.hasDownloadedEpisodes = false,
+    this.onRemoveDownloads,
+    this.onUnfollow,
   });
 
   @override
@@ -116,6 +140,12 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
               child: LibraryDropdown(
                 /// 菜单项选中时关闭下拉菜单
                 onItemSelected: _hideDropdown,
+                onViewDetails: widget.onViewDetails,
+                rssUrl: widget.rssUrl,
+                onCopyLinkSuccess: widget.onCopyLinkSuccess,
+                hasDownloadedEpisodes: widget.hasDownloadedEpisodes,
+                onRemoveDownloads: widget.onRemoveDownloads,
+                onUnfollow: widget.onUnfollow,
               ),
             ),
           ),
@@ -177,7 +207,9 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF000000),
-                    decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
+                    decoration: _isHovered
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
               ),
