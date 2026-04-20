@@ -9,6 +9,9 @@ import 'package:tinycast/presentation/features/library/library_list_item/library
 import 'package:tinycast/presentation/features/library/library_empty_page/library_empty_page.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
+import 'package:tinycast/presentation/providers/queue_provider.dart';
+import 'package:tinycast/presentation/providers/play_history_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
 
@@ -86,6 +89,11 @@ class _LibraryState extends ConsumerState<Library> {
     final downloadService = AudioDownloadService.instance;
     await downloadService.unfollowPodcast(podcast.id);
     await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+
+    await ref.read(queueNotifierProvider.notifier).loadQueue();
+    await ref.read(completedHistoriesProvider.notifier).refresh();
+    await ref.read(favoriteProvider.notifier).loadFavorites();
+    await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
 
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
