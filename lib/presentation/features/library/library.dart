@@ -7,7 +7,6 @@ import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/features/library/library_empty_page/library_empty_page.dart';
-import 'package:tinycast/presentation/providers/download_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
@@ -55,8 +54,21 @@ class _LibraryState extends ConsumerState<Library> {
       if (!context.mounted) return;
       // ignore: use_build_context_synchronously
       ErrorToast.showSuccess(context, '加载成功');
-    // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      if (!context.mounted) return;
+      // ignore: use_build_context_synchronously
+      AppException exception;
+      if (e is AppException) {
+        exception = e;
+      } else {
+        exception = AppException.unknown(
+          '重新加载失败：${e.toString()}',
+          originalError: e,
+        );
+      }
+      // ignore: use_build_context_synchronously
+      ErrorToast.showException(context, exception);
+    }
   }
 
   void _selectPodcast(Podcast podcast) {
@@ -98,11 +110,7 @@ class _LibraryState extends ConsumerState<Library> {
 
   Future<void> _removeDownloads(Podcast podcast) async {
     final downloadService = AudioDownloadService.instance;
-    final completedIds = ref.read(downloadNotifierProvider).getCompletedEpisodes();
-
-    for (final episodeId in completedIds) {
-      await downloadService.deleteDownloadedEpisode(episodeId);
-    }
+    await downloadService.removeAllDownloadsForPodcast(podcast.id);
 
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
@@ -114,13 +122,27 @@ class _LibraryState extends ConsumerState<Library> {
     final state = ref.watch(podcastProvider);
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: _buildContent(state, podcasts),
+    return FutureBuilder<Map<int, bool>>(
+      future: _computeDownloadStatus(podcasts),
+      builder: (context, snapshot) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _buildContent(state, podcasts, snapshot.data ?? {}),
+        );
+      },
     );
   }
 
-  Widget _buildContent(PodcastState state, List<Podcast> podcasts) {
+  Future<Map<int, bool>> _computeDownloadStatus(List<Podcast> podcasts) async {
+    final downloadService = AudioDownloadService.instance;
+    final result = <int, bool>{};
+    for (final podcast in podcasts) {
+      result[podcast.id] = await downloadService.hasDownloadedEpisodesForPodcast(podcast.id);
+    }
+    return result;
+  }
+
+  Widget _buildContent(PodcastState state, List<Podcast> podcasts, Map<int, bool> hasDownloadMap) {
     if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
       return const SizedBox(
         height: 400,
@@ -169,7 +191,6 @@ class _LibraryState extends ConsumerState<Library> {
       itemBuilder: (context, index) {
         final podcast = podcasts[index];
         final showDivider = index < podcasts.length - 1;
-        final completedIds = ref.read(downloadNotifierProvider).getCompletedEpisodes();
 
         return _LibraryPodcastItem(
           key: ValueKey(podcast.id),
@@ -179,7 +200,7 @@ class _LibraryState extends ConsumerState<Library> {
           onViewDetails: () => _selectPodcast(podcast),
           rssUrl: podcast.rssUrl,
           onCopyLinkSuccess: () => _copyLink(podcast),
-          hasDownloadedEpisodes: completedIds.isNotEmpty,
+          hasDownloadedEpisodes: hasDownloadMap[podcast.id] ?? false,
           onRemoveDownloads: () => _removeDownloads(podcast),
           onUnfollow: () => _unfollow(podcast),
         );

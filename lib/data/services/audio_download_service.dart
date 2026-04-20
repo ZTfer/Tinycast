@@ -654,6 +654,42 @@ class AudioDownloadService {
     }
   }
 
+  Future<bool> hasDownloadedEpisodesForPodcast(int podcastId) async {
+    final count = await _isarService.isar.episodes
+        .filter()
+        .podcastIdEqualTo(podcastId)
+        .isDownloadedEqualTo(true)
+        .count();
+    return count > 0;
+  }
+
+  Future<void> removeAllDownloadsForPodcast(int podcastId) async {
+    final downloadedEpisodes = await _isarService.isar.episodes
+        .filter()
+        .podcastIdEqualTo(podcastId)
+        .isDownloadedEqualTo(true)
+        .findAll();
+
+    for (final episode in downloadedEpisodes) {
+      if (episode.downloadedPath != null) {
+        try {
+          await _fileStorageService.deleteFile(episode.downloadedPath!);
+        } catch (e) {
+          Logger.warning('删除节目文件失败: ${episode.downloadedPath}');
+        }
+      }
+
+      await _updateEpisodeDownloadStatus(
+        episodeId: episode.id.toString(),
+        isDownloaded: false,
+        downloadedPath: null,
+        downloadProgress: 0.0,
+      );
+    }
+
+    Logger.info('已移除播客 $podcastId 的 ${downloadedEpisodes.length} 个下载');
+  }
+
   Future<void> _updateEpisodeDownloadStatus({
     required String episodeId,
     required bool isDownloaded,
