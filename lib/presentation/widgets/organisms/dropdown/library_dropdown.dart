@@ -133,22 +133,29 @@ class LibraryDropdown extends StatelessWidget {
   void _handleUnfollow(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('取消关注'),
-        content: Text('确定要取消关注这个节目吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('取消'),
+      useRootNavigator: true,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) => Material(
+        color: Colors.transparent,
+        child: Center(
+          child: AlertDialog(
+            title: Text('取消关注'),
+            content: Text('确定要取消关注这个节目吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text('取消'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  onUnfollow?.call();
+                },
+                child: Text('确定'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              onUnfollow?.call();
-            },
-            child: Text('确定'),
-          ),
-        ],
+        ),
       ),
     );
   }

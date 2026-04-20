@@ -82,30 +82,11 @@ class _LibraryState extends ConsumerState<Library> {
     }
   }
 
-  void _unfollow(Podcast podcast) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('取消关注'),
-        content: const Text('确定要取消关注这个节目吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
-              if (!context.mounted) return;
-              // ignore: use_build_context_synchronously
-              ErrorToast.showSuccess(context, '已取消关注');
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _unfollow(Podcast podcast) async {
+    await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+    if (!context.mounted) return;
+    // ignore: use_build_context_synchronously
+    ErrorToast.showSuccess(context, '已取消关注');
   }
 
   Future<void> _removeDownloads(Podcast podcast) async {
