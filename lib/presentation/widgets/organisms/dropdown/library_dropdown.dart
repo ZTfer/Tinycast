@@ -48,11 +48,13 @@ class LibraryDropdown extends StatelessWidget {
               text: '拷贝链接',
               onPressed: () => _handleItemSelected(),
             ),
-            DropdownItem(
-              icon: Icon(LucideIcons.share2),
-              text: '分享',
-              onPressed: () => _handleItemSelected(),
-            ),
+
+            // DropdownItem(
+            //   icon: Icon(LucideIcons.share2),
+            //   text: '分享',
+            //   onPressed: () => _handleItemSelected(),
+            // ),
+
             SizedBox(height: 2),
             Divider(
               height: 0.5,
@@ -60,6 +62,7 @@ class LibraryDropdown extends StatelessWidget {
               color: const Color(0xFFE0E0E0),
             ),
             SizedBox(height: 2),
+            
             DropdownItem(
               icon: Icon(LucideIcons.circleMinus),
               text: '取消关注',
