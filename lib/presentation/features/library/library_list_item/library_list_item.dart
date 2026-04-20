@@ -23,6 +23,24 @@ class LibraryListItem extends StatelessWidget {
   /// 点击播客时的回调
   final VoidCallback? onTap;
 
+  /// 查看详情回调
+  final VoidCallback? onViewDetails;
+
+  /// 节目 RSS URL
+  final String? rssUrl;
+
+  /// 拷贝链接成功回调
+  final VoidCallback? onCopyLinkSuccess;
+
+  /// 是否有已下载的剧集
+  final bool hasDownloadedEpisodes;
+
+  /// 移除下载回调
+  final VoidCallback? onRemoveDownloads;
+
+  /// 取消关注回调
+  final VoidCallback? onUnfollow;
+
   /// 点击标题时的回调
   final VoidCallback? onTitleTap;
 
@@ -35,6 +53,12 @@ class LibraryListItem extends StatelessWidget {
     required this.episodes,
     this.showDivider = true,
     this.onTap,
+    this.onViewDetails,
+    this.rssUrl,
+    this.onCopyLinkSuccess,
+    this.hasDownloadedEpisodes = false,
+    this.onRemoveDownloads,
+    this.onUnfollow,
     this.onTitleTap,
     this.isLoading = false,
   });
@@ -62,6 +86,12 @@ class LibraryListItem extends StatelessWidget {
                         showName: podcast.title,
                         timeAgo: _formatTimeAgo(podcast.lastUpdated),
                         onTitleTap: onTitleTap,
+                        onViewDetails: onViewDetails,
+                        rssUrl: rssUrl,
+                        onCopyLinkSuccess: onCopyLinkSuccess,
+                        hasDownloadedEpisodes: hasDownloadedEpisodes,
+                        onRemoveDownloads: onRemoveDownloads,
+                        onUnfollow: onUnfollow,
                       ),
                       const SizedBox(height: 2),
                       Column(spacing: 1, children: _buildEpisodeItems()),
