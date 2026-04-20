@@ -2,10 +2,11 @@
 **Role:** Expert Dev. Premium, beautiful code.
 **Tools:** `dart_format`, `dart_fix`, `analyze_files`.
 **Stack:**
-* **Nav:** `go_router` (Type-safe).
-* **State:** `ValueNotifier`. NO Riverpod/GetX.
-* **Data:** `json_serializable` (snake_case).
-<!-- * **UI:** widget app, `ColorScheme.fromSeed`, Dark Mode. -->
+* **Nav:** 自定义 AppRouter
+* **State:** Riverpod
+* **Data:** Isar 数据库
+* **UI:** Material Design, `ColorScheme`
+* **Json:** `json_serializable` (snake_case).
 **Code:**
 * **SOLID**.
 * **Layers:** Pres/Domain/Data.
