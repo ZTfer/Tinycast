@@ -61,50 +61,6 @@ class _LibraryState extends ConsumerState<Library> {
     ref.read(navigationProvider.notifier).showPodcastDetail(podcast);
   }
 
-  void _showMoreMenu(Podcast podcast) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.share_outlined),
-              title: const Text('分享'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.mark_email_read_outlined),
-              title: const Text('标记为已读'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.download_outlined),
-              title: const Text('下载全部'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.unsubscribe_outlined),
-              title: const Text('取消订阅'),
-              onTap: () async {
-                Navigator.pop(context);
-                await ref
-                    .read(podcastProvider.notifier)
-                    .unsubscribe(podcast.id);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
@@ -181,14 +137,12 @@ class _LibraryPodcastItem extends ConsumerWidget {
   final Podcast podcast;
   final bool showDivider;
   final VoidCallback onTap;
-  final VoidCallback? onMorePressed;
 
   const _LibraryPodcastItem({
     super.key,
     required this.podcast,
     required this.showDivider,
     required this.onTap,
-    this.onMorePressed,
   });
 
   @override
@@ -201,7 +155,6 @@ class _LibraryPodcastItem extends ConsumerWidget {
         episodes: episodes,
         showDivider: showDivider,
         onTap: onTap,
-        onMorePressed: onMorePressed,
         onTitleTap: onTap,
         isLoading: false,
       ),
@@ -210,7 +163,6 @@ class _LibraryPodcastItem extends ConsumerWidget {
         episodes: [],
         showDivider: showDivider,
         onTap: onTap,
-        onMorePressed: onMorePressed,
         onTitleTap: onTap,
         isLoading: true,
       ),
@@ -219,7 +171,6 @@ class _LibraryPodcastItem extends ConsumerWidget {
         episodes: [],
         showDivider: showDivider,
         onTap: onTap,
-        onMorePressed: onMorePressed,
         onTitleTap: onTap,
         isLoading: false,
       ),

@@ -23,9 +23,6 @@ class LibraryListItem extends StatelessWidget {
   /// 点击播客时的回调
   final VoidCallback? onTap;
 
-  /// 更多按钮的回调
-  final VoidCallback? onMorePressed;
-
   /// 点击标题时的回调
   final VoidCallback? onTitleTap;
 
@@ -38,7 +35,6 @@ class LibraryListItem extends StatelessWidget {
     required this.episodes,
     this.showDivider = true,
     this.onTap,
-    this.onMorePressed,
     this.onTitleTap,
     this.isLoading = false,
   });
@@ -65,7 +61,6 @@ class LibraryListItem extends StatelessWidget {
                       LibraryShowInfo(
                         showName: podcast.title,
                         timeAgo: _formatTimeAgo(podcast.lastUpdated),
-                        onMorePressed: onMorePressed,
                         onTitleTap: onTitleTap,
                       ),
                       const SizedBox(height: 2),
