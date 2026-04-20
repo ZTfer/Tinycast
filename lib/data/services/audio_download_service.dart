@@ -700,12 +700,16 @@ class AudioDownloadService {
       if (episode.downloadedPath != null) {
         try {
           await _fileStorageService.deleteFile(episode.downloadedPath!);
-        } catch (_) {}
+        } catch (e) {
+          Logger.warning('删除音频文件失败: ${episode.downloadedPath}, $e');
+        }
       }
       if (episode.artworkPath != null) {
         try {
           await _fileStorageService.deleteFile(episode.artworkPath!);
-        } catch (_) {}
+        } catch (e) {
+          Logger.warning('删除图片文件失败: ${episode.artworkPath}, $e');
+        }
       }
     }
 

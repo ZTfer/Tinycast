@@ -107,6 +107,7 @@ class _LibraryState extends ConsumerState<Library> {
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
 
     return FutureBuilder<Map<int, bool>>(
+      key: ValueKey(podcasts.length),
       future: _computeDownloadStatus(podcasts),
       builder: (context, snapshot) {
         return Padding(
