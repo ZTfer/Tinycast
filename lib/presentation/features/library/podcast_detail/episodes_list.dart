@@ -33,59 +33,7 @@ class EpisodesList extends ConsumerWidget {
       itemCount: episodes.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return ShowInfo(
-            title: podcast?.title,
-            artworkUrl: podcast?.artworkUrl,
-            description: podcast?.description,
-            rssUrl: podcast?.rssUrl,
-            onViewDetails: () {},
-            onCopyLinkSuccess: () {
-              if (context.mounted) {
-                ToastUtils.showCopySuccessToast(context);
-              }
-            },
-            onRemoveDownloads: () async {
-              if (podcast != null) {
-                await AudioDownloadService.instance
-                    .removeAllDownloadsForPodcast(podcast!.id);
-                ref.invalidate(downloadedEpisodesNotifierProvider);
-                if (context.mounted) {
-                  ToastUtils.showSuccessToast(context, message: '已移除所有下载');
-                }
-              }
-            },
-            onUnfollow: () async {
-              if (podcast != null) {
-                final playHistoryRepo = PlayHistoryRepository();
-                await playHistoryRepo.removeByPodcastId(podcast!.id);
-
-                final queueRepo = QueueRepositoryImpl();
-                await queueRepo.removeFromQueueByPodcastId(podcast!.id);
-
-                final downloadService = AudioDownloadService.instance;
-                await downloadService.unfollowPodcast(podcast!.id);
-                await ref
-                    .read(podcastProvider.notifier)
-                    .unsubscribe(podcast!.id);
-
-                ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast!.id);
-                ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast!.id);
-
-                ref.invalidate(queueNotifierProvider);
-                ref.invalidate(completedHistoriesProvider);
-                ref.invalidate(favoriteEpisodesNotifierProvider);
-                ref.invalidate(downloadedEpisodesNotifierProvider);
-                ref.invalidate(unplayedEpisodesNotifierProvider);
-                ref.invalidate(podcastProvider);
-                ref.read(downloadNotifierProvider.notifier).manualRefresh();
-
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                  ToastUtils.showSuccessToast(context, message: '已取消关注');
-                }
-              }
-            },
-          );
+          return _ShowInfoWithDownloadStatus(podcast: podcast);
         }
 
         final episodeIndex = index - 1;
@@ -103,6 +51,100 @@ class EpisodesList extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _ShowInfoWithDownloadStatus extends ConsumerStatefulWidget {
+  final Podcast? podcast;
+
+  const _ShowInfoWithDownloadStatus({required this.podcast});
+
+  @override
+  ConsumerState<_ShowInfoWithDownloadStatus> createState() =>
+      _ShowInfoWithDownloadStatusState();
+}
+
+class _ShowInfoWithDownloadStatusState
+    extends ConsumerState<_ShowInfoWithDownloadStatus> {
+  bool _hasDownloads = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDownloads();
+  }
+
+  Future<void> _checkDownloads() async {
+    if (widget.podcast != null) {
+      final hasDownloads = await AudioDownloadService.instance
+          .hasDownloadedEpisodesForPodcast(widget.podcast!.id);
+      if (mounted) {
+        setState(() => _hasDownloads = hasDownloads);
+      }
+    }
+  }
+
+  Future<void> _handleRemoveDownloads() async {
+    final podcast = widget.podcast;
+    if (podcast == null) return;
+
+    await AudioDownloadService.instance
+        .removeAllDownloadsForPodcast(podcast.id);
+    ref.invalidate(downloadedEpisodesNotifierProvider);
+    if (!mounted) return;
+    ToastUtils.showSuccessToast(context, message: '已移除所有下载');
+    await _checkDownloads();
+  }
+
+  Future<void> _handleUnfollow() async {
+    final podcast = widget.podcast;
+    if (podcast == null) return;
+
+    final playHistoryRepo = PlayHistoryRepository();
+    await playHistoryRepo.removeByPodcastId(podcast.id);
+
+    final queueRepo = QueueRepositoryImpl();
+    await queueRepo.removeFromQueueByPodcastId(podcast.id);
+
+    final downloadService = AudioDownloadService.instance;
+    await downloadService.unfollowPodcast(podcast.id);
+    await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+
+    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
+    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+
+    ref.invalidate(queueNotifierProvider);
+    ref.invalidate(completedHistoriesProvider);
+    ref.invalidate(favoriteEpisodesNotifierProvider);
+    ref.invalidate(downloadedEpisodesNotifierProvider);
+    ref.invalidate(unplayedEpisodesNotifierProvider);
+    ref.invalidate(podcastProvider);
+    ref.read(downloadNotifierProvider.notifier).manualRefresh();
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    ToastUtils.showSuccessToast(context, message: '已取消关注');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final podcast = widget.podcast;
+
+    return ShowInfo(
+      title: podcast?.title,
+      artworkUrl: podcast?.artworkUrl,
+      description: podcast?.description,
+      rssUrl: podcast?.rssUrl,
+      hasDownloadedEpisodes: _hasDownloads,
+      onViewDetails: () {},
+      onCopyLinkSuccess: () {
+        if (mounted) {
+          ToastUtils.showCopySuccessToast(context);
+        }
+      },
+      onRemoveDownloads: _handleRemoveDownloads,
+      onUnfollow: _handleUnfollow,
     );
   }
 }
