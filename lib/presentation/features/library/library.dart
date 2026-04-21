@@ -94,8 +94,9 @@ class _LibraryState extends ConsumerState<Library> {
     ref.invalidate(queueNotifierProvider);
     ref.invalidate(completedHistoriesProvider);
     ref.invalidate(favoriteProvider);
-    ref.invalidate(downloadNotifierProvider);
     ref.invalidate(podcastProvider);
+
+    ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
