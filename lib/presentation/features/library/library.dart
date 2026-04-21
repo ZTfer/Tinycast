@@ -60,6 +60,7 @@ class _LibraryState extends ConsumerState<Library> {
   Future<void> _retryLoad() async {
     try {
       await _loadPodcasts();
+      // ignore: use_build_context_synchronously
       if (!context.mounted) return;
       ToastUtils.showSuccessToast(context, message: '加载成功');
     } catch (e) {

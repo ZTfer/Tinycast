@@ -7,12 +7,14 @@ import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
+import 'package:tinycast/presentation/providers/download_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
+import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'show_info.dart';
 
 class EpisodesList extends ConsumerWidget {
@@ -39,7 +41,7 @@ class EpisodesList extends ConsumerWidget {
             onViewDetails: () {},
             onCopyLinkSuccess: () {
               if (context.mounted) {
-                ToastUtils.showCopySuccess(context);
+                ToastUtils.showCopySuccessToast(context);
               }
             },
             onRemoveDownloads: () async {
@@ -47,7 +49,6 @@ class EpisodesList extends ConsumerWidget {
                 await AudioDownloadService.instance
                     .removeAllDownloadsForPodcast(podcast!.id);
                 ref.invalidate(downloadedEpisodesNotifierProvider);
-                ref.read(downloadNotifierProvider.notifier).manualRefresh();
                 if (context.mounted) {
                   ToastUtils.showSuccessToast(context, message: '已移除所有下载');
                 }
