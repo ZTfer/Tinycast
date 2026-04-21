@@ -102,7 +102,9 @@ class PodcastRepositoryImpl implements PodcastRepository {
             '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
           );
           Logger.info('🎯 [DEBUG] Podcast: ${podcast.title} (ID: $podcastId)');
-          Logger.info('🎯 [DEBUG] Total episodes available: ${episodes.length}');
+          Logger.info(
+            '🎯 [DEBUG] Total episodes available: ${episodes.length}',
+          );
           Logger.info('🎯 [DEBUG] Will download latest 3 episodes');
 
           await _audioDownloadService.downloadPodcastEpisodes(
@@ -151,15 +153,17 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final episodes = await _localDataSource.getEpisodesByPodcastId(podcastId);
 
-      for (final episode in episodes) {
-        if (episode.isDownloaded && episode.downloadedPath != null) {
-          try {
-            await _fileStorageService.deleteFile(episode.downloadedPath!);
-            Logger.info('已删除节目文件: ${episode.downloadedPath}');
-          } catch (e) {
-            Logger.warning('删除节目文件失败: ${episode.downloadedPath}, 错误: $e');
-          }
-        }
+      final pathsToDelete = episodes
+          .where((e) => e.isDownloaded && e.downloadedPath != null)
+          .map((e) => e.downloadedPath!)
+          .toList();
+
+      if (pathsToDelete.isNotEmpty) {
+        final deletedCount = await _fileStorageService.deleteFilesSafely(
+          pathsToDelete,
+          context: 'unsubscribe podcast: $podcastId',
+        );
+        Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个节目文件');
       }
 
       await _localDataSource.deleteEpisodesByPodcastId(podcastId);
@@ -452,7 +456,9 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
   @override
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
-    Logger.info('📋 [PODCAST-REPO] updateIsPlayed 调用, episodeId: $episodeId, isPlayed: $isPlayed');
+    Logger.info(
+      '📋 [PODCAST-REPO] updateIsPlayed 调用, episodeId: $episodeId, isPlayed: $isPlayed',
+    );
     await _localDataSource.updateIsPlayed(episodeId, isPlayed);
   }
 

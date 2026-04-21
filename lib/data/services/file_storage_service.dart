@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:math';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
+import '../../core/utils/storage_error_handler.dart';
 
 class FileStorageService {
   FileStorageService._();
@@ -18,7 +19,7 @@ class FileStorageService {
   Directory? _cachedSupportDir;
   Directory? _cachedAudioDir;
   Directory? _cachedImagesDir;
-  
+
   bool _isInitialized = false;
 
   void clearCache() {
@@ -28,13 +29,13 @@ class FileStorageService {
     _cachedImagesDir = null;
     _isInitialized = false;
   }
-  
+
   Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     Logger.info('🚀 [FILE_STORAGE] Initializing all directories...');
     final startTime = DateTime.now();
-    
+
     // 并行加载所有目录
     await Future.wait([
       getTemporaryDirectory(),
@@ -42,10 +43,12 @@ class FileStorageService {
       getAudioDirectory(),
       getImagesDirectory(),
     ]);
-    
+
     _isInitialized = true;
     final duration = DateTime.now().difference(startTime);
-    Logger.info('✅ [FILE_STORAGE] All directories initialized in ${duration.inMilliseconds}ms');
+    Logger.info(
+      '✅ [FILE_STORAGE] All directories initialized in ${duration.inMilliseconds}ms',
+    );
   }
 
   Future<Directory> getTemporaryDirectory() async {
@@ -211,6 +214,41 @@ class FileStorageService {
     }
   }
 
+  Future<void> deleteFileSafely(String relativePath, {String? context}) async {
+    try {
+      final fullPath = await getFullFilePath(relativePath);
+      await StorageErrorHandler.deleteFileSafely(fullPath);
+
+      final contextStr = context != null ? ' ($context)' : '';
+      Logger.info('文件删除成功: $relativePath$contextStr');
+    } catch (e, stackTrace) {
+      final contextStr = context != null ? ' ($context)' : '';
+      Logger.error(
+        '删除文件失败: $relativePath$contextStr',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<int> deleteFilesSafely(
+    List<String> relativePaths, {
+    String? context,
+  }) async {
+    int successCount = 0;
+
+    for (final path in relativePaths) {
+      try {
+        await deleteFileSafely(path, context: context);
+        successCount++;
+      } catch (e) {
+        // 错误已经在 deleteFileSafely 中记录
+      }
+    }
+
+    return successCount;
+  }
+
   Future<int> getFileSize(String relativePath) async {
     try {
       final fullPath = await getFullFilePath(relativePath);
@@ -249,9 +287,7 @@ class FileStorageService {
 
   String generateArtworkFileName() {
     final uuid = _generateUUID();
-    Logger.debug(
-      '🆔 [DEBUG] Generated UUID filename for artwork: $uuid.jpg',
-    );
+    Logger.debug('🆔 [DEBUG] Generated UUID filename for artwork: $uuid.jpg');
     return '$uuid.jpg';
   }
 

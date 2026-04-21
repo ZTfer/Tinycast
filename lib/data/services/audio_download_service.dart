@@ -629,8 +629,10 @@ class AudioDownloadService {
       }
 
       if (episode.downloadedPath != null) {
-        await _fileStorageService.deleteFile(episode.downloadedPath!);
-        Logger.info('Downloaded file deleted for episode: $episodeId');
+        await _fileStorageService.deleteFileSafely(
+          episode.downloadedPath!,
+          context: 'episode: $episodeId',
+        );
       }
 
       await _updateEpisodeDownloadStatus(
@@ -670,15 +672,20 @@ class AudioDownloadService {
         .isDownloadedEqualTo(true)
         .findAll();
 
-    for (final episode in downloadedEpisodes) {
-      if (episode.downloadedPath != null) {
-        try {
-          await _fileStorageService.deleteFile(episode.downloadedPath!);
-        } catch (e) {
-          Logger.warning('删除节目文件失败: ${episode.downloadedPath}');
-        }
-      }
+    final pathsToDelete = downloadedEpisodes
+        .map((e) => e.downloadedPath)
+        .whereType<String>()
+        .toList();
 
+    if (pathsToDelete.isNotEmpty) {
+      final deletedCount = await _fileStorageService.deleteFilesSafely(
+        pathsToDelete,
+        context: 'podcast: $podcastId',
+      );
+      Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个文件');
+    }
+
+    for (final episode in downloadedEpisodes) {
       await _updateEpisodeDownloadStatus(
         episodeId: episode.id.toString(),
         isDownloaded: false,
@@ -704,21 +711,22 @@ class AudioDownloadService {
         .podcastIdEqualTo(podcastId)
         .findAll();
 
+    final pathsToDelete = <String>[];
     for (final episode in episodes) {
       if (episode.downloadedPath != null) {
-        try {
-          await _fileStorageService.deleteFile(episode.downloadedPath!);
-        } catch (e) {
-          Logger.warning('删除音频文件失败: ${episode.downloadedPath}, $e');
-        }
+        pathsToDelete.add(episode.downloadedPath!);
       }
       if (episode.artworkPath != null) {
-        try {
-          await _fileStorageService.deleteFile(episode.artworkPath!);
-        } catch (e) {
-          Logger.warning('删除图片文件失败: ${episode.artworkPath}, $e');
-        }
+        pathsToDelete.add(episode.artworkPath!);
       }
+    }
+
+    if (pathsToDelete.isNotEmpty) {
+      final deletedCount = await _fileStorageService.deleteFilesSafely(
+        pathsToDelete,
+        context: 'unfollow podcast: $podcastId',
+      );
+      Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个文件');
     }
 
     Logger.info('已清理播客 $podcastId 的所有文件');
