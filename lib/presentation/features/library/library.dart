@@ -19,6 +19,7 @@ import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart'
 import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/toast_utils.dart';
 
 class Library extends ConsumerStatefulWidget {
   const Library({super.key});
@@ -86,7 +87,7 @@ class _LibraryState extends ConsumerState<Library> {
   void _copyLink(Podcast podcast) {
     Clipboard.setData(ClipboardData(text: podcast.rssUrl));
     if (mounted) {
-      ErrorToast.showSuccess(context, '链接已复制');
+      ToastUtils.showSuccessToast(context, message: '链接已复制');
     }
   }
 
@@ -119,8 +120,7 @@ class _LibraryState extends ConsumerState<Library> {
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
     if (!context.mounted) return;
-    // ignore: use_build_context_synchronously
-    ErrorToast.showSuccess(context, '已取消关注');
+    ToastUtils.showSuccessToast(context, message: '已取消关注');
   }
 
   Future<void> _removeDownloads(Podcast podcast) async {
@@ -128,8 +128,7 @@ class _LibraryState extends ConsumerState<Library> {
     await downloadService.removeAllDownloadsForPodcast(podcast.id);
 
     if (!context.mounted) return;
-    // ignore: use_build_context_synchronously
-    ErrorToast.showSuccess(context, '已移除所有下载');
+    ToastUtils.showSuccessToast(context, message: '已移除所有下载');
   }
 
   @override
