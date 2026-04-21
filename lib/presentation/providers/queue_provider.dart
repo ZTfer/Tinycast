@@ -10,7 +10,6 @@ import '../../domain/usecases/clear_queue_usecase.dart';
 import '../../domain/usecases/insert_to_queue_front_usecase.dart';
 import '../../data/repositories/queue_repository_impl.dart';
 import 'podcast_provider.dart';
-import '../../core/utils/logger.dart';
 
 final queueRepositoryProvider = Provider<QueueRepository>((ref) {
   return QueueRepositoryImpl();
@@ -27,7 +26,9 @@ final addToQueueUseCaseProvider = Provider<AddToQueueUseCase>((ref) {
   return AddToQueueUseCase(repository);
 });
 
-final insertToQueueFrontUseCaseProvider = Provider<InsertToQueueFrontUseCase>((ref) {
+final insertToQueueFrontUseCaseProvider = Provider<InsertToQueueFrontUseCase>((
+  ref,
+) {
   final repository = ref.watch(queueRepositoryProvider);
   return InsertToQueueFrontUseCase(repository);
 });
@@ -37,10 +38,11 @@ final removeFromQueueUseCaseProvider = Provider<RemoveFromQueueUseCase>((ref) {
   return RemoveFromQueueUseCase(repository);
 });
 
-final removeFromQueueByEpisodeIdUseCaseProvider = Provider<RemoveFromQueueByEpisodeIdUseCase>((ref) {
-  final repository = ref.watch(queueRepositoryProvider);
-  return RemoveFromQueueByEpisodeIdUseCase(repository);
-});
+final removeFromQueueByEpisodeIdUseCaseProvider =
+    Provider<RemoveFromQueueByEpisodeIdUseCase>((ref) {
+      final repository = ref.watch(queueRepositoryProvider);
+      return RemoveFromQueueByEpisodeIdUseCase(repository);
+    });
 
 final clearQueueUseCaseProvider = Provider<ClearQueueUseCase>((ref) {
   final repository = ref.watch(queueRepositoryProvider);
@@ -104,13 +106,21 @@ class QueueNotifier extends Notifier<QueueState> {
     try {
       final episodes = await _getQueueUseCase();
       Logger.info(
-          '📋 [QUEUE-PROVIDER] loadQueue 成功, 收到 ${episodes.length} 条队列记录');
-      state = state.copyWith(status: QueueStatus.success, queueEpisodes: episodes);
+        '📋 [QUEUE-PROVIDER] loadQueue 成功, 收到 ${episodes.length} 条队列记录',
+      );
+      state = state.copyWith(
+        status: QueueStatus.success,
+        queueEpisodes: episodes,
+      );
       Logger.info(
-          '📋 [QUEUE-PROVIDER] ====== loadQueue 完成, 当前队列数: ${state.queueEpisodes.length} ======');
+        '📋 [QUEUE-PROVIDER] ====== loadQueue 完成, 当前队列数: ${state.queueEpisodes.length} ======',
+      );
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] loadQueue 失败',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] loadQueue 失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
       state = state.copyWith(
         status: QueueStatus.error,
         errorMessage: e.toString(),
@@ -120,76 +130,98 @@ class QueueNotifier extends Notifier<QueueState> {
 
   Future<void> addToQueue(int episodeId) async {
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== addToQueue 开始, episodeId: $episodeId ======');
+      '📋 [QUEUE-PROVIDER] ====== addToQueue 开始, episodeId: $episodeId ======',
+    );
 
     try {
       await _addToQueueUseCase(episodeId);
-      Logger.info(
-          '📋 [QUEUE-PROVIDER] addToQueue 成功! episodeId: $episodeId');
+      Logger.info('📋 [QUEUE-PROVIDER] addToQueue 成功! episodeId: $episodeId');
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] addToQueue 失败!',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] addToQueue 失败!',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
 
     await refresh();
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== addToQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+      '📋 [QUEUE-PROVIDER] ====== addToQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======',
+    );
   }
 
   Future<void> insertToQueueFront(int episodeId) async {
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 开始, episodeId: $episodeId ======');
+      '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 开始, episodeId: $episodeId ======',
+    );
 
     try {
       await _insertToQueueFrontUseCase(episodeId);
       Logger.info(
-          '📋 [QUEUE-PROVIDER] insertToQueueFront 成功! episodeId: $episodeId');
+        '📋 [QUEUE-PROVIDER] insertToQueueFront 成功! episodeId: $episodeId',
+      );
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] insertToQueueFront 失败!',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] insertToQueueFront 失败!',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
 
     await refresh();
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+      '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 结束, 最终队列数: ${state.queueEpisodes.length} ======',
+    );
   }
 
   Future<void> removeFromQueue(int id) async {
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== removeFromQueue 开始, id: $id ======');
+      '📋 [QUEUE-PROVIDER] ====== removeFromQueue 开始, id: $id ======',
+    );
 
     try {
       await _removeFromQueueUseCase(id);
       Logger.info('📋 [QUEUE-PROVIDER] removeFromQueue 成功! id: $id');
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] removeFromQueue 失败!',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] removeFromQueue 失败!',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
 
     await refresh();
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== removeFromQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+      '📋 [QUEUE-PROVIDER] ====== removeFromQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======',
+    );
   }
 
   Future<void> removeFromQueueByEpisodeId(int episodeId) async {
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 开始, episodeId: $episodeId ======');
+      '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 开始, episodeId: $episodeId ======',
+    );
 
     try {
       await _removeFromQueueByEpisodeIdUseCase(episodeId);
-      Logger.info('📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 成功! episodeId: $episodeId');
+      Logger.info(
+        '📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 成功! episodeId: $episodeId',
+      );
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 失败!',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 失败!',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
 
     await refresh();
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+      '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 结束, 最终队列数: ${state.queueEpisodes.length} ======',
+    );
   }
 
   Future<void> clearQueue() async {
@@ -199,14 +231,18 @@ class QueueNotifier extends Notifier<QueueState> {
       await _clearQueueUseCase();
       Logger.info('📋 [QUEUE-PROVIDER] clearQueue 成功!');
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-PROVIDER] clearQueue 失败!',
-          error: e, stackTrace: stackTrace);
+      Logger.error(
+        '📋 [QUEUE-PROVIDER] clearQueue 失败!',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
 
     await refresh();
     Logger.info(
-        '📋 [QUEUE-PROVIDER] ====== clearQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======');
+      '📋 [QUEUE-PROVIDER] ====== clearQueue 结束, 最终队列数: ${state.queueEpisodes.length} ======',
+    );
   }
 
   Future<void> refresh() async {
@@ -214,8 +250,12 @@ class QueueNotifier extends Notifier<QueueState> {
   }
 
   void removeByPodcastId(int podcastId) {
-    Logger.info('🔵 [QUEUE] removeByPodcastId($podcastId) 调用, 当前队列有 ${state.queueEpisodes.length} 个 episodes');
-    final filtered = state.queueEpisodes.where((e) => e.podcastId != podcastId).toList();
+    Logger.info(
+      '🔵 [QUEUE] removeByPodcastId($podcastId) 调用, 当前队列有 ${state.queueEpisodes.length} 个 episodes',
+    );
+    final filtered = state.queueEpisodes
+        .where((e) => e.podcastId != podcastId)
+        .toList();
     Logger.info('🔵 [QUEUE] 过滤后剩余 ${filtered.length} 个 episodes');
     if (filtered.length != state.queueEpisodes.length) {
       Logger.info('🔵 [QUEUE] 更新了队列状态');
@@ -226,8 +266,9 @@ class QueueNotifier extends Notifier<QueueState> {
   }
 }
 
-final queueNotifierProvider =
-    NotifierProvider<QueueNotifier, QueueState>(QueueNotifier.new);
+final queueNotifierProvider = NotifierProvider<QueueNotifier, QueueState>(
+  QueueNotifier.new,
+);
 
 final queueEpisodesProvider = Provider<List<Episode>>((ref) {
   final state = ref.watch(queueNotifierProvider);
