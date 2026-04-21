@@ -115,6 +115,24 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
       return false;
     }
   }
+
+  /// 根据 episode ID 列表移除收藏（用于取消关注时清理）
+  Future<void> removeByEpisodeIds(List<int> episodeIds) async {
+    final toRemove = state.favoriteEpisodeIds.where((id) => episodeIds.contains(id)).toList();
+    if (toRemove.isEmpty) return;
+
+    for (final id in toRemove) {
+      try {
+        await _repository.removeFavorite(id);
+      } catch (e) {
+        Logger.warning('⭐ [FAVORITE-PROVIDER] 移除收藏失败 episodeId: $id, $e');
+      }
+    }
+
+    final newIds = Set<int>.from(state.favoriteEpisodeIds)..removeAll(toRemove);
+    state = state.copyWith(favoriteEpisodeIds: newIds);
+    Logger.info('⭐ [FAVORITE-PROVIDER] 已移除 ${toRemove.length} 个收藏');
+  }
 }
 
 final favoriteProvider = NotifierProvider<FavoriteNotifier, FavoriteState>(

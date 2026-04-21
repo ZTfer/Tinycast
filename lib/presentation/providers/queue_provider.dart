@@ -211,6 +211,13 @@ class QueueNotifier extends Notifier<QueueState> {
   Future<void> refresh() async {
     await loadQueue();
   }
+
+  void removeByPodcastId(int podcastId) {
+    final filtered = state.queueEpisodes.where((e) => e.podcastId != podcastId).toList();
+    if (filtered.length != state.queueEpisodes.length) {
+      state = state.copyWith(queueEpisodes: filtered);
+    }
+  }
 }
 
 final queueNotifierProvider =

@@ -34,6 +34,13 @@ class PlayHistoryNotifier extends Notifier<List<PlayHistory>> {
       state = updated;
     }
   }
+
+  void removeByPodcastId(int podcastId) {
+    final filtered = state.where((h) => h.podcastId != podcastId).toList();
+    if (filtered.length != state.length) {
+      state = filtered;
+    }
+  }
 }
 
 final completedHistoriesProvider =

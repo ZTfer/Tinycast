@@ -690,6 +690,14 @@ class AudioDownloadService {
     Logger.info('已移除播客 $podcastId 的 ${downloadedEpisodes.length} 个下载');
   }
 
+  Future<List<int>> getEpisodeIdsByPodcast(int podcastId) async {
+    final episodes = await _isarService.isar.episodes
+        .filter()
+        .podcastIdEqualTo(podcastId)
+        .findAll();
+    return episodes.map((e) => e.id).toList();
+  }
+
   Future<void> unfollowPodcast(int podcastId) async {
     final episodes = await _isarService.isar.episodes
         .filter()

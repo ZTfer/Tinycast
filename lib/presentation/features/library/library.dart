@@ -91,16 +91,31 @@ class _LibraryState extends ConsumerState<Library> {
     await downloadService.unfollowPodcast(podcast.id);
     await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
-    ref.invalidate(queueNotifierProvider);
-    ref.invalidate(completedHistoriesProvider);
-    ref.invalidate(favoriteProvider);
-    ref.invalidate(podcastProvider);
+    // 从内存状态中移除已删除 podcast 的 episode
+    _filterQueueByPodcast(podcast.id);
+    _filterHistoryByPodcast(podcast.id);
+    _filterFavoritesByPodcast(podcast.id);
 
+    ref.invalidate(podcastProvider);
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
     ErrorToast.showSuccess(context, '已取消关注');
+  }
+
+  void _filterQueueByPodcast(int podcastId) {
+    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcastId);
+  }
+
+  void _filterHistoryByPodcast(int podcastId) {
+    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcastId);
+  }
+
+  Future<void> _filterFavoritesByPodcast(int podcastId) async {
+    final downloadService = AudioDownloadService.instance;
+    final episodeIds = await downloadService.getEpisodeIdsByPodcast(podcastId);
+    await ref.read(favoriteProvider.notifier).removeByEpisodeIds(episodeIds);
   }
 
   Future<void> _removeDownloads(Podcast podcast) async {
