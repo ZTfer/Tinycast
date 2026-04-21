@@ -89,35 +89,41 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
-    // 清理播放历史记录（在 episodes 被删除前执行）
-    final playHistoryRepo = PlayHistoryRepository();
-    await playHistoryRepo.removeByPodcastId(podcast.id);
+    try {
+      // 清理播放历史记录（在 episodes 被删除前执行）
+      final playHistoryRepo = PlayHistoryRepository();
+      await playHistoryRepo.removeByPodcastId(podcast.id);
 
-    // 清理队列记录（在 episodes 被删除前执行）
-    final queueRepo = QueueRepositoryImpl();
-    await queueRepo.removeFromQueueByPodcastId(podcast.id);
+      // 清理队列记录（在 episodes 被删除前执行）
+      final queueRepo = QueueRepositoryImpl();
+      await queueRepo.removeFromQueueByPodcastId(podcast.id);
 
-    // 执行取消关注（会删除 episodes 和 podcasts 表中的数据）
-    final downloadService = AudioDownloadService.instance;
-    await downloadService.unfollowPodcast(podcast.id);
-    await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+      // 执行取消关注（会删除 episodes 和 podcasts 表中的数据）
+      final downloadService = AudioDownloadService.instance;
+      await downloadService.unfollowPodcast(podcast.id);
+      await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
-    // 从内存状态中移除（对已加载的 provider 立即生效）
-    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
-    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+      // 从内存状态中移除（对已加载的 provider 立即生效）
+      ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
+      ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
 
-    // Invalidate 各页面消费的 NotifierProvider，使其在下次被 watch 时从已清理的数据库重新加载
-    ref.invalidate(queueNotifierProvider);
-    ref.invalidate(completedHistoriesProvider);
-    ref.invalidate(favoriteEpisodesNotifierProvider);
-    ref.invalidate(downloadedEpisodesNotifierProvider);
-    ref.invalidate(unplayedEpisodesNotifierProvider);
+      // Invalidate 各页面消费的 NotifierProvider，使其在下次被 watch 时从已清理的数据库重新加载
+      ref.invalidate(queueNotifierProvider);
+      ref.invalidate(completedHistoriesProvider);
+      ref.invalidate(favoriteEpisodesNotifierProvider);
+      ref.invalidate(downloadedEpisodesNotifierProvider);
+      ref.invalidate(unplayedEpisodesNotifierProvider);
 
-    ref.invalidate(podcastProvider);
-    ref.read(downloadNotifierProvider.notifier).manualRefresh();
+      ref.invalidate(podcastProvider);
+      ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
-    if (!mounted) return;
-    ToastUtils.showSuccessToast(context, message: '已取消关注');
+      if (!mounted) return;
+      ToastUtils.showSuccessToast(context, message: '已取消关注');
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtils.showErrorToast(context, message: '取消关注失败: $e');
+      rethrow;
+    }
   }
 
   Future<void> _removeDownloads(Podcast podcast) async {

@@ -101,30 +101,36 @@ class _ShowInfoWithDownloadStatusState
     final podcast = widget.podcast;
     if (podcast == null) return;
 
-    final playHistoryRepo = PlayHistoryRepository();
-    await playHistoryRepo.removeByPodcastId(podcast.id);
+    try {
+      final playHistoryRepo = PlayHistoryRepository();
+      await playHistoryRepo.removeByPodcastId(podcast.id);
 
-    final queueRepo = QueueRepositoryImpl();
-    await queueRepo.removeFromQueueByPodcastId(podcast.id);
+      final queueRepo = QueueRepositoryImpl();
+      await queueRepo.removeFromQueueByPodcastId(podcast.id);
 
-    final downloadService = AudioDownloadService.instance;
-    await downloadService.unfollowPodcast(podcast.id);
-    await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+      final downloadService = AudioDownloadService.instance;
+      await downloadService.unfollowPodcast(podcast.id);
+      await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
-    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
-    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+      ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
+      ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
 
-    ref.invalidate(queueNotifierProvider);
-    ref.invalidate(completedHistoriesProvider);
-    ref.invalidate(favoriteEpisodesNotifierProvider);
-    ref.invalidate(downloadedEpisodesNotifierProvider);
-    ref.invalidate(unplayedEpisodesNotifierProvider);
-    ref.invalidate(podcastProvider);
-    ref.read(downloadNotifierProvider.notifier).manualRefresh();
+      ref.invalidate(queueNotifierProvider);
+      ref.invalidate(completedHistoriesProvider);
+      ref.invalidate(favoriteEpisodesNotifierProvider);
+      ref.invalidate(downloadedEpisodesNotifierProvider);
+      ref.invalidate(unplayedEpisodesNotifierProvider);
+      ref.invalidate(podcastProvider);
+      ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
-    if (!mounted) return;
-    Navigator.of(context).pop();
-    ToastUtils.showSuccessToast(context, message: '已取消关注');
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ToastUtils.showSuccessToast(context, message: '已取消关注');
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtils.showErrorToast(context, message: '取消关注失败: $e');
+      rethrow;
+    }
   }
 
   @override
