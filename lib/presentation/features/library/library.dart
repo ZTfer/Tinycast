@@ -88,13 +88,14 @@ class _LibraryState extends ConsumerState<Library> {
 
   Future<void> _unfollow(Podcast podcast) async {
     final downloadService = AudioDownloadService.instance;
+    final episodeIds = await downloadService.getEpisodeIdsByPodcast(podcast.id);
+
     await downloadService.unfollowPodcast(podcast.id);
     await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
-    // 从内存状态中移除已删除 podcast 的 episode
     _filterQueueByPodcast(podcast.id);
     _filterHistoryByPodcast(podcast.id);
-    _filterFavoritesByPodcast(podcast.id);
+    await _filterFavoritesByPodcast(episodeIds);
 
     ref.invalidate(podcastProvider);
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
@@ -112,9 +113,7 @@ class _LibraryState extends ConsumerState<Library> {
     ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcastId);
   }
 
-  Future<void> _filterFavoritesByPodcast(int podcastId) async {
-    final downloadService = AudioDownloadService.instance;
-    final episodeIds = await downloadService.getEpisodeIdsByPodcast(podcastId);
+  Future<void> _filterFavoritesByPodcast(List<int> episodeIds) async {
     await ref.read(favoriteProvider.notifier).removeByEpisodeIds(episodeIds);
   }
 
