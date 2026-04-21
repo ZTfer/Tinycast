@@ -15,6 +15,7 @@ import 'package:tinycast/presentation/providers/download_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
@@ -112,6 +113,7 @@ class _LibraryState extends ConsumerState<Library> {
     ref.invalidate(completedHistoriesProvider);
     ref.invalidate(favoriteEpisodesNotifierProvider);
     ref.invalidate(downloadedEpisodesNotifierProvider);
+    ref.invalidate(unplayedEpisodesNotifierProvider);
 
     ref.invalidate(podcastProvider);
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
