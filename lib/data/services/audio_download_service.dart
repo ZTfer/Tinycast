@@ -672,28 +672,36 @@ class AudioDownloadService {
         .isDownloadedEqualTo(true)
         .findAll();
 
-    // 先更新数据库状态
-    for (final episode in downloadedEpisodes) {
-      await _updateEpisodeDownloadStatus(
-        episodeId: episode.id.toString(),
-        isDownloaded: false,
-        downloadedPath: null,
-        downloadProgress: 0.0,
-      );
+    if (downloadedEpisodes.isEmpty) {
+      return;
     }
 
-    // 再删除文件
+    // 先收集要删除的文件路径
     final pathsToDelete = downloadedEpisodes
         .map((e) => e.downloadedPath)
         .whereType<String>()
         .toList();
 
+    // 先删除文件
+    int deletedCount = 0;
     if (pathsToDelete.isNotEmpty) {
-      final deletedCount = await _fileStorageService.deleteFilesSafely(
+      deletedCount = await _fileStorageService.deleteFilesSafely(
         pathsToDelete,
         context: 'podcast: $podcastId',
       );
       Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个文件');
+    }
+
+    // 文件删除成功后，更新数据库状态
+    if (deletedCount > 0) {
+      for (final episode in downloadedEpisodes) {
+        await _updateEpisodeDownloadStatus(
+          episodeId: episode.id.toString(),
+          isDownloaded: false,
+          downloadedPath: null,
+          downloadProgress: 0.0,
+        );
+      }
     }
 
     Logger.info('已移除播客 $podcastId 的 ${downloadedEpisodes.length} 个下载');
