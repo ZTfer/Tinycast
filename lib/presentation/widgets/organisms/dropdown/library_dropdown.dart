@@ -29,6 +29,9 @@ class LibraryDropdown extends StatelessWidget {
   /// 取消关注回调
   final VoidCallback? onUnfollow;
 
+  /// 是否显示"查看详情"菜单项
+  final bool showViewDetails;
+
   const LibraryDropdown({
     super.key,
     this.onItemSelected,
@@ -38,6 +41,7 @@ class LibraryDropdown extends StatelessWidget {
     this.hasDownloadedEpisodes = false,
     this.onRemoveDownloads,
     this.onUnfollow,
+    this.showViewDetails = true,
   });
 
   @override
@@ -65,14 +69,15 @@ class LibraryDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            DropdownItem(
-              icon: Icon(LucideIcons.info),
-              text: '查看详情',
-              onPressed: () {
-                onViewDetails?.call();
-                _handleItemSelected();
-              },
-            ),
+            if (showViewDetails)
+              DropdownItem(
+                icon: Icon(LucideIcons.info),
+                text: '查看详情',
+                onPressed: () {
+                  onViewDetails?.call();
+                  _handleItemSelected();
+                },
+              ),
 
             DropdownItem(
               icon: Icon(LucideIcons.copy),

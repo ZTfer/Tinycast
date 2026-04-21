@@ -53,6 +53,7 @@ class ShowInfo extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: LibraryDropdown(
+                showViewDetails: false,
                 onViewDetails: onViewDetails,
                 rssUrl: rssUrl,
                 onCopyLinkSuccess: onCopyLinkSuccess,
