@@ -198,36 +198,54 @@ class LocalQueueDataSource {
     try {
       Logger.info('📋 [QUEUE-DS] 开始根据 podcastId 从队列移除, podcastId: $podcastId');
 
-      // 需要先通过 episodes 表找到该 podcast 的所有 episodeIds
+      // 先查询该 podcast 的所有 episodes（在事务外）
       final episodes = await _isarService.isar.episodes
           .filter()
           .podcastIdEqualTo(podcastId)
           .findAll();
+      
+      final episodeIdsToRemove = episodes.map((e) => e.id).toSet();
+      Logger.info('📋 [QUEUE-DS] 找到 ${episodeIdsToRemove.length} 个 episodes 需要清理');
 
-      if (episodes.isEmpty) {
-        Logger.info('📋 [QUEUE-DS] podcastId: $podcastId 没有 episodes，跳过清理队列');
+      // 获取队列中的所有记录（在事务外）
+      final allQueueItems = await _isarService.isar.queues.where().findAll();
+      
+      if (allQueueItems.isEmpty) {
+        Logger.info('📋 [QUEUE-DS] 队列为空，无需清理');
         return;
       }
 
-      final episodeIds = episodes.map((e) => e.id).toList();
-      Logger.info('📋 [QUEUE-DS] 找到 ${episodeIds.length} 个 episodes，开始清理队列');
-
-      int removedCount = 0;
-      await _isarService.isar.writeTxn(() async {
-        for (final episodeId in episodeIds) {
-          final queueItem = await _isarService.isar.queues
+      // 找出需要删除的队列记录
+      final queueIdsToDelete = <int>[];
+      for (final queueItem in allQueueItems) {
+        // 如果 episodeId 在目标列表中，或者 episode 不存在（孤立记录），则标记删除
+        if (episodeIdsToRemove.contains(queueItem.episodeId)) {
+          queueIdsToDelete.add(queueItem.id);
+          Logger.info('📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（podcastId 匹配）');
+        } else {
+          // 检查是否为孤立记录
+          final episode = await _isarService.isar.episodes
               .where()
-              .episodeIdEqualTo(episodeId)
+              .idEqualTo(queueItem.episodeId)
               .findFirst();
-
-          if (queueItem != null) {
-            await _isarService.isar.queues.delete(queueItem.id);
-            removedCount++;
+          if (episode == null) {
+            queueIdsToDelete.add(queueItem.id);
+            Logger.info('📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（孤立记录）');
           }
         }
+      }
+
+      if (queueIdsToDelete.isEmpty) {
+        Logger.info('📋 [QUEUE-DS] 没有需要删除的队列记录');
+        return;
+      }
+
+      // 在事务中批量删除
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.queues.deleteAll(queueIdsToDelete);
       });
 
-      Logger.info('📋 [QUEUE-DS] 根据 podcastId 移除队列完成, 共移除 $removedCount 条记录');
+      Logger.info('📋 [QUEUE-DS] 根据 podcastId 移除队列完成, 共移除 ${queueIdsToDelete.length} 条记录');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 根据 podcastId 移除队列失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('根据 podcastId 移除队列失败', originalError: e, stackTrace: stackTrace);
