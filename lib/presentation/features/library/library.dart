@@ -61,8 +61,7 @@ class _LibraryState extends ConsumerState<Library> {
     try {
       await _loadPodcasts();
       if (!context.mounted) return;
-      // ignore: use_build_context_synchronously
-      ErrorToast.showSuccess(context, '加载成功');
+      ToastUtils.showSuccessToast(context, message: '加载成功');
     } catch (e) {
       if (!context.mounted) return;
       // ignore: use_build_context_synchronously
@@ -152,12 +151,17 @@ class _LibraryState extends ConsumerState<Library> {
     final downloadService = AudioDownloadService.instance;
     final result = <int, bool>{};
     for (final podcast in podcasts) {
-      result[podcast.id] = await downloadService.hasDownloadedEpisodesForPodcast(podcast.id);
+      result[podcast.id] = await downloadService
+          .hasDownloadedEpisodesForPodcast(podcast.id);
     }
     return result;
   }
 
-  Widget _buildContent(PodcastState state, List<Podcast> podcasts, Map<int, bool> hasDownloadMap) {
+  Widget _buildContent(
+    PodcastState state,
+    List<Podcast> podcasts,
+    Map<int, bool> hasDownloadMap,
+  ) {
     if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
       return const SizedBox(
         height: 400,
