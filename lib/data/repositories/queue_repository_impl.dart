@@ -46,6 +46,12 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
+  Future<void> removeFromQueueByPodcastId(int podcastId) async {
+    Logger.info('📋 [QUEUE-REPO] removeFromQueueByPodcastId 调用, podcastId: $podcastId');
+    await _dataSource.removeFromQueueByPodcastId(podcastId);
+  }
+
+  @override
   Future<bool> isInQueue(int episodeId) async {
     Logger.debug('📋 [QUEUE-REPO] isInQueue 调用, episodeId: $episodeId');
     return await _dataSource.isInQueue(episodeId);

@@ -135,4 +135,21 @@ class PlayHistoryRepository {
       }
     });
   }
+
+  Future<void> removeByPodcastId(int podcastId) async {
+    debugPrint('🗑️ [PlayHistory] 开始清理 podcastId=$podcastId 的历史记录');
+    final isar = IsarService.instance.isar;
+    await isar.writeTxn(() async {
+      final histories = await isar.playHistorys
+          .filter()
+          .podcastIdEqualTo(podcastId)
+          .findAll();
+
+      debugPrint('🗑️ [PlayHistory] 找到 ${histories.length} 条记录待清理');
+      for (final history in histories) {
+        await isar.playHistorys.delete(history.id);
+      }
+      debugPrint('✅ [PlayHistory] 已清理 ${histories.length} 条历史记录');
+    });
+  }
 }

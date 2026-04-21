@@ -3,6 +3,7 @@ import '../../domain/entities/episode.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../../domain/usecases/get_queue_usecase.dart';
 import '../../domain/usecases/add_to_queue_usecase.dart';
+import '../../core/utils/logger.dart';
 import '../../domain/usecases/remove_from_queue_usecase.dart';
 import '../../domain/usecases/remove_from_queue_by_episode_id_usecase.dart';
 import '../../domain/usecases/clear_queue_usecase.dart';
@@ -213,9 +214,14 @@ class QueueNotifier extends Notifier<QueueState> {
   }
 
   void removeByPodcastId(int podcastId) {
+    Logger.info('🔵 [QUEUE] removeByPodcastId($podcastId) 调用, 当前队列有 ${state.queueEpisodes.length} 个 episodes');
     final filtered = state.queueEpisodes.where((e) => e.podcastId != podcastId).toList();
+    Logger.info('🔵 [QUEUE] 过滤后剩余 ${filtered.length} 个 episodes');
     if (filtered.length != state.queueEpisodes.length) {
+      Logger.info('🔵 [QUEUE] 更新了队列状态');
       state = state.copyWith(queueEpisodes: filtered);
+    } else {
+      Logger.info('🔵 [QUEUE] 没有匹配到该 podcast 的 episodes，状态未改变');
     }
   }
 }

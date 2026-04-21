@@ -3,6 +3,7 @@ import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../database/isar_service.dart';
 import '../models/queue_model.dart';
+import '../models/episode_model.dart';
 
 class LocalQueueDataSource {
   final IsarService _isarService;
@@ -190,6 +191,49 @@ class LocalQueueDataSource {
     } catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 清空队列异常', error: e, stackTrace: stackTrace);
       throw AppException.unknown('清空队列失败', originalError: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> removeFromQueueByPodcastId(int podcastId) async {
+    try {
+      Logger.info('📋 [QUEUE-DS] 开始根据 podcastId 从队列移除, podcastId: $podcastId');
+
+      // 需要先通过 episodes 表找到该 podcast 的所有 episodeIds
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .podcastIdEqualTo(podcastId)
+          .findAll();
+
+      if (episodes.isEmpty) {
+        Logger.info('📋 [QUEUE-DS] podcastId: $podcastId 没有 episodes，跳过清理队列');
+        return;
+      }
+
+      final episodeIds = episodes.map((e) => e.id).toList();
+      Logger.info('📋 [QUEUE-DS] 找到 ${episodeIds.length} 个 episodes，开始清理队列');
+
+      int removedCount = 0;
+      await _isarService.isar.writeTxn(() async {
+        for (final episodeId in episodeIds) {
+          final queueItem = await _isarService.isar.queues
+              .where()
+              .episodeIdEqualTo(episodeId)
+              .findFirst();
+
+          if (queueItem != null) {
+            await _isarService.isar.queues.delete(queueItem.id);
+            removedCount++;
+          }
+        }
+      });
+
+      Logger.info('📋 [QUEUE-DS] 根据 podcastId 移除队列完成, 共移除 $removedCount 条记录');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 根据 podcastId 移除队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('根据 podcastId 移除队列失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 根据 podcastId 移除队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('根据 podcastId 移除队列失败', originalError: e, stackTrace: stackTrace);
     }
   }
 

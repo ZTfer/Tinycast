@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
+import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/queue_repository_impl.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/features/library/library_empty_page/library_empty_page.dart';
@@ -12,7 +14,8 @@ import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/presentation/providers/download_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
-import 'package:tinycast/presentation/providers/favorite_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
+import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
 
@@ -87,15 +90,28 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
-    final downloadService = AudioDownloadService.instance;
-    final episodeIds = await downloadService.getEpisodeIdsByPodcast(podcast.id);
+    // 清理播放历史记录（在 episodes 被删除前执行）
+    final playHistoryRepo = PlayHistoryRepository();
+    await playHistoryRepo.removeByPodcastId(podcast.id);
 
+    // 清理队列记录（在 episodes 被删除前执行）
+    final queueRepo = QueueRepositoryImpl();
+    await queueRepo.removeFromQueueByPodcastId(podcast.id);
+
+    // 执行取消关注（会删除 episodes 和 podcasts 表中的数据）
+    final downloadService = AudioDownloadService.instance;
     await downloadService.unfollowPodcast(podcast.id);
     await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
-    _filterQueueByPodcast(podcast.id);
-    _filterHistoryByPodcast(podcast.id);
-    await _filterFavoritesByPodcast(episodeIds);
+    // 从内存状态中移除（对已加载的 provider 立即生效）
+    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
+    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+
+    // Invalidate 各页面消费的 NotifierProvider，使其在下次被 watch 时从已清理的数据库重新加载
+    ref.invalidate(queueNotifierProvider);
+    ref.invalidate(completedHistoriesProvider);
+    ref.invalidate(favoriteEpisodesNotifierProvider);
+    ref.invalidate(downloadedEpisodesNotifierProvider);
 
     ref.invalidate(podcastProvider);
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
@@ -103,18 +119,6 @@ class _LibraryState extends ConsumerState<Library> {
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
     ErrorToast.showSuccess(context, '已取消关注');
-  }
-
-  void _filterQueueByPodcast(int podcastId) {
-    ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcastId);
-  }
-
-  void _filterHistoryByPodcast(int podcastId) {
-    ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcastId);
-  }
-
-  Future<void> _filterFavoritesByPodcast(List<int> episodeIds) async {
-    await ref.read(favoriteProvider.notifier).removeByEpisodeIds(episodeIds);
   }
 
   Future<void> _removeDownloads(Podcast podcast) async {
