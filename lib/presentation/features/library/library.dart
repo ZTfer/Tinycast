@@ -60,12 +60,10 @@ class _LibraryState extends ConsumerState<Library> {
   Future<void> _retryLoad() async {
     try {
       await _loadPodcasts();
-      // ignore: use_build_context_synchronously
-      if (!context.mounted) return;
+      if (!mounted) return;
       ToastUtils.showSuccessToast(context, message: '加载成功');
     } catch (e) {
-      if (!context.mounted) return;
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       AppException exception;
       if (e is AppException) {
         exception = e;
@@ -75,7 +73,6 @@ class _LibraryState extends ConsumerState<Library> {
           originalError: e,
         );
       }
-      // ignore: use_build_context_synchronously
       ErrorToast.showException(context, exception);
     }
   }
@@ -119,7 +116,7 @@ class _LibraryState extends ConsumerState<Library> {
     ref.invalidate(podcastProvider);
     ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     ToastUtils.showSuccessToast(context, message: '已取消关注');
   }
 
@@ -127,7 +124,7 @@ class _LibraryState extends ConsumerState<Library> {
     final downloadService = AudioDownloadService.instance;
     await downloadService.removeAllDownloadsForPodcast(podcast.id);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     ToastUtils.showSuccessToast(context, message: '已移除所有下载');
   }
 
