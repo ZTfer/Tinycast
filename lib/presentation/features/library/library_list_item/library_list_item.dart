@@ -125,10 +125,7 @@ class LibraryListItem extends StatelessWidget {
         .take(3)
         .map(
           (episode) => LibraryEpisodeItem(
-            title: episode.title,
-            onTap: () {
-              // MARK: Do something，目前没什么用
-            },
+            episode: episode,
           ),
         )
         .toList();
