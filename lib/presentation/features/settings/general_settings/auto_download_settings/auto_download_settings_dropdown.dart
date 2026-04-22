@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/features/settings/settings_dropdown/settings_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
@@ -37,32 +37,32 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '关闭',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.check),
               text: '每个节目最新 1 集',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 2 集',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 3 集',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 5 集',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '每个节目最新 10 集',
               onPressed: () => _handleItemSelected(),
@@ -77,22 +77,22 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 24 小时',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 7 天',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 14 天',
               onPressed: () => _handleItemSelected(),
             ),
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '过去 30 天',
               onPressed: () => _handleItemSelected(),
@@ -107,7 +107,7 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
             ),
             SizedBox(height: 2),
 
-            SettingsDropdownItem(
+            DropdownItem(
               // icon: Icon(LucideIcons.check),
               text: '所有单集',
               onPressed: () => _handleItemSelected(),
