@@ -1,35 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
-class ShowInfo extends StatelessWidget {
+class ShowInfo extends ConsumerWidget {
   final Podcast? podcast;
 
-  const ShowInfo({
-    super.key,
-    this.podcast,
-  });
+  const ShowInfo({super.key, this.podcast});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildArtwork(),
-        const SizedBox(width: 4),
-        Text(
-          podcast?.title ?? '',
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-            color: Color(0xFF999999),
-            height: 16 / 12,
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () {
+        if (podcast != null) {
+          ref.read(navigationProvider.notifier).showPodcastDetail(podcast!);
+        }
+      },
+      child: Row(
+        children: [
+          _buildArtwork(),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              podcast?.title ?? '',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: Color(0xFF999999),
+                height: 16 / 12,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        const Icon(LucideIcons.chevronRight, size: 12),
-      ],
+          const SizedBox(width: 4),
+          const Icon(LucideIcons.chevronRight, size: 12),
+        ],
+      ),
     );
   }
 
