@@ -130,8 +130,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   void _onEpisodeCompleted(int episodeId) {
-    debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing queue and unplayed episodes...');
-    ref.read(queueNotifierProvider.notifier).refresh();
+    debugPrint(
+      '🎯 [Playback] Episode $episodeId completed, removing from queue and refreshing unplayed episodes...',
+    );
+    ref
+        .read(queueNotifierProvider.notifier)
+        .removeFromQueueByEpisodeId(episodeId);
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
   }
 
@@ -148,12 +152,13 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     final positionMs = state.currentPosition.inMilliseconds;
     final now = DateTime.now();
 
-    final timeCondition = _lastSaveTime == null ||
-        now.difference(_lastSaveTime!).inSeconds >= 10;
+    final timeCondition =
+        _lastSaveTime == null || now.difference(_lastSaveTime!).inSeconds >= 10;
 
     final progressDelta = (positionMs - _lastSavedPositionMs).abs();
     final durationMs = state.duration.inMilliseconds;
-    final progressCondition = durationMs > 0 &&
+    final progressCondition =
+        durationMs > 0 &&
         (progressDelta >= durationMs * 0.05 || progressDelta >= 5000);
 
     if (timeCondition || progressCondition) {
@@ -212,8 +217,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   Future<void> _restoreLastPlaybackState() async {
     try {
-      final latestHistory =
-          await _playHistoryRepository.getLatestPlayingHistory();
+      final latestHistory = await _playHistoryRepository
+          .getLatestPlayingHistory();
 
       if (latestHistory == null) {
         debugPrint('No previous playback history found');
@@ -261,7 +266,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
       state = state.copyWith(currentEpisode: domainEpisode);
 
-      final startPosition = Duration(milliseconds: latestHistory.lastPlayedPositionMs);
+      final startPosition = Duration(
+        milliseconds: latestHistory.lastPlayedPositionMs,
+      );
 
       debugPrint('Initializing AudioPlayerService with restored episode...');
       await _audioPlayerService.loadEpisode(
@@ -269,7 +276,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         startPosition: startPosition,
       );
 
-      debugPrint('Playback state restored successfully - all controls should work');
+      debugPrint(
+        'Playback state restored successfully - all controls should work',
+      );
     } catch (e) {
       debugPrint('Error restoring playback state: $e');
     }
@@ -322,9 +331,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       if (durationMs > 0) {
         final progressRatio = position.inMilliseconds / durationMs;
         if (progressRatio >= 0.95) {
-          debugPrint('🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed');
+          debugPrint(
+            '🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed',
+          );
           await _playHistoryRepository.markAsCompleted(currentEpisode.id);
-          
+
           debugPrint('🔄 [Playback] Auto-refreshing History list...');
           ref.read(completedHistoriesProvider.notifier).refresh();
         }
@@ -347,9 +358,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     if (currentEpisode != null) {
       final progressRatio = state.progressRatio;
       if (progressRatio >= 0.95) {
-        debugPrint('🎯 [Playback] Stop: Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed');
+        debugPrint(
+          '🎯 [Playback] Stop: Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed',
+        );
         await _playHistoryRepository.markAsCompleted(currentEpisode.id);
-        
+
         debugPrint('🔄 [Playback] Auto-refreshing History list...');
         ref.read(completedHistoriesProvider.notifier).refresh();
       }
