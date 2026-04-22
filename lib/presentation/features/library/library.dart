@@ -121,8 +121,7 @@ class _LibraryState extends ConsumerState<Library> {
       ToastUtils.showSuccessToast(context, message: '已取消关注');
     } catch (e) {
       if (!mounted) return;
-      ToastUtils.showErrorToast(context, message: '取消关注失败: $e');
-      rethrow;
+      ToastUtils.showErrorToast(context, message: '取消关注失败');
     }
   }
 
