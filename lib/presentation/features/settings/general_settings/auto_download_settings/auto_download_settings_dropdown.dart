@@ -35,7 +35,7 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
         ],
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 300),
+        constraints: const BoxConstraints(maxHeight: 180),
         child: SingleChildScrollView(
           child: IntrinsicWidth(
             child: Column(
