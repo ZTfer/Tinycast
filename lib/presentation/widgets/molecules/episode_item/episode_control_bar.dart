@@ -74,7 +74,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   static OverlayEntry? _currentDropdownOverlay;
 
   /// 动态检查当前 episode 是否已下载
-  bool _checkIsDownloaded() {
+  bool _isDownloaded() {
     final downloadedEpisodes = ref.read(downloadedEpisodesProvider);
     return downloadedEpisodes.any((e) => e.id == widget.episodeId);
   }
@@ -144,11 +144,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 isFavorite: ref
                     .read(favoriteProvider)
                     .isEpisodeFavorite(widget.episodeId),
-                isDownloaded: _checkIsDownloaded(),
+                isDownloaded: _isDownloaded(),
                 showRemoveFromQueue: widget.showRemoveFromQueue,
                 onRemoveFromQueue: widget.onRemoveFromQueue,
                 onToggleFavorite: _handleToggleFavorite,
-                onToggleDownload: _checkIsDownloaded()
+                onToggleDownload: _isDownloaded()
                     ? _handleRemoveDownload
                     : _handleDownload,
                 link: widget.link,
