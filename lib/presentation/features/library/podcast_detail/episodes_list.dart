@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/data/repositories/queue_repository_impl.dart';
@@ -21,11 +22,7 @@ class EpisodesList extends ConsumerWidget {
   final Podcast? podcast;
   final List<Episode> episodes;
 
-  const EpisodesList({
-    super.key,
-    this.podcast,
-    required this.episodes,
-  });
+  const EpisodesList({super.key, this.podcast, required this.episodes});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +43,9 @@ class EpisodesList extends ConsumerWidget {
           showCover: false,
           onEpisodeTap: () {
             if (podcast != null) {
-              ref.read(navigationProvider.notifier).showEpisodeDetail(episode, podcast!);
+              ref
+                  .read(navigationProvider.notifier)
+                  .showEpisodeDetail(episode, podcast!);
             }
           },
         );
@@ -89,8 +88,9 @@ class _ShowInfoWithDownloadStatusState
     final podcast = widget.podcast;
     if (podcast == null) return;
 
-    await AudioDownloadService.instance
-        .removeAllDownloadsForPodcast(podcast.id);
+    await AudioDownloadService.instance.removeAllDownloadsForPodcast(
+      podcast.id,
+    );
     ref.invalidate(downloadedEpisodesNotifierProvider);
     if (!mounted) return;
     ToastUtils.showSuccessToast(context, message: '已移除所有下载');
@@ -113,7 +113,9 @@ class _ShowInfoWithDownloadStatusState
       await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
 
       ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
-      ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+      ref
+          .read(completedHistoriesProvider.notifier)
+          .removeByPodcastId(podcast.id);
 
       ref.invalidate(queueNotifierProvider);
       ref.invalidate(completedHistoriesProvider);
@@ -127,6 +129,7 @@ class _ShowInfoWithDownloadStatusState
       Navigator.of(context).pop();
       ToastUtils.showSuccessToast(context, message: '已取消关注');
     } catch (e) {
+      Logger.error('取消关注失败', error: e);
       if (!mounted) return;
       ToastUtils.showErrorToast(context, message: '取消关注失败');
     }

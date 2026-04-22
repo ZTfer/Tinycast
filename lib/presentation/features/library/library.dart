@@ -19,6 +19,7 @@ import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart'
 import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 
 class Library extends ConsumerStatefulWidget {
@@ -120,6 +121,7 @@ class _LibraryState extends ConsumerState<Library> {
       if (!mounted) return;
       ToastUtils.showSuccessToast(context, message: '已取消关注');
     } catch (e) {
+      Logger.error('取消关注失败', error: e);
       if (!mounted) return;
       ToastUtils.showErrorToast(context, message: '取消关注失败');
     }
