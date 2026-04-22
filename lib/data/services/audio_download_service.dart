@@ -138,8 +138,8 @@ class AudioDownloadService {
   final Map<String, StreamController<double>> _progressControllers = {};
   final DownloadQueue _downloadQueue = DownloadQueue(maxConcurrentDownloads: 3);
 
-  // 进度更新节流：每5秒最多更新一次数据库
-  final Map<String, DateTime> _lastProgressUpdate = {};
+  // 进度信息保存在内存中的 DownloadTask 对象里
+  // 只在下载完成或失败时才写入数据库
 
   /// 正在下载中的 episode ID 集合（防止并发重复下载）
   final Set<String> _activeDownloads = {};
@@ -323,15 +323,6 @@ class AudioDownloadService {
               downloadTask.totalBytes = total;
 
               _notifyProgressChange(episodeId, progress);
-
-              final now = DateTime.now();
-              final lastUpdate = _lastProgressUpdate[episodeId];
-              if (lastUpdate == null ||
-                  now.difference(lastUpdate).inSeconds >= 5 ||
-                  progress >= 1.0) {
-                _lastProgressUpdate[episodeId] = now;
-                _updateEpisodeDownloadProgress(episodeId, progress);
-              }
             }
           },
         );
@@ -771,15 +762,6 @@ class AudioDownloadService {
     }
   }
 
-  Future<void> _updateEpisodeDownloadProgress(
-    String episodeId,
-    double progress,
-  ) async {
-    // 优化：不再实时写入数据库，避免写锁阻塞 UI 线程的读操作
-    // 进度信息仅保存在内存中的 DownloadTask 对象里
-    // 只在下载完成或失败时才写入数据库
-  }
-
   void _notifyStatusChange(String episodeId, DownloadStatus status) {
     final controller = _statusControllers[episodeId];
     if (controller != null && !controller.isClosed) {
@@ -1038,7 +1020,6 @@ class AudioDownloadService {
             downloadTask.totalBytes = total;
 
             _notifyProgressChange(episodeId, progress);
-            _updateEpisodeDownloadProgress(episodeId, progress);
           }
         },
       );
