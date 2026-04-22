@@ -10,7 +10,7 @@ import 'package:tinycast/presentation/features/debug/test_page.dart';
 import 'package:tinycast/presentation/features/queue/queue.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';
 import 'package:tinycast/presentation/features/library/podcast_detail/podcast_detail.dart';
-import 'package:tinycast/presentation/features/player/episode_detail.dart';
+import 'package:tinycast/presentation/features/episode_detail/episode_detail.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 

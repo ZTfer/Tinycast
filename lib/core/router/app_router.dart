@@ -12,7 +12,7 @@ import 'package:tinycast/presentation/features/debug/test_page.dart';
 import 'package:tinycast/presentation/features/search/search_page.dart';
 import 'package:tinycast/presentation/features/queue/queue.dart';
 import 'package:tinycast/presentation/features/library/podcast_detail/podcast_detail.dart';
-import 'package:tinycast/presentation/features/player/episode_detail.dart';
+import 'package:tinycast/presentation/features/episode_detail/episode_detail.dart';
 import 'package:tinycast/presentation/features/debug/database_cleanup_page.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
