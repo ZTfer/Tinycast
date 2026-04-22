@@ -41,6 +41,8 @@ class _DropdownItemState extends State<DropdownItem> {
 
   @override
   Widget build(BuildContext context) {
+    final icon = widget.icon;
+
     return MouseRegion(
       /// 鼠标进入区域时，设置悬停状态为 true
       onEnter: (_) => setState(() => _isHovering = true),
@@ -92,7 +94,7 @@ class _DropdownItemState extends State<DropdownItem> {
             /// 子组件列表
             children: [
               /// 图标或占位符
-              if (widget.icon != null)
+              if (icon != null)
                 /// 图标主题，统一设置图标颜色和大小
                 IconTheme(
                   data: IconThemeData(
@@ -104,7 +106,7 @@ class _DropdownItemState extends State<DropdownItem> {
                   ),
 
                   /// 显示的图标
-                  child: widget.icon!,
+                  child: icon,
                 )
               else
                 /// 图标占位符，保持图标大小的空位置
