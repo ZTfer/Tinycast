@@ -23,15 +23,14 @@ class ShowInfo extends ConsumerWidget {
         children: [
           _buildArtwork(),
           const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              podcast?.title ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-                color: Color(0xFF999999),
-                height: 16 / 12,
-              ),
+          // Podcast 标题
+          Text(
+            podcast?.title ?? '',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              color: Color(0xFF999999),
+              height: 16 / 12,
             ),
           ),
           const SizedBox(width: 4),
