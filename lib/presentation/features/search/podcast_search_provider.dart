@@ -6,6 +6,7 @@ import '../../../domain/repositories/podcast_repository.dart';
 import '../../../domain/usecases/subscribe_podcast_usecase.dart';
 import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
 import '../../../data/repositories/podcast_repository_impl.dart';
+import '../../../core/utils/logger.dart';
 import '../../providers/podcast_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
@@ -107,28 +108,44 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
   }
 
   Future<void> addPodcast(Podcast podcast) async {
+    final stopwatch = Stopwatch()..start();
     final rssUrl = podcast.rssUrl;
 
+    Logger.info('🕒 [LIBRARY] addPodcast 开始, rssUrl=$rssUrl');
+
     if (_isPodcastSubscribed(rssUrl)) {
+      Logger.info('🕒 [LIBRARY] 播客已订阅，跳过');
       return;
     }
 
     state = state.copyWith(addingStatus: {...state.addingStatus, rssUrl: true});
+    Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 设置 addingStatus=true');
 
     try {
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _subscribePodcastUseCase...');
       await _subscribePodcastUseCase(rssUrl);
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] _subscribePodcastUseCase 完成');
+
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _loadSubscribedPodcasts...');
       await _loadSubscribedPodcasts();
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] _loadSubscribedPodcasts 完成');
 
       // 通知 Library 页面刷新
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调用 ref.invalidate(podcastProvider)');
       ref.invalidate(podcastProvider);
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] ref.invalidate 完成');
 
       state = state.copyWith(
         addingStatus: {...state.addingStatus, rssUrl: false},
       );
+      Logger.info('🕒 [LIBRARY] addPodcast 完成，总耗时: ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
     } catch (e) {
       state = state.copyWith(
         addingStatus: {...state.addingStatus, rssUrl: false},
       );
+      Logger.info('🕒 [LIBRARY] addPodcast 失败: $e');
+      stopwatch.stop();
       rethrow;
     }
   }
@@ -177,9 +194,15 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
   }
 
   Future<void> _loadSubscribedPodcasts() async {
+    final stopwatch = Stopwatch()..start();
+    Logger.info('🕒 [LIBRARY] _loadSubscribedPodcasts 开始');
     try {
       _subscribedPodcasts = await _getSubscribedPodcastsUseCase();
+      Logger.info('🕒 [LIBRARY] _loadSubscribedPodcasts 完成, 获取 ${_subscribedPodcasts.length} 个播客, 耗时 ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
     } catch (e) {
+      Logger.info('🕒 [LIBRARY] _loadSubscribedPodcasts 失败: $e');
+      stopwatch.stop();
       _subscribedPodcasts = [];
     }
   }

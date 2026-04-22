@@ -47,9 +47,15 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _loadPodcasts() async {
+    final stopwatch = Stopwatch()..start();
+    Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 被调用');
     try {
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
+      Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
     } catch (e) {
+      Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 异常: $e');
+      stopwatch.stop();
       AppException exception;
       if (e is AppException) {
         exception = e;
@@ -147,11 +153,13 @@ class _LibraryState extends ConsumerState<Library> {
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
     final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
+    Logger.info('🕒 [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}');
 
     return FutureBuilder<Map<int, bool>>(
       key: ValueKey(podcasts.length),
       future: _computeDownloadStatus(podcasts),
       builder: (context, snapshot) {
+        Logger.info('🕒 [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}');
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: _buildContent(state, podcasts, snapshot.data ?? {}),

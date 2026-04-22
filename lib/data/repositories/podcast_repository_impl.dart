@@ -29,25 +29,28 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
   @override
   Future<Podcast> subscribe(String rssUrl) async {
+    final stopwatch = Stopwatch()..start();
     try {
-      Logger.info('开始订阅播客: $rssUrl');
+      Logger.info('🕒 [TIMING] [0ms] 开始订阅播客: $rssUrl');
 
       final isSubscribed = await _localDataSource.isPodcastSubscribed(rssUrl);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] isPodcastSubscribed 完成, isSubscribed=$isSubscribed');
       if (isSubscribed) {
         throw AppException.validation('该播客已订阅');
       }
 
       final result = await _remoteDataSource.getPodcastFromRss(rssUrl);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastFromRss 完成（网络请求）');
       final podcastEntity = result['podcast'] as Podcast;
       final episodes = result['episodes'] as List<Episode>;
+      Logger.info('🕒 [TIMING] 解析到 ${episodes.length} 个剧集');
 
       Logger.info(
         '播客实体: ${podcastEntity.title}, isSubscribed: ${podcastEntity.isSubscribed}',
       );
 
       final podcastId = await _localDataSource.savePodcast(podcastEntity);
-
-      Logger.info('保存播客后获得的 ID: $podcastId');
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] savePodcast 完成, podcastId=$podcastId');
 
       final episodesWithPodcastId = episodes.map((episode) {
         return Episode(
@@ -74,17 +77,22 @@ class PodcastRepositoryImpl implements PodcastRepository {
           updatedAt: episode.updatedAt,
         );
       }).toList();
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] episodesWithPodcastId map 完成');
 
       await _localDataSource.saveEpisodes(episodesWithPodcastId);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] saveEpisodes 完成, 保存了 ${episodesWithPodcastId.length} 个剧集');
 
-      Logger.info('准备更新订阅状态，podcastId: $podcastId');
       await _localDataSource.updatePodcastSubscription(podcastId, true);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastSubscription 完成');
+
       await _localDataSource.updatePodcastEpisodeCount(
         podcastId,
         episodes.length,
       );
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastEpisodeCount 完成');
 
       final podcastModel = await _localDataSource.getPodcastById(podcastId);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastById 完成');
       if (podcastModel == null) {
         throw AppException.unknown('保存播客后无法获取数据');
       }
@@ -94,14 +102,16 @@ class PodcastRepositoryImpl implements PodcastRepository {
       );
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 准备调度自动下载任务');
 
       // 自动下载最新 3 集（使用事件队列而非微任务队列，避免阻塞订阅流程）
       // Future.delayed(Duration.zero) 将任务放入事件队列，优先级低于微任务
       // 确保 subscribe() 返回后，UI 能立即响应用户操作
       Future<void> _autoDownload() async {
+        final downloadStopwatch = Stopwatch()..start();
         try {
           Logger.info(
-            '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
+            '🎯 [DEBUG] [${downloadStopwatch.elapsedMilliseconds}ms] ====== Auto-download triggered for new subscription ======',
           );
           Logger.info('🎯 [DEBUG] Podcast: ${podcast.title} (ID: $podcastId)');
           Logger.info(
@@ -111,11 +121,14 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
           // 在异步操作前再次 yield，确保不阻塞
           await Future.delayed(Duration.zero);
+          Logger.info('🎯 [DEBUG] [${downloadStopwatch.elapsedMilliseconds}ms] First yield completed');
 
+          Logger.info('🎯 [DEBUG] [${downloadStopwatch.elapsedMilliseconds}ms] Calling downloadPodcastEpisodes...');
           await _audioDownloadService.downloadPodcastEpisodes(
             podcastId,
             limit: 3,
           );
+          Logger.info('🎯 [DEBUG] [${downloadStopwatch.elapsedMilliseconds}ms] downloadPodcastEpisodes completed');
 
           Logger.info(
             '✅ [DEBUG] Auto-download tasks added to queue successfully',
@@ -130,9 +143,12 @@ class PodcastRepositoryImpl implements PodcastRepository {
         }
       }
 
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 调度 Future.delayed 自动下载任务');
       Future.delayed(Duration.zero, _autoDownload);
+      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] Future.delayed 调度完成，即将返回 podcast');
 
-      Logger.info('成功订阅播客: ${podcast.title}');
+      Logger.info('成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)');
+      stopwatch.stop();
 
       return podcast;
     } on AppException {

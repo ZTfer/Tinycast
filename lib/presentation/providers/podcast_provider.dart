@@ -128,11 +128,18 @@ class PodcastNotifier extends Notifier<PodcastState> {
   }
 
   Future<void> loadSubscribedPodcasts() async {
+    final stopwatch = Stopwatch()..start();
+    Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 开始, 设置 status=loading');
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       final podcasts = await _getSubscribedPodcastsUseCase();
+      Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 数据库查询完成, 获取 ${podcasts.length} 个播客, 耗时 ${stopwatch.elapsedMilliseconds}ms');
       state = state.copyWith(status: PodcastStatus.success, podcasts: podcasts);
+      Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
     } catch (e) {
+      Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 失败: $e, 耗时 ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
       state = state.copyWith(
         status: PodcastStatus.error,
         errorMessage: e.toString(),

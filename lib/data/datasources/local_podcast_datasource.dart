@@ -14,12 +14,13 @@ class LocalPodcastDataSource {
     : _isarService = isarService ?? IsarService.instance;
 
   Future<List<model.Podcast>> getSubscribedPodcasts() async {
+    final stopwatch = Stopwatch()..start();
     try {
-      Logger.info('获取所有已订阅播客');
+      Logger.info('🕒 [DATASOURCE] getSubscribedPodcasts 开始');
 
+      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始 Isar findAll 查询');
       final allPodcasts = await _isarService.isar.podcasts.where().findAll();
-
-      Logger.info('数据库中共有 ${allPodcasts.length} 个播客');
+      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] Isar findAll 完成, 共 ${allPodcasts.length} 个播客');
 
       for (final p in allPodcasts) {
         Logger.info(
@@ -27,9 +28,12 @@ class LocalPodcastDataSource {
         );
       }
 
+      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始过滤 isSubscribed');
       final podcasts = allPodcasts.where((p) => p.isSubscribed).toList();
+      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 过滤完成, 已订阅 ${podcasts.length} 个');
 
-      Logger.info('成功获取 ${podcasts.length} 个已订阅播客');
+      Logger.info('成功获取 ${podcasts.length} 个已订阅播客, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.stop();
 
       return podcasts;
     } on IsarError catch (e, stackTrace) {
