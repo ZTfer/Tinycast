@@ -148,7 +148,6 @@ class PodcastRepositoryImpl implements PodcastRepository {
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] Future.delayed 调度完成，即将返回 podcast');
 
       Logger.info('成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)');
-      stopwatch.stop();
 
       return podcast;
     } on AppException {
