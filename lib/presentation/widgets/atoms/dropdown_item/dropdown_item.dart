@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 class DropdownItem extends StatefulWidget {
-  /// 按钮显示的图标
-  final Widget icon;
+  /// 按钮显示的图标，可选
+  final Widget? icon;
 
   /// 按钮显示的文字
   final String text;
@@ -18,7 +18,7 @@ class DropdownItem extends StatefulWidget {
 
   const DropdownItem({
     super.key,
-    required this.icon,
+    this.icon,
     required this.text,
     required this.onPressed,
     this.iconSize = 12,
@@ -91,19 +91,24 @@ class _DropdownItemState extends State<DropdownItem> {
 
             /// 子组件列表
             children: [
-              /// 图标主题，统一设置图标颜色和大小
-              IconTheme(
-                data: IconThemeData(
-                  /// 根据状态动态获取内容颜色
-                  color: _getContentColor(),
+              /// 图标或占位符
+              if (widget.icon != null)
+                /// 图标主题，统一设置图标颜色和大小
+                IconTheme(
+                  data: IconThemeData(
+                    /// 根据状态动态获取内容颜色
+                    color: _getContentColor(),
 
-                  /// 使用配置的图标大小
-                  size: widget.iconSize,
-                ),
+                    /// 使用配置的图标大小
+                    size: widget.iconSize,
+                  ),
 
-                /// 显示的图标
-                child: widget.icon,
-              ),
+                  /// 显示的图标
+                  child: widget.icon!,
+                )
+              else
+                /// 图标占位符，保持图标大小的空位置
+                SizedBox(width: widget.iconSize, height: widget.iconSize),
 
               /// 图标和文字之间的间距 6
               const SizedBox(width: 6.0),
