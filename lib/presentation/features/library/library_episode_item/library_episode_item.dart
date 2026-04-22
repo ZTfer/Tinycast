@@ -35,6 +35,7 @@ class LibraryEpisodeItem extends ConsumerWidget {
             ),
           ),
           LibraryEpisodePlayButton(
+            episode: episode,
             onPressed: () {
               ref.read(playbackProvider.notifier).playEpisode(episode);
             },
