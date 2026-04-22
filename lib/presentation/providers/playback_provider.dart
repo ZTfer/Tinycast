@@ -136,9 +136,15 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       debugPrint(
         '🎯 [Playback] Episode $episodeId completed, removing from queue...',
       );
-      await ref
-          .read(queueNotifierProvider.notifier)
-          .removeFromQueueByEpisodeId(episodeId);
+      try {
+        await ref
+            .read(queueNotifierProvider.notifier)
+            .removeFromQueueByEpisodeId(episodeId);
+      } catch (e, stackTrace) {
+        debugPrint(
+          '❌ [Playback] Failed to remove episode $episodeId from queue: $e\n$stackTrace',
+        );
+      }
     }
     debugPrint(
       '🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...',
