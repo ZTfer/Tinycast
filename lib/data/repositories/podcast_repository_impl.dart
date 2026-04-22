@@ -152,16 +152,16 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       return podcast;
     } on AppException {
-      stopwatch.stop();
       rethrow;
     } catch (e, stackTrace) {
-      stopwatch.stop();
       Logger.error('订阅播客失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '订阅播客失败',
         originalError: e,
         stackTrace: stackTrace,
       );
+    } finally {
+      stopwatch.stop();
     }
   }
 
