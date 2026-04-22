@@ -73,6 +73,12 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
   /// 全局当前显示的下拉菜单，用于确保同一时间只显示一个菜单
   static OverlayEntry? _currentDropdownOverlay;
 
+  /// 动态检查当前 episode 是否已下载
+  bool _checkIsDownloaded() {
+    final downloadedEpisodes = ref.read(downloadedEpisodesProvider);
+    return downloadedEpisodes.any((e) => e.id == widget.episodeId);
+  }
+
   /// 显示下拉菜单
   void _showDropdown() {
     /// 如果已有下拉菜单显示，先关闭它（包括当前按钮的菜单）
@@ -138,11 +144,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 isFavorite: ref
                     .read(favoriteProvider)
                     .isEpisodeFavorite(widget.episodeId),
-                isDownloaded: widget.isDownloaded,
+                isDownloaded: _checkIsDownloaded(),
                 showRemoveFromQueue: widget.showRemoveFromQueue,
                 onRemoveFromQueue: widget.onRemoveFromQueue,
                 onToggleFavorite: _handleToggleFavorite,
-                onToggleDownload: widget.isDownloaded
+                onToggleDownload: _checkIsDownloaded()
                     ? _handleRemoveDownload
                     : _handleDownload,
                 link: widget.link,
@@ -354,6 +360,12 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
         downloadStatus == DownloadStatus.queued;
     final downloadProgress = downloadState.episodeProgress[episodeIdStr];
 
+    // 动态从已下载列表获取，不依赖 widget.isDownloaded
+    final downloadedEpisodes = ref.watch(downloadedEpisodesProvider);
+    final isActuallyDownloaded = downloadedEpisodes.any(
+      (e) => e.id == widget.episodeId,
+    );
+
     // 监听下载完成事件，刷新所有相关 provider 以同步 isDownloaded 状态
     ref.listen<DownloadState>(downloadNotifierProvider, (prev, next) {
       if (prev == null) return;
@@ -367,7 +379,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
       final nowCompleted = nextStatus == DownloadStatus.completed;
 
-      if (wasInProgress && nowCompleted && !widget.isDownloaded) {
+      if (wasInProgress && nowCompleted && !isActuallyDownloaded) {
         ref.invalidate(downloadedEpisodesNotifierProvider);
         ref.read(queueNotifierProvider.notifier).refresh();
         ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
@@ -386,7 +398,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     }
 
     // 是否展示下载图标（已下载 或 正在下载）
-    final showDownloadIcon = widget.isDownloaded || isDownloading;
+    final showDownloadIcon = isActuallyDownloaded || isDownloading;
 
     return Row(
       /// 主轴尺寸最小，根据内容自适应
