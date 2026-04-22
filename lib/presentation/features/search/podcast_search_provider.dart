@@ -6,6 +6,7 @@ import '../../../domain/repositories/podcast_repository.dart';
 import '../../../domain/usecases/subscribe_podcast_usecase.dart';
 import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
 import '../../../data/repositories/podcast_repository_impl.dart';
+import '../../providers/podcast_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
 
@@ -118,6 +119,9 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
       await _subscribePodcastUseCase(rssUrl);
       await _loadSubscribedPodcasts();
 
+      // 通知 Library 页面刷新
+      ref.invalidate(podcastProvider);
+
       state = state.copyWith(
         addingStatus: {...state.addingStatus, rssUrl: false},
       );
@@ -159,6 +163,9 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
     }
 
     await _loadSubscribedPodcasts();
+
+    // 通知 Library 页面刷新
+    ref.invalidate(podcastProvider);
   }
 
   bool isPodcastSubscribed(String rssUrl) {

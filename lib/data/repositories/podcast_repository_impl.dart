@@ -95,8 +95,10 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
 
-      // 自动下载最新 3 集（完全异步，不阻塞订阅流程）
-      Future.microtask(() async {
+      // 自动下载最新 3 集（使用事件队列而非微任务队列，避免阻塞订阅流程）
+      // Future.delayed(Duration.zero) 将任务放入事件队列，优先级低于微任务
+      // 确保 subscribe() 返回后，UI 能立即响应用户操作
+      Future<void> _autoDownload() async {
         try {
           Logger.info(
             '🎯 [DEBUG] ====== Auto-download triggered for new subscription ======',
@@ -106,6 +108,9 @@ class PodcastRepositoryImpl implements PodcastRepository {
             '🎯 [DEBUG] Total episodes available: ${episodes.length}',
           );
           Logger.info('🎯 [DEBUG] Will download latest 3 episodes');
+
+          // 在异步操作前再次 yield，确保不阻塞
+          await Future.delayed(Duration.zero);
 
           await _audioDownloadService.downloadPodcastEpisodes(
             podcastId,
@@ -122,9 +127,10 @@ class PodcastRepositoryImpl implements PodcastRepository {
           Logger.warning(
             '⚠️ [DEBUG] Auto-download failed but subscription succeeded: $e',
           );
-          // 不影响订阅流程
         }
-      });
+      }
+
+      Future.delayed(Duration.zero, _autoDownload);
 
       Logger.info('成功订阅播客: ${podcast.title}');
 

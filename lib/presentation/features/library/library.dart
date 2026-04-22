@@ -38,6 +38,14 @@ class _LibraryState extends ConsumerState<Library> {
     });
   }
 
+  @override
+  void didUpdateWidget(Library oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPodcasts();
+    });
+  }
+
   Future<void> _loadPodcasts() async {
     try {
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
