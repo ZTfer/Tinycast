@@ -8,6 +8,8 @@ import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
+import 'package:tinycast/presentation/providers/queue_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 
 class PlayerState {
   final Episode? currentEpisode;
@@ -56,6 +58,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   StreamSubscription? _speedSubscription;
   StreamSubscription? _volumeSubscription;
   StreamSubscription? _currentEpisodeSubscription;
+  StreamSubscription? _episodeCompletedSubscription;
 
   AudioPlayerService get _audioPlayerService => AudioPlayerService.instance;
   PlayHistoryRepository get _playHistoryRepository => PlayHistoryRepository();
@@ -110,6 +113,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         .listen((episode) {
           state = state.copyWith(currentEpisode: episode);
         });
+
+    _episodeCompletedSubscription = _audioPlayerService.episodeCompletedStream
+        .listen((episodeId) {
+          _onEpisodeCompleted(episodeId);
+        });
   }
 
   void _disposeListeners() {
@@ -118,6 +126,13 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _speedSubscription?.cancel();
     _volumeSubscription?.cancel();
     _currentEpisodeSubscription?.cancel();
+    _episodeCompletedSubscription?.cancel();
+  }
+
+  void _onEpisodeCompleted(int episodeId) {
+    debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing queue and unplayed episodes...');
+    ref.read(queueNotifierProvider.notifier).refresh();
+    ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
   }
 
   void _initProgressAutoSave() {

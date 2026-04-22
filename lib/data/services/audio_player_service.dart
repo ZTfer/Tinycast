@@ -57,6 +57,9 @@ class AudioPlayerService {
   final StreamController<domain.Episode?> _currentEpisodeController =
       StreamController<domain.Episode?>.broadcast();
 
+  final StreamController<int> _episodeCompletedController =
+      StreamController<int>.broadcast();
+
   Stream<PlaybackState> get playbackStateStream =>
       _playbackStateController.stream;
 
@@ -68,6 +71,8 @@ class AudioPlayerService {
 
   Stream<domain.Episode?> get currentEpisodeStream =>
       _currentEpisodeController.stream;
+
+  Stream<int> get episodeCompletedStream => _episodeCompletedController.stream;
 
   PlaybackState get currentPlaybackState {
     if (_player.playing) {
@@ -136,7 +141,7 @@ class AudioPlayerService {
 
   /// 播放完成后的处理
   /// 1. 标记当前音频为已播放
-  /// 2. 自动播放下一个未播放的音频
+  /// 2. 播放下一个未播放的音频
   Future<void> _onPlaybackCompleted() async {
     if (_currentEpisode == null) return;
 
@@ -145,6 +150,11 @@ class AudioPlayerService {
 
     // 标记当前音频为已播放
     await _markEpisodeAsPlayed(completedEpisodeId);
+
+    // 发送播放完成事件
+    if (!_episodeCompletedController.isClosed) {
+      _episodeCompletedController.add(completedEpisodeId);
+    }
 
     // 播放下一个未播放的音频
     await _playNextUnplayedEpisode();
