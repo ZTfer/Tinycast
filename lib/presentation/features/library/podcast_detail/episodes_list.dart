@@ -11,6 +11,7 @@ import 'package:tinycast/presentation/features/downloads/downloaded_episodes_pro
 import 'package:tinycast/presentation/providers/download_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
@@ -41,6 +42,9 @@ class EpisodesList extends ConsumerWidget {
           episode: episode,
           showDivider: !isLast,
           showCover: false,
+          onPlayPressed: () {
+            ref.read(playbackProvider.notifier).playEpisode(episode);
+          },
           onEpisodeTap: () {
             if (podcast != null) {
               ref
