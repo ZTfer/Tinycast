@@ -33,7 +33,7 @@ class _AutoDownloadSettingsState extends State<AutoDownloadSettings> {
 
     // 预估菜单的宽高（用于边界检测）
     const double estimatedMenuWidth = 200.0;
-    const double estimatedMenuHeight = 170.0;
+    const double estimatedMenuHeight = 220.0;
 
     // 计算菜单左上角位置
     // 水平方向：默认对齐按钮左侧
@@ -50,7 +50,7 @@ class _AutoDownloadSettingsState extends State<AutoDownloadSettings> {
     // 下边界检测：如果菜单超出屏幕底部，改为显示在按钮上方
     // 向上偏移：菜单高度 + 4 像素间距
     if (top + estimatedMenuHeight > screenSize.height) {
-      top = offset.dy - estimatedMenuHeight - 4;
+      top = offset.dy - estimatedMenuHeight + 140;
     }
 
     // 创建 Overlay 覆盖层
