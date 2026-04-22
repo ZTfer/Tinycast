@@ -107,7 +107,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
       // 自动下载最新 3 集（使用事件队列而非微任务队列，避免阻塞订阅流程）
       // Future.delayed(Duration.zero) 将任务放入事件队列，优先级低于微任务
       // 确保 subscribe() 返回后，UI 能立即响应用户操作
-      Future<void> _autoDownload() async {
+      Future<void> autoDownload() async {
         final downloadStopwatch = Stopwatch()..start();
         try {
           Logger.info(
@@ -144,7 +144,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
       }
 
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 调度 Future.delayed 自动下载任务');
-      Future.delayed(Duration.zero, _autoDownload);
+      Future.delayed(Duration.zero, autoDownload);
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] Future.delayed 调度完成，即将返回 podcast');
 
       Logger.info('成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)');
