@@ -775,25 +775,9 @@ class AudioDownloadService {
     String episodeId,
     double progress,
   ) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(
-          int.parse(episodeId),
-        );
-
-        if (episode != null) {
-          episode.downloadProgress = progress;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error updating episode download progress: $episodeId',
-        error: e,
-        stackTrace: stackTrace,
-      );
-    }
+    // 优化：不再实时写入数据库，避免写锁阻塞 UI 线程的读操作
+    // 进度信息仅保存在内存中的 DownloadTask 对象里
+    // 只在下载完成或失败时才写入数据库
   }
 
   void _notifyStatusChange(String episodeId, DownloadStatus status) {
@@ -932,12 +916,14 @@ class AudioDownloadService {
         '✅ [DEBUG] Task enqueued, queue size: ${_downloadQueue.queueLength}',
       );
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
-        isDownloaded: false,
-        downloadedPath: null,
-        downloadProgress: 0.0,
-      );
+      // 优化：入队时不写数据库，只更新内存状态
+      // 避免在订阅后立即占用写锁，导致 Library 页面查询被阻塞
+      // await _updateEpisodeDownloadStatus(
+      //   episodeId: episodeId,
+      //   isDownloaded: false,
+      //   downloadedPath: null,
+      //   downloadProgress: 0.0,
+      // );
 
       _notifyStatusChange(episodeId, DownloadStatus.queued);
       Logger.info('✅ [DEBUG] Episode added to queue successfully: $episodeId');
