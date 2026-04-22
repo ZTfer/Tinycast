@@ -129,13 +129,20 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _episodeCompletedSubscription?.cancel();
   }
 
-  void _onEpisodeCompleted(int episodeId) {
+  Future<void> _onEpisodeCompleted(int episodeId) async {
+    final queueState = ref.read(queueNotifierProvider);
+    final isInQueue = queueState.queueEpisodes.any((e) => e.id == episodeId);
+    if (isInQueue) {
+      debugPrint(
+        '🎯 [Playback] Episode $episodeId completed, removing from queue...',
+      );
+      await ref
+          .read(queueNotifierProvider.notifier)
+          .removeFromQueueByEpisodeId(episodeId);
+    }
     debugPrint(
-      '🎯 [Playback] Episode $episodeId completed, removing from queue and refreshing unplayed episodes...',
+      '🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...',
     );
-    ref
-        .read(queueNotifierProvider.notifier)
-        .removeFromQueueByEpisodeId(episodeId);
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
   }
 
