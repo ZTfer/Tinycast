@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
-/// 队列剧集下拉菜单
+/// 自动下载设置下拉菜单
 ///
-/// 显示剧集操作选项的纵向列表菜单。
-/// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
+/// 提供自动下载选项选择，包含：
+/// - 按节目集数：关闭、最新 1/2/3/5/10 集
+/// - 按时间范围：过去 24 小时、7 天、14 天、30 天
+/// - 其他选项：所有单集
 class AutoDownloadSettingsDropdown extends StatelessWidget {
   final VoidCallback? onItemSelected;
 
