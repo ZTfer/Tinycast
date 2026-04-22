@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tinycast/presentation/features/settings/settings_dropdown/settings_dropdown_button.dart';
+import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
 import 'package:tinycast/presentation/features/settings/general_settings/auto_download_settings/auto_download_settings_dropdown.dart';
 
 class AutoDownloadSettings extends StatefulWidget {
