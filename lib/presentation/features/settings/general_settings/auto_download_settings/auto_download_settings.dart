@@ -1,80 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
 import 'package:tinycast/presentation/features/settings/general_settings/auto_download_settings/auto_download_settings_dropdown.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
-class AutoDownloadSettings extends StatefulWidget {
+class AutoDownloadSettings extends ConsumerWidget {
   const AutoDownloadSettings({super.key});
 
-  @override
-  State<AutoDownloadSettings> createState() => _AutoDownloadSettingsState();
-}
+  String _getPolicyLabel(AutoDownloadPolicy policy) {
+    return switch (policy) {
+      AutoDownloadPolicy.off => '关闭',
+      AutoDownloadPolicy.latest1 => '最新 1 集',
+      AutoDownloadPolicy.latest2 => '最新 2 集',
+      AutoDownloadPolicy.latest3 => '最新 3 集',
+      AutoDownloadPolicy.latest5 => '最新 5 集',
+      AutoDownloadPolicy.latest10 => '最新 10 集',
+      AutoDownloadPolicy.past24h => '过去 24 小时',
+      AutoDownloadPolicy.past7d => '过去 7 天',
+      AutoDownloadPolicy.past14d => '过去 14 天',
+      AutoDownloadPolicy.past30d => '过去 30 天',
+      AutoDownloadPolicy.all => '所有单集',
+    };
+  }
 
-class _AutoDownloadSettingsState extends State<AutoDownloadSettings> {
-  final GlobalKey _buttonKey = GlobalKey();
-  OverlayEntry? _dropdownOverlay;
-  static OverlayEntry? _currentDropdownOverlay;
-
-  void _showDropdown() {
-    // 关闭其他已打开的下拉菜单（全局单例，确保同时只有一个菜单打开）
-    if (_currentDropdownOverlay != null) {
-      _currentDropdownOverlay?.remove();
-      _currentDropdownOverlay = null;
-    }
-
-    // 获取按钮的渲染对象和位置信息
+  void _showDropdown(
+    BuildContext context,
+    GlobalKey buttonKey,
+    AutoDownloadPolicy selectedPolicy,
+    ValueChanged<AutoDownloadPolicy> onPolicySelected,
+  ) {
     final RenderBox renderBox =
-        _buttonKey.currentContext?.findRenderObject() as RenderBox;
-    // 按钮左上角相对于屏幕的偏移量
+        buttonKey.currentContext?.findRenderObject() as RenderBox;
     final Offset offset = renderBox.localToGlobal(Offset.zero);
-    // 按钮的尺寸
     final Size size = renderBox.size;
-    // 屏幕尺寸
     final Size screenSize = MediaQuery.of(context).size;
 
-    // 预估菜单的宽高（用于边界检测）
     const double estimatedMenuWidth = 200.0;
     const double estimatedMenuHeight = 220.0;
 
-    // 计算菜单左上角位置
-    // 水平方向：默认对齐按钮左侧
     double left = offset.dx;
-    // 垂直方向：默认显示在按钮下方，间距 4 像素
     double top = offset.dy + size.height + 4;
 
-    // 右边界检测：如果菜单超出屏幕右侧，向左调整
-    // 留出 8 像素的右边距
     if (left + estimatedMenuWidth > screenSize.width) {
       left = screenSize.width - estimatedMenuWidth - 8;
     }
 
-    // 下边界检测：如果菜单超出屏幕底部，改为显示在按钮上方
-    // 向上偏移：菜单高度 + 4 像素间距
     if (top + estimatedMenuHeight > screenSize.height) {
       top = offset.dy - estimatedMenuHeight + 140;
     }
 
-    // 创建 Overlay 覆盖层
-    _dropdownOverlay = OverlayEntry(
+    OverlayEntry? dropdownOverlay;
+    dropdownOverlay = OverlayEntry(
       builder: (context) => Stack(
         children: [
-          // 背景遮罩：点击空白区域关闭菜单
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onTap: _hideDropdown,
+              onTap: () {
+                dropdownOverlay?.remove();
+              },
               child: Container(color: Colors.transparent),
             ),
           ),
-          // 下拉菜单本体
           Positioned(
             left: left,
             top: top,
             child: GestureDetector(
-              // 阻止点击事件穿透到遮罩层
               onTap: () {},
               behavior: HitTestBehavior.opaque,
               child: AutoDownloadSettingsDropdown(
-                onItemSelected: _hideDropdown,
+                selectedPolicy: selectedPolicy,
+                onPolicySelected: (policy) {
+                  onPolicySelected(policy);
+                  dropdownOverlay?.remove();
+                },
               ),
             ),
           ),
@@ -82,40 +82,31 @@ class _AutoDownloadSettingsState extends State<AutoDownloadSettings> {
       ),
     );
 
-    // 将覆盖层插入到 Overlay 中
-    Overlay.of(context).insert(_dropdownOverlay!);
-    _currentDropdownOverlay = _dropdownOverlay;
-  }
-
-  void _hideDropdown() {
-    if (_currentDropdownOverlay == _dropdownOverlay) {
-      _currentDropdownOverlay = null;
-    }
-
-    _dropdownOverlay?.remove();
-    _dropdownOverlay = null;
+    Overlay.of(context).insert(dropdownOverlay);
   }
 
   @override
-  void dispose() {
-    if (_currentDropdownOverlay == _dropdownOverlay) {
-      _currentDropdownOverlay = null;
-    }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider).settings;
+    final buttonKey = GlobalKey();
 
-    _dropdownOverlay?.remove();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         SettingsDropdownButton(
-          key: _buttonKey,
-          label: '每个节目最新 3 集',
-          onPressed: _showDropdown,
+          key: buttonKey,
+          label: '每个节目${_getPolicyLabel(settings.autoDownloadPolicy)}',
+          onPressed: () {
+            _showDropdown(
+              context,
+              buttonKey,
+              settings.autoDownloadPolicy,
+              (policy) {
+                ref.read(settingsProvider.notifier).updateAutoDownloadPolicy(policy);
+              },
+            );
+          },
         ),
         const SizedBox(height: 4.0),
         const Text(

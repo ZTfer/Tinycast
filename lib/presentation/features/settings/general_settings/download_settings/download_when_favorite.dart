@@ -1,30 +1,24 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/widgets/atoms/checkbox/label_checkbox.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 
 /// 收藏时自动下载
 ///
 /// 当用户收藏了某个节目时，是否自动下载该节目。
 
-class DownloadWhenFavorite extends StatefulWidget {
+class DownloadWhenFavorite extends ConsumerWidget {
   const DownloadWhenFavorite({super.key});
 
   @override
-  State<DownloadWhenFavorite> createState() => _DownloadWhenFavoriteState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider).settings;
 
-class _DownloadWhenFavoriteState extends State<DownloadWhenFavorite> {
-  /// 自动下载收藏的节目
-  bool _autoDownload = false;
-
-  @override
-  Widget build(BuildContext context) {
     return LabelCheckbox(
-      value: _autoDownload,
+      value: settings.downloadOnFavorite,
       label: '自动下载',
       onChanged: (bool newValue) {
-        setState(() {
-          _autoDownload = newValue;
-        });
+        ref.read(settingsProvider.notifier).updateDownloadOnFavorite(newValue);
       },
     );
   }

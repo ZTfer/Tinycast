@@ -1,30 +1,24 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/widgets/atoms/checkbox/label_checkbox.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 
-class RemovePlayedDownloads extends StatefulWidget {
+class RemovePlayedDownloads extends ConsumerWidget {
   const RemovePlayedDownloads({super.key});
 
   @override
-  State<RemovePlayedDownloads> createState() => _RemovePlayedDownloadsState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider).settings;
 
-class _RemovePlayedDownloadsState extends State<RemovePlayedDownloads> {
-  /// 自动删除已播放的下载
-  bool _autoRemove = false;
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         LabelCheckbox(
-          value: _autoRemove,
+          value: settings.removePlayedDownloads,
           label: '自动删除已播放的下载',
           onChanged: (bool newValue) {
-            setState(() {
-              _autoRemove = newValue;
-            });
+            ref.read(settingsProvider.notifier).updateRemovePlayedDownloads(newValue);
           },
         ),
         const SizedBox(height: 4.0),

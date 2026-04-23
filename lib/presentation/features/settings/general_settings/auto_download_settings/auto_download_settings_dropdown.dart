@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
 /// 自动下载设置下拉菜单
 ///
@@ -9,9 +10,16 @@ import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.
 /// - 按时间范围：过去 24 小时、7 天、14 天、30 天
 /// - 其他选项：所有单集
 class AutoDownloadSettingsDropdown extends StatelessWidget {
+  final AutoDownloadPolicy selectedPolicy;
+  final ValueChanged<AutoDownloadPolicy> onPolicySelected;
   final VoidCallback? onItemSelected;
 
-  const AutoDownloadSettingsDropdown({super.key, this.onItemSelected});
+  const AutoDownloadSettingsDropdown({
+    super.key,
+    required this.selectedPolicy,
+    required this.onPolicySelected,
+    this.onItemSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,39 +50,56 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.off
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '关闭',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () => _handleItemSelected(AutoDownloadPolicy.off),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.latest1
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '最新 1 集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.latest1),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.latest2
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '最新 2 集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.latest2),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.latest3
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '最新 3 集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.latest3),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.latest5
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '最新 5 集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.latest5),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.latest10
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '最新 10 集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.latest10),
                 ),
 
                 // 分割线
@@ -87,27 +112,39 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.past24h
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '过去 24 小时',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.past24h),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.past7d
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '过去 7 天',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.past7d),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.past14d
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '过去 14 天',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.past14d),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.past30d
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '过去 30 天',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () =>
+                      _handleItemSelected(AutoDownloadPolicy.past30d),
                 ),
 
                 // 分割线
@@ -120,9 +157,11 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 DropdownItem(
-                  // icon: Icon(LucideIcons.check),
+                  icon: selectedPolicy == AutoDownloadPolicy.all
+                      ? const Icon(LucideIcons.check)
+                      : null,
                   text: '所有单集',
-                  onPressed: () => _handleItemSelected(),
+                  onPressed: () => _handleItemSelected(AutoDownloadPolicy.all),
                 ),
               ],
             ),
@@ -132,7 +171,8 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
     );
   }
 
-  void _handleItemSelected() {
+  void _handleItemSelected(AutoDownloadPolicy policy) {
+    onPolicySelected(policy);
     onItemSelected?.call();
   }
 }

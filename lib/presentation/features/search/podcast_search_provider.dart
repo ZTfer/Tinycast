@@ -1,13 +1,17 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/podcast.dart';
 import '../../../domain/entities/episode.dart';
 import '../../../data/services/podcast_search_service.dart';
+import '../../../data/services/audio_download_service.dart';
 import '../../../domain/repositories/podcast_repository.dart';
 import '../../../domain/usecases/subscribe_podcast_usecase.dart';
 import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
 import '../../../data/repositories/podcast_repository_impl.dart';
 import '../../../core/utils/logger.dart';
+import '../../../domain/entities/app_settings.dart';
 import '../../providers/podcast_provider.dart';
+import '../../providers/settings_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
 
@@ -80,6 +84,8 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
       ref.read(podcastSearchSubscribeUseCaseProvider);
   GetSubscribedPodcastsUseCase get _getSubscribedPodcastsUseCase =>
       ref.read(podcastSearchGetSubscribedPodcastsUseCaseProvider);
+  PodcastRepository get _repository =>
+      ref.read(podcastRepositoryProvider);
 
   Future<void> searchPodcast(String url) async {
     state = state.copyWith(
@@ -123,7 +129,7 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
     try {
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _subscribePodcastUseCase...');
-      await _subscribePodcastUseCase(rssUrl);
+      final subscribedPodcast = await _subscribePodcastUseCase(rssUrl);
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] _subscribePodcastUseCase 完成');
 
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _loadSubscribedPodcasts...');
@@ -134,6 +140,11 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调用 ref.invalidate(podcastProvider)');
       ref.invalidate(podcastProvider);
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] ref.invalidate 完成');
+
+      // 根据自动下载策略执行下载
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始处理自动下载...');
+      await _handleAutoDownload(subscribedPodcast);
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 自动下载处理完成');
 
       state = state.copyWith(
         addingStatus: {...state.addingStatus, rssUrl: false},
@@ -209,6 +220,106 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
   void reset() {
     state = PodcastSearchState();
+  }
+
+  Future<void> _handleAutoDownload(Podcast podcast) async {
+    final settingsState = ref.read(settingsProvider);
+    if (settingsState.status != SettingsStatus.success) return;
+
+    final policy = settingsState.settings.autoDownloadPolicy;
+    if (policy == AutoDownloadPolicy.off) {
+      Logger.info('⬇️ [AUTO-DOWNLOAD] 自动下载策略为关闭，跳过');
+      return;
+    }
+
+    final podcastId = podcast.id;
+    Logger.info('⬇️ [AUTO-DOWNLOAD] 策略: ${policy.name}, 播客ID: $podcastId');
+
+    try {
+      switch (policy) {
+        case AutoDownloadPolicy.latest1:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+            limit: 1,
+          );
+        case AutoDownloadPolicy.latest2:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+            limit: 2,
+          );
+        case AutoDownloadPolicy.latest3:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+            limit: 3,
+          );
+        case AutoDownloadPolicy.latest5:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+            limit: 5,
+          );
+        case AutoDownloadPolicy.latest10:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+            limit: 10,
+          );
+        case AutoDownloadPolicy.past24h:
+          await _downloadEpisodesByTimeRange(
+            podcastId,
+            hours: 24,
+          );
+        case AutoDownloadPolicy.past7d:
+          await _downloadEpisodesByTimeRange(
+            podcastId,
+            days: 7,
+          );
+        case AutoDownloadPolicy.past14d:
+          await _downloadEpisodesByTimeRange(
+            podcastId,
+            days: 14,
+          );
+        case AutoDownloadPolicy.past30d:
+          await _downloadEpisodesByTimeRange(
+            podcastId,
+            days: 30,
+          );
+        case AutoDownloadPolicy.all:
+          await AudioDownloadService.instance.downloadPodcastEpisodes(
+            podcastId,
+          );
+        case AutoDownloadPolicy.off:
+          break;
+      }
+    } catch (e, stackTrace) {
+      Logger.error('⬇️ [AUTO-DOWNLOAD] 自动下载失败', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _downloadEpisodesByTimeRange(
+    int podcastId, {
+    int? hours,
+    int? days,
+  }) async {
+    final cutoffDate = DateTime.now();
+    if (hours != null) {
+      cutoffDate.subtract(Duration(hours: hours));
+    } else if (days != null) {
+      cutoffDate.subtract(Duration(days: days));
+    }
+
+    final allEpisodes = await _repository.getEpisodesByPodcastId(podcastId);
+
+    final toDownload = allEpisodes.where((episode) {
+      return episode.pubDate.isAfter(cutoffDate);
+    }).toList();
+
+    if (toDownload.isNotEmpty) {
+      Logger.info('⬇️ [AUTO-DOWNLOAD] 时间范围策略，找到 ${toDownload.length} 集');
+      for (final episode in toDownload) {
+        unawaited(
+          AudioDownloadService.instance.downloadEpisodeById(episode.id),
+        );
+      }
+    }
   }
 }
 
