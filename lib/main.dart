@@ -5,6 +5,7 @@ import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
+import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/domain/entities/episode.dart';
@@ -72,6 +73,7 @@ void main(List<String> args) async {
 Future<void> _initializeApp() async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
+  await SettingsService.instance.init();
   await Logger.initFileLogging();
 }
 

@@ -7,6 +7,7 @@ import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
 import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/data/services/settings_service.dart';
 
 enum PlaybackState { stopped, playing, paused, buffering }
@@ -168,39 +169,29 @@ class AudioPlayerService {
   /// 检查设置并在需要时自动删除已播放的下载文件
   Future<void> _handleAutoDeleteDownload(int episodeId) async {
     try {
+      Logger.info('🗑️ [AUTO-DELETE] ====== 开始检查自动删除 episodeId: $episodeId ======');
+
       final removePlayedDownloads = await _getRemovePlayedDownloadsSetting();
+      Logger.info('🗑️ [AUTO-DELETE] 设置项 removePlayedDownloads = $removePlayedDownloads');
+
       if (!removePlayedDownloads) {
         Logger.info('🗑️ [AUTO-DELETE] 自动删除已禁用，跳过');
         return;
       }
 
       final episode = await _isarService.isar.episodes.get(episodeId);
-      if (episode == null || episode.downloadedPath == null) {
-        Logger.info('🗑️ [AUTO-DELETE] episode 无下载路径，跳过');
+      Logger.info('🗑️ [AUTO-DELETE] 从数据库读取 episode: isNull=${episode == null}, downloadedPath=${episode?.downloadedPath}, isDownloaded=${episode?.isDownloaded}');
+
+      if (episode == null || !episode.isDownloaded || episode.downloadedPath == null) {
+        Logger.info('🗑️ [AUTO-DELETE] episode 未下载或无路径，跳过');
         return;
       }
 
-      final file = File(episode.downloadedPath!);
-      if (await file.exists()) {
-        Logger.info('🗑️ [AUTO-DELETE] 开始删除: ${episode.downloadedPath}');
-        await file.delete();
-        Logger.info('🗑️ [AUTO-DELETE] 文件已删除');
-      } else {
-        Logger.info('🗑️ [AUTO-DELETE] 文件不存在，跳过删除');
-      }
-
-      await _isarService.isar.writeTxn(() async {
-        final ep = await _isarService.isar.episodes.get(episodeId);
-        if (ep != null) {
-          ep.isDownloaded = false;
-          ep.downloadedPath = null;
-          ep.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(ep);
-          Logger.info('🗑️ [AUTO-DELETE] 数据库记录已更新');
-        }
-      });
-
-      Logger.info('🗑️ [AUTO-DELETE] episodeId: $episodeId 自动删除完成');
+      Logger.info('🗑️ [AUTO-DELETE] 调用 AudioDownloadService 删除 episodeId: $episodeId');
+      await AudioDownloadService.instance.deleteDownloadedEpisode(
+        episodeId.toString(),
+      );
+      Logger.info('🗑️ [AUTO-DELETE] ====== episodeId: $episodeId 自动删除完成 ======');
     } catch (e, stackTrace) {
       Logger.error('🗑️ [AUTO-DELETE] 自动删除失败', error: e, stackTrace: stackTrace);
     }

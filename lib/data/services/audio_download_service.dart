@@ -636,6 +636,13 @@ class AudioDownloadService {
       _downloadTasks.remove(episodeId);
       _disposeControllers(episodeId);
 
+      _globalEventController.add(
+        AudioDownloadEvent(
+          episodeId: episodeId,
+          status: DownloadStatus.completed,
+        ),
+      );
+
       Logger.info('Downloaded episode deleted: $episodeId');
     } catch (e, stackTrace) {
       Logger.error(

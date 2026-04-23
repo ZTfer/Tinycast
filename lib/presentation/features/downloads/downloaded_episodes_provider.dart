@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/logger.dart';
+import '../../../data/services/audio_download_service.dart';
 import '../../../domain/entities/episode.dart';
 import '../../../domain/usecases/get_downloaded_episodes_usecase.dart';
 import '../../providers/podcast_provider.dart';
@@ -35,9 +38,25 @@ final getDownloadedEpisodesUseCaseProvider = Provider<GetDownloadedEpisodesUseCa
 });
 
 class DownloadedEpisodesNotifier extends Notifier<DownloadedEpisodesState> {
+  StreamSubscription<AudioDownloadEvent>? _downloadSubscription;
+
   @override
   DownloadedEpisodesState build() {
     Future.microtask(() => loadDownloadedEpisodes());
+
+    _downloadSubscription = AudioDownloadService.instance.globalEventStream.listen((event) {
+      if (event.status == DownloadStatus.completed ||
+          event.status == DownloadStatus.failed ||
+          event.status == DownloadStatus.cancelled) {
+        Logger.info('📦 [DOWNLOADED-EPISODES] 下载状态变化: ${event.episodeId} -> ${event.status}, 刷新列表');
+        _loadDownloadedEpisodesSilent();
+      }
+    });
+
+    ref.onDispose(() {
+      _downloadSubscription?.cancel();
+    });
+
     return DownloadedEpisodesState();
   }
 
@@ -54,6 +73,15 @@ class DownloadedEpisodesNotifier extends Notifier<DownloadedEpisodesState> {
         status: DownloadedEpisodesStatus.error,
         errorMessage: e.toString(),
       );
+    }
+  }
+
+  Future<void> _loadDownloadedEpisodesSilent() async {
+    try {
+      final episodes = await _getDownloadedEpisodesUseCase();
+      state = state.copyWith(status: DownloadedEpisodesStatus.success, episodes: episodes);
+    } catch (e) {
+      Logger.error('📦 [DOWNLOADED-EPISODES] 刷新列表失败', error: e);
     }
   }
 
