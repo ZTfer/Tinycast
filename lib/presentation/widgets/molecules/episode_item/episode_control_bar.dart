@@ -207,10 +207,23 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       if (!isFav) {
         final settings = ref.read(settingsProvider);
         if (settings.settings.downloadOnFavorite) {
-          Logger.info(
-            '⬇️ [EPISODE-CONTROL-BAR] 收藏时下载已启用，开始下载 episodeId: ${widget.episodeId}',
+          final downloadedEpisodes = ref.read(downloadedEpisodesProvider);
+          final alreadyDownloaded = downloadedEpisodes.any(
+            (e) => e.id == widget.episodeId,
           );
-          AudioDownloadService.instance.downloadEpisodeById(widget.episodeId);
+
+          if (alreadyDownloaded) {
+            Logger.info(
+              '⬇️ [EPISODE-CONTROL-BAR] 收藏时下载已启用，但 episodeId: ${widget.episodeId} 已下载，仅执行收藏',
+            );
+          } else {
+            Logger.info(
+              '⬇️ [EPISODE-CONTROL-BAR] 收藏时下载已启用，开始下载 episodeId: ${widget.episodeId}',
+            );
+            AudioDownloadService.instance.downloadEpisodeById(
+              widget.episodeId,
+            );
+          }
         }
       }
 
