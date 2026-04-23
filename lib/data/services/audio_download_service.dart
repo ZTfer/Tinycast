@@ -639,7 +639,7 @@ class AudioDownloadService {
       _globalEventController.add(
         AudioDownloadEvent(
           episodeId: episodeId,
-          status: DownloadStatus.completed,
+          status: DownloadStatus.cancelled,
         ),
       );
 
