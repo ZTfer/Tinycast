@@ -81,6 +81,16 @@ class SettingsService {
     Logger.info('⚙️ [SETTINGS-SERVICE] continuousPlay set to: $value');
   }
 
+  Future<bool> getRemovePlayedDownloads() async {
+    await _ensureInitialized();
+    return _prefs!.getBool('remove_played_downloads') ?? false;
+  }
+
+  Future<bool> getDownloadOnFavorite() async {
+    await _ensureInitialized();
+    return _prefs!.getBool('download_on_favorite') ?? false;
+  }
+
   AutoDownloadPolicy _parseAutoDownloadPolicy(String? raw) {
     if (raw == null) return AutoDownloadPolicy.latest3;
     try {

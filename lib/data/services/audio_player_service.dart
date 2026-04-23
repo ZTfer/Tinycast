@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
 import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/services/settings_service.dart';
 
 enum PlaybackState { stopped, playing, paused, buffering }
 
@@ -208,9 +208,7 @@ class AudioPlayerService {
 
   Future<bool> _getRemovePlayedDownloadsSetting() async {
     try {
-      final prefs = SharedPreferencesAsync();
-      final value = await prefs.getBool('remove_played_downloads');
-      return value ?? false;
+      return await SettingsService.instance.getRemovePlayedDownloads();
     } catch (e) {
       Logger.error('🗑️ [AUTO-DELETE] 读取设置失败', error: e);
       return false;
