@@ -4,7 +4,6 @@ import '../../domain/repositories/podcast_repository.dart';
 import '../datasources/remote_podcast_datasource.dart';
 import '../datasources/local_podcast_datasource.dart';
 import '../services/file_storage_service.dart';
-import '../services/audio_download_service.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
 import '../../core/utils/app_exception.dart';
@@ -14,18 +13,14 @@ class PodcastRepositoryImpl implements PodcastRepository {
   final RemotePodcastDataSource _remoteDataSource;
   final LocalPodcastDataSource _localDataSource;
   final FileStorageService _fileStorageService;
-  final AudioDownloadService _audioDownloadService;
 
   PodcastRepositoryImpl({
     RemotePodcastDataSource? remoteDataSource,
     LocalPodcastDataSource? localDataSource,
     FileStorageService? fileStorageService,
-    AudioDownloadService? audioDownloadService,
   }) : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
-       _fileStorageService = fileStorageService ?? FileStorageService.instance,
-       _audioDownloadService =
-           audioDownloadService ?? AudioDownloadService.instance;
+       _fileStorageService = fileStorageService ?? FileStorageService.instance;
 
   @override
   Future<Podcast> subscribe(String rssUrl) async {
