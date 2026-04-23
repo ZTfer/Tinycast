@@ -49,31 +49,31 @@ class AutoDownloadSettingsDropdown extends StatelessWidget {
                 const SizedBox(height: 2),
                 DropdownItem(
                   icon: Icon(LucideIcons.check),
-                  text: '每个节目最新 1 集',
+                  text: '最新 1 集',
                   onPressed: () => _handleItemSelected(),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
                   // icon: Icon(LucideIcons.check),
-                  text: '每个节目最新 2 集',
+                  text: '最新 2 集',
                   onPressed: () => _handleItemSelected(),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
                   // icon: Icon(LucideIcons.check),
-                  text: '每个节目最新 3 集',
+                  text: '最新 3 集',
                   onPressed: () => _handleItemSelected(),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
                   // icon: Icon(LucideIcons.check),
-                  text: '每个节目最新 5 集',
+                  text: '最新 5 集',
                   onPressed: () => _handleItemSelected(),
                 ),
                 const SizedBox(height: 2),
                 DropdownItem(
                   // icon: Icon(LucideIcons.check),
-                  text: '每个节目最新 10 集',
+                  text: '最新 10 集',
                   onPressed: () => _handleItemSelected(),
                 ),
 
