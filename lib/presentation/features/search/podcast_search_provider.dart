@@ -141,10 +141,9 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
       ref.invalidate(podcastProvider);
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] ref.invalidate 完成');
 
-      // 根据自动下载策略执行下载
-      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始处理自动下载...');
-      await _handleAutoDownload(subscribedPodcast);
-      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 自动下载处理完成');
+      // 根据自动下载策略执行下载（异步执行，不阻塞订阅流程）
+      Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调度自动下载任务');
+      unawaited(_handleAutoDownload(subscribedPodcast));
 
       state = state.copyWith(
         addingStatus: {...state.addingStatus, rssUrl: false},
