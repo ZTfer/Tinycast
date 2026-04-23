@@ -4,6 +4,7 @@ import '../../../domain/entities/podcast.dart';
 import '../../../domain/entities/episode.dart';
 import '../../../data/services/podcast_search_service.dart';
 import '../../../data/services/audio_download_service.dart';
+import '../../../data/services/settings_service.dart';
 import '../../../domain/repositories/podcast_repository.dart';
 import '../../../domain/usecases/subscribe_podcast_usecase.dart';
 import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
@@ -223,69 +224,64 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
   }
 
   Future<void> _handleAutoDownload(Podcast podcast) async {
-    final settingsState = ref.read(settingsProvider);
-    if (settingsState.status != SettingsStatus.success) return;
-
-    final policy = settingsState.settings.autoDownloadPolicy;
-    if (policy == AutoDownloadPolicy.off) {
-      Logger.info('⬇️ [AUTO-DOWNLOAD] 自动下载策略为关闭，跳过');
-      return;
-    }
-
-    final podcastId = podcast.id;
-    Logger.info('⬇️ [AUTO-DOWNLOAD] 策略: ${policy.name}, 播客ID: $podcastId');
-
     try {
+      final settings = await SettingsService.instance.loadSettings();
+      final policy = settings.autoDownloadPolicy;
+
+      if (policy == AutoDownloadPolicy.off) {
+        Logger.info('⬇️ [AUTO-DOWNLOAD] 自动下载策略为关闭，跳过');
+        return;
+      }
+
+      final podcastId = podcast.id;
+      Logger.info('⬇️ [AUTO-DOWNLOAD] 策略: ${policy.name}, 播客ID: $podcastId');
+
       switch (policy) {
         case AutoDownloadPolicy.latest1:
           await AudioDownloadService.instance.downloadPodcastEpisodes(
             podcastId,
             limit: 1,
           );
+          break;
         case AutoDownloadPolicy.latest2:
           await AudioDownloadService.instance.downloadPodcastEpisodes(
             podcastId,
             limit: 2,
           );
+          break;
         case AutoDownloadPolicy.latest3:
           await AudioDownloadService.instance.downloadPodcastEpisodes(
             podcastId,
             limit: 3,
           );
+          break;
         case AutoDownloadPolicy.latest5:
           await AudioDownloadService.instance.downloadPodcastEpisodes(
             podcastId,
             limit: 5,
           );
+          break;
         case AutoDownloadPolicy.latest10:
           await AudioDownloadService.instance.downloadPodcastEpisodes(
             podcastId,
             limit: 10,
           );
+          break;
         case AutoDownloadPolicy.past24h:
-          await _downloadEpisodesByTimeRange(
-            podcastId,
-            hours: 24,
-          );
+          await _downloadEpisodesByTimeRange(podcastId, hours: 24);
+          break;
         case AutoDownloadPolicy.past7d:
-          await _downloadEpisodesByTimeRange(
-            podcastId,
-            days: 7,
-          );
+          await _downloadEpisodesByTimeRange(podcastId, days: 7);
+          break;
         case AutoDownloadPolicy.past14d:
-          await _downloadEpisodesByTimeRange(
-            podcastId,
-            days: 14,
-          );
+          await _downloadEpisodesByTimeRange(podcastId, days: 14);
+          break;
         case AutoDownloadPolicy.past30d:
-          await _downloadEpisodesByTimeRange(
-            podcastId,
-            days: 30,
-          );
+          await _downloadEpisodesByTimeRange(podcastId, days: 30);
+          break;
         case AutoDownloadPolicy.all:
-          await AudioDownloadService.instance.downloadPodcastEpisodes(
-            podcastId,
-          );
+          await AudioDownloadService.instance.downloadPodcastEpisodes(podcastId);
+          break;
         case AutoDownloadPolicy.off:
           break;
       }
