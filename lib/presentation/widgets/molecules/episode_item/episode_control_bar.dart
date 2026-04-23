@@ -17,6 +17,7 @@ import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/download_status_icon.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 
 /// Episode 控制栏组件
 ///
@@ -202,6 +203,17 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
           .toggleFavorite(widget.episodeId);
       ref.read(favoriteEpisodesNotifierProvider.notifier).refresh();
       _hideDropdown();
+
+      if (!isFav) {
+        final settings = ref.read(settingsProvider);
+        if (settings.settings.downloadOnFavorite) {
+          Logger.info(
+            '⬇️ [EPISODE-CONTROL-BAR] 收藏时下载已启用，开始下载 episodeId: ${widget.episodeId}',
+          );
+          AudioDownloadService.instance.downloadEpisodeById(widget.episodeId);
+        }
+      }
+
       if (mounted) {
         ToastUtils.showSuccessToast(context, message: successMessage);
       }

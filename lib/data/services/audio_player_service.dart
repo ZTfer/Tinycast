@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
@@ -141,7 +142,8 @@ class AudioPlayerService {
 
   /// 播放完成后的处理
   /// 1. 标记当前音频为已播放
-  /// 2. 播放下一个未播放的音频
+  /// 2. 检查自动删除设置，如果需要则删除音频文件
+  /// 3. 播放下一个未播放的音频
   Future<void> _onPlaybackCompleted() async {
     if (_currentEpisode == null) return;
 
@@ -151,6 +153,9 @@ class AudioPlayerService {
     // 标记当前音频为已播放
     await _markEpisodeAsPlayed(completedEpisodeId);
 
+    // 检查并自动删除下载的音频文件
+    await _handleAutoDeleteDownload(completedEpisodeId);
+
     // 发送播放完成事件
     if (!_episodeCompletedController.isClosed) {
       _episodeCompletedController.add(completedEpisodeId);
@@ -158,6 +163,58 @@ class AudioPlayerService {
 
     // 播放下一个未播放的音频
     await _playNextUnplayedEpisode();
+  }
+
+  /// 检查设置并在需要时自动删除已播放的下载文件
+  Future<void> _handleAutoDeleteDownload(int episodeId) async {
+    try {
+      final removePlayedDownloads = await _getRemovePlayedDownloadsSetting();
+      if (!removePlayedDownloads) {
+        Logger.info('🗑️ [AUTO-DELETE] 自动删除已禁用，跳过');
+        return;
+      }
+
+      final episode = await _isarService.isar.episodes.get(episodeId);
+      if (episode == null || episode.downloadedPath == null) {
+        Logger.info('🗑️ [AUTO-DELETE] episode 无下载路径，跳过');
+        return;
+      }
+
+      final file = File(episode.downloadedPath!);
+      if (await file.exists()) {
+        Logger.info('🗑️ [AUTO-DELETE] 开始删除: ${episode.downloadedPath}');
+        await file.delete();
+        Logger.info('🗑️ [AUTO-DELETE] 文件已删除');
+      } else {
+        Logger.info('🗑️ [AUTO-DELETE] 文件不存在，跳过删除');
+      }
+
+      await _isarService.isar.writeTxn(() async {
+        final ep = await _isarService.isar.episodes.get(episodeId);
+        if (ep != null) {
+          ep.isDownloaded = false;
+          ep.downloadedPath = null;
+          ep.updatedAt = DateTime.now();
+          await _isarService.isar.episodes.put(ep);
+          Logger.info('🗑️ [AUTO-DELETE] 数据库记录已更新');
+        }
+      });
+
+      Logger.info('🗑️ [AUTO-DELETE] episodeId: $episodeId 自动删除完成');
+    } catch (e, stackTrace) {
+      Logger.error('🗑️ [AUTO-DELETE] 自动删除失败', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<bool> _getRemovePlayedDownloadsSetting() async {
+    try {
+      final prefs = SharedPreferencesAsync();
+      final value = await prefs.getBool('remove_played_downloads');
+      return value ?? false;
+    } catch (e) {
+      Logger.error('🗑️ [AUTO-DELETE] 读取设置失败', error: e);
+      return false;
+    }
   }
 
   /// 标记 episode 为已播放
