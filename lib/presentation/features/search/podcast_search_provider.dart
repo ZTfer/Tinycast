@@ -12,7 +12,6 @@ import '../../../data/repositories/podcast_repository_impl.dart';
 import '../../../core/utils/logger.dart';
 import '../../../domain/entities/app_settings.dart';
 import '../../providers/podcast_provider.dart';
-import '../../providers/settings_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
 
