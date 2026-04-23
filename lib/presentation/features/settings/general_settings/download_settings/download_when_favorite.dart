@@ -16,7 +16,7 @@ class DownloadWhenFavorite extends ConsumerWidget {
 
     return LabelCheckbox(
       value: settings.downloadOnFavorite,
-      label: '自动下载',
+      label: '收藏时下载',
       onChanged: (bool newValue) {
         ref.read(settingsProvider.notifier).updateDownloadOnFavorite(newValue);
       },
