@@ -58,27 +58,32 @@ class CacheCleanupService {
         }
       }
 
-      // 更新数据库中所有 episode 的下载状态
-      final downloadedEpisodes = await _isarService.isar.episodes
-          .filter()
-          .isDownloadedEqualTo(true)
-          .findAll();
+      // 批量更新数据库中所有 episode 的下载状态
+      await _isarService.isar.writeTxn(() async {
+        final downloadedEpisodes = await _isarService.isar.episodes
+            .filter()
+            .isDownloadedEqualTo(true)
+            .findAll();
 
-      for (final episode in downloadedEpisodes) {
-        await _updateEpisodeDownloadStatus(episode.id, false, null);
-      }
+        for (final episode in downloadedEpisodes) {
+          episode.isDownloaded = false;
+          episode.downloadedPath = null;
+          episode.downloadProgress = 0.0;
+          episode.updatedAt = DateTime.now();
+        }
 
-      // 发送事件通知 UI 刷新
-      if (downloadedEpisodes.isNotEmpty) {
+        await _isarService.isar.episodes.putAll(downloadedEpisodes);
+
+        // 发送事件通知 UI 刷新
         for (final episode in downloadedEpisodes) {
           AudioDownloadService.instance.sendGlobalEvent(
             episodeId: episode.id.toString(),
             status: DownloadStatus.cancelled,
           );
         }
-      }
 
-      Logger.info('音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新');
+        Logger.info('音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新');
+      });
     } catch (e, stackTrace) {
       Logger.error('清理音频缓存失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
@@ -122,8 +127,9 @@ class CacheCleanupService {
 
         for (final episode in episodes) {
           episode.artworkPath = null;
-          await _isarService.isar.episodes.put(episode);
         }
+
+        await _isarService.isar.episodes.putAll(episodes);
 
         Logger.info('已清除 ${episodes.length} 个 episode 的 artworkPath');
       });
@@ -137,8 +143,9 @@ class CacheCleanupService {
 
         for (final podcast in podcasts) {
           podcast.artworkPath = null;
-          await _isarService.isar.podcasts.put(podcast);
         }
+
+        await _isarService.isar.podcasts.putAll(podcasts);
 
         Logger.info('已清除 ${podcasts.length} 个 podcast 的 artworkPath');
       });
