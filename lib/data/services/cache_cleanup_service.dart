@@ -168,7 +168,8 @@ class CacheCleanupService {
 
       int deletedCount = 0;
 
-      for (var episode in playedEpisodes) {
+      // 先删除所有文件
+      for (final episode in playedEpisodes) {
         if (episode.downloadedPath != null) {
           try {
             await _fileStorageService.deleteFile(episode.downloadedPath!);
@@ -177,9 +178,27 @@ class CacheCleanupService {
             Logger.warning('删除已播放节目文件失败: ${episode.downloadedPath}');
           }
         }
-
-        await _updateEpisodeDownloadStatus(episode.id, false, null);
       }
+
+      // 批量更新数据库状态
+      await _isarService.isar.writeTxn(() async {
+        for (final episode in playedEpisodes) {
+          episode.isDownloaded = false;
+          episode.downloadedPath = null;
+          episode.downloadProgress = 0.0;
+          episode.updatedAt = DateTime.now();
+        }
+
+        await _isarService.isar.episodes.putAll(playedEpisodes);
+
+        // 发送事件通知 UI 刷新
+        for (final episode in playedEpisodes) {
+          AudioDownloadService.instance.sendGlobalEvent(
+            episodeId: episode.id.toString(),
+            status: DownloadStatus.cancelled,
+          );
+        }
+      });
 
       Logger.info('已播放节目清理完成: $deletedCount 个文件已删除');
     } catch (e, stackTrace) {
