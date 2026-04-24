@@ -24,12 +24,11 @@ class SettingsService {
 
   /// 从磁盘重新加载 SharedPreferences 数据（多窗口场景下确保读取最新值）
   /// 注意：使用 SharedPreferences.reload() 比重新创建实例更高效
+  /// 注意：调用方必须确保已调用 _ensureInitialized()
   Future<void> _reloadPrefs() async {
-    if (_prefs != null) {
-      Logger.info('⚙️ [SETTINGS-SERVICE] ====== Reloading SharedPreferences from disk ======');
-      await _prefs!.reload();
-      Logger.info('⚙️ [SETTINGS-SERVICE] SharedPreferences reloaded');
-    }
+    Logger.info('⚙️ [SETTINGS-SERVICE] ====== Reloading SharedPreferences from disk ======');
+    await _prefs!.reload();
+    Logger.info('⚙️ [SETTINGS-SERVICE] SharedPreferences reloaded');
   }
 
   Future<AppSettings> loadSettings() async {
