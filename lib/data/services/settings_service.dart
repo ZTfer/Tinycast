@@ -22,16 +22,30 @@ class SettingsService {
     }
   }
 
+  /// 从磁盘重新加载 SharedPreferences 数据（多窗口场景下确保读取最新值）
+  /// 注意：使用 SharedPreferences.reload() 比重新创建实例更高效
+  Future<void> _reloadPrefs() async {
+    if (_prefs != null) {
+      Logger.info('⚙️ [SETTINGS-SERVICE] ====== Reloading SharedPreferences from disk ======');
+      await _prefs!.reload();
+      Logger.info('⚙️ [SETTINGS-SERVICE] SharedPreferences reloaded');
+    }
+  }
+
   Future<AppSettings> loadSettings() async {
     Logger.info('⚙️ [SETTINGS-SERVICE] ====== Loading settings ======');
     await _ensureInitialized();
+    
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
+
+    final rawPolicy = _prefs!.getString('auto_download_policy');
+    Logger.info('⚙️ [SETTINGS-SERVICE] Raw auto_download_policy from prefs: $rawPolicy');
 
     return AppSettings(
       downloadOnFavorite: _prefs!.getBool('download_on_favorite') ?? false,
       removePlayedDownloads: _prefs!.getBool('remove_played_downloads') ?? false,
-      autoDownloadPolicy: _parseAutoDownloadPolicy(
-        _prefs!.getString('auto_download_policy'),
-      ),
+      autoDownloadPolicy: _parseAutoDownloadPolicy(rawPolicy),
       playbackSpeed: _prefs!.getDouble('playback_speed') ?? 1.0,
       skipForwardTime: _prefs!.getInt('skip_forward_time') ?? 30,
       skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? 15,
@@ -53,8 +67,11 @@ class SettingsService {
 
   Future<void> setAutoDownloadPolicy(AutoDownloadPolicy value) async {
     await _ensureInitialized();
-    await _prefs!.setString('auto_download_policy', value.name);
-    Logger.info('⚙️ [SETTINGS-SERVICE] autoDownloadPolicy set to: ${value.name}');
+    final key = 'auto_download_policy';
+    final oldValue = _prefs!.getString(key);
+    await _prefs!.setString(key, value.name);
+    final newValue = _prefs!.getString(key);
+    Logger.info('⚙️ [SETTINGS-SERVICE] autoDownloadPolicy: old=$oldValue, new=$newValue');
   }
 
   Future<void> setPlaybackSpeed(double value) async {
@@ -83,11 +100,15 @@ class SettingsService {
 
   Future<bool> getRemovePlayedDownloads() async {
     await _ensureInitialized();
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
     return _prefs!.getBool('remove_played_downloads') ?? false;
   }
 
   Future<bool> getDownloadOnFavorite() async {
     await _ensureInitialized();
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
     return _prefs!.getBool('download_on_favorite') ?? false;
   }
 
