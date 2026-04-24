@@ -155,11 +155,12 @@ class _CacheSettingsState extends State<CacheSettings> {
   }
 
   void _showDropdown() {
-    final RenderBox renderBox =
-        _buttonKey.currentContext?.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-    final Size size = renderBox.size;
-    final Size screenSize = MediaQuery.of(context).size;
+    final renderBox = _buttonKey.currentContext?.findRenderObject();
+    if (renderBox is! RenderBox) return;
+
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    final screenSize = MediaQuery.of(context).size;
 
     const double estimatedMenuWidth = 200.0;
     const double estimatedMenuHeight = 200.0;
