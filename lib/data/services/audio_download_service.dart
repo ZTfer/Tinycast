@@ -179,6 +179,18 @@ class AudioDownloadService {
   Stream<AudioDownloadEvent> get globalEventStream =>
       _globalEventController.stream;
 
+  void sendGlobalEvent({
+    required String episodeId,
+    required DownloadStatus status,
+  }) {
+    _globalEventController.add(
+      AudioDownloadEvent(
+        episodeId: episodeId,
+        status: status,
+      ),
+    );
+  }
+
   DownloadQueue get downloadQueue => _downloadQueue;
 
   Future<void> downloadEpisode(Episode episode) async {

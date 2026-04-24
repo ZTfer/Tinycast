@@ -4,6 +4,8 @@ import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
 import '../database/isar_service.dart';
 import '../models/episode_model.dart' as model;
+import '../models/podcast_model.dart';
+import 'audio_download_service.dart';
 import 'file_storage_service.dart';
 import 'image_cache_service.dart';
 
@@ -56,9 +58,27 @@ class CacheCleanupService {
         }
       }
 
-      await _updateAllEpisodesDownloadStatus(false);
+      // 更新数据库中所有 episode 的下载状态
+      final downloadedEpisodes = await _isarService.isar.episodes
+          .filter()
+          .isDownloadedEqualTo(true)
+          .findAll();
 
-      Logger.info('音频缓存清理完成: $deletedCount 个文件已删除');
+      for (final episode in downloadedEpisodes) {
+        await _updateEpisodeDownloadStatus(episode.id, false, null);
+      }
+
+      // 发送事件通知 UI 刷新
+      if (downloadedEpisodes.isNotEmpty) {
+        for (final episode in downloadedEpisodes) {
+          AudioDownloadService.instance.sendGlobalEvent(
+            episodeId: episode.id.toString(),
+            status: DownloadStatus.cancelled,
+          );
+        }
+      }
+
+      Logger.info('音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新');
     } catch (e, stackTrace) {
       Logger.error('清理音频缓存失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
@@ -75,6 +95,9 @@ class CacheCleanupService {
 
       await _imageCacheService.clearCache();
 
+      // 清除数据库中所有 episode 和 podcast 的图片路径
+      await _clearAllImagePaths();
+
       Logger.info('图片缓存清理完成');
     } catch (e, stackTrace) {
       Logger.error('清理图片缓存失败', error: e, stackTrace: stackTrace);
@@ -83,6 +106,46 @@ class CacheCleanupService {
         originalError: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  Future<void> _clearAllImagePaths() async {
+    try {
+      Logger.info('开始清除数据库中的图片路径');
+
+      // 清除 episode 的 artworkPath
+      await _isarService.isar.writeTxn(() async {
+        final episodes = await _isarService.isar.episodes
+            .filter()
+            .artworkPathIsNotNull()
+            .findAll();
+
+        for (final episode in episodes) {
+          episode.artworkPath = null;
+          await _isarService.isar.episodes.put(episode);
+        }
+
+        Logger.info('已清除 ${episodes.length} 个 episode 的 artworkPath');
+      });
+
+      // 清除 podcast 的 artworkPath
+      await _isarService.isar.writeTxn(() async {
+        final podcasts = await _isarService.isar.podcasts
+            .filter()
+            .artworkPathIsNotNull()
+            .findAll();
+
+        for (final podcast in podcasts) {
+          podcast.artworkPath = null;
+          await _isarService.isar.podcasts.put(podcast);
+        }
+
+        Logger.info('已清除 ${podcasts.length} 个 podcast 的 artworkPath');
+      });
+
+      Logger.info('数据库中图片路径清除完成');
+    } catch (e, stackTrace) {
+      Logger.error('清除图片路径失败', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -349,32 +412,6 @@ class CacheCleanupService {
       Logger.error('更新节目下载状态失败: $episodeId', error: e, stackTrace: stackTrace);
       throw AppException.storage(
         '更新节目下载状态失败',
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _updateAllEpisodesDownloadStatus(bool isDownloaded) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episodes = await _isarService.isar.episodes
-            .filter()
-            .isDownloadedEqualTo(!isDownloaded)
-            .findAll();
-
-        for (var episode in episodes) {
-          episode.isDownloaded = isDownloaded;
-          episode.downloadedPath = isDownloaded ? episode.downloadedPath : null;
-          episode.downloadProgress = isDownloaded ? 1.0 : 0.0;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error('更新所有节目下载状态失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage(
-        '更新所有节目下载状态失败',
         originalError: e,
         stackTrace: stackTrace,
       );
