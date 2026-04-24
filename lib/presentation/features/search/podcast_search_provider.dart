@@ -293,14 +293,20 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
     int? hours,
     int? days,
   }) async {
-    final cutoffDate = DateTime.now();
+    // 计算截止时间点（注意：DateTime.subtract 返回新对象，不修改原对象）
+    DateTime cutoffDate;
     if (hours != null) {
-      cutoffDate.subtract(Duration(hours: hours));
+      cutoffDate = DateTime.now().subtract(Duration(hours: hours));
     } else if (days != null) {
-      cutoffDate.subtract(Duration(days: days));
+      cutoffDate = DateTime.now().subtract(Duration(days: days));
+    } else {
+      return;
     }
 
+    Logger.info('⬇️ [AUTO-DOWNLOAD] 时间范围策略，截止时间: $cutoffDate');
+
     final allEpisodes = await _repository.getEpisodesByPodcastId(podcastId);
+    Logger.info('⬇️ [AUTO-DOWNLOAD] 总集数: ${allEpisodes.length}');
 
     final toDownload = allEpisodes.where((episode) {
       return episode.pubDate.isAfter(cutoffDate);
@@ -309,10 +315,13 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
     if (toDownload.isNotEmpty) {
       Logger.info('⬇️ [AUTO-DOWNLOAD] 时间范围策略，找到 ${toDownload.length} 集');
       for (final episode in toDownload) {
+        Logger.info('⬇️ [AUTO-DOWNLOAD] 准备下载: ${episode.title}, pubDate: ${episode.pubDate}');
         unawaited(
           AudioDownloadService.instance.downloadEpisodeById(episode.id),
         );
       }
+    } else {
+      Logger.info('⬇️ [AUTO-DOWNLOAD] 时间范围策略，没有符合条件的集数');
     }
   }
 }
