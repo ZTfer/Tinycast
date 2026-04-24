@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tinycast/data/services/cache_cleanup_service.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart';
+import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
+import 'package:tinycast/presentation/features/settings/cache_settings/cache_cleanup_dropdown.dart';
+
+enum CleanupOption { all, played, recent5, recent10 }
 
 class CacheSettings extends StatefulWidget {
   const CacheSettings({super.key});
@@ -11,6 +15,7 @@ class CacheSettings extends StatefulWidget {
 
 class _CacheSettingsState extends State<CacheSettings> {
   final CacheCleanupService _cacheCleanupService = CacheCleanupService.instance;
+  final GlobalKey _buttonKey = GlobalKey();
 
   String _cacheSize = '计算中...';
   bool _isLoading = false;
@@ -149,74 +154,62 @@ class _CacheSettingsState extends State<CacheSettings> {
     }
   }
 
-  void _showCleanupOptions() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('选择清理选项'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildOptionTile(CleanupOption.all),
-              _buildOptionTile(CleanupOption.played),
-              _buildOptionTile(CleanupOption.recent5),
-              _buildOptionTile(CleanupOption.recent10),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
+  void _showDropdown() {
+    final RenderBox renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    final Size size = renderBox.size;
+    final Size screenSize = MediaQuery.of(context).size;
+
+    const double estimatedMenuWidth = 200.0;
+    const double estimatedMenuHeight = 200.0;
+
+    double left = offset.dx;
+    double top = offset.dy + size.height + 4;
+
+    if (left + estimatedMenuWidth > screenSize.width) {
+      left = screenSize.width - estimatedMenuWidth - 8;
+    }
+
+    if (top + estimatedMenuHeight > screenSize.height) {
+      top = offset.dy - estimatedMenuHeight + 140;
+    }
+
+    OverlayEntry? dropdownOverlay;
+    dropdownOverlay = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                dropdownOverlay?.remove();
+              },
+              child: Container(color: Colors.transparent),
             ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildOptionTile(CleanupOption option) {
-    final isSelected = _selectedOption == option;
-    return ListTile(
-      title: Text(_getOptionLabelForOption(option)),
-      subtitle: Text(_getOptionDescriptionForOption(option)),
-      trailing: Icon(
-        isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-        color: isSelected ? const Color(0xFF222222) : const Color(0x99000000),
+          ),
+          Positioned(
+            left: left,
+            top: top,
+            child: GestureDetector(
+              onTap: () {},
+              behavior: HitTestBehavior.opaque,
+              child: CacheCleanupSettingsDropdown(
+                selectedOption: _selectedOption,
+                onOptionSelected: (option) {
+                  setState(() {
+                    _selectedOption = option;
+                  });
+                  dropdownOverlay?.remove();
+                },
+              ),
+            ),
+          ),
+        ],
       ),
-      onTap: () {
-        setState(() {
-          _selectedOption = option;
-        });
-        Navigator.of(context).pop();
-      },
     );
-  }
 
-  String _getOptionLabelForOption(CleanupOption option) {
-    switch (option) {
-      case CleanupOption.all:
-        return '清理所有';
-      case CleanupOption.played:
-        return '清理已播放';
-      case CleanupOption.recent5:
-        return '保留最近5集';
-      case CleanupOption.recent10:
-        return '保留最近10集';
-    }
-  }
-
-  String _getOptionDescriptionForOption(CleanupOption option) {
-    switch (option) {
-      case CleanupOption.all:
-        return '清理所有音频和图片缓存';
-      case CleanupOption.played:
-        return '仅清理已播放的节目';
-      case CleanupOption.recent5:
-        return '保留最近5集，删除其余';
-      case CleanupOption.recent10:
-        return '保留最近10集，删除其余';
-    }
+    Overlay.of(context).insert(dropdownOverlay);
   }
 
   @override
@@ -229,7 +222,7 @@ class _CacheSettingsState extends State<CacheSettings> {
         _buildCacheSizeSection(),
         const SizedBox(height: 16.0),
 
-        // 清理选项
+        // 清理选项下拉菜单
         _buildCleanupOptionSection(),
         const SizedBox(height: 16.0),
 
@@ -286,53 +279,18 @@ class _CacheSettingsState extends State<CacheSettings> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '清理选项:',
-          style: TextStyle(
-            color: Color(0xD9000000),
-            fontSize: 14,
-            height: 16 / 14,
-          ),
-        ),
-        const SizedBox(height: 8.0),
-        GestureDetector(
-          onTap: _showCleanupOptions,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 8.0,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(color: const Color(0xFFE0E0E0)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _getOptionLabel(),
-                  style: const TextStyle(
-                    color: Color(0xD9000000),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                const Icon(Icons.arrow_drop_down, color: Color(0x99000000)),
-              ],
-            ),
-          ),
+        SettingsDropdownButton(
+          key: _buttonKey,
+          label: _getOptionLabel(),
+          onPressed: _showDropdown,
         ),
         const SizedBox(height: 4.0),
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: Text(
-            _getOptionDescription(),
-            style: const TextStyle(
-              color: Color(0x99000000),
-              fontSize: 12,
-              height: 16 / 12,
-            ),
+        Text(
+          _getOptionDescription(),
+          style: const TextStyle(
+            color: Color.fromARGB(217, 160, 160, 160),
+            fontSize: 12,
+            height: 16 / 12,
           ),
         ),
       ],
@@ -413,5 +371,3 @@ class _CacheSettingsState extends State<CacheSettings> {
     );
   }
 }
-
-enum CleanupOption { all, played, recent5, recent10 }
