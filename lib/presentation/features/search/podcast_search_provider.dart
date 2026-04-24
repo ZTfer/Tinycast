@@ -300,6 +300,7 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
     } else if (days != null) {
       cutoffDate = DateTime.now().subtract(Duration(days: days));
     } else {
+      Logger.info('⬇️ [AUTO-DOWNLOAD] 时间范围策略，未指定时间范围，跳过');
       return;
     }
 
