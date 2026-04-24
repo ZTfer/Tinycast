@@ -44,42 +44,49 @@ class CacheCleanupSettingsDropdown extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DropdownItem(
-            icon: selectedOption == CleanupOption.all
-                ? const Icon(LucideIcons.check)
-                : null,
-            text: '清理所有',
-            onPressed: () => _handleItemSelected(CleanupOption.all),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 235),
+        child: SingleChildScrollView(
+          child: IntrinsicWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownItem(
+                  icon: selectedOption == CleanupOption.all
+                      ? const Icon(LucideIcons.check)
+                      : null,
+                  text: '清理所有',
+                  onPressed: () => _handleItemSelected(CleanupOption.all),
+                ),
+                const SizedBox(height: 2),
+                DropdownItem(
+                  icon: selectedOption == CleanupOption.played
+                      ? const Icon(LucideIcons.check)
+                      : null,
+                  text: '清理已播放',
+                  onPressed: () => _handleItemSelected(CleanupOption.played),
+                ),
+                const SizedBox(height: 2),
+                DropdownItem(
+                  icon: selectedOption == CleanupOption.recent5
+                      ? const Icon(LucideIcons.check)
+                      : null,
+                  text: '保留最近5集',
+                  onPressed: () => _handleItemSelected(CleanupOption.recent5),
+                ),
+                const SizedBox(height: 2),
+                DropdownItem(
+                  icon: selectedOption == CleanupOption.recent10
+                      ? const Icon(LucideIcons.check)
+                      : null,
+                  text: '保留最近10集',
+                  onPressed: () => _handleItemSelected(CleanupOption.recent10),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 2),
-          DropdownItem(
-            icon: selectedOption == CleanupOption.played
-                ? const Icon(LucideIcons.check)
-                : null,
-            text: '清理已播放',
-            onPressed: () => _handleItemSelected(CleanupOption.played),
-          ),
-          const SizedBox(height: 2),
-          DropdownItem(
-            icon: selectedOption == CleanupOption.recent5
-                ? const Icon(LucideIcons.check)
-                : null,
-            text: '保留最近5集',
-            onPressed: () => _handleItemSelected(CleanupOption.recent5),
-          ),
-          const SizedBox(height: 2),
-          DropdownItem(
-            icon: selectedOption == CleanupOption.recent10
-                ? const Icon(LucideIcons.check)
-                : null,
-            text: '保留最近10集',
-            onPressed: () => _handleItemSelected(CleanupOption.recent10),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -177,7 +177,6 @@ class _CacheSettingsState extends State<CacheSettings> {
     }
 
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     OverlayEntry? dropdownOverlay;
     dropdownOverlay = OverlayEntry(
