@@ -4,8 +4,6 @@ import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart'
 import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
 import 'package:tinycast/presentation/features/settings/cache_settings/cache_cleanup_dropdown.dart';
 
-enum CleanupOption { all, played, recent5, recent10 }
-
 class CacheSettings extends StatefulWidget {
   const CacheSettings({super.key});
 
@@ -155,6 +153,8 @@ class _CacheSettingsState extends State<CacheSettings> {
   }
 
   void _showDropdown() {
+    if (!mounted) return;
+
     final renderBox = _buttonKey.currentContext?.findRenderObject();
     if (renderBox is! RenderBox) return;
 
@@ -175,6 +175,9 @@ class _CacheSettingsState extends State<CacheSettings> {
     if (top + estimatedMenuHeight > screenSize.height) {
       top = offset.dy - estimatedMenuHeight + 140;
     }
+
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
 
     OverlayEntry? dropdownOverlay;
     dropdownOverlay = OverlayEntry(
@@ -198,9 +201,11 @@ class _CacheSettingsState extends State<CacheSettings> {
               child: CacheCleanupSettingsDropdown(
                 selectedOption: _selectedOption,
                 onOptionSelected: (option) {
-                  setState(() {
-                    _selectedOption = option;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _selectedOption = option;
+                    });
+                  }
                   dropdownOverlay?.remove();
                 },
               ),
@@ -210,7 +215,7 @@ class _CacheSettingsState extends State<CacheSettings> {
       ),
     );
 
-    Overlay.of(context).insert(dropdownOverlay);
+    overlay.insert(dropdownOverlay);
   }
 
   @override

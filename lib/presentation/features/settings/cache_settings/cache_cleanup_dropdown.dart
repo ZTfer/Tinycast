@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
-import 'package:tinycast/presentation/features/settings/cache_settings/cache_settings.dart';
+
+/// 缓存清理选项枚举
+enum CleanupOption { all, played, recent5, recent10 }
 
 /// 缓存清理设置下拉菜单
 ///
