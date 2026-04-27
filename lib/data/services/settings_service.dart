@@ -88,10 +88,20 @@ class SettingsService {
     Logger.info('⚙️ [SETTINGS-SERVICE] skipForwardTime set to: $value');
   }
 
+  Future<int> getSkipForwardTime() async {
+    await _ensureInitialized();
+    return _prefs!.getInt('skip_forward_time') ?? 30;
+  }
+
   Future<void> setSkipBackwardTime(int value) async {
     await _ensureInitialized();
     await _prefs!.setInt('skip_backward_time', value);
     Logger.info('⚙️ [SETTINGS-SERVICE] skipBackwardTime set to: $value');
+  }
+
+  Future<int> getSkipBackwardTime() async {
+    await _ensureInitialized();
+    return _prefs!.getInt('skip_backward_time') ?? 15;
   }
 
   Future<void> setContinuousPlay(bool value) async {

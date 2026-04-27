@@ -1,45 +1,47 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/radio/label_radio.dart';
 
-enum ContinuousPlayOption { continuePlaying, stopPlaying }
-
-class ContinuousPlaySettings extends StatefulWidget {
+/// 连续播放设置组件
+///
+/// 提供单集结束后的播放行为选择：
+/// - 单集结束后继续播放：自动播放下一集
+/// - 单集结束后停止：切换到下一集并暂停
+///
+/// 与 SettingsProvider 集成，实现设置的读取和保存。
+class ContinuousPlaySettings extends ConsumerWidget {
   const ContinuousPlaySettings({super.key});
 
   @override
-  State<ContinuousPlaySettings> createState() => _ContinuousPlaySettingsState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 从 SettingsProvider 读取当前设置
+    final settings = ref.watch(settingsProvider);
+    final continuousPlay = settings.settings.continuousPlay;
 
-class _ContinuousPlaySettingsState extends State<ContinuousPlaySettings> {
-  ContinuousPlayOption _selectedOption = ContinuousPlayOption.continuePlaying;
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 4.0),
         LabelRadio(
-          value: _selectedOption == ContinuousPlayOption.continuePlaying,
+          value: continuousPlay,
           label: '单集结束后继续播放',
           onChanged: (bool newValue) {
             if (newValue) {
-              setState(() {
-                _selectedOption = ContinuousPlayOption.continuePlaying;
-              });
+              // 保存连续播放设置
+              ref.read(settingsProvider.notifier).updateContinuousPlay(true);
             }
           },
         ),
         const SizedBox(height: 4.0),
         LabelRadio(
-          value: _selectedOption == ContinuousPlayOption.stopPlaying,
+          value: !continuousPlay,
           label: '单集结束后停止',
           onChanged: (bool newValue) {
             if (newValue) {
-              setState(() {
-                _selectedOption = ContinuousPlayOption.stopPlaying;
-              });
+              // 保存连续播放设置
+              ref.read(settingsProvider.notifier).updateContinuousPlay(false);
             }
           },
         ),

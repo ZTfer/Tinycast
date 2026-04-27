@@ -2,27 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
-/// 队列剧集下拉菜单
+/// 跳过时间下拉菜单
 ///
-/// 显示剧集操作选项的纵向列表菜单。
-/// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
+/// 显示快进/快退时间选项的纵向列表菜单。
+/// 包含：10秒、15秒、30秒、45秒、60秒。
 class SkipTimeDropdown extends StatelessWidget {
+  /// 当前选中的时间（秒）
+  final int selectedTime;
+
+  /// 选项被选中时的回调
   final VoidCallback? onItemSelected;
 
-  const SkipTimeDropdown({super.key, this.onItemSelected});
+  const SkipTimeDropdown({
+    super.key,
+    required this.selectedTime,
+    this.onItemSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // width: 110,
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: Colors.grey.shade300, // 边框颜色
-          width: 0.5, // 边框宽度
-          style: BorderStyle.solid, // 实线
+          color: Colors.grey.shade300,
+          width: 0.5,
+          style: BorderStyle.solid,
         ),
         boxShadow: [
           BoxShadow(
@@ -38,27 +45,37 @@ class SkipTimeDropdown extends StatelessWidget {
           spacing: 2,
           children: [
             DropdownItem(
-              // icon: Icon(LucideIcons.check),
+              icon: selectedTime == 10
+                  ? const Icon(LucideIcons.check)
+                  : null,
               text: '10 秒',
               onPressed: () => _handleItemSelected(),
             ),
             DropdownItem(
-              icon: Icon(LucideIcons.check),
+              icon: selectedTime == 15
+                  ? const Icon(LucideIcons.check)
+                  : null,
               text: '15 秒',
               onPressed: () => _handleItemSelected(),
             ),
             DropdownItem(
-              // icon: Icon(LucideIcons.check),
+              icon: selectedTime == 30
+                  ? const Icon(LucideIcons.check)
+                  : null,
               text: '30 秒',
               onPressed: () => _handleItemSelected(),
             ),
             DropdownItem(
-              // icon: Icon(LucideIcons.check),
+              icon: selectedTime == 45
+                  ? const Icon(LucideIcons.check)
+                  : null,
               text: '45 秒',
               onPressed: () => _handleItemSelected(),
             ),
             DropdownItem(
-              // icon: Icon(LucideIcons.check),
+              icon: selectedTime == 60
+                  ? const Icon(LucideIcons.check)
+                  : null,
               text: '60 秒',
               onPressed: () => _handleItemSelected(),
             ),

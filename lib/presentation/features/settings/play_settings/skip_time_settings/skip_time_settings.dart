@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/presentation/features/settings/play_settings/skip_time_settings/skip_time_dropdown.dart';
 import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
 
@@ -6,14 +8,15 @@ import 'package:tinycast/presentation/features/settings/widgets/settings_dropdow
 ///
 /// 提供播放控制中快进和快退时间的选择功能。
 /// 使用 Overlay 实现下拉菜单，支持边界检测和全局单例管理。
-class SkipTimeSettings extends StatefulWidget {
+/// 与 SettingsProvider 集成，实现设置的读取和保存。
+class SkipTimeSettings extends ConsumerStatefulWidget {
   const SkipTimeSettings({super.key});
 
   @override
-  State<SkipTimeSettings> createState() => _SkipTimeSettingsState();
+  ConsumerState<SkipTimeSettings> createState() => _SkipTimeSettingsState();
 }
 
-class _SkipTimeSettingsState extends State<SkipTimeSettings> {
+class _SkipTimeSettingsState extends ConsumerState<SkipTimeSettings> {
   /// 快进按钮的 GlobalKey，用于获取按钮在屏幕上的位置
   final GlobalKey _forwardButtonKey = GlobalKey();
 
@@ -30,13 +33,19 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
   /// 显示下拉菜单
   ///
   /// [buttonKey] 触发菜单的按钮的 GlobalKey
+  /// [selectedTime] 当前选中的时间（秒）
+  /// [onTimeSelected] 选择新时间时的回调
   ///
   /// 执行流程：
   /// 1. 关闭当前已打开的菜单（全局单例管理）
   /// 2. 获取按钮在屏幕上的绝对位置和尺寸
   /// 3. 计算菜单位置，处理右边界和下边界溢出
   /// 4. 创建 OverlayEntry 并插入 Overlay
-  void _showDropdown(GlobalKey buttonKey) {
+  void _showDropdown({
+    required GlobalKey buttonKey,
+    required int selectedTime,
+    required ValueChanged<int> onTimeSelected,
+  }) {
     // 关闭当前已打开的菜单，避免多个菜单同时显示
     if (_currentDropdownOverlay != null) {
       _currentDropdownOverlay?.remove();
@@ -60,7 +69,7 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
 
     // 计算菜单初始位置：按钮正下方，间隔 4 像素
     double left = offset.dx;
-    double top = offset.dy + size.height - 10;
+    double top = offset.dy + size.height + 4;
 
     // 右边界检测：如果菜单超出屏幕右边缘，则向左对齐
     if (left + estimatedMenuWidth > screenSize.width) {
@@ -69,7 +78,7 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
 
     // 下边界检测：如果菜单超出屏幕底部，则显示在按钮上方
     if (top + estimatedMenuHeight > screenSize.height) {
-      top = offset.dy - estimatedMenuHeight - 20;
+      top = offset.dy - estimatedMenuHeight - 4;
     }
 
     // 创建下拉菜单的 OverlayEntry
@@ -92,7 +101,13 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
               // 阻止事件穿透到遮罩层
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: SkipTimeDropdown(onItemSelected: _hideDropdown),
+              child: SkipTimeDropdown(
+                selectedTime: selectedTime,
+                onItemSelected: () {
+                  onTimeSelected(selectedTime);
+                  _hideDropdown();
+                },
+              ),
             ),
           ),
         ],
@@ -136,6 +151,11 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
   /// 构建组件布局
   @override
   Widget build(BuildContext context) {
+    // 从 SettingsProvider 读取当前设置
+    final settings = ref.watch(settingsProvider);
+    final skipForwardTime = settings.settings.skipForwardTime;
+    final skipBackwardTime = settings.settings.skipBackwardTime;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,8 +165,17 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
           children: [
             SettingsDropdownButton(
               key: _forwardButtonKey,
-              label: '30 秒',
-              onPressed: () => _showDropdown(_forwardButtonKey),
+              label: '$skipForwardTime 秒',
+              onPressed: () => _showDropdown(
+                buttonKey: _forwardButtonKey,
+                selectedTime: skipForwardTime,
+                onTimeSelected: (time) {
+                  // 保存快进时间设置
+                  ref
+                      .read(settingsProvider.notifier)
+                      .updateSkipForwardTime(time);
+                },
+              ),
             ),
             const Text(
               '快进',
@@ -165,8 +194,17 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
           children: [
             SettingsDropdownButton(
               key: _rewindButtonKey,
-              label: '15 秒',
-              onPressed: () => _showDropdown(_rewindButtonKey),
+              label: '$skipBackwardTime 秒',
+              onPressed: () => _showDropdown(
+                buttonKey: _rewindButtonKey,
+                selectedTime: skipBackwardTime,
+                onTimeSelected: (time) {
+                  // 保存快退时间设置
+                  ref
+                      .read(settingsProvider.notifier)
+                      .updateSkipBackwardTime(time);
+                },
+              ),
             ),
             const Text(
               '快退',

@@ -7,6 +7,7 @@ import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
+import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
@@ -150,6 +151,43 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       '🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...',
     );
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
+
+    // 根据连续播放设置决定是否自动播放下一集
+    final settings = await SettingsService.instance.loadSettings();
+    final continuousPlay = settings.continuousPlay;
+
+    if (continuousPlay) {
+      // 连续播放启用：自动播放下一集
+      final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
+      final nextEpisode = unplayedState.episodes.isNotEmpty
+          ? unplayedState.episodes.first
+          : null;
+
+      if (nextEpisode != null) {
+        debugPrint(
+          '🔄 [Playback] 连续播放启用，自动播放下一集: ${nextEpisode.title}',
+        );
+        await playEpisode(nextEpisode);
+      } else {
+        debugPrint('🔄 [Playback] 连续播放启用，但没有下一集，停留在当前 episode');
+      }
+    } else {
+      // 连续播放禁用：切换到下一集并暂停
+      final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
+      final nextEpisode = unplayedState.episodes.isNotEmpty
+          ? unplayedState.episodes.first
+          : null;
+
+      if (nextEpisode != null) {
+        debugPrint(
+          '⏸️ [Playback] 连续播放禁用，切换到下一集并暂停: ${nextEpisode.title}',
+        );
+        await playEpisode(nextEpisode);
+        await pause();
+      } else {
+        debugPrint('⏸️ [Playback] 连续播放禁用，且没有下一集，停留在当前 episode');
+      }
+    }
   }
 
   void _initProgressAutoSave() {
@@ -323,15 +361,23 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> seekForward({
-    Duration duration = const Duration(seconds: 30),
+    Duration? duration,
   }) async {
-    await _audioPlayerService.seekForward(duration: duration);
+    final skipTime = duration?.inSeconds ??
+        (await SettingsService.instance.getSkipForwardTime());
+    await _audioPlayerService.seekForward(
+      duration: Duration(seconds: skipTime),
+    );
   }
 
   Future<void> seekBackward({
-    Duration duration = const Duration(seconds: 30),
+    Duration? duration,
   }) async {
-    await _audioPlayerService.seekBackward(duration: duration);
+    final skipTime = duration?.inSeconds ??
+        (await SettingsService.instance.getSkipBackwardTime());
+    await _audioPlayerService.seekBackward(
+      duration: Duration(seconds: skipTime),
+    );
   }
 
   Future<void> seekTo(Duration position) async {
