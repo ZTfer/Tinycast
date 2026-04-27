@@ -90,6 +90,8 @@ class SettingsService {
 
   Future<int> getSkipForwardTime() async {
     await _ensureInitialized();
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
     return _prefs!.getInt('skip_forward_time') ?? 30;
   }
 
@@ -101,6 +103,8 @@ class SettingsService {
 
   Future<int> getSkipBackwardTime() async {
     await _ensureInitialized();
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
     return _prefs!.getInt('skip_backward_time') ?? 15;
   }
 
