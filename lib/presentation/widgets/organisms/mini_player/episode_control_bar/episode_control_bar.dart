@@ -267,7 +267,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             // 播放控制按钮之间的间距
             spacing: 40,
             children: [
-              // 后退30秒按钮
+              // 后退按钮
               EpisodeControlButton(
                 icon: const Icon(
                   LucideIcons.undoDot,
@@ -278,7 +278,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
               ),
               // 播放/暂停按钮
               PlayPauseButton(onPressed: widget.onPlayPause),
-              // 前进30秒按钮
+              // 前进按钮
               EpisodeControlButton(
                 icon: const Icon(
                   LucideIcons.redoDot400,
