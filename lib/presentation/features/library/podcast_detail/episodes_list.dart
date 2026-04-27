@@ -128,7 +128,11 @@ class _ShowInfoWithDownloadStatusState
       ref.invalidate(unplayedEpisodesNotifierProvider);
 
       // 重新加载播客列表（从已清理的数据库）
-      await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
+      try {
+        await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
+      } catch (e) {
+        Logger.error('取消关注后重新加载播客列表失败', error: e);
+      }
       ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
       if (!mounted) return;
