@@ -103,8 +103,8 @@ class _SkipTimeSettingsState extends ConsumerState<SkipTimeSettings> {
               behavior: HitTestBehavior.opaque,
               child: SkipTimeDropdown(
                 selectedTime: selectedTime,
-                onItemSelected: () {
-                  onTimeSelected(selectedTime);
+                onItemSelected: (newTime) {
+                  onTimeSelected(newTime);
                   _hideDropdown();
                 },
               ),

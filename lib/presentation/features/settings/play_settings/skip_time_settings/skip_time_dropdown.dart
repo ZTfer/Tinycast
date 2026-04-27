@@ -10,8 +10,8 @@ class SkipTimeDropdown extends StatelessWidget {
   /// 当前选中的时间（秒）
   final int selectedTime;
 
-  /// 选项被选中时的回调
-  final VoidCallback? onItemSelected;
+  /// 选项被选中时的回调，传递新选择的时间值
+  final ValueChanged<int>? onItemSelected;
 
   const SkipTimeDropdown({
     super.key,
@@ -49,35 +49,35 @@ class SkipTimeDropdown extends StatelessWidget {
                   ? const Icon(LucideIcons.check)
                   : null,
               text: '10 秒',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _handleItemSelected(10),
             ),
             DropdownItem(
               icon: selectedTime == 15
                   ? const Icon(LucideIcons.check)
                   : null,
               text: '15 秒',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _handleItemSelected(15),
             ),
             DropdownItem(
               icon: selectedTime == 30
                   ? const Icon(LucideIcons.check)
                   : null,
               text: '30 秒',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _handleItemSelected(30),
             ),
             DropdownItem(
               icon: selectedTime == 45
                   ? const Icon(LucideIcons.check)
                   : null,
               text: '45 秒',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _handleItemSelected(45),
             ),
             DropdownItem(
               icon: selectedTime == 60
                   ? const Icon(LucideIcons.check)
                   : null,
               text: '60 秒',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _handleItemSelected(60),
             ),
           ],
         ),
@@ -85,7 +85,7 @@ class SkipTimeDropdown extends StatelessWidget {
     );
   }
 
-  void _handleItemSelected() {
-    onItemSelected?.call();
+  void _handleItemSelected(int time) {
+    onItemSelected?.call(time);
   }
 }
