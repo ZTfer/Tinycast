@@ -267,6 +267,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             // 播放控制按钮之间的间距
             spacing: 40,
             children: [
+
               // 后退按钮
               EpisodeControlButton(
                 icon: const Icon(
@@ -276,8 +277,10 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 ),
                 onPressed: widget.onSeekBackward,
               ),
+
               // 播放/暂停按钮
               PlayPauseButton(onPressed: widget.onPlayPause),
+
               // 前进按钮
               EpisodeControlButton(
                 icon: const Icon(
@@ -287,6 +290,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 ),
                 onPressed: widget.onSeekForward,
               ),
+              
             ],
           ),
           // 音量控制按钮
