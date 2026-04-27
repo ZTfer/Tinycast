@@ -74,11 +74,11 @@ class CacheCleanupService {
 
         await _isarService.isar.episodes.putAll(downloadedEpisodes);
 
-        // 发送事件通知 UI 刷新（使用 cancelled 状态以触发 UI 刷新）
+        // 发送事件通知 UI 刷新（使用 idle 状态表示缓存清理后的空闲状态）
         for (final episode in downloadedEpisodes) {
           AudioDownloadService.instance.sendGlobalEvent(
             episodeId: episode.id.toString(),
-            status: DownloadStatus.cancelled,
+            status: DownloadStatus.idle,
           );
         }
 
@@ -191,11 +191,11 @@ class CacheCleanupService {
 
         await _isarService.isar.episodes.putAll(playedEpisodes);
 
-        // 发送事件通知 UI 刷新（使用 cancelled 状态以触发 UI 刷新）
+        // 发送事件通知 UI 刷新（使用 idle 状态表示缓存清理后的空闲状态）
         for (final episode in playedEpisodes) {
           AudioDownloadService.instance.sendGlobalEvent(
             episodeId: episode.id.toString(),
-            status: DownloadStatus.cancelled,
+            status: DownloadStatus.idle,
           );
         }
       });

@@ -47,7 +47,8 @@ class DownloadedEpisodesNotifier extends Notifier<DownloadedEpisodesState> {
     _downloadSubscription = AudioDownloadService.instance.globalEventStream.listen((event) {
       if (event.status == DownloadStatus.completed ||
           event.status == DownloadStatus.failed ||
-          event.status == DownloadStatus.cancelled) {
+          event.status == DownloadStatus.cancelled ||
+          event.status == DownloadStatus.idle) {
         Logger.info('📦 [DOWNLOADED-EPISODES] 下载状态变化: ${event.episodeId} -> ${event.status}, 刷新列表');
         _loadDownloadedEpisodesSilent();
       }
