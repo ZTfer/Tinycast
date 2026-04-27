@@ -129,7 +129,8 @@ class _LibraryState extends ConsumerState<Library> {
       ref.invalidate(downloadedEpisodesNotifierProvider);
       ref.invalidate(unplayedEpisodesNotifierProvider);
 
-      ref.invalidate(podcastProvider);
+      // 重新加载播客列表（从已清理的数据库）
+      await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
       ref.read(downloadNotifierProvider.notifier).manualRefresh();
 
       if (!mounted) return;
