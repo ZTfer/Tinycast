@@ -60,7 +60,7 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
 
     // 计算菜单初始位置：按钮正下方，间隔 4 像素
     double left = offset.dx;
-    double top = offset.dy + size.height + 4;
+    double top = offset.dy + size.height - 10;
 
     // 右边界检测：如果菜单超出屏幕右边缘，则向左对齐
     if (left + estimatedMenuWidth > screenSize.width) {
@@ -69,7 +69,7 @@ class _SkipTimeSettingsState extends State<SkipTimeSettings> {
 
     // 下边界检测：如果菜单超出屏幕底部，则显示在按钮上方
     if (top + estimatedMenuHeight > screenSize.height) {
-      top = offset.dy - estimatedMenuHeight - 4;
+      top = offset.dy - estimatedMenuHeight - 20;
     }
 
     // 创建下拉菜单的 OverlayEntry
