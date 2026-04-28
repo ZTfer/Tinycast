@@ -13,7 +13,6 @@ scene: git_message
 <正文：描述本次变更的背景与动机>
 
 Agent-Task: <原始任务描述或任务 ID>
-Agent-Model: <使用的模型，如 gpt-4o、gemini-2.5-pro、Qwen3.6-Plus、GLM5.1、Kimi2.6 等>
 Agent-Decision: <关键设计决策及理由>
 Agent-Limitation: <已知局限或后续 TODO>
 ```
@@ -48,7 +47,6 @@ feat(auth): add JWT token refresh mechanism
 采用双 token 机制（access + refresh），提升安全性。
 
 Agent-Task: 实现自动 token 刷新功能
-Agent-Model: GLM5.1
 Agent-Decision: 选择滑动窗口过期策略而非固定过期，提升用户体验
 Agent-Limitation: 未处理并发刷新场景，可能导致多个 refresh 请求
 ```
