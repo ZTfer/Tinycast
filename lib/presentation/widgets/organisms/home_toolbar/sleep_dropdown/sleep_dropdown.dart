@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/widgets/organisms/home_toolbar/sleep_dropdown/sleep_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
@@ -37,43 +37,36 @@ class SleepDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: [
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '关闭',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
+            DropdownItem(
               icon: Icon(LucideIcons.check),
               text: '5 分钟',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '10 分钟',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '15 分钟',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '30 分钟',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '45 分钟',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '1 小时',
               onPressed: () => _handleItemSelected(),
             ),
-            SleepDropdownItem(
-              // icon: Icon(LucideIcons.check),
+            DropdownItem(
               text: '单集结束时',
               onPressed: () => _handleItemSelected(),
             ),
