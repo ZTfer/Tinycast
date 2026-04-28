@@ -34,7 +34,6 @@ Agent-Limitation: <已知局限或后续 TODO>
 
 ### Agent 元数据（必填）
 - `Agent-Task`: 原始任务描述或任务 ID，用于追溯需求来源
-- `Agent-Model`: AI 模型标识，记录生成此变更的模型版本
 - `Agent-Decision`: 关键设计决策及其理由，说明为何选择此方案
 - `Agent-Limitation`: 已知局限性或后续 TODO，提醒未来改进方向
 
