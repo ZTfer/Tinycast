@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:tinycast/presentation/widgets/organisms/mini_player/speed_dropdown/speed_dropdown_item.dart';
+import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
 
 /// 队列剧集下拉菜单
 ///
@@ -46,15 +46,15 @@ class SpeedDropdown extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 2,
           children: _speedOptions.map((speed) {
-            return SpeedDropdownItem(
-              icon: currentSpeed == speed ? Icon(LucideIcons.check) : null,
-              text: '${speed}x',
-              onPressed: () {
-                onSpeedChanged?.call(speed);
-                onItemSelected?.call();
-              },
-            );
-          }).toList(),
+          return DropdownItem(
+            icon: currentSpeed == speed ? Icon(LucideIcons.check) : null,
+            text: '${speed}x',
+            onPressed: () {
+              onSpeedChanged?.call(speed);
+              onItemSelected?.call();
+            },
+          );
+        }).toList(),
         ),
       ),
     );
