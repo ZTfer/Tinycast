@@ -57,6 +57,9 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
   double _dragValue = 0.0;
   bool _isHovering = false;
 
+  /// 音量条触摸区域的 GlobalKey
+  final GlobalKey _trackKey = GlobalKey();
+
   double get _progress {
     if (_isDragging) return _dragValue;
     return (widget.volume / 100.0).clamp(0.0, 1.0);
@@ -68,6 +71,11 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
 
   int _progressToVolume(double progress) {
     return (progress * 100).round();
+  }
+
+  /// 获取音量条区域的 RenderBox
+  RenderBox? _getTrackRenderBox() {
+    return _trackKey.currentContext?.findRenderObject() as RenderBox?;
   }
 
   @override
@@ -99,32 +107,28 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
           onExit: (_) => setState(() => _isHovering = false),
           child: GestureDetector(
             onTapDown: (details) {
-              final box = context.findRenderObject() as RenderBox?;
+              final box = _getTrackRenderBox();
               if (box == null) return;
-              final trackWidth = box.size.width;
-              final progress = _calcProgress(details.localPosition, trackWidth);
+              final localPos = box.globalToLocal(details.globalPosition);
+              final progress = _calcProgress(localPos, box.size.width);
               widget.onVolumeChanged?.call(_progressToVolume(progress));
             },
             onHorizontalDragStart: (details) {
-              final box = context.findRenderObject() as RenderBox?;
+              final box = _getTrackRenderBox();
               if (box == null) return;
+              final localPos = box.globalToLocal(details.globalPosition);
               setState(() {
                 _isDragging = true;
-                _dragValue = _calcProgress(
-                  details.localPosition,
-                  box.size.width,
-                );
+                _dragValue = _calcProgress(localPos, box.size.width);
               });
               widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
             },
             onHorizontalDragUpdate: (details) {
-              final box = context.findRenderObject() as RenderBox?;
+              final box = _getTrackRenderBox();
               if (box == null) return;
+              final localPos = box.globalToLocal(details.globalPosition);
               setState(() {
-                _dragValue = _calcProgress(
-                  details.localPosition,
-                  box.size.width,
-                );
+                _dragValue = _calcProgress(localPos, box.size.width);
               });
               widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
             },
@@ -133,6 +137,7 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
               setState(() => _isDragging = false);
             },
             child: SizedBox(
+              key: _trackKey,
               height: widget.thumbRadius * 2 + 8,
               child: CustomPaint(
                 painter: _ProgressTrackPainter(
