@@ -59,6 +59,9 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
   /// 是否悬停在进度条上
   bool _isHovering = false;
 
+  /// 进度条触摸区域的 GlobalKey
+  final GlobalKey _trackKey = GlobalKey();
+
   /// 当前的进度比例 (0.0 ~ 1.0)
   double get _progress {
     if (_isDragging) return _dragValue;
@@ -70,6 +73,11 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
   /// 根据手势位置计算进度值
   double _calcProgress(Offset localPosition, double trackWidth) {
     return (localPosition.dx / trackWidth).clamp(0.0, 1.0);
+  }
+
+  /// 获取进度条区域的 RenderBox
+  RenderBox? _getTrackRenderBox() {
+    return _trackKey.currentContext?.findRenderObject() as RenderBox?;
   }
 
   /// 将进度值换算为 Duration
@@ -117,36 +125,29 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
             child: GestureDetector(
               // 点击跳转到对应位置
               onTapDown: (details) {
-                final box = context.findRenderObject() as RenderBox?;
+                final box = _getTrackRenderBox();
                 if (box == null) return;
-                final trackWidth = box.size.width;
-                final progress = _calcProgress(
-                  details.localPosition,
-                  trackWidth,
-                );
+                final localPos = box.globalToLocal(details.globalPosition);
+                final progress = _calcProgress(localPos, box.size.width);
                 widget.onSeek?.call(_progressToDuration(progress));
               },
               // 水平拖动手势 — 开始
               onHorizontalDragStart: (details) {
+                final box = _getTrackRenderBox();
+                if (box == null) return;
+                final localPos = box.globalToLocal(details.globalPosition);
                 setState(() {
                   _isDragging = true;
-                  final box = context.findRenderObject() as RenderBox?;
-                  if (box == null) return;
-                  _dragValue = _calcProgress(
-                    details.localPosition,
-                    box.size.width,
-                  );
+                  _dragValue = _calcProgress(localPos, box.size.width);
                 });
               },
               // 水平拖动手势 — 更新
               onHorizontalDragUpdate: (details) {
+                final box = _getTrackRenderBox();
+                if (box == null) return;
+                final localPos = box.globalToLocal(details.globalPosition);
                 setState(() {
-                  final box = context.findRenderObject() as RenderBox?;
-                  if (box == null) return;
-                  _dragValue = _calcProgress(
-                    details.localPosition,
-                    box.size.width,
-                  );
+                  _dragValue = _calcProgress(localPos, box.size.width);
                 });
               },
               // 水平拖动手势 — 结束
@@ -155,6 +156,7 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
                 setState(() => _isDragging = false);
               },
               child: SizedBox(
+                key: _trackKey,
                 height: widget.thumbRadius * 2 + 8, // 足够的触摸/点击区域
                 child: CustomPaint(
                   painter: _ProgressTrackPainter(
