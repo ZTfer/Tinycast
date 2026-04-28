@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/episode_control_bar/episode_control_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/episode_control_bar/play_pause_button.dart';
-import 'package:tinycast/presentation/widgets/organisms/mini_player/speed_dropdown/speed_dropdown.dart';
+import 'package:tinycast/presentation/widgets/organisms/mini_player/speed_dropdown.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/volume_control_bar/volume_control_popup.dart';
 
 /// 剧集控制栏
@@ -290,7 +290,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 ),
                 onPressed: widget.onSeekForward,
               ),
-              
+
             ],
           ),
           // 音量控制按钮
