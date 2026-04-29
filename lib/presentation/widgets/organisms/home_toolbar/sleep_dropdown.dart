@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/dropdown_item/dropdown_item.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
-/// 队列剧集下拉菜单
-///
-/// 显示剧集操作选项的纵向列表菜单。
-/// 包含：拷贝链接、收藏、分享、插播、标记为已播放、移除下载、从待播清单移除。
-class SleepDropdown extends StatelessWidget {
+class SleepDropdown extends ConsumerWidget {
   final VoidCallback? onItemSelected;
 
   const SleepDropdown({super.key, this.onItemSelected});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final currentSleepTimer = settings.settings.sleepTimer;
+
     return Container(
-      // width: 110,
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: Colors.grey.shade300, // 边框颜色
-          width: 0.5, // 边框宽度
-          style: BorderStyle.solid, // 实线
+          color: Colors.grey.shade300,
+          width: 0.5,
+          style: BorderStyle.solid,
         ),
         boxShadow: [
           BoxShadow(
@@ -38,37 +39,68 @@ class SleepDropdown extends StatelessWidget {
           spacing: 2,
           children: [
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.off
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '关闭',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () {
+                ref.read(settingsProvider.notifier).clearSleepTimer();
+                onItemSelected?.call();
+              },
             ),
             DropdownItem(
-              icon: Icon(LucideIcons.check),
+              icon: currentSleepTimer == SleepTimerOption.min5
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '5 分钟',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min5),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.min10
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '10 分钟',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min10),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.min15
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '15 分钟',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min15),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.min30
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '30 分钟',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min30),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.min45
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '45 分钟',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min45),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.min60
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '1 小时',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () => _selectTime(ref, SleepTimerOption.min60),
             ),
             DropdownItem(
+              icon: currentSleepTimer == SleepTimerOption.episodeEnd
+                  ? Icon(LucideIcons.check)
+                  : null,
               text: '单集结束时',
-              onPressed: () => _handleItemSelected(),
+              onPressed: () {
+                ref
+                    .read(settingsProvider.notifier)
+                    .updateSleepTimer(SleepTimerOption.episodeEnd);
+                onItemSelected?.call();
+              },
             ),
           ],
         ),
@@ -76,7 +108,17 @@ class SleepDropdown extends StatelessWidget {
     );
   }
 
-  void _handleItemSelected() {
+  void _selectTime(WidgetRef ref, SleepTimerOption option) {
+    final minutes = option.minutes;
+    if (minutes == null) return;
+
+    final endTime = DateTime.now().add(Duration(minutes: minutes));
+    ref
+        .read(settingsProvider.notifier)
+        .updateSleepTimer(
+          option,
+          endTimeMillis: endTime.millisecondsSinceEpoch,
+        );
     onItemSelected?.call();
   }
 }

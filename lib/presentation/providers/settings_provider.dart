@@ -143,4 +143,34 @@ class SettingsNotifier extends Notifier<SettingsState> {
       Logger.error('[SETTINGS-PROVIDER] Failed to update volume', error: e, stackTrace: stackTrace);
     }
   }
+
+  Future<void> updateSleepTimer(SleepTimerOption value, {int? endTimeMillis}) async {
+    try {
+      await _service.setSleepTimer(value);
+      await _service.setSleepTimerEndTimeMillis(endTimeMillis);
+      state = state.copyWith(
+        settings: state.settings.copyWith(
+          sleepTimer: value,
+          sleepTimerEndTimeMillis: endTimeMillis,
+        ),
+      );
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update sleepTimer', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> clearSleepTimer() async {
+    try {
+      await _service.setSleepTimer(SleepTimerOption.off);
+      await _service.setSleepTimerEndTimeMillis(null);
+      state = state.copyWith(
+        settings: state.settings.copyWith(
+          sleepTimer: SleepTimerOption.off,
+          sleepTimerEndTimeMillis: null,
+        ),
+      );
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to clear sleepTimer', error: e, stackTrace: stackTrace);
+    }
+  }
 }

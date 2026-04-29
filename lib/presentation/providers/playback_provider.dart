@@ -67,6 +67,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   AudioPlayerService get _audioPlayerService => AudioPlayerService.instance;
   PlayHistoryRepository get _playHistoryRepository => PlayHistoryRepository();
   Timer? _progressSaveTimer;
+  Timer? _sleepTimerCheck;
   int _lastSavedPositionMs = 0;
   DateTime? _lastSaveTime;
   int? _currentEpisodeId;
@@ -75,6 +76,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   PlayerState build() {
     _initListeners();
     _initProgressAutoSave();
+    _initSleepTimerCheck();
 
     _restoreLastPlaybackState();
     _restoreSettingsFromPrefs();
@@ -82,9 +84,49 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     ref.onDispose(() {
       _disposeListeners();
       _disposeAutoSave();
+      _disposeSleepTimerCheck();
       _saveCurrentProgress();
     });
     return PlayerState();
+  }
+
+  void _initSleepTimerCheck() {
+    _sleepTimerCheck = Timer.periodic(const Duration(seconds: 1), (_) {
+      _checkSleepTimer();
+    });
+  }
+
+  void _disposeSleepTimerCheck() {
+    _sleepTimerCheck?.cancel();
+    _sleepTimerCheck = null;
+  }
+
+  Future<void> _checkSleepTimer() async {
+    try {
+      final settings = await SettingsService.instance.loadSettings();
+
+      if (settings.sleepTimer == SleepTimerOption.off ||
+          settings.sleepTimerEndTimeMillis == null) {
+        return;
+      }
+
+      final endTime = DateTime.fromMillisecondsSinceEpoch(
+        settings.sleepTimerEndTimeMillis!,
+      );
+
+      if (DateTime.now().isAfter(endTime)) {
+        debugPrint('⏰ [SleepTimer] Timer expired, pausing playback');
+        await pause();
+        await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
+        await SettingsService.instance.setSleepTimerEndTimeMillis(null);
+      }
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to check sleep timer',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> _restoreSettingsFromPrefs() async {
@@ -176,7 +218,17 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
 
-    // 5. 根据连续播放设置处理下一集播放
+    // 5. 检查睡眠定时器（优先级高于连续播放）
+    final settings = await SettingsService.instance.loadSettings();
+    if (settings.sleepTimer == SleepTimerOption.episodeEnd) {
+      debugPrint('⏰ [SleepTimer] Episode ended, pausing playback');
+      await _audioPlayerService.pause();
+      await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
+      await SettingsService.instance.setSleepTimerEndTimeMillis(null);
+      return;
+    }
+
+    // 6. 根据连续播放设置处理下一集播放
     await _handleNextEpisodePlayback();
   }
 

@@ -12,6 +12,29 @@ enum AutoDownloadPolicy {
   all,
 }
 
+enum SleepTimerOption {
+  off,
+  min5,
+  min10,
+  min15,
+  min30,
+  min45,
+  min60,
+  episodeEnd;
+
+  int? get minutes {
+    switch (this) {
+      case SleepTimerOption.min5: return 5;
+      case SleepTimerOption.min10: return 10;
+      case SleepTimerOption.min15: return 15;
+      case SleepTimerOption.min30: return 30;
+      case SleepTimerOption.min45: return 45;
+      case SleepTimerOption.min60: return 60;
+      default: return null;
+    }
+  }
+}
+
 class AppSettings {
   static const defaultPlaybackSpeed = 1.0;
   static const defaultVolume = 0.3;
@@ -26,6 +49,8 @@ class AppSettings {
   final int skipForwardTime;
   final int skipBackwardTime;
   final bool continuousPlay;
+  final SleepTimerOption sleepTimer;
+  final int? sleepTimerEndTimeMillis;
 
   const AppSettings({
     this.downloadOnFavorite = false,
@@ -36,6 +61,8 @@ class AppSettings {
     this.skipForwardTime = defaultSkipForwardTime,
     this.skipBackwardTime = defaultSkipBackwardTime,
     this.continuousPlay = true,
+    this.sleepTimer = SleepTimerOption.off,
+    this.sleepTimerEndTimeMillis,
   });
 
   AppSettings copyWith({
@@ -47,6 +74,8 @@ class AppSettings {
     int? skipForwardTime,
     int? skipBackwardTime,
     bool? continuousPlay,
+    SleepTimerOption? sleepTimer,
+    int? sleepTimerEndTimeMillis,
   }) {
     return AppSettings(
       downloadOnFavorite: downloadOnFavorite ?? this.downloadOnFavorite,
@@ -57,6 +86,8 @@ class AppSettings {
       skipForwardTime: skipForwardTime ?? this.skipForwardTime,
       skipBackwardTime: skipBackwardTime ?? this.skipBackwardTime,
       continuousPlay: continuousPlay ?? this.continuousPlay,
+      sleepTimer: sleepTimer ?? this.sleepTimer,
+      sleepTimerEndTimeMillis: sleepTimerEndTimeMillis ?? this.sleepTimerEndTimeMillis,
     );
   }
 
@@ -70,6 +101,8 @@ class AppSettings {
       'skipForwardTime': skipForwardTime,
       'skipBackwardTime': skipBackwardTime,
       'continuousPlay': continuousPlay,
+      'sleepTimer': sleepTimer.name,
+      'sleepTimerEndTimeMillis': sleepTimerEndTimeMillis,
     };
   }
 
@@ -83,6 +116,8 @@ class AppSettings {
       skipForwardTime: json['skipForwardTime'] as int? ?? defaultSkipForwardTime,
       skipBackwardTime: json['skipBackwardTime'] as int? ?? defaultSkipBackwardTime,
       continuousPlay: json['continuousPlay'] as bool? ?? true,
+      sleepTimer: _parseSleepTimer(json['sleepTimer']),
+      sleepTimerEndTimeMillis: json['sleepTimerEndTimeMillis'] as int?,
     );
   }
 
@@ -93,5 +128,18 @@ class AppSettings {
       return AutoDownloadPolicy.values.byName(value);
     }
     return AutoDownloadPolicy.latest3;
+  }
+
+  static SleepTimerOption _parseSleepTimer(dynamic value) {
+    if (value == null) return SleepTimerOption.off;
+    if (value is SleepTimerOption) return value;
+    if (value is String) {
+      try {
+        return SleepTimerOption.values.byName(value);
+      } catch (_) {
+        return SleepTimerOption.off;
+      }
+    }
+    return SleepTimerOption.off;
   }
 }

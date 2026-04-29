@@ -53,6 +53,8 @@ class SettingsService {
       skipForwardTime: _prefs!.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime,
       skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime,
       continuousPlay: _prefs!.getBool('continuous_play') ?? true,
+      sleepTimer: _parseSleepTimer(_prefs!.getString('sleep_timer')),
+      sleepTimerEndTimeMillis: _prefs!.getInt('sleep_timer_end_time_millis'),
     );
   }
 
@@ -141,12 +143,43 @@ class SettingsService {
     return _prefs!.getBool('download_on_favorite') ?? false;
   }
 
+  Future<void> setSleepTimer(SleepTimerOption value) async {
+    await _ensureInitialized();
+    await _prefs!.setString('sleep_timer', value.name);
+    Logger.info('⚙️ [SETTINGS-SERVICE] sleepTimer set to: ${value.name}');
+  }
+
+  Future<void> setSleepTimerEndTimeMillis(int? value) async {
+    await _ensureInitialized();
+    if (value == null) {
+      await _prefs!.remove('sleep_timer_end_time_millis');
+    } else {
+      await _prefs!.setInt('sleep_timer_end_time_millis', value);
+    }
+    Logger.info('⚙️ [SETTINGS-SERVICE] sleepTimerEndTimeMillis set to: $value');
+  }
+
+  Future<int?> getSleepTimerEndTimeMillis() async {
+    await _ensureInitialized();
+    await _reloadPrefs();
+    return _prefs!.getInt('sleep_timer_end_time_millis');
+  }
+
   AutoDownloadPolicy _parseAutoDownloadPolicy(String? raw) {
     if (raw == null) return AutoDownloadPolicy.latest3;
     try {
       return AutoDownloadPolicy.values.byName(raw);
     } catch (_) {
       return AutoDownloadPolicy.latest3;
+    }
+  }
+
+  SleepTimerOption _parseSleepTimer(String? raw) {
+    if (raw == null) return SleepTimerOption.off;
+    try {
+      return SleepTimerOption.values.byName(raw);
+    } catch (_) {
+      return SleepTimerOption.off;
     }
   }
 
