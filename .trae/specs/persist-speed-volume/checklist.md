@@ -1,0 +1,7 @@
+- [ ] AppSettings 包含 volume 字段，默认值 0.3
+- [ ] SettingsService 包含 setVolume 和 getVolume 方法
+- [ ] SettingsProvider 包含 updateVolume 方法
+- [ ] EpisodeControlBar 中速度选择后调用 SettingsProvider.updatePlaybackSpeed
+- [ ] VolumeControlPopup 中音量调整后调用 SettingsProvider.updateVolume
+- [ ] PlaybackNotifier 初始化时使用 SettingsService 加载的速度和音量值
+- [ ] 应用重启后速度和音量保持不变
