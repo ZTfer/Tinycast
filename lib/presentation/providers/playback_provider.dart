@@ -220,9 +220,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         debugPrint('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
         await playEpisode(nextEpisode);
       } else {
-        debugPrint('⏸️ [Playback] Continuous play disabled, loading next and pausing: ${nextEpisode.title}');
-        await playEpisode(nextEpisode);
-        await pause();
+        debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
       }
     } catch (e, stackTrace) {
       debugPrint('❌ [Playback] Failed to handle next episode playback: $e');
