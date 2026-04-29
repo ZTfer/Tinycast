@@ -400,4 +400,3 @@ void main() async {
 用 **Isar** 统一所有平台的数据存储，用 **接口隔离** 处理桌面端的多窗口差异。这样你的代码最干净，维护成本最低。
 
 ---
-要不要我帮你把 Isar 版的 SettingsService 代码直接写出来？你可以替换现有的 settings_service.dart 使用。
