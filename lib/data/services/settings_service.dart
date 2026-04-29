@@ -48,8 +48,8 @@ class SettingsService {
       downloadOnFavorite: _prefs!.getBool('download_on_favorite') ?? false,
       removePlayedDownloads: _prefs!.getBool('remove_played_downloads') ?? false,
       autoDownloadPolicy: _parseAutoDownloadPolicy(rawPolicy),
-      playbackSpeed: _prefs!.getDouble('playback_speed') ?? 1.0,
-      volume: _prefs!.getDouble('volume') ?? 0.3,
+      playbackSpeed: _prefs!.getDouble('playback_speed') ?? AppSettings.defaultPlaybackSpeed,
+      volume: _prefs!.getDouble('volume') ?? AppSettings.defaultVolume,
       skipForwardTime: _prefs!.getInt('skip_forward_time') ?? 30,
       skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? 15,
       continuousPlay: _prefs!.getBool('continuous_play') ?? true,
@@ -92,7 +92,7 @@ class SettingsService {
   Future<double> getVolume() async {
     await _ensureInitialized();
     await _reloadPrefs();
-    return _prefs!.getDouble('volume') ?? 0.3;
+    return _prefs!.getDouble('volume') ?? AppSettings.defaultVolume;
   }
 
   Future<void> setSkipForwardTime(int value) async {
