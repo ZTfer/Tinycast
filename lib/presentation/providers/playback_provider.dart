@@ -173,7 +173,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           debugPrint('✅ [Playback] Marked episode $episodeId as played');
         }
       });
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('❌ [Playback] Failed to mark episode $episodeId as played: $e');
     }
   }
@@ -195,7 +195,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       debugPrint('🗑️ [Playback] Auto-deleting downloaded episode: $episodeId');
       await AudioDownloadService.instance.deleteDownloadedEpisode(episodeId.toString());
       debugPrint('✅ [Playback] Auto-deleted episode: $episodeId');
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('❌ [Playback] Failed to auto-delete episode $episodeId: $e');
     }
   }
@@ -222,7 +222,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       } else {
         debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('❌ [Playback] Failed to handle next episode playback: $e');
     }
   }
