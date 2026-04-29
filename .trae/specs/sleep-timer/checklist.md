@@ -1,0 +1,10 @@
+- [ ] AppSettings 包含 SleepTimerOption 枚举和 sleepTimer、sleepTimerEndTime 字段
+- [ ] SettingsService 包含 setSleepTimer、setSleepTimerEndTime 方法
+- [ ] SettingsProvider 包含 updateSleepTimer、clearSleepTimer 方法
+- [ ] SleepDropdown 连接 SettingsProvider，选择后保存设置
+- [ ] 选择非"关闭"选项时正确设置 sleepTimerEndTime
+- [ ] 重新选择时重置计时器
+- [ ] PlaybackNotifier 实现定时器倒计时逻辑
+- [ ] 定时结束后暂停播放并恢复默认设置
+- [ ] 单集结束时睡眠定时器优先级高于连续播放
+- [ ] 应用启动时加载睡眠定时器设置
