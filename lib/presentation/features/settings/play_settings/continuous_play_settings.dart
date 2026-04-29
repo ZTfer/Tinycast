@@ -16,8 +16,8 @@ class ContinuousPlaySettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 从 SettingsProvider 读取当前设置
-    final settings = ref.watch(settingsProvider);
-    final continuousPlay = settings.settings.continuousPlay;
+    final settingsState = ref.watch(settingsProvider);
+    final continuousPlay = settingsState.value?.continuousPlay ?? true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

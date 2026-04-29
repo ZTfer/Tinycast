@@ -12,8 +12,8 @@ class SleepDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
-    final currentSleepTimer = settings.settings.sleepTimer;
+    final currentSleepTimer =
+        ref.watch(settingsProvider).value?.sleepTimer ?? SleepTimerOption.off;
 
     return Container(
       padding: const EdgeInsets.all(8.0),

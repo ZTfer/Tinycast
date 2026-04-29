@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/presentation/features/settings/play_settings/skip_time_settings/skip_time_dropdown.dart';
 import 'package:tinycast/presentation/features/settings/widgets/settings_dropdown_button.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
 /// 快进/快退时间设置组件
 ///
@@ -152,9 +153,9 @@ class _SkipTimeSettingsState extends ConsumerState<SkipTimeSettings> {
   @override
   Widget build(BuildContext context) {
     // 从 SettingsProvider 读取当前设置
-    final settings = ref.watch(settingsProvider);
-    final skipForwardTime = settings.settings.skipForwardTime;
-    final skipBackwardTime = settings.settings.skipBackwardTime;
+    final settingsState = ref.watch(settingsProvider);
+    final skipForwardTime = settingsState.value?.skipForwardTime ?? AppSettings.defaultSkipForwardTime;
+    final skipBackwardTime = settingsState.value?.skipBackwardTime ?? AppSettings.defaultSkipBackwardTime;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

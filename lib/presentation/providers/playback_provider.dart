@@ -14,6 +14,7 @@ import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 
 class PlayerState {
   final Episode? currentEpisode;
@@ -91,8 +92,14 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   void _initSleepTimerCheck() {
+    ref.listen<AsyncValue<AppSettings>>(settingsProvider, (previous, next) {
+      if (next.hasValue && next.value != previous?.value) {
+        _evaluateSleepTimer();
+      }
+    });
+
     _sleepTimerCheck = Timer.periodic(const Duration(seconds: 1), (_) {
-      _checkSleepTimer();
+      _evaluateSleepTimer();
     });
   }
 
@@ -101,9 +108,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _sleepTimerCheck = null;
   }
 
-  Future<void> _checkSleepTimer() async {
+  Future<void> _evaluateSleepTimer() async {
     try {
-      final settings = await SettingsService.instance.loadSettings();
+      final settingsAsync = ref.read(settingsProvider);
+      final settings = settingsAsync.value;
+      if (settings == null) return;
 
       if (settings.sleepTimer == SleepTimerOption.off ||
           settings.sleepTimerEndTimeMillis == null) {
@@ -122,7 +131,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       }
     } catch (e, stackTrace) {
       Logger.error(
-        'Failed to check sleep timer',
+        'Failed to evaluate sleep timer',
         error: e,
         stackTrace: stackTrace,
       );
@@ -219,8 +228,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
 
     // 5. 检查睡眠定时器（优先级高于连续播放）
-    final settings = await SettingsService.instance.loadSettings();
-    if (settings.sleepTimer == SleepTimerOption.episodeEnd) {
+    final settingsAsync = ref.read(settingsProvider);
+    final settings = settingsAsync.value;
+    if (settings != null && settings.sleepTimer == SleepTimerOption.episodeEnd) {
       debugPrint('⏰ [SleepTimer] Episode ended, pausing playback');
       await pause();
       await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
@@ -258,7 +268,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   /// 检查设置并在需要时自动删除已播放的下载文件
   Future<void> _handleAutoDeleteDownload(int episodeId) async {
     try {
-      final removePlayedDownloads = await SettingsService.instance.getRemovePlayedDownloads();
+      final settingsAsync = ref.read(settingsProvider);
+      final removePlayedDownloads = settingsAsync.value?.removePlayedDownloads ?? false;
       if (!removePlayedDownloads) {
         return;
       }
@@ -284,8 +295,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   /// 根据连续播放设置处理下一集播放
   Future<void> _handleNextEpisodePlayback() async {
     try {
-      final settings = await SettingsService.instance.loadSettings();
-      final continuousPlay = settings.continuousPlay;
+      final settingsAsync = ref.read(settingsProvider);
+      final continuousPlay = settingsAsync.value?.continuousPlay ?? true;
 
       final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
       final nextEpisode = unplayedState.episodes.isNotEmpty
@@ -486,7 +497,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     Duration? duration,
   }) async {
     final skipTime = duration?.inSeconds ??
-        (await SettingsService.instance.getSkipForwardTime());
+        (ref.read(settingsProvider).value?.skipForwardTime ?? AppSettings.defaultSkipForwardTime);
     await _audioPlayerService.seekForward(
       duration: Duration(seconds: skipTime),
     );
@@ -496,7 +507,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     Duration? duration,
   }) async {
     final skipTime = duration?.inSeconds ??
-        (await SettingsService.instance.getSkipBackwardTime());
+        (ref.read(settingsProvider).value?.skipBackwardTime ?? AppSettings.defaultSkipBackwardTime);
     await _audioPlayerService.seekBackward(
       duration: Duration(seconds: skipTime),
     );

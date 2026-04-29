@@ -1,6 +1,9 @@
+import 'package:isar_community/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/utils/logger.dart';
-import '../../../domain/entities/app_settings.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/app_settings_model.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
 class SettingsService {
   SettingsService._();
@@ -9,180 +12,198 @@ class SettingsService {
 
   static SettingsService get instance => _instance;
 
-  SharedPreferences? _prefs;
+  Isar get _isar => IsarService.instance.isar;
 
-  Future<void> init() async {
-    Logger.info('⚙️ [SETTINGS-SERVICE] ====== Initializing SharedPreferences ======');
-    try {
-      _prefs ??= await SharedPreferences.getInstance();
-      Logger.info('⚙️ [SETTINGS-SERVICE] SharedPreferences initialized successfully');
-    } catch (e, stackTrace) {
-      Logger.error('⚙️ [SETTINGS-SERVICE] Failed to initialize SharedPreferences', error: e, stackTrace: stackTrace);
-      rethrow;
-    }
-  }
-
-  /// 从磁盘重新加载 SharedPreferences 数据（多窗口场景下确保读取最新值）
-  /// 注意：使用 SharedPreferences.reload() 比重新创建实例更高效
-  Future<void> _reloadPrefs() async {
-    if (_prefs == null) {
-      return;
-    }
-    await _prefs!.reload();
-  }
-
+  /// 读取设置（从 Isar 读取，无需 reload）
   Future<AppSettings> loadSettings() async {
-    Logger.info('⚙️ [SETTINGS-SERVICE] ====== Loading settings ======');
-    await _ensureInitialized();
-    
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
-
-    final rawPolicy = _prefs!.getString('auto_download_policy');
-    Logger.info('⚙️ [SETTINGS-SERVICE] Raw auto_download_policy from prefs: $rawPolicy');
+    final model = await _isar.appSettingsModels.where().findFirst();
+    if (model == null) {
+      return const AppSettings();
+    }
 
     return AppSettings(
-      downloadOnFavorite: _prefs!.getBool('download_on_favorite') ?? false,
-      removePlayedDownloads: _prefs!.getBool('remove_played_downloads') ?? false,
-      autoDownloadPolicy: _parseAutoDownloadPolicy(rawPolicy),
-      playbackSpeed: _prefs!.getDouble('playback_speed') ?? AppSettings.defaultPlaybackSpeed,
-      volume: _prefs!.getDouble('volume') ?? AppSettings.defaultVolume,
-      skipForwardTime: _prefs!.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime,
-      skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime,
-      continuousPlay: _prefs!.getBool('continuous_play') ?? true,
-      sleepTimer: _parseSleepTimer(_prefs!.getString('sleep_timer')),
-      sleepTimerEndTimeMillis: _prefs!.getInt('sleep_timer_end_time_millis'),
+      downloadOnFavorite: model.downloadOnFavorite,
+      removePlayedDownloads: model.removePlayedDownloads,
+      autoDownloadPolicy: _mapAutoDownloadPolicy(model.autoDownloadPolicy),
+      playbackSpeed: model.playbackSpeed,
+      volume: model.volume,
+      skipForwardTime: model.skipForwardTime,
+      skipBackwardTime: model.skipBackwardTime,
+      continuousPlay: model.continuousPlay,
+      sleepTimer: _mapSleepTimer(model.sleepTimer),
+      sleepTimerEndTimeMillis: model.sleepTimerEndTimeMillis,
     );
   }
 
+  /// 监听设置变更（Stream，用于多窗口自动同步）
+  Stream<AppSettings> watchSettings() {
+    return _isar.appSettingsModels.where().watch(fireImmediately: true).map((models) {
+      final model = models.isEmpty ? AppSettingsModel() : models.first;
+      return AppSettings(
+        downloadOnFavorite: model.downloadOnFavorite,
+        removePlayedDownloads: model.removePlayedDownloads,
+        autoDownloadPolicy: _mapAutoDownloadPolicy(model.autoDownloadPolicy),
+        playbackSpeed: model.playbackSpeed,
+        volume: model.volume,
+        skipForwardTime: model.skipForwardTime,
+        skipBackwardTime: model.skipBackwardTime,
+        continuousPlay: model.continuousPlay,
+        sleepTimer: _mapSleepTimer(model.sleepTimer),
+        sleepTimerEndTimeMillis: model.sleepTimerEndTimeMillis,
+      );
+    });
+  }
+
+  Future<void> _saveModel(AppSettingsModel model) async {
+    await _isar.writeTxn(() async {
+      await _isar.appSettingsModels.put(model);
+    });
+  }
+
+  Future<AppSettingsModel> _getOrCreateModel() async {
+    var model = await _isar.appSettingsModels.where().findFirst();
+    if (model == null) {
+      model = AppSettingsModel();
+      await _saveModel(model);
+    }
+    return model;
+  }
+
   Future<void> setDownloadOnFavorite(bool value) async {
-    await _ensureInitialized();
-    await _prefs!.setBool('download_on_favorite', value);
+    final model = await _getOrCreateModel();
+    model.downloadOnFavorite = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] downloadOnFavorite set to: $value');
   }
 
   Future<void> setRemovePlayedDownloads(bool value) async {
-    await _ensureInitialized();
-    await _prefs!.setBool('remove_played_downloads', value);
+    final model = await _getOrCreateModel();
+    model.removePlayedDownloads = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] removePlayedDownloads set to: $value');
   }
 
   Future<void> setAutoDownloadPolicy(AutoDownloadPolicy value) async {
-    await _ensureInitialized();
-    final key = 'auto_download_policy';
-    final oldValue = _prefs!.getString(key);
-    await _prefs!.setString(key, value.name);
-    final newValue = _prefs!.getString(key);
-    Logger.info('⚙️ [SETTINGS-SERVICE] autoDownloadPolicy: old=$oldValue, new=$newValue');
+    final model = await _getOrCreateModel();
+    model.autoDownloadPolicy = _mapAutoDownloadPolicyToIsar(value);
+    await _saveModel(model);
+    Logger.info('⚙️ [SETTINGS-SERVICE] autoDownloadPolicy set to: ${value.name}');
   }
 
   Future<void> setPlaybackSpeed(double value) async {
-    await _ensureInitialized();
-    await _prefs!.setDouble('playback_speed', value);
+    final model = await _getOrCreateModel();
+    model.playbackSpeed = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] playbackSpeed set to: $value');
   }
 
   Future<void> setVolume(double value) async {
-    await _ensureInitialized();
-    await _prefs!.setDouble('volume', value);
+    final model = await _getOrCreateModel();
+    model.volume = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] volume set to: $value');
   }
 
-  Future<double> getVolume() async {
-    await _ensureInitialized();
-    await _reloadPrefs();
-    return _prefs!.getDouble('volume') ?? AppSettings.defaultVolume;
-  }
-
   Future<void> setSkipForwardTime(int value) async {
-    await _ensureInitialized();
-    await _prefs!.setInt('skip_forward_time', value);
+    final model = await _getOrCreateModel();
+    model.skipForwardTime = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] skipForwardTime set to: $value');
   }
 
-  Future<int> getSkipForwardTime() async {
-    await _ensureInitialized();
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
-    return _prefs!.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime;
-  }
-
   Future<void> setSkipBackwardTime(int value) async {
-    await _ensureInitialized();
-    await _prefs!.setInt('skip_backward_time', value);
+    final model = await _getOrCreateModel();
+    model.skipBackwardTime = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] skipBackwardTime set to: $value');
   }
 
-  Future<int> getSkipBackwardTime() async {
-    await _ensureInitialized();
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
-    return _prefs!.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime;
-  }
-
   Future<void> setContinuousPlay(bool value) async {
-    await _ensureInitialized();
-    await _prefs!.setBool('continuous_play', value);
+    final model = await _getOrCreateModel();
+    model.continuousPlay = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] continuousPlay set to: $value');
   }
 
-  Future<bool> getRemovePlayedDownloads() async {
-    await _ensureInitialized();
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
-    return _prefs!.getBool('remove_played_downloads') ?? false;
-  }
-
-  Future<bool> getDownloadOnFavorite() async {
-    await _ensureInitialized();
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
-    return _prefs!.getBool('download_on_favorite') ?? false;
-  }
-
   Future<void> setSleepTimer(SleepTimerOption value) async {
-    await _ensureInitialized();
-    await _prefs!.setString('sleep_timer', value.name);
+    final model = await _getOrCreateModel();
+    model.sleepTimer = _mapSleepTimerToIsar(value);
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] sleepTimer set to: ${value.name}');
   }
 
   Future<void> setSleepTimerEndTimeMillis(int? value) async {
-    await _ensureInitialized();
-    if (value == null) {
-      await _prefs!.remove('sleep_timer_end_time_millis');
-    } else {
-      await _prefs!.setInt('sleep_timer_end_time_millis', value);
-    }
+    final model = await _getOrCreateModel();
+    model.sleepTimerEndTimeMillis = value;
+    await _saveModel(model);
     Logger.info('⚙️ [SETTINGS-SERVICE] sleepTimerEndTimeMillis set to: $value');
   }
 
-  Future<int?> getSleepTimerEndTimeMillis() async {
-    await _ensureInitialized();
-    await _reloadPrefs();
-    return _prefs!.getInt('sleep_timer_end_time_millis');
-  }
+  /// 首次启动时从 SharedPreferences 迁移数据到 Isar
+  Future<void> migrateFromSharedPreferences() async {
+    final existing = await _isar.appSettingsModels.where().findFirst();
+    if (existing != null) {
+      return; // 已迁移过，跳过
+    }
 
-  AutoDownloadPolicy _parseAutoDownloadPolicy(String? raw) {
-    if (raw == null) return AutoDownloadPolicy.latest3;
     try {
-      return AutoDownloadPolicy.values.byName(raw);
-    } catch (_) {
-      return AutoDownloadPolicy.latest3;
+      final prefs = await SharedPreferences.getInstance();
+
+      final model = AppSettingsModel()
+        ..downloadOnFavorite = prefs.getBool('download_on_favorite') ?? false
+        ..removePlayedDownloads = prefs.getBool('remove_played_downloads') ?? false
+        ..autoDownloadPolicy = _parseAutoDownloadPolicy(
+            prefs.getString('auto_download_policy'))
+        ..playbackSpeed = prefs.getDouble('playback_speed') ?? AppSettings.defaultPlaybackSpeed
+        ..volume = prefs.getDouble('volume') ?? AppSettings.defaultVolume
+        ..skipForwardTime = prefs.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime
+        ..skipBackwardTime = prefs.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime
+        ..continuousPlay = prefs.getBool('continuous_play') ?? true
+        ..sleepTimer = _parseSleepTimer(prefs.getString('sleep_timer'))
+        ..sleepTimerEndTimeMillis = prefs.getInt('sleep_timer_end_time_millis');
+
+      await _saveModel(model);
+      Logger.info('⚙️ [SETTINGS-SERVICE] Migrated settings from SharedPreferences to Isar');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to migrate settings from SharedPreferences',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
-  SleepTimerOption _parseSleepTimer(String? raw) {
-    if (raw == null) return SleepTimerOption.off;
+  AutoDownloadPolicyEnum _mapAutoDownloadPolicyToIsar(AutoDownloadPolicy policy) {
+    return AutoDownloadPolicyEnum.values.byName(policy.name);
+  }
+
+  AutoDownloadPolicy _mapAutoDownloadPolicy(AutoDownloadPolicyEnum policy) {
+    return AutoDownloadPolicy.values.byName(policy.name);
+  }
+
+  AutoDownloadPolicyEnum _parseAutoDownloadPolicy(String? raw) {
+    if (raw == null) return AutoDownloadPolicyEnum.latest3;
     try {
-      return SleepTimerOption.values.byName(raw);
+      return AutoDownloadPolicyEnum.values.byName(raw);
     } catch (_) {
-      return SleepTimerOption.off;
+      return AutoDownloadPolicyEnum.latest3;
     }
   }
 
-  Future<void> _ensureInitialized() async {
-    if (_prefs == null) {
-      await init();
+  SleepTimerEnum _mapSleepTimerToIsar(SleepTimerOption option) {
+    return SleepTimerEnum.values.byName(option.name);
+  }
+
+  SleepTimerOption _mapSleepTimer(SleepTimerEnum option) {
+    return SleepTimerOption.values.byName(option.name);
+  }
+
+  SleepTimerEnum _parseSleepTimer(String? raw) {
+    if (raw == null) return SleepTimerEnum.off;
+    try {
+      return SleepTimerEnum.values.byName(raw);
+    } catch (_) {
+      return SleepTimerEnum.off;
     }
   }
 }

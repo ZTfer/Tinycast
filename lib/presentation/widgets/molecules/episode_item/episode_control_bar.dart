@@ -206,7 +206,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
       if (!isFav) {
         final settings = ref.read(settingsProvider);
-        if (settings.settings.downloadOnFavorite) {
+        if (settings.value?.downloadOnFavorite == true) {
           final downloadedEpisodes = ref.read(downloadedEpisodesProvider);
           final alreadyDownloaded = downloadedEpisodes.any(
             (e) => e.id == widget.episodeId,

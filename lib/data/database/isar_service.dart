@@ -42,7 +42,7 @@ class IsarService {
       final dir = await getApplicationDocumentsDirectory();
 
       _isar = await Isar.open(
-        [PodcastSchema, EpisodeSchema, SearchHistoryModelSchema, FavoriteSchema, PlayHistorySchema, QueueSchema],
+        [PodcastSchema, EpisodeSchema, SearchHistoryModelSchema, FavoriteSchema, PlayHistorySchema, QueueSchema, AppSettingsModelSchema],
         directory: dir.path,
         name: _databaseName,
         inspector: true,
