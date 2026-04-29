@@ -7,6 +7,7 @@ import 'package:tinycast/data/models/search_history_model.dart';
 import 'package:tinycast/data/models/favorite_model.dart';
 import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/models/queue_model.dart';
+import 'package:tinycast/data/models/app_settings_model.dart';
 
 class IsarService {
   static IsarService? _instance;

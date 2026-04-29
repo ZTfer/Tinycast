@@ -1,0 +1,11 @@
+- [ ] AppSettingsModel Isar 模型包含所有设置字段
+- [ ] IsarService 注册 SettingsSchema
+- [ ] SettingsService 使用 Isar 替代 SharedPreferences
+- [ ] SettingsService 移除所有 _reloadPrefs() 调用
+- [ ] SettingsService 提供 watchSettings() Stream 方法
+- [ ] SettingsService 包含首次迁移逻辑
+- [ ] SettingsProvider 使用 watch() 自动更新 state
+- [ ] PlaybackNotifier 从 SettingsProvider 读取设置（无需 loadSettings）
+- [ ] shared_preferences 依赖已从 pubspec.yaml 移除
+- [ ] 多窗口设置实时同步（无需手动 reload）
+- [ ] 睡眠定时器检查无性能问题（无 reload 开销）
