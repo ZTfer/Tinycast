@@ -26,17 +26,17 @@ class SettingsService {
   /// 注意：使用 SharedPreferences.reload() 比重新创建实例更高效
   Future<void> _reloadPrefs() async {
     if (_prefs == null) {
-      Logger.warning('⚙️ [SETTINGS-SERVICE] SharedPreferences not initialized, skipping reload');
       return;
     }
-    Logger.info('⚙️ [SETTINGS-SERVICE] ====== Reloading SharedPreferences from disk ======');
     await _prefs!.reload();
-    Logger.info('⚙️ [SETTINGS-SERVICE] SharedPreferences reloaded');
   }
 
   Future<AppSettings> loadSettings() async {
     Logger.info('⚙️ [SETTINGS-SERVICE] ====== Loading settings ======');
     await _ensureInitialized();
+    
+    // 多窗口场景下，从磁盘重新加载以读取最新值
+    await _reloadPrefs();
 
     final rawPolicy = _prefs!.getString('auto_download_policy');
     Logger.info('⚙️ [SETTINGS-SERVICE] Raw auto_download_policy from prefs: $rawPolicy');
