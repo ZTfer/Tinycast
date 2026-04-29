@@ -87,7 +87,8 @@ class AutoDownloadSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider).settings;
+    final settingsState = ref.watch(settingsProvider);
+    final settings = settingsState.value ?? const AppSettings();
     final buttonKey = GlobalKey();
 
     return Column(

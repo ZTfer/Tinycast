@@ -2,13 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/widgets/atoms/checkbox/label_checkbox.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 
 class RemovePlayedDownloads extends ConsumerWidget {
   const RemovePlayedDownloads({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider).settings;
+    final settings = ref.watch(settingsProvider).value ?? const AppSettings();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
