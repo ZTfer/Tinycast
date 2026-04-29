@@ -6,12 +6,6 @@ import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
 
-/// ===== 配置区域 =====
-/// 设置为 true 使用 Podcast 封面图，设置为 false 使用 Episode 封面图
-const bool kUsePodcastArtwork = true;
-
-/// ====================
-
 /// Episode 项组件
 ///
 /// 用于显示单个节目项。
@@ -38,6 +32,9 @@ class EpisodeItem extends ConsumerWidget {
   /// 从队列移除回调
   final VoidCallback? onRemoveFromQueue;
 
+  /// 是否使用 Podcast 封面图，默认 false（使用 Episode 封面图）
+  final bool usePodcastArtwork;
+
   const EpisodeItem({
     super.key,
     required this.episode,
@@ -47,6 +44,7 @@ class EpisodeItem extends ConsumerWidget {
     this.onEpisodeTap,
     this.showRemoveFromQueue = false,
     this.onRemoveFromQueue,
+    this.usePodcastArtwork = true,
   });
 
   @override
@@ -90,7 +88,7 @@ class EpisodeItem extends ConsumerWidget {
   }
 
   Widget _buildArtwork(BuildContext context, WidgetRef ref) {
-    if (kUsePodcastArtwork) {
+    if (usePodcastArtwork) {
       // 使用 Podcast 封面图
       final podcastState = ref.watch(podcastByIdProvider(episode.podcastId));
       return podcastState.when(
