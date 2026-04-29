@@ -76,6 +76,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _initProgressAutoSave();
 
     _restoreLastPlaybackState();
+    _restoreSettingsFromPrefs();
 
     ref.onDispose(() {
       _disposeListeners();
@@ -83,6 +84,24 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       _saveCurrentProgress();
     });
     return PlayerState();
+  }
+
+  Future<void> _restoreSettingsFromPrefs() async {
+    try {
+      final settings = await SettingsService.instance.loadSettings();
+      if (settings.playbackSpeed != 1.0) {
+        await _audioPlayerService.setSpeed(settings.playbackSpeed);
+      }
+      if (settings.volume != 0.3) {
+        await _audioPlayerService.setVolume(settings.volume);
+      }
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to restore settings from prefs',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void _initListeners() {

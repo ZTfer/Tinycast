@@ -17,6 +17,7 @@ class AppSettings {
   final bool removePlayedDownloads;
   final AutoDownloadPolicy autoDownloadPolicy;
   final double playbackSpeed;
+  final double volume;
   final int skipForwardTime;
   final int skipBackwardTime;
   final bool continuousPlay;
@@ -26,6 +27,7 @@ class AppSettings {
     this.removePlayedDownloads = false,
     this.autoDownloadPolicy = AutoDownloadPolicy.latest3,
     this.playbackSpeed = 1.0,
+    this.volume = 0.3,
     this.skipForwardTime = 30,
     this.skipBackwardTime = 15,
     this.continuousPlay = true,
@@ -36,6 +38,7 @@ class AppSettings {
     bool? removePlayedDownloads,
     AutoDownloadPolicy? autoDownloadPolicy,
     double? playbackSpeed,
+    double? volume,
     int? skipForwardTime,
     int? skipBackwardTime,
     bool? continuousPlay,
@@ -45,6 +48,7 @@ class AppSettings {
       removePlayedDownloads: removePlayedDownloads ?? this.removePlayedDownloads,
       autoDownloadPolicy: autoDownloadPolicy ?? this.autoDownloadPolicy,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+      volume: volume ?? this.volume,
       skipForwardTime: skipForwardTime ?? this.skipForwardTime,
       skipBackwardTime: skipBackwardTime ?? this.skipBackwardTime,
       continuousPlay: continuousPlay ?? this.continuousPlay,
@@ -57,6 +61,7 @@ class AppSettings {
       'removePlayedDownloads': removePlayedDownloads,
       'autoDownloadPolicy': autoDownloadPolicy.name,
       'playbackSpeed': playbackSpeed,
+      'volume': volume,
       'skipForwardTime': skipForwardTime,
       'skipBackwardTime': skipBackwardTime,
       'continuousPlay': continuousPlay,
@@ -69,6 +74,7 @@ class AppSettings {
       removePlayedDownloads: json['removePlayedDownloads'] as bool? ?? false,
       autoDownloadPolicy: _parseAutoDownloadPolicy(json['autoDownloadPolicy']),
       playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
+      volume: (json['volume'] as num?)?.toDouble() ?? 0.3,
       skipForwardTime: json['skipForwardTime'] as int? ?? 30,
       skipBackwardTime: json['skipBackwardTime'] as int? ?? 15,
       continuousPlay: json['continuousPlay'] as bool? ?? true,

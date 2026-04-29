@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
+import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/episode_control_bar/episode_control_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/episode_control_bar/play_pause_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/speed_dropdown.dart';
@@ -110,6 +111,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 currentSpeed: currentSpeed,
                 onSpeedChanged: (speed) {
                   ref.read(playbackProvider.notifier).setSpeed(speed);
+                  ref.read(settingsProvider.notifier).updatePlaybackSpeed(speed);
                 },
                 onItemSelected: _hideDropdown,
               ),

@@ -132,4 +132,15 @@ class SettingsNotifier extends Notifier<SettingsState> {
       Logger.error('[SETTINGS-PROVIDER] Failed to update continuousPlay', error: e, stackTrace: stackTrace);
     }
   }
+
+  Future<void> updateVolume(double value) async {
+    try {
+      await _service.setVolume(value);
+      state = state.copyWith(
+        settings: state.settings.copyWith(volume: value),
+      );
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update volume', error: e, stackTrace: stackTrace);
+    }
+  }
 }

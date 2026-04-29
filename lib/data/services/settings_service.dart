@@ -49,6 +49,7 @@ class SettingsService {
       removePlayedDownloads: _prefs!.getBool('remove_played_downloads') ?? false,
       autoDownloadPolicy: _parseAutoDownloadPolicy(rawPolicy),
       playbackSpeed: _prefs!.getDouble('playback_speed') ?? 1.0,
+      volume: _prefs!.getDouble('volume') ?? 0.3,
       skipForwardTime: _prefs!.getInt('skip_forward_time') ?? 30,
       skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? 15,
       continuousPlay: _prefs!.getBool('continuous_play') ?? true,
@@ -80,6 +81,18 @@ class SettingsService {
     await _ensureInitialized();
     await _prefs!.setDouble('playback_speed', value);
     Logger.info('⚙️ [SETTINGS-SERVICE] playbackSpeed set to: $value');
+  }
+
+  Future<void> setVolume(double value) async {
+    await _ensureInitialized();
+    await _prefs!.setDouble('volume', value);
+    Logger.info('⚙️ [SETTINGS-SERVICE] volume set to: $value');
+  }
+
+  Future<double> getVolume() async {
+    await _ensureInitialized();
+    await _reloadPrefs();
+    return _prefs!.getDouble('volume') ?? 0.3;
   }
 
   Future<void> setSkipForwardTime(int value) async {
