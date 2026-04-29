@@ -12,6 +12,7 @@ import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 class PlayerState {
   final Episode? currentEpisode;
@@ -173,8 +174,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           debugPrint('✅ [Playback] Marked episode $episodeId as played');
         }
       });
-    } catch (e) {
-      debugPrint('❌ [Playback] Failed to mark episode $episodeId as played: $e');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to mark episode as played',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -195,8 +200,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       debugPrint('🗑️ [Playback] Auto-deleting downloaded episode: $episodeId');
       await AudioDownloadService.instance.deleteDownloadedEpisode(episodeId.toString());
       debugPrint('✅ [Playback] Auto-deleted episode: $episodeId');
-    } catch (e) {
-      debugPrint('❌ [Playback] Failed to auto-delete episode $episodeId: $e');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to auto-delete episode',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -222,8 +231,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       } else {
         debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
       }
-    } catch (e) {
-      debugPrint('❌ [Playback] Failed to handle next episode playback: $e');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to handle next episode playback',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
