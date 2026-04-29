@@ -6,6 +6,7 @@ import 'package:tinycast/data/models/episode_model.dart' as episode_model;
 import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
@@ -131,62 +132,100 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> _onEpisodeCompleted(int episodeId) async {
+    // 1. 从队列中移除已完成的剧集
     final queueState = ref.read(queueNotifierProvider);
     final isInQueue = queueState.queueEpisodes.any((e) => e.id == episodeId);
     if (isInQueue) {
-      debugPrint(
-        '🎯 [Playback] Episode $episodeId completed, removing from queue...',
-      );
+      debugPrint('🎯 [Playback] Episode $episodeId completed, removing from queue...');
       try {
-        await ref
-            .read(queueNotifierProvider.notifier)
+        await ref.read(queueNotifierProvider.notifier)
             .removeFromQueueByEpisodeId(episodeId);
       } catch (e, stackTrace) {
-        debugPrint(
-          '❌ [Playback] Failed to remove episode $episodeId from queue: $e\n$stackTrace',
-        );
+        debugPrint('❌ [Playback] Failed to remove episode $episodeId from queue: $e\n$stackTrace');
       }
     }
-    debugPrint(
-      '🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...',
-    );
+
+    // 2. 标记当前音频为已播放
+    await _markEpisodeAsPlayed(episodeId);
+
+    // 3. 检查并自动删除下载的音频文件
+    await _handleAutoDeleteDownload(episodeId);
+
+    // 4. 刷新未播放剧集列表
+    debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
     ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
 
-    // 根据连续播放设置决定是否自动播放下一集
-    final settings = await SettingsService.instance.loadSettings();
-    final continuousPlay = settings.continuousPlay;
+    // 5. 根据连续播放设置处理下一集播放
+    await _handleNextEpisodePlayback();
+  }
 
-    if (continuousPlay) {
-      // 连续播放启用：自动播放下一集
+  /// 标记 episode 为已播放
+  Future<void> _markEpisodeAsPlayed(int episodeId) async {
+    try {
+      final isar = IsarService.instance.isar;
+      await isar.writeTxn(() async {
+        final episode = await isar.episodes.get(episodeId);
+        if (episode != null) {
+          episode.isPlayed = true;
+          episode.playProgress = 1.0;
+          episode.updatedAt = DateTime.now();
+          await isar.episodes.put(episode);
+          debugPrint('✅ [Playback] Marked episode $episodeId as played');
+        }
+      });
+    } catch (e, stackTrace) {
+      debugPrint('❌ [Playback] Failed to mark episode $episodeId as played: $e');
+    }
+  }
+
+  /// 检查设置并在需要时自动删除已播放的下载文件
+  Future<void> _handleAutoDeleteDownload(int episodeId) async {
+    try {
+      final removePlayedDownloads = await SettingsService.instance.getRemovePlayedDownloads();
+      if (!removePlayedDownloads) {
+        return;
+      }
+
+      final isar = IsarService.instance.isar;
+      final episode = await isar.episodes.get(episodeId);
+      if (episode == null || !episode.isDownloaded || episode.downloadedPath == null) {
+        return;
+      }
+
+      debugPrint('🗑️ [Playback] Auto-deleting downloaded episode: $episodeId');
+      await AudioDownloadService.instance.deleteDownloadedEpisode(episodeId.toString());
+      debugPrint('✅ [Playback] Auto-deleted episode: $episodeId');
+    } catch (e, stackTrace) {
+      debugPrint('❌ [Playback] Failed to auto-delete episode $episodeId: $e');
+    }
+  }
+
+  /// 根据连续播放设置处理下一集播放
+  Future<void> _handleNextEpisodePlayback() async {
+    try {
+      final settings = await SettingsService.instance.loadSettings();
+      final continuousPlay = settings.continuousPlay;
+
       final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
       final nextEpisode = unplayedState.episodes.isNotEmpty
           ? unplayedState.episodes.first
           : null;
 
-      if (nextEpisode != null) {
-        debugPrint(
-          '🔄 [Playback] 连续播放启用，自动播放下一集: ${nextEpisode.title}',
-        );
+      if (nextEpisode == null) {
+        debugPrint('🎯 [Playback] No more unplayed episodes');
+        return;
+      }
+
+      if (continuousPlay) {
+        debugPrint('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
         await playEpisode(nextEpisode);
       } else {
-        debugPrint('🔄 [Playback] 连续播放启用，但没有下一集，停留在当前 episode');
-      }
-    } else {
-      // 连续播放禁用：切换到下一集并暂停
-      final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
-      final nextEpisode = unplayedState.episodes.isNotEmpty
-          ? unplayedState.episodes.first
-          : null;
-
-      if (nextEpisode != null) {
-        debugPrint(
-          '⏸️ [Playback] 连续播放禁用，切换到下一集并暂停: ${nextEpisode.title}',
-        );
+        debugPrint('⏸️ [Playback] Continuous play disabled, loading next and pausing: ${nextEpisode.title}');
         await playEpisode(nextEpisode);
         await pause();
-      } else {
-        debugPrint('⏸️ [Playback] 连续播放禁用，且没有下一集，停留在当前 episode');
       }
+    } catch (e, stackTrace) {
+      debugPrint('❌ [Playback] Failed to handle next episode playback: $e');
     }
   }
 
