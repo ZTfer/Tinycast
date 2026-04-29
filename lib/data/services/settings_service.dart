@@ -37,9 +37,6 @@ class SettingsService {
   Future<AppSettings> loadSettings() async {
     Logger.info('⚙️ [SETTINGS-SERVICE] ====== Loading settings ======');
     await _ensureInitialized();
-    
-    // 多窗口场景下，从磁盘重新加载以读取最新值
-    await _reloadPrefs();
 
     final rawPolicy = _prefs!.getString('auto_download_policy');
     Logger.info('⚙️ [SETTINGS-SERVICE] Raw auto_download_policy from prefs: $rawPolicy');
