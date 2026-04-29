@@ -50,8 +50,8 @@ class SettingsService {
       autoDownloadPolicy: _parseAutoDownloadPolicy(rawPolicy),
       playbackSpeed: _prefs!.getDouble('playback_speed') ?? AppSettings.defaultPlaybackSpeed,
       volume: _prefs!.getDouble('volume') ?? AppSettings.defaultVolume,
-      skipForwardTime: _prefs!.getInt('skip_forward_time') ?? 30,
-      skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? 15,
+      skipForwardTime: _prefs!.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime,
+      skipBackwardTime: _prefs!.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime,
       continuousPlay: _prefs!.getBool('continuous_play') ?? true,
     );
   }
@@ -105,7 +105,7 @@ class SettingsService {
     await _ensureInitialized();
     // 多窗口场景下，从磁盘重新加载以读取最新值
     await _reloadPrefs();
-    return _prefs!.getInt('skip_forward_time') ?? 30;
+    return _prefs!.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime;
   }
 
   Future<void> setSkipBackwardTime(int value) async {
@@ -118,7 +118,7 @@ class SettingsService {
     await _ensureInitialized();
     // 多窗口场景下，从磁盘重新加载以读取最新值
     await _reloadPrefs();
-    return _prefs!.getInt('skip_backward_time') ?? 15;
+    return _prefs!.getInt('skip_backward_time') ?? AppSettings.defaultSkipBackwardTime;
   }
 
   Future<void> setContinuousPlay(bool value) async {

@@ -15,6 +15,8 @@ enum AutoDownloadPolicy {
 class AppSettings {
   static const defaultPlaybackSpeed = 1.0;
   static const defaultVolume = 0.3;
+  static const defaultSkipForwardTime = 30;
+  static const defaultSkipBackwardTime = 15;
 
   final bool downloadOnFavorite;
   final bool removePlayedDownloads;
@@ -31,8 +33,8 @@ class AppSettings {
     this.autoDownloadPolicy = AutoDownloadPolicy.latest3,
     this.playbackSpeed = defaultPlaybackSpeed,
     this.volume = defaultVolume,
-    this.skipForwardTime = 30,
-    this.skipBackwardTime = 15,
+    this.skipForwardTime = defaultSkipForwardTime,
+    this.skipBackwardTime = defaultSkipBackwardTime,
     this.continuousPlay = true,
   });
 
@@ -78,8 +80,8 @@ class AppSettings {
       autoDownloadPolicy: _parseAutoDownloadPolicy(json['autoDownloadPolicy']),
       playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? defaultPlaybackSpeed,
       volume: (json['volume'] as num?)?.toDouble() ?? defaultVolume,
-      skipForwardTime: json['skipForwardTime'] as int? ?? 30,
-      skipBackwardTime: json['skipBackwardTime'] as int? ?? 15,
+      skipForwardTime: json['skipForwardTime'] as int? ?? defaultSkipForwardTime,
+      skipBackwardTime: json['skipBackwardTime'] as int? ?? defaultSkipBackwardTime,
       continuousPlay: json['continuousPlay'] as bool? ?? true,
     );
   }
