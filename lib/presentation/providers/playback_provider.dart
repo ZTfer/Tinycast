@@ -222,7 +222,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     final settings = await SettingsService.instance.loadSettings();
     if (settings.sleepTimer == SleepTimerOption.episodeEnd) {
       debugPrint('⏰ [SleepTimer] Episode ended, pausing playback');
-      await _audioPlayerService.pause();
+      await pause();
       await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
       await SettingsService.instance.setSleepTimerEndTimeMillis(null);
       return;
