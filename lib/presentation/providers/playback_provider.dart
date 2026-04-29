@@ -5,6 +5,7 @@ import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/episode_model.dart' as episode_model;
 import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
@@ -89,10 +90,10 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   Future<void> _restoreSettingsFromPrefs() async {
     try {
       final settings = await SettingsService.instance.loadSettings();
-      if (settings.playbackSpeed != 1.0) {
+      if (settings.playbackSpeed != AppSettings.defaultPlaybackSpeed) {
         await _audioPlayerService.setSpeed(settings.playbackSpeed);
       }
-      if (settings.volume != 0.3) {
+      if (settings.volume != AppSettings.defaultVolume) {
         await _audioPlayerService.setVolume(settings.volume);
       }
     } catch (e, stackTrace) {

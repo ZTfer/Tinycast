@@ -13,6 +13,9 @@ enum AutoDownloadPolicy {
 }
 
 class AppSettings {
+  static const defaultPlaybackSpeed = 1.0;
+  static const defaultVolume = 0.3;
+
   final bool downloadOnFavorite;
   final bool removePlayedDownloads;
   final AutoDownloadPolicy autoDownloadPolicy;
