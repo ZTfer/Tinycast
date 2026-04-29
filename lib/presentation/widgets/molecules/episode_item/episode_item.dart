@@ -1,14 +1,22 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_info.dart';
+
+/// ===== 配置区域 =====
+/// 设置为 true 使用 Podcast 封面图，设置为 false 使用 Episode 封面图
+const bool kUsePodcastArtwork = true;
+
+/// ====================
 
 /// Episode 项组件
 ///
 /// 用于显示单个节目项。
 /// 使用 Row 布局：左边是封面图，右边是节目信息（EpisodeInfo）。
-class EpisodeItem extends StatelessWidget {
+class EpisodeItem extends ConsumerWidget {
   /// Episode 对象
   final Episode episode;
 
@@ -42,7 +50,7 @@ class EpisodeItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         Container(
@@ -55,7 +63,10 @@ class EpisodeItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 左边：封面图（根据 showCover 参数决定是否显示）
-                  if (showCover) ...[_buildArtwork(), const SizedBox(width: 8)],
+                  if (showCover) ...[
+                    _buildArtwork(context, ref),
+                    const SizedBox(width: 8),
+                  ],
                   // 右边：节目信息（包含标题、描述、操作栏）
                   Expanded(
                     child: EpisodeInfo(
@@ -78,7 +89,41 @@ class EpisodeItem extends StatelessWidget {
     );
   }
 
-  Widget _buildArtwork() {
+  Widget _buildArtwork(BuildContext context, WidgetRef ref) {
+    if (kUsePodcastArtwork) {
+      // 使用 Podcast 封面图
+      final podcastState = ref.watch(podcastByIdProvider(episode.podcastId));
+      return podcastState.when(
+        data: (podcast) {
+          if (podcast == null) {
+            return _buildEpisodeArtwork();
+          }
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: 34,
+              height: 34,
+              child: ArtworkImage.fromPodcast(
+                podcast,
+                width: 34,
+                height: 34,
+                fit: BoxFit.cover,
+                placeholder: _buildPlaceholderArtwork(),
+                errorWidget: _buildPlaceholderArtwork(),
+              ),
+            ),
+          );
+        },
+        loading: () => _buildEpisodeArtwork(),
+        error: (_, __) => _buildEpisodeArtwork(),
+      );
+    } else {
+      // 使用 Episode 封面图
+      return _buildEpisodeArtwork();
+    }
+  }
+
+  Widget _buildEpisodeArtwork() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
       child: SizedBox(
