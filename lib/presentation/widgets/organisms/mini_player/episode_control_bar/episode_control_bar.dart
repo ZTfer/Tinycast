@@ -111,7 +111,9 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 currentSpeed: currentSpeed,
                 onSpeedChanged: (speed) {
                   ref.read(playbackProvider.notifier).setSpeed(speed);
-                  ref.read(settingsProvider.notifier).updatePlaybackSpeed(speed);
+                  ref
+                      .read(settingsProvider.notifier)
+                      .updatePlaybackSpeed(speed);
                 },
                 onItemSelected: _hideDropdown,
               ),
@@ -247,12 +249,13 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             icon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  LucideIcons.gauge400,
-                  size: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-                const SizedBox(width: 4),
+                // 暂时去除图标，后续再添加
+                // Icon(
+                //   LucideIcons.gauge400,
+                //   size: 16,
+                //   fontWeight: FontWeight.normal,
+                // ),
+                // const SizedBox(width: 4),
                 Text(
                   '${currentSpeed}x',
                   style: const TextStyle(
@@ -269,7 +272,6 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             // 播放控制按钮之间的间距
             spacing: 40,
             children: [
-
               // 后退按钮
               EpisodeControlButton(
                 icon: const Icon(
@@ -292,16 +294,12 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
                 ),
                 onPressed: widget.onSeekForward,
               ),
-
             ],
           ),
           // 音量控制按钮
-          EpisodeControlButton(
-            icon: const Icon(
-              LucideIcons.volume2,
-              size: 16,
-              fontWeight: FontWeight.normal,
-            ),
+          EpisodeControlButton.svg(
+            svgPath: 'assets/gravity_icons/volume.svg',
+            size: 16,
             onPressed: _showVolumeControl,
             key: _volumeButtonKey,
           ),
