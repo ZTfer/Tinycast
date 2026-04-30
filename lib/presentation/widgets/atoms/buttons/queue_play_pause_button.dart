@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 class QueuePlayPauseButton extends ConsumerWidget {
@@ -77,11 +77,18 @@ class _QueuePlayPauseButtonContentState
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                widget.showPauseIcon ? LucideIcons.pause : LucideIcons.play,
-                size: 10,
-                fontWeight: FontWeight.normal,
-                color: const Color(0xFF000000),
+              SizedBox(
+                width: 10,
+                height: 10,
+                child: SvgPicture.asset(
+                  widget.showPauseIcon
+                      ? 'assets/gravity_icons/pause-fill.svg'
+                      : 'assets/gravity_icons/play-fill.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF000000),
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
               const SizedBox(width: 6),
               Text(
