@@ -172,3 +172,5 @@ flutter:
     - assets/images/
     # 图标资源
     - assets/icons/
+    # Gravity Icons 图标资源
+    - assets/gravity_icons/
