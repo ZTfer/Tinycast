@@ -155,10 +155,9 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
       if (mounted) {
         ErrorToast.showSuccess(context, '订阅成功！');
       }
-      // 刷新播客列表
-      ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
-      // 刷新"继续播放"列表
-      ref.read(unplayedEpisodesNotifierProvider.notifier).loadUnplayedEpisodes();
+      // 刷新播客列表和"继续播放"列表
+      ref.invalidate(podcastProvider);
+      ref.invalidate(unplayedEpisodesNotifierProvider);
 
       // 延迟清除成功消息
       Future.delayed(const Duration(seconds: 2), () {

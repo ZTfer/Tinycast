@@ -139,11 +139,8 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
       // 通知 Library 页面刷新
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调用 ref.invalidate(podcastProvider)');
-      ref.invalidate(podcastProvider);
+      _refreshUI();
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] ref.invalidate 完成');
-
-      // 通知"继续播放"列表刷新
-      ref.invalidate(unplayedEpisodesNotifierProvider);
 
       // 根据自动下载策略执行下载（异步执行，不阻塞订阅流程）
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调度自动下载任务');
@@ -195,9 +192,12 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
     await _loadSubscribedPodcasts();
 
-    // 通知 Library 页面刷新
+    // 通知 Library 页面和"继续播放"列表刷新
+    _refreshUI();
+  }
+
+  void _refreshUI() {
     ref.invalidate(podcastProvider);
-    // 通知"继续播放"列表刷新
     ref.invalidate(unplayedEpisodesNotifierProvider);
   }
 
