@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// 主页工具栏按钮
 ///
@@ -14,13 +15,32 @@ class HomeToolbarButton extends StatefulWidget {
   /// 按钮点击的回调函数
   final VoidCallback onPressed;
 
-  /// 构造函数
+  /// 构造函数（接收任意 Widget 作为图标）
   const HomeToolbarButton({
     super.key,
     required this.icon,
     required this.onPressed,
     this.label,
   });
+
+  /// 构造函数（使用 SVG 资源作为图标）
+  HomeToolbarButton.svg({
+    super.key,
+    required String svgPath,
+    double size = 16,
+    required this.onPressed,
+    this.label,
+  }) : icon = SizedBox(
+         width: size,
+         height: size,
+         child: SvgPicture.asset(
+           svgPath,
+           colorFilter: const ColorFilter.mode(
+             Color(0xFF000000),
+             BlendMode.srcIn,
+           ),
+         ),
+       );
 
   @override
   State<HomeToolbarButton> createState() => _HomeToolbarButtonState();

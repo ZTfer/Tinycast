@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/organisms/home_toolbar/home_toolbar_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/home_toolbar/sleep_dropdown.dart';
 import 'package:tinycast/presentation/features/search/search_page.dart';
@@ -160,20 +159,19 @@ class _HomeToolbarState extends State<HomeToolbar> {
           Spacer(), // 占据左侧所有空间
           // 添加按钮
           // 用于快速创建新的任务或项目
-          HomeToolbarButton(
-            icon: const Icon(LucideIcons.search, size: 16),
+          HomeToolbarButton.svg(
+            svgPath: 'assets/gravity_icons/magnifier.svg',
+            size: 16,
             onPressed: _showSearchPage,
             key: _searchButtonKey,
           ),
+
           const SizedBox(width: 8), // 按钮之间的间距
           // 闹钟/专注按钮
           // 用于进入定时器功能
-          HomeToolbarButton(
-            icon: const Icon(
-              LucideIcons.alarmClock,
-              size: 16,
-            ), // 使用 Lucide 图标库的闹钟图标
-            // label: '闹钟', // 暂时隐藏标签
+          HomeToolbarButton.svg(
+            svgPath: 'assets/gravity_icons/alarm.svg',
+            size: 16,
             onPressed: _showDropdown,
             key: _sleepButtonKey,
           ),
