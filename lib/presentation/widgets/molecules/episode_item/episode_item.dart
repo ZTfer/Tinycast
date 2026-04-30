@@ -32,7 +32,7 @@ class EpisodeItem extends ConsumerWidget {
   /// 从队列移除回调
   final VoidCallback? onRemoveFromQueue;
 
-  /// 是否使用 Podcast 封面图，默认 false（使用 Episode 封面图）
+  /// 是否使用 Podcast 封面图，默认 true（使用 Podcast 封面图）
   final bool usePodcastArtwork;
 
   const EpisodeItem({
