@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
@@ -156,6 +157,8 @@ class _RssInputMaterialState extends ConsumerState<RssInputMaterial> {
       }
       // 刷新播客列表
       ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
+      // 刷新"继续播放"列表
+      ref.read(unplayedEpisodesNotifierProvider.notifier).loadUnplayedEpisodes();
 
       // 延迟清除成功消息
       Future.delayed(const Duration(seconds: 2), () {

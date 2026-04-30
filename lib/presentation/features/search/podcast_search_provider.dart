@@ -12,6 +12,7 @@ import '../../../data/repositories/podcast_repository_impl.dart';
 import '../../../core/utils/logger.dart';
 import '../../../domain/entities/app_settings.dart';
 import '../../providers/podcast_provider.dart';
+import '../../providers/unplayed_episodes_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
 
@@ -141,6 +142,9 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
       ref.invalidate(podcastProvider);
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] ref.invalidate 完成');
 
+      // 通知"继续播放"列表刷新
+      ref.invalidate(unplayedEpisodesNotifierProvider);
+
       // 根据自动下载策略执行下载（异步执行，不阻塞订阅流程）
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 调度自动下载任务');
       unawaited(_handleAutoDownload(subscribedPodcast));
@@ -193,6 +197,8 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
     // 通知 Library 页面刷新
     ref.invalidate(podcastProvider);
+    // 通知"继续播放"列表刷新
+    ref.invalidate(unplayedEpisodesNotifierProvider);
   }
 
   bool isPodcastSubscribed(String rssUrl) {
