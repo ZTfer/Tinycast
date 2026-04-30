@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 class PlayPauseButton extends ConsumerWidget {
@@ -12,10 +12,7 @@ class PlayPauseButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPlaying = ref.watch(isPlayingProvider);
 
-    return _PlayPauseButtonContent(
-      isPlaying: isPlaying,
-      onPressed: onPressed,
-    );
+    return _PlayPauseButtonContent(isPlaying: isPlaying, onPressed: onPressed);
   }
 }
 
@@ -57,11 +54,17 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(50.0),
           ),
-          child: Icon(
-            widget.isPlaying ? LucideIcons.pause : LucideIcons.play,
-            size: 24,
-            fontWeight: FontWeight.normal,
-            color: const Color(0xFF000000),
+          child: SvgPicture.asset(
+            widget.isPlaying
+                ? 'assets/gravity_icons/pause-fill.svg'
+                : 'assets/gravity_icons/play-fill.svg',
+            width: 34,
+            height: 34,
+            fit: BoxFit.cover,
+            colorFilter: const ColorFilter.mode(
+              Color(0xFF000000),
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),
