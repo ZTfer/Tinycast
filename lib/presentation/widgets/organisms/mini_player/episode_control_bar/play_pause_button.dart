@@ -58,9 +58,8 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
             widget.isPlaying
                 ? 'assets/gravity_icons/pause-fill.svg'
                 : 'assets/gravity_icons/play-fill.svg',
-            width: 34,
-            height: 34,
-            fit: BoxFit.cover,
+            width: 24,
+            height: 24,
             colorFilter: const ColorFilter.mode(
               Color(0xFF000000),
               BlendMode.srcIn,
