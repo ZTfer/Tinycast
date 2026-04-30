@@ -297,9 +297,13 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
             ],
           ),
           // 音量控制按钮
-          EpisodeControlButton.svg(
-            svgPath: 'assets/gravity_icons/volume.svg',
-            size: 16,
+          EpisodeControlButton(
+            icon: const Icon(
+              LucideIcons.volume2,
+              size: 16,
+              fontWeight: FontWeight.normal,
+            ),
+
             onPressed: _showVolumeControl,
             key: _volumeButtonKey,
           ),
