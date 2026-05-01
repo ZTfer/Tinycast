@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'apple_login_button.dart';
+// import 'apple_login_button.dart';
 import 'google_login_button.dart';
 
 class SocialLoginButtonGroup extends StatelessWidget {
@@ -11,7 +11,7 @@ class SocialLoginButtonGroup extends StatelessWidget {
       spacing: 12,
       children: [
         const Expanded(child: GoogleLoginButton()),
-        const Expanded(child: AppleLoginButton()),
+        // const Expanded(child: AppleLoginButton()),
       ],
     );
   }
