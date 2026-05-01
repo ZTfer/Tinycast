@@ -84,11 +84,18 @@ Future<void> _initializeApp() async {
   await Logger.initFileLogging();
 
   // 初始化 Supabase（如果配置了凭据）
-  // 优先从 .env 文件读取，其次从编译时环境变量读取
-  final supabaseUrl = dotenv.env['SUPABASE_URL'] ??
-      const String.fromEnvironment('SUPABASE_URL');
-  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ??
-      const String.fromEnvironment('SUPABASE_ANON_KEY');
+  // 安全读取：优先从 .env 文件读取，失败则回退到编译时变量
+  String? supabaseUrl;
+  String? supabaseAnonKey;
+  try {
+    supabaseUrl = dotenv.env['SUPABASE_URL'];
+    supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+  } catch (_) {
+    // .env 未加载时访问 env 会抛出 NotInitializedError，安全忽略
+  }
+  supabaseUrl ??= const String.fromEnvironment('SUPABASE_URL');
+  supabaseAnonKey ??= const String.fromEnvironment('SUPABASE_ANON_KEY');
+
   if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
     await SupabaseService().initialize(
       supabaseUrl: supabaseUrl,
