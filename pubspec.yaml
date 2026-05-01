@@ -180,8 +180,6 @@ flutter:
 
   # 静态资源文件目录
   assets:
-    # 环境变量配置
-    - .env
     # 图片资源
     - assets/images/
     # 图标资源
