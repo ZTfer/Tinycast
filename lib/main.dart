@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -31,6 +32,13 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 加载 .env 环境变量文件
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    Logger.info('ℹ️ .env 文件未找到或加载失败，继续启动应用: $e');
+  }
 
   final windowController = await WindowController.fromCurrentEngine();
   final arguments = parseArguments(windowController.arguments);
@@ -76,8 +84,8 @@ Future<void> _initializeApp() async {
   await Logger.initFileLogging();
 
   // 初始化 Supabase（如果配置了凭据）
-  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
     await SupabaseService().initialize(
       supabaseUrl: supabaseUrl,
