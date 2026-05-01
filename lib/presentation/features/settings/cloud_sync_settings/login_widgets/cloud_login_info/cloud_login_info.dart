@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/cloud_login_info/support_platform_list.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/cloud_login_info/support_platform_list.dart';
 
 class CloudLoginInfo extends StatelessWidget {
   const CloudLoginInfo({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/cloud_login_info/cloud_login_info.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login/login_button/social_login_button_group.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/cloud_login_info/cloud_login_info.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/social_login_button_group.dart';
 
 class CloudSyncSettings extends StatelessWidget {
   const CloudSyncSettings({super.key});

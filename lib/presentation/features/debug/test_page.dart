@@ -1,12 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login/login_button/social_login_button_group.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/social_login_button_group.dart';
 import 'package:tinycast/presentation/features/queue/queue_empty_page/queue_empty_page.dart';
 import 'package:tinycast/presentation/dialogs/toast/vertical_icon_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/features/subscribe/subscribe_search_result/subscribe_search_result_error.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login/login_button/google_login_button.dart';
-import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login/login_button/apple_login_button.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/google_login_button.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/apple_login_button.dart';
 import 'package:tinycast/presentation/features/search/search_page.dart';
 
 import 'package:tinycast/presentation/widgets/organisms/mini_player/volume_control_bar/volume_control_bar.dart';
