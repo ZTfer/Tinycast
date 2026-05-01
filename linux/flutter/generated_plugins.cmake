@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
   flutter_secure_storage_linux
+  gtk
   isar_community_flutter_libs
   screen_retriever_linux
   url_launcher_linux
