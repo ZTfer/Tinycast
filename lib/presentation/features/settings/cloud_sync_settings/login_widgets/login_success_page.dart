@@ -1,41 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tinycast/core/providers/auth_provider.dart';
-import 'package:tinycast/core/services/supabase_auth_service.dart';
-import 'package:tinycast/core/utils/toast_utils.dart';
+import 'package:flutter/widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LoginSuccessPage extends ConsumerWidget {
-  const LoginSuccessPage({super.key});
+class LoginSuccessPage extends StatelessWidget {
+  final User user;
+  final VoidCallback onSignOut;
 
-  Future<void> _handleSignOut(BuildContext context) async {
-    try {
-      await SupabaseAuthService().signOut();
-      if (context.mounted) {
-        ToastUtils.showSuccessToast(
-          context,
-          message: '已退出登录',
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ToastUtils.showErrorToast(
-          context,
-          message: '退出登录失败，请重试',
-        );
-      }
-    }
-  }
+  const LoginSuccessPage({
+    super.key,
+    required this.user,
+    required this.onSignOut,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
-
-    if (user == null) {
-      return const Column(
-        children: [Text('未找到用户信息')],
-      );
-    }
-
+  Widget build(BuildContext context) {
     final email = user.email ?? '未绑定邮箱';
     final displayName = user.userMetadata?['name'] as String? ?? email;
 
@@ -53,16 +30,30 @@ class LoginSuccessPage extends ConsumerWidget {
         ),
         Text(
           email,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: Color(0x4D000000)),
         ),
         const SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: () => _handleSignOut(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: onSignOut,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Text(
+                '退出登录',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFEF4444),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
-          child: const Text('退出登录'),
         ),
       ],
     );

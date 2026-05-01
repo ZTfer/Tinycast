@@ -3,14 +3,16 @@ import 'package:flutter/widgets.dart';
 import 'google_login_button.dart';
 
 class SocialLoginButtonGroup extends StatelessWidget {
-  const SocialLoginButtonGroup({super.key});
+  final VoidCallback onGoogleLogin;
+
+  const SocialLoginButtonGroup({super.key, required this.onGoogleLogin});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       spacing: 12,
       children: [
-        const Expanded(child: GoogleLoginButton()),
+        Expanded(child: GoogleLoginButton(onPressed: onGoogleLogin)),
         // const Expanded(child: AppleLoginButton()),
       ],
     );
