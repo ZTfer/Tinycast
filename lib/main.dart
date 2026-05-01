@@ -7,6 +7,7 @@ import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/router/app_router.dart';
+import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 
@@ -73,6 +74,19 @@ Future<void> _initializeApp() async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
+
+  // 初始化 Supabase（如果配置了凭据）
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+    await SupabaseService().initialize(
+      supabaseUrl: supabaseUrl,
+      supabaseAnonKey: supabaseAnonKey,
+    );
+    Logger.info('✅ Supabase 客户端初始化完成');
+  } else {
+    Logger.info('ℹ️ Supabase 未配置，跳过初始化');
+  }
 }
 
 class MyApp extends StatelessWidget {
