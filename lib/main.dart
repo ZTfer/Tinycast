@@ -96,9 +96,9 @@ Future<void> _initializeApp() async {
   supabaseUrl ??= const String.fromEnvironment('SUPABASE_URL');
   supabaseAnonKey ??= const String.fromEnvironment('SUPABASE_ANON_KEY');
 
-  // 过滤空字符串，避免使用无效凭据初始化
-  if (supabaseUrl.isEmpty) supabaseUrl = null;
-  if (supabaseAnonKey.isEmpty) supabaseAnonKey = null;
+  // 过滤空字符串和纯空白字符，避免使用无效凭据初始化
+  if (supabaseUrl.trim().isEmpty) supabaseUrl = null;
+  if (supabaseAnonKey.trim().isEmpty) supabaseAnonKey = null;
 
   if (supabaseUrl != null && supabaseAnonKey != null) {
     await SupabaseService().initialize(
