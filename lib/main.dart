@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -45,13 +44,15 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 加载 .env 环境变量文件
-  // macOS 桌面应用运行时工作目录可能不是项目根目录
+  // macOS 桌面应用被 sandbox 隔离，无法访问项目根目录
+  // 使用 asset 方式加载打包到应用中的 .env 文件
   bool envLoaded = false;
   try {
     await dotenv.load(fileName: '.env');
     envLoaded = true;
+    Logger.info('✅ .env 文件已从 asset 加载');
   } catch (_) {
-    Logger.info('ℹ️ .env 文件未找到，将使用开发环境默认配置');
+    Logger.info('ℹ️ .env asset 未找到，将使用开发环境默认配置');
   }
 
   // 如果 .env 未加载，设置回退值
