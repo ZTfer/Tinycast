@@ -73,20 +73,24 @@ class RemotePodcastDataSource {
     try {
       Logger.info('开始异步 iTunes 搜索: ${podcast.title}');
 
+      ITunesSearchResult? match;
+
       final results = await searchService.searchPodcastOnITunes(
         term: podcast.title,
-        limit: 1,
+        limit: 5,
       );
 
-      if (results.isEmpty) {
-        Logger.info('iTunes 搜索无结果: ${podcast.title}');
-        return;
+      if (results.isNotEmpty) {
+        match = _findBestMatch(results, rssUrl, podcast.websiteUrl, podcast.title);
       }
 
-      final firstResult = results.first;
+      if (match == null) {
+        Logger.info('关键词搜索未找到匹配，尝试通过 feedUrl 查找');
+        match = await searchService.lookupByFeedUrl(rssUrl);
+      }
 
-      if (firstResult.collectionId == null) {
-        Logger.warning('iTunes 搜索结果缺少 collectionId，跳过更新');
+      if (match == null || match.collectionId == null) {
+        Logger.info('iTunes 搜索未找到匹配: ${podcast.title}');
         return;
       }
 
@@ -96,17 +100,17 @@ class RemotePodcastDataSource {
         return;
       }
 
-      podcastModel.appleId = firstResult.collectionId;
-      podcastModel.itunesArtworkUrl = firstResult.artworkUrl600;
+      podcastModel.appleId = match.collectionId;
+      podcastModel.itunesArtworkUrl = match.artworkUrl600;
 
       await localDataSource.updateITunesInfo(
         podcastModel.id,
-        firstResult.collectionId!,
-        firstResult.artworkUrl600 ?? '',
+        match.collectionId!,
+        match.artworkUrl600 ?? '',
       );
 
       Logger.info(
-        '成功更新 iTunes 信息: appleId=${firstResult.collectionId}, artworkUrl=${firstResult.artworkUrl600}',
+        '成功更新 iTunes 信息: appleId=${match.collectionId}, artworkUrl=${match.artworkUrl600}',
       );
     } catch (e, stackTrace) {
       Logger.error(
@@ -114,6 +118,78 @@ class RemotePodcastDataSource {
         error: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  /// 从搜索结果中找到最佳匹配的播客
+  ///
+  /// 匹配优先级：
+  /// 1. feedUrl 完全相同
+  /// 2. websiteUrl 域名相同
+  /// 3. 标题完全相同
+  /// 4. 返回第一个结果作为兜底
+  ITunesSearchResult? _findBestMatch(
+    List<ITunesSearchResult> results,
+    String rssUrl,
+    String? websiteUrl,
+    String podcastTitle,
+  ) {
+    // 优先匹配 feedUrl 相同
+    for (final result in results) {
+      if (result.feedUrl != null &&
+          _normalizeUrl(result.feedUrl!) == _normalizeUrl(rssUrl)) {
+        Logger.info('通过 feedUrl 匹配到播客: ${result.collectionName}');
+        return result;
+      }
+    }
+
+    // 匹配 websiteUrl 域名
+    if (websiteUrl != null && websiteUrl.isNotEmpty) {
+      final websiteDomain = _extractDomain(websiteUrl);
+      for (final result in results) {
+        if (result.website != null && result.website!.isNotEmpty) {
+          final resultDomain = _extractDomain(result.website!);
+          if (websiteDomain == resultDomain) {
+            Logger.info('通过 websiteUrl 域名匹配到播客: ${result.collectionName}');
+            return result;
+          }
+        }
+      }
+    }
+
+    // 匹配标题
+    for (final result in results) {
+      if (result.collectionName.toLowerCase() ==
+          podcastTitle.toLowerCase()) {
+        Logger.info('通过标题匹配到播客: ${result.collectionName}');
+        return result;
+      }
+    }
+
+    // 兜底：返回第一个结果
+    if (results.isNotEmpty && results.first.collectionId != null) {
+      Logger.info('使用第一个搜索结果: ${results.first.collectionName}');
+      return results.first;
+    }
+
+    return null;
+  }
+
+  String _normalizeUrl(String url) {
+    return url
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'https?://'), '')
+        .replaceAll(RegExp(r'/$'), '');
+  }
+
+  String _extractDomain(String url) {
+    try {
+      final normalized = _normalizeUrl(url);
+      final parts = normalized.split('/');
+      return parts.first;
+    } catch (_) {
+      return '';
     }
   }
 

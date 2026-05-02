@@ -57,6 +57,53 @@ class ITunesSearchService {
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
   }
 
+  /// 通过 RSS feedUrl 精确查找播客
+  ///
+  /// [feedUrl] RSS 源地址
+  /// 返回匹配的播客结果，如果查找失败则返回 null
+  Future<ITunesSearchResult?> lookupByFeedUrl(String feedUrl) async {
+    final url = 'https://itunes.apple.com/search'
+        '?feedUrl=${Uri.encodeComponent(feedUrl)}'
+        '&entity=podcast'
+        '&limit=1';
+
+    Logger.info('通过 feedUrl 查找 iTunes 播客: $url');
+
+    for (final country in ['us', 'cn']) {
+      try {
+        final response = await _dio.get(
+          url,
+          options: dio.Options(
+            headers: {
+              'Accept': 'application/json',
+              'User-Agent': 'TinyCast/${AppConstants.appVersion}',
+            },
+          ),
+        );
+
+        if (response.statusCode != 200) continue;
+
+        final data = response.data;
+        final resultCount = data['resultCount'] ?? 0;
+
+        if (resultCount > 0) {
+          final results = (data['results'] as List)
+              .map((json) => ITunesSearchResult.fromJson(json))
+              .toList();
+          if (results.isNotEmpty && results.first.collectionId != null) {
+            Logger.info('通过 feedUrl 找到播客 ($country): ${results.first.collectionName}');
+            return results.first;
+          }
+        }
+      } catch (e) {
+        Logger.warning('通过 feedUrl 查找失败 ($country): $e');
+      }
+    }
+
+    Logger.info('通过 feedUrl 未找到播客: $feedUrl');
+    return null;
+  }
+
   /// 搜索播客
   ///
   /// [term] 搜索关键词
