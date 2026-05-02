@@ -98,10 +98,15 @@ class ITunesSearchService {
         if (response.statusCode != 200) continue;
 
         Map<String, dynamic> data;
-        if (response.data is String) {
-          data = jsonDecode(response.data as String);
-        } else {
-          data = response.data as Map<String, dynamic>;
+        try {
+          if (response.data is String) {
+            data = jsonDecode(response.data as String);
+          } else {
+            data = response.data as Map<String, dynamic>;
+          }
+        } catch (e) {
+          Logger.warning('⚠️ JSON 解析失败 ($country): $e');
+          continue;
         }
         final resultCount = data['resultCount'] ?? 0;
 
@@ -192,10 +197,17 @@ class ITunesSearchService {
         }
 
         Map<String, dynamic> data;
-        if (response.data is String) {
-          data = jsonDecode(response.data as String);
-        } else {
-          data = response.data as Map<String, dynamic>;
+        try {
+          if (response.data is String) {
+            data = jsonDecode(response.data as String);
+          } else {
+            data = response.data as Map<String, dynamic>;
+          }
+        } catch (e) {
+          throw AppException.network(
+            'JSON 解析失败',
+            originalError: e,
+          );
         }
         final resultCount = data['resultCount'] ?? 0;
 
