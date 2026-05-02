@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -30,38 +29,24 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
   await controller.show();
 }
 
-/// Supabase 开发环境默认配置（占位符）
-/// 实际使用时请替换为你的 Supabase 项目凭据
+/// Supabase 配置占位符（编译时默认值）
+/// 实际使用时通过 --dart-define 传入，不要硬编码真实凭据
 /// 获取方式：https://supabase.com/dashboard/project/_/settings/api
-const _devSupabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
-const _devSupabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-
-/// 全局 Supabase 配置（用于 .env 加载失败时的回退）
-String? _fallbackSupabaseUrl;
-String? _fallbackSupabaseAnonKey;
+/// 运行命令：flutter run --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=xxx
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 加载 .env 环境变量文件
-  // macOS 桌面应用被 sandbox 隔离，无法访问项目根目录
-  // 使用 asset 方式加载打包到应用中的 .env 文件
-  bool envLoaded = false;
-  try {
-    await dotenv.load(fileName: '.env');
-    envLoaded = true;
-    Logger.info('✅ .env 文件已从 asset 加载');
-  } catch (_) {
-    Logger.info('ℹ️ .env asset 未找到，将使用开发环境默认配置');
-  }
-
-  // 如果 .env 未加载，设置回退值
-  if (!envLoaded) {
-    Logger.info('🔧 设置 Supabase 开发环境默认配置');
-    _fallbackSupabaseUrl = _devSupabaseUrl;
-    _fallbackSupabaseAnonKey = _devSupabaseAnonKey;
-    Logger.info('🔧 _fallbackSupabaseUrl = $_fallbackSupabaseUrl');
-  }
+  // 从编译时参数读取 Supabase 配置
+  // 优先级：--dart-define > 占位符（仅开发测试）
+  const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
+  );
+  const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
+  );
 
   final windowController = await WindowController.fromCurrentEngine();
   final arguments = parseArguments(windowController.arguments);
@@ -107,38 +92,30 @@ Future<void> _initializeApp() async {
   await Logger.initFileLogging();
 
   // 初始化 Supabase（如果配置了凭据）
-  // 读取优先级：.env > 回退值 > --dart-define
-  String? supabaseUrl;
-  String? supabaseAnonKey;
+  // 使用 main() 中读取的编译时参数
+  final supabaseUrl = const String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
+  );
+  final supabaseAnonKey = const String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
+  );
 
-  // 优先从 .env 读取
-  try {
-    supabaseUrl = dotenv.env['SUPABASE_URL'];
-    supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
-  } catch (_) {
-    // .env 未加载时访问 env 会抛出 NotInitializedError，安全忽略
-  }
+  // 过滤占位符和空值，避免使用无效凭据初始化
+  final isPlaceholderUrl = supabaseUrl == 'https://YOUR_PROJECT_ID.supabase.co';
+  final isPlaceholderKey = supabaseAnonKey == 'YOUR_SUPABASE_ANON_KEY';
+  final isEmptyUrl = supabaseUrl.trim().isEmpty;
+  final isEmptyKey = supabaseAnonKey.trim().isEmpty;
 
-  // 其次使用回退值（开发模式）
-  supabaseUrl ??= _fallbackSupabaseUrl;
-  supabaseAnonKey ??= _fallbackSupabaseAnonKey;
-
-  // 最后尝试编译时变量
-  supabaseUrl ??= const String.fromEnvironment('SUPABASE_URL');
-  supabaseAnonKey ??= const String.fromEnvironment('SUPABASE_ANON_KEY');
-
-  // 过滤空字符串和纯空白字符，避免使用无效凭据初始化
-  if (supabaseUrl.trim().isEmpty) supabaseUrl = null;
-  if (supabaseAnonKey.trim().isEmpty) supabaseAnonKey = null;
-
-  if (supabaseUrl != null && supabaseAnonKey != null) {
+  if (!isPlaceholderUrl && !isPlaceholderKey && !isEmptyUrl && !isEmptyKey) {
     await SupabaseService().initialize(
       supabaseUrl: supabaseUrl,
       supabaseAnonKey: supabaseAnonKey,
     );
     Logger.info('✅ Supabase 客户端初始化完成');
   } else {
-    Logger.info('ℹ️ Supabase 未配置，跳过初始化');
+    Logger.info('ℹ️ Supabase 未配置（使用占位符），跳过初始化');
   }
 }
 
