@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
@@ -96,7 +97,12 @@ class ITunesSearchService {
 
         if (response.statusCode != 200) continue;
 
-        final data = response.data;
+        Map<String, dynamic> data;
+        if (response.data is String) {
+          data = jsonDecode(response.data as String);
+        } else {
+          data = response.data as Map<String, dynamic>;
+        }
         final resultCount = data['resultCount'] ?? 0;
 
         if (resultCount > 0) {
@@ -185,7 +191,12 @@ class ITunesSearchService {
           );
         }
 
-        final data = response.data;
+        Map<String, dynamic> data;
+        if (response.data is String) {
+          data = jsonDecode(response.data as String);
+        } else {
+          data = response.data as Map<String, dynamic>;
+        }
         final resultCount = data['resultCount'] ?? 0;
 
         if (resultCount == 0) {
