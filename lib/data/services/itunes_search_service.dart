@@ -204,7 +204,7 @@ class ITunesSearchService {
             data = response.data as Map<String, dynamic>;
           }
         } catch (e) {
-          throw AppException.network(
+          throw AppException.validation(
             'JSON 解析失败',
             originalError: e,
           );
