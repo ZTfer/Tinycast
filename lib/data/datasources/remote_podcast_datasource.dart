@@ -85,6 +85,11 @@ class RemotePodcastDataSource {
 
       final firstResult = results.first;
 
+      if (firstResult.collectionId == null) {
+        Logger.warning('iTunes 搜索结果缺少 collectionId，跳过更新');
+        return;
+      }
+
       final podcastModel = await localDataSource.getPodcastByRssUrl(rssUrl);
       if (podcastModel == null) {
         Logger.warning('无法获取播客模型进行 iTunes 信息更新');
@@ -96,8 +101,8 @@ class RemotePodcastDataSource {
 
       await localDataSource.updateITunesInfo(
         podcastModel.id,
-        firstResult.collectionId,
-        firstResult.artworkUrl600,
+        firstResult.collectionId!,
+        firstResult.artworkUrl600 ?? '',
       );
 
       Logger.info(

@@ -7,17 +7,17 @@ import '../../core/utils/network_error_handler.dart';
 
 /// iTunes 播客搜索结果
 class ITunesSearchResult {
-  final String collectionId;
+  final String? collectionId;
   final String collectionName;
-  final String artworkUrl600;
+  final String? artworkUrl600;
   final String? feedUrl;
   final String? website;
   final String? description;
 
   ITunesSearchResult({
-    required this.collectionId,
+    this.collectionId,
     required this.collectionName,
-    required this.artworkUrl600,
+    this.artworkUrl600,
     this.feedUrl,
     this.website,
     this.description,
@@ -25,9 +25,9 @@ class ITunesSearchResult {
 
   factory ITunesSearchResult.fromJson(Map<String, dynamic> json) {
     return ITunesSearchResult(
-      collectionId: json['collectionId']?.toString() ?? '',
+      collectionId: json['collectionId']?.toString(),
       collectionName: json['collectionName'] ?? '',
-      artworkUrl600: json['artworkUrl600'] ?? '',
+      artworkUrl600: json['artworkUrl600'],
       feedUrl: json['feedUrl'],
       website: json['website'],
       description: json['description'],
