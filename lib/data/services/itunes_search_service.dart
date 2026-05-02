@@ -46,9 +46,16 @@ class ITunesSearchService {
   final int _maxRetryCount;
 
   /// 国家代码列表（按优先级排序）
+  ///
+  /// 搜索时会按此列表顺序依次尝试各国家区域，直到找到结果为止。
   final List<String> _countries;
 
   /// 构造函数
+  ///
+  /// [dioInstance] 自定义 Dio 实例，用于网络请求
+  /// [maxRetryCount] 最大重试次数，默认为 AppConstants.maxRetryCount
+  /// [timeout] 超时时间（毫秒），默认为 AppConstants.defaultTimeout
+  /// [countries] 国家代码列表，按优先级排序，默认为 AppConstants.itunesSearchCountries
   ITunesSearchService({
     dio.Dio? dioInstance,
     int maxRetryCount = AppConstants.maxRetryCount,
