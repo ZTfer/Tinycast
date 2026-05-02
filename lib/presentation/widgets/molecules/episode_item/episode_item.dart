@@ -112,8 +112,8 @@ class EpisodeItem extends ConsumerWidget {
             ),
           );
         },
-        loading: () => _buildEpisodeArtwork(),
-        error: (_, _) => _buildEpisodeArtwork(),
+        loading: () => _buildPlaceholderArtwork(),
+        error: (_, _) => _buildPlaceholderArtwork(),
       );
     } else {
       // 使用 Episode 封面图
