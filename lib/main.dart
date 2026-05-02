@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,14 +31,34 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
   await controller.show();
 }
 
+/// Supabase 开发环境默认配置
+/// 仅在 .env 文件未找到且未使用 --dart-define 时使用
+const _devSupabaseUrl = 'https://mxbrxxwunpbxvxwraqyf.supabase.co';
+const _devSupabaseAnonKey = 'sb_publishable_v7w2bXmX-jNi3eGIAkdgvQ_8U6J7Zxa';
+
+/// 全局 Supabase 配置（用于 .env 加载失败时的回退）
+String? _fallbackSupabaseUrl;
+String? _fallbackSupabaseAnonKey;
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 加载 .env 环境变量文件
+  // macOS 桌面应用运行时工作目录可能不是项目根目录
+  bool envLoaded = false;
   try {
     await dotenv.load(fileName: '.env');
-  } catch (e) {
-    Logger.info('ℹ️ .env 文件未找到或加载失败，继续启动应用: $e');
+    envLoaded = true;
+  } catch (_) {
+    Logger.info('ℹ️ .env 文件未找到，将使用开发环境默认配置');
+  }
+
+  // 如果 .env 未加载，设置回退值
+  if (!envLoaded) {
+    Logger.info('🔧 设置 Supabase 开发环境默认配置');
+    _fallbackSupabaseUrl = _devSupabaseUrl;
+    _fallbackSupabaseAnonKey = _devSupabaseAnonKey;
+    Logger.info('🔧 _fallbackSupabaseUrl = $_fallbackSupabaseUrl');
   }
 
   final windowController = await WindowController.fromCurrentEngine();
@@ -84,15 +105,23 @@ Future<void> _initializeApp() async {
   await Logger.initFileLogging();
 
   // 初始化 Supabase（如果配置了凭据）
-  // 安全读取：优先从 .env 文件读取，失败则回退到编译时变量
+  // 读取优先级：.env > 回退值 > --dart-define
   String? supabaseUrl;
   String? supabaseAnonKey;
+
+  // 优先从 .env 读取
   try {
     supabaseUrl = dotenv.env['SUPABASE_URL'];
     supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
   } catch (_) {
     // .env 未加载时访问 env 会抛出 NotInitializedError，安全忽略
   }
+
+  // 其次使用回退值（开发模式）
+  supabaseUrl ??= _fallbackSupabaseUrl;
+  supabaseAnonKey ??= _fallbackSupabaseAnonKey;
+
+  // 最后尝试编译时变量
   supabaseUrl ??= const String.fromEnvironment('SUPABASE_URL');
   supabaseAnonKey ??= const String.fromEnvironment('SUPABASE_ANON_KEY');
 
