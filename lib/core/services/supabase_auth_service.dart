@@ -15,7 +15,7 @@ class SupabaseAuthService {
       await _client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: _redirectUrl,
-        authScreenLaunchMode: LaunchMode.platformDefault,
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
     } catch (e) {
       Logger.error('Google login failed', error: e);

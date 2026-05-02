@@ -34,19 +34,39 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
 /// 获取方式：https://supabase.com/dashboard/project/_/settings/api
 /// 运行命令：flutter run --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=xxx
 
+/// 应用配置（统一管理所有编译时参数）
+class AppConfig {
+  final String supabaseUrl;
+  final String supabaseAnonKey;
+
+  const AppConfig({required this.supabaseUrl, required this.supabaseAnonKey});
+
+  factory AppConfig.fromEnvironment() {
+    return AppConfig(
+      supabaseUrl: const String.fromEnvironment(
+        'SUPABASE_URL',
+        defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
+      ),
+      supabaseAnonKey: const String.fromEnvironment(
+        'SUPABASE_ANON_KEY',
+        defaultValue: 'YOUR_SUPABASE_ANON_KEY',
+      ),
+    );
+  }
+
+  bool get isPlaceholder {
+    return supabaseUrl == 'https://YOUR_PROJECT_ID.supabase.co' ||
+        supabaseAnonKey == 'YOUR_SUPABASE_ANON_KEY' ||
+        supabaseUrl.trim().isEmpty ||
+        supabaseAnonKey.trim().isEmpty;
+  }
+}
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 从编译时参数读取 Supabase 配置
-  // 优先级：--dart-define > 占位符（仅开发测试）
-  const supabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
-  );
-  const supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
-  );
+  final config = AppConfig.fromEnvironment();
 
   final windowController = await WindowController.fromCurrentEngine();
   final arguments = parseArguments(windowController.arguments);
@@ -54,22 +74,22 @@ void main(List<String> args) async {
   switch (arguments.type) {
     case 'main':
       await initMainWindow();
-      await _initializeApp();
+      await _initializeApp(config);
       runApp(const ProviderScope(child: MyApp()));
       break;
     case 'settings':
       await initSettingsWindow();
-      await _initializeApp();
+      await _initializeApp(config);
       runApp(const ProviderScope(child: SettingsWindowApp()));
       break;
     case 'subscribe':
       await initSubscribeWindow();
-      await _initializeApp();
+      await _initializeApp(config);
       runApp(const ProviderScope(child: SubscribeWindowApp()));
       break;
     case 'episode_detail':
       await initEpisodeDetailWindow();
-      await _initializeApp();
+      await _initializeApp(config);
       runApp(
         ProviderScope(
           child: EpisodeDetailWindowApp(
@@ -81,37 +101,21 @@ void main(List<String> args) async {
       break;
     default:
       await initMainWindow();
-      await _initializeApp();
+      await _initializeApp(config);
       runApp(const ProviderScope(child: MyApp()));
   }
 }
 
-Future<void> _initializeApp() async {
+Future<void> _initializeApp(AppConfig config) async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
 
-  // 初始化 Supabase（如果配置了凭据）
-  // 使用 main() 中读取的编译时参数
-  final supabaseUrl = const String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
-  );
-  final supabaseAnonKey = const String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
-  );
-
-  // 过滤占位符和空值，避免使用无效凭据初始化
-  final isPlaceholderUrl = supabaseUrl == 'https://YOUR_PROJECT_ID.supabase.co';
-  final isPlaceholderKey = supabaseAnonKey == 'YOUR_SUPABASE_ANON_KEY';
-  final isEmptyUrl = supabaseUrl.trim().isEmpty;
-  final isEmptyKey = supabaseAnonKey.trim().isEmpty;
-
-  if (!isPlaceholderUrl && !isPlaceholderKey && !isEmptyUrl && !isEmptyKey) {
+  // 初始化 Supabase（如果配置了有效凭据）
+  if (!config.isPlaceholder) {
     await SupabaseService().initialize(
-      supabaseUrl: supabaseUrl,
-      supabaseAnonKey: supabaseAnonKey,
+      supabaseUrl: config.supabaseUrl,
+      supabaseAnonKey: config.supabaseAnonKey,
     );
     Logger.info('✅ Supabase 客户端初始化完成');
   } else {
