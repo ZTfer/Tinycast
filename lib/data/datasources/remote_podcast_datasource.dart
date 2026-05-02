@@ -100,17 +100,36 @@ class RemotePodcastDataSource {
         return;
       }
 
-      podcastModel.appleId = match.collectionId;
+      podcastModel.itunesId = match.collectionId;
       podcastModel.itunesArtworkUrl = match.artworkUrl600;
+      podcastModel.itunesPrimaryGenreName = match.primaryGenreName;
+      podcastModel.itunesGenres = match.genres;
+      podcastModel.itunesGenreIds = match.genreIds;
+      podcastModel.itunesCollectionViewUrl = match.collectionViewUrl;
+      podcastModel.itunesCountry = match.country;
+      podcastModel.itunesReleaseDate = match.releaseDate;
+      podcastModel.itunesCollectionExplicitness = match.collectionExplicitness;
+      podcastModel.itunesContentAdvisoryRating = match.contentAdvisoryRating;
 
-      await localDataSource.updateITunesInfo(
+      await localDataSource.updateFullITunesInfo(
         podcastModel.id,
-        match.collectionId!,
-        match.artworkUrl600 ?? '',
+        itunesId: match.collectionId,
+        itunesArtworkUrl600: match.artworkUrl600,
+        itunesPrimaryGenreName: match.primaryGenreName,
+        itunesGenres: match.genres,
+        itunesGenreIds: match.genreIds,
+        itunesCollectionViewUrl: match.collectionViewUrl,
+        itunesCountry: match.country,
+        itunesReleaseDate: match.releaseDate,
+        itunesCollectionExplicitness: match.collectionExplicitness,
+        itunesContentAdvisoryRating: match.contentAdvisoryRating,
       );
 
       Logger.info(
-        '✅ 成功更新 iTunes 信息: appleId=${match.collectionId}, artworkUrl=${match.artworkUrl600}',
+        '✅ 成功更新完整 iTunes 信息: itunesId=${match.collectionId}, '
+        'artworkUrl=${match.artworkUrl600}, '
+        'genre=${match.primaryGenreName}, '
+        'country=${match.country}',
       );
     } catch (e, stackTrace) {
       Logger.error(

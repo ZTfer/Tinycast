@@ -49,7 +49,23 @@ class Podcast {
 
   final DateTime createdAt = DateTime.now();
 
-  String? appleId;
+  String? itunesId;
 
   String? itunesArtworkUrl;
+
+  String? itunesPrimaryGenreName;
+
+  List<String>? itunesGenres;
+
+  List<String>? itunesGenreIds;
+
+  String? itunesCollectionViewUrl;
+
+  String? itunesCountry;
+
+  DateTime? itunesReleaseDate;
+
+  String? itunesCollectionExplicitness;
+
+  String? itunesContentAdvisoryRating;
 }

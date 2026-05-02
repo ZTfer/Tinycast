@@ -50,7 +50,13 @@ class Episode {
 
   late DateTime updatedAt;
 
-  String? appleId;
+  String? itunesId;
 
   String? itunesArtworkUrl;
+
+  DateTime? itunesReleaseDate;
+
+  String? itunesExplicitness;
+
+  String? itunesContentAdvisoryRating;
 }

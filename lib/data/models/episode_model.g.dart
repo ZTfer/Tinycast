@@ -17,90 +17,109 @@ const EpisodeSchema = CollectionSchema(
   name: r'Episode',
   id: -3258565036328751473,
   properties: {
-    r'appleId': PropertySchema(id: 0, name: r'appleId', type: IsarType.string),
     r'artworkPath': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'artworkPath',
       type: IsarType.string,
     ),
     r'artworkUrl': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'artworkUrl',
       type: IsarType.string,
     ),
     r'audioType': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'audioType',
       type: IsarType.string,
     ),
     r'audioUrl': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'audioUrl',
       type: IsarType.string,
     ),
-    r'author': PropertySchema(id: 5, name: r'author', type: IsarType.string),
+    r'author': PropertySchema(id: 4, name: r'author', type: IsarType.string),
     r'createdAt': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'description',
       type: IsarType.string,
     ),
     r'downloadProgress': PropertySchema(
-      id: 8,
+      id: 7,
       name: r'downloadProgress',
       type: IsarType.double,
     ),
     r'downloadedPath': PropertySchema(
-      id: 9,
+      id: 8,
       name: r'downloadedPath',
       type: IsarType.string,
     ),
-    r'duration': PropertySchema(id: 10, name: r'duration', type: IsarType.long),
-    r'guid': PropertySchema(id: 11, name: r'guid', type: IsarType.string),
+    r'duration': PropertySchema(id: 9, name: r'duration', type: IsarType.long),
+    r'guid': PropertySchema(id: 10, name: r'guid', type: IsarType.string),
     r'isDownloaded': PropertySchema(
-      id: 12,
+      id: 11,
       name: r'isDownloaded',
       type: IsarType.bool,
     ),
     r'isExplicit': PropertySchema(
-      id: 13,
+      id: 12,
       name: r'isExplicit',
       type: IsarType.bool,
     ),
-    r'isPlayed': PropertySchema(id: 14, name: r'isPlayed', type: IsarType.bool),
+    r'isPlayed': PropertySchema(id: 13, name: r'isPlayed', type: IsarType.bool),
     r'itunesArtworkUrl': PropertySchema(
-      id: 15,
+      id: 14,
       name: r'itunesArtworkUrl',
       type: IsarType.string,
     ),
-    r'lastPlayedAt': PropertySchema(
+    r'itunesContentAdvisoryRating': PropertySchema(
+      id: 15,
+      name: r'itunesContentAdvisoryRating',
+      type: IsarType.string,
+    ),
+    r'itunesExplicitness': PropertySchema(
       id: 16,
+      name: r'itunesExplicitness',
+      type: IsarType.string,
+    ),
+    r'itunesId': PropertySchema(
+      id: 17,
+      name: r'itunesId',
+      type: IsarType.string,
+    ),
+    r'itunesReleaseDate': PropertySchema(
+      id: 18,
+      name: r'itunesReleaseDate',
+      type: IsarType.dateTime,
+    ),
+    r'lastPlayedAt': PropertySchema(
+      id: 19,
       name: r'lastPlayedAt',
       type: IsarType.dateTime,
     ),
-    r'link': PropertySchema(id: 17, name: r'link', type: IsarType.string),
+    r'link': PropertySchema(id: 20, name: r'link', type: IsarType.string),
     r'playProgress': PropertySchema(
-      id: 18,
+      id: 21,
       name: r'playProgress',
       type: IsarType.double,
     ),
     r'podcastId': PropertySchema(
-      id: 19,
+      id: 22,
       name: r'podcastId',
       type: IsarType.long,
     ),
     r'pubDate': PropertySchema(
-      id: 20,
+      id: 23,
       name: r'pubDate',
       type: IsarType.dateTime,
     ),
-    r'title': PropertySchema(id: 21, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 24, name: r'title', type: IsarType.string),
     r'updatedAt': PropertySchema(
-      id: 22,
+      id: 25,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
@@ -155,12 +174,6 @@ int _episodeEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.appleId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
     final value = object.artworkPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -200,6 +213,24 @@ int _episodeEstimateSize(
     }
   }
   {
+    final value = object.itunesContentAdvisoryRating;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.itunesExplicitness;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.itunesId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.link;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -215,29 +246,32 @@ void _episodeSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.appleId);
-  writer.writeString(offsets[1], object.artworkPath);
-  writer.writeString(offsets[2], object.artworkUrl);
-  writer.writeString(offsets[3], object.audioType);
-  writer.writeString(offsets[4], object.audioUrl);
-  writer.writeString(offsets[5], object.author);
-  writer.writeDateTime(offsets[6], object.createdAt);
-  writer.writeString(offsets[7], object.description);
-  writer.writeDouble(offsets[8], object.downloadProgress);
-  writer.writeString(offsets[9], object.downloadedPath);
-  writer.writeLong(offsets[10], object.duration);
-  writer.writeString(offsets[11], object.guid);
-  writer.writeBool(offsets[12], object.isDownloaded);
-  writer.writeBool(offsets[13], object.isExplicit);
-  writer.writeBool(offsets[14], object.isPlayed);
-  writer.writeString(offsets[15], object.itunesArtworkUrl);
-  writer.writeDateTime(offsets[16], object.lastPlayedAt);
-  writer.writeString(offsets[17], object.link);
-  writer.writeDouble(offsets[18], object.playProgress);
-  writer.writeLong(offsets[19], object.podcastId);
-  writer.writeDateTime(offsets[20], object.pubDate);
-  writer.writeString(offsets[21], object.title);
-  writer.writeDateTime(offsets[22], object.updatedAt);
+  writer.writeString(offsets[0], object.artworkPath);
+  writer.writeString(offsets[1], object.artworkUrl);
+  writer.writeString(offsets[2], object.audioType);
+  writer.writeString(offsets[3], object.audioUrl);
+  writer.writeString(offsets[4], object.author);
+  writer.writeDateTime(offsets[5], object.createdAt);
+  writer.writeString(offsets[6], object.description);
+  writer.writeDouble(offsets[7], object.downloadProgress);
+  writer.writeString(offsets[8], object.downloadedPath);
+  writer.writeLong(offsets[9], object.duration);
+  writer.writeString(offsets[10], object.guid);
+  writer.writeBool(offsets[11], object.isDownloaded);
+  writer.writeBool(offsets[12], object.isExplicit);
+  writer.writeBool(offsets[13], object.isPlayed);
+  writer.writeString(offsets[14], object.itunesArtworkUrl);
+  writer.writeString(offsets[15], object.itunesContentAdvisoryRating);
+  writer.writeString(offsets[16], object.itunesExplicitness);
+  writer.writeString(offsets[17], object.itunesId);
+  writer.writeDateTime(offsets[18], object.itunesReleaseDate);
+  writer.writeDateTime(offsets[19], object.lastPlayedAt);
+  writer.writeString(offsets[20], object.link);
+  writer.writeDouble(offsets[21], object.playProgress);
+  writer.writeLong(offsets[22], object.podcastId);
+  writer.writeDateTime(offsets[23], object.pubDate);
+  writer.writeString(offsets[24], object.title);
+  writer.writeDateTime(offsets[25], object.updatedAt);
 }
 
 Episode _episodeDeserialize(
@@ -247,29 +281,32 @@ Episode _episodeDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Episode();
-  object.appleId = reader.readStringOrNull(offsets[0]);
-  object.artworkPath = reader.readStringOrNull(offsets[1]);
-  object.artworkUrl = reader.readStringOrNull(offsets[2]);
-  object.audioType = reader.readString(offsets[3]);
-  object.audioUrl = reader.readString(offsets[4]);
-  object.author = reader.readStringOrNull(offsets[5]);
-  object.description = reader.readString(offsets[7]);
-  object.downloadProgress = reader.readDouble(offsets[8]);
-  object.downloadedPath = reader.readStringOrNull(offsets[9]);
-  object.duration = reader.readLongOrNull(offsets[10]);
-  object.guid = reader.readStringOrNull(offsets[11]);
+  object.artworkPath = reader.readStringOrNull(offsets[0]);
+  object.artworkUrl = reader.readStringOrNull(offsets[1]);
+  object.audioType = reader.readString(offsets[2]);
+  object.audioUrl = reader.readString(offsets[3]);
+  object.author = reader.readStringOrNull(offsets[4]);
+  object.description = reader.readString(offsets[6]);
+  object.downloadProgress = reader.readDouble(offsets[7]);
+  object.downloadedPath = reader.readStringOrNull(offsets[8]);
+  object.duration = reader.readLongOrNull(offsets[9]);
+  object.guid = reader.readStringOrNull(offsets[10]);
   object.id = id;
-  object.isDownloaded = reader.readBool(offsets[12]);
-  object.isExplicit = reader.readBool(offsets[13]);
-  object.isPlayed = reader.readBool(offsets[14]);
-  object.itunesArtworkUrl = reader.readStringOrNull(offsets[15]);
-  object.lastPlayedAt = reader.readDateTimeOrNull(offsets[16]);
-  object.link = reader.readStringOrNull(offsets[17]);
-  object.playProgress = reader.readDouble(offsets[18]);
-  object.podcastId = reader.readLong(offsets[19]);
-  object.pubDate = reader.readDateTime(offsets[20]);
-  object.title = reader.readString(offsets[21]);
-  object.updatedAt = reader.readDateTime(offsets[22]);
+  object.isDownloaded = reader.readBool(offsets[11]);
+  object.isExplicit = reader.readBool(offsets[12]);
+  object.isPlayed = reader.readBool(offsets[13]);
+  object.itunesArtworkUrl = reader.readStringOrNull(offsets[14]);
+  object.itunesContentAdvisoryRating = reader.readStringOrNull(offsets[15]);
+  object.itunesExplicitness = reader.readStringOrNull(offsets[16]);
+  object.itunesId = reader.readStringOrNull(offsets[17]);
+  object.itunesReleaseDate = reader.readDateTimeOrNull(offsets[18]);
+  object.lastPlayedAt = reader.readDateTimeOrNull(offsets[19]);
+  object.link = reader.readStringOrNull(offsets[20]);
+  object.playProgress = reader.readDouble(offsets[21]);
+  object.podcastId = reader.readLong(offsets[22]);
+  object.pubDate = reader.readDateTime(offsets[23]);
+  object.title = reader.readString(offsets[24]);
+  object.updatedAt = reader.readDateTime(offsets[25]);
   return object;
 }
 
@@ -285,46 +322,52 @@ P _episodeDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readStringOrNull(offset)) as P;
-    case 6:
       return (reader.readDateTime(offset)) as P;
-    case 7:
+    case 6:
       return (reader.readString(offset)) as P;
-    case 8:
+    case 7:
       return (reader.readDouble(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
-    case 10:
       return (reader.readLongOrNull(offset)) as P;
-    case 11:
+    case 10:
       return (reader.readStringOrNull(offset)) as P;
+    case 11:
+      return (reader.readBool(offset)) as P;
     case 12:
       return (reader.readBool(offset)) as P;
     case 13:
       return (reader.readBool(offset)) as P;
     case 14:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 15:
       return (reader.readStringOrNull(offset)) as P;
     case 16:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 17:
       return (reader.readStringOrNull(offset)) as P;
     case 18:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 19:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 20:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 21:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 22:
+      return (reader.readLong(offset)) as P;
+    case 23:
+      return (reader.readDateTime(offset)) as P;
+    case 24:
+      return (reader.readString(offset)) as P;
+    case 25:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -649,168 +692,6 @@ extension EpisodeQueryWhere on QueryBuilder<Episode, Episode, QWhereClause> {
 
 extension EpisodeQueryFilter
     on QueryBuilder<Episode, Episode, QFilterCondition> {
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'appleId'),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'appleId'),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'appleId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'appleId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'appleId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'appleId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterFilterCondition> appleIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'appleId', value: ''),
-      );
-    });
-  }
-
   QueryBuilder<Episode, Episode, QAfterFilterCondition> artworkPathIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2522,6 +2403,582 @@ extension EpisodeQueryFilter
     });
   }
 
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'itunesContentAdvisoryRating'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(
+          property: r'itunesContentAdvisoryRating',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'itunesContentAdvisoryRating',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'itunesContentAdvisoryRating',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'itunesContentAdvisoryRating',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'itunesContentAdvisoryRating',
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesContentAdvisoryRatingIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          property: r'itunesContentAdvisoryRating',
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'itunesExplicitness'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'itunesExplicitness'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'itunesExplicitness',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'itunesExplicitness',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'itunesExplicitness',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'itunesExplicitness', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesExplicitnessIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'itunesExplicitness', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'itunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'itunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'itunesId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'itunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'itunesId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'itunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition> itunesIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'itunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'itunesReleaseDate'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'itunesReleaseDate'),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'itunesReleaseDate', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'itunesReleaseDate',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'itunesReleaseDate',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterFilterCondition>
+  itunesReleaseDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'itunesReleaseDate',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterFilterCondition> lastPlayedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -3165,18 +3622,6 @@ extension EpisodeQueryLinks
     on QueryBuilder<Episode, Episode, QFilterCondition> {}
 
 extension EpisodeQuerySortBy on QueryBuilder<Episode, Episode, QSortBy> {
-  QueryBuilder<Episode, Episode, QAfterSortBy> sortByAppleId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appleId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterSortBy> sortByAppleIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appleId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Episode, Episode, QAfterSortBy> sortByArtworkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkPath', Sort.asc);
@@ -3357,6 +3802,56 @@ extension EpisodeQuerySortBy on QueryBuilder<Episode, Episode, QSortBy> {
     });
   }
 
+  QueryBuilder<Episode, Episode, QAfterSortBy>
+  sortByItunesContentAdvisoryRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesContentAdvisoryRating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy>
+  sortByItunesContentAdvisoryRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesContentAdvisoryRating', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesExplicitness() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesExplicitness', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesExplicitnessDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesExplicitness', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesReleaseDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesReleaseDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> sortByItunesReleaseDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesReleaseDate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterSortBy> sortByLastPlayedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPlayedAt', Sort.asc);
@@ -3444,18 +3939,6 @@ extension EpisodeQuerySortBy on QueryBuilder<Episode, Episode, QSortBy> {
 
 extension EpisodeQuerySortThenBy
     on QueryBuilder<Episode, Episode, QSortThenBy> {
-  QueryBuilder<Episode, Episode, QAfterSortBy> thenByAppleId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appleId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Episode, Episode, QAfterSortBy> thenByAppleIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'appleId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Episode, Episode, QAfterSortBy> thenByArtworkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkPath', Sort.asc);
@@ -3648,6 +4131,56 @@ extension EpisodeQuerySortThenBy
     });
   }
 
+  QueryBuilder<Episode, Episode, QAfterSortBy>
+  thenByItunesContentAdvisoryRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesContentAdvisoryRating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy>
+  thenByItunesContentAdvisoryRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesContentAdvisoryRating', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesExplicitness() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesExplicitness', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesExplicitnessDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesExplicitness', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesReleaseDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesReleaseDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QAfterSortBy> thenByItunesReleaseDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesReleaseDate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Episode, Episode, QAfterSortBy> thenByLastPlayedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPlayedAt', Sort.asc);
@@ -3735,14 +4268,6 @@ extension EpisodeQuerySortThenBy
 
 extension EpisodeQueryWhereDistinct
     on QueryBuilder<Episode, Episode, QDistinct> {
-  QueryBuilder<Episode, Episode, QDistinct> distinctByAppleId({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'appleId', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Episode, Episode, QDistinct> distinctByArtworkPath({
     bool caseSensitive = true,
   }) {
@@ -3857,6 +4382,41 @@ extension EpisodeQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Episode, Episode, QDistinct>
+  distinctByItunesContentAdvisoryRating({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'itunesContentAdvisoryRating',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QDistinct> distinctByItunesExplicitness({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'itunesExplicitness',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QDistinct> distinctByItunesId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'itunesId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Episode, Episode, QDistinct> distinctByItunesReleaseDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'itunesReleaseDate');
+    });
+  }
+
   QueryBuilder<Episode, Episode, QDistinct> distinctByLastPlayedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastPlayedAt');
@@ -3909,12 +4469,6 @@ extension EpisodeQueryProperty
   QueryBuilder<Episode, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<Episode, String?, QQueryOperations> appleIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'appleId');
     });
   }
 
@@ -4005,6 +4559,33 @@ extension EpisodeQueryProperty
   QueryBuilder<Episode, String?, QQueryOperations> itunesArtworkUrlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'itunesArtworkUrl');
+    });
+  }
+
+  QueryBuilder<Episode, String?, QQueryOperations>
+  itunesContentAdvisoryRatingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'itunesContentAdvisoryRating');
+    });
+  }
+
+  QueryBuilder<Episode, String?, QQueryOperations>
+  itunesExplicitnessProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'itunesExplicitness');
+    });
+  }
+
+  QueryBuilder<Episode, String?, QQueryOperations> itunesIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'itunesId');
+    });
+  }
+
+  QueryBuilder<Episode, DateTime?, QQueryOperations>
+  itunesReleaseDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'itunesReleaseDate');
     });
   }
 

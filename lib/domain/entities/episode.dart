@@ -22,8 +22,11 @@ class Episode {
   final DateTime? lastPlayedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String? appleId;
+  final String? itunesId;
   final String? itunesArtworkUrl;
+  final DateTime? itunesReleaseDate;
+  final String? itunesExplicitness;
+  final String? itunesContentAdvisoryRating;
 
   Episode({
     required this.id,
@@ -49,7 +52,10 @@ class Episode {
     this.lastPlayedAt,
     required this.createdAt,
     required this.updatedAt,
-    this.appleId,
+    this.itunesId,
     this.itunesArtworkUrl,
+    this.itunesReleaseDate,
+    this.itunesExplicitness,
+    this.itunesContentAdvisoryRating,
   });
 }

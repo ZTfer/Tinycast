@@ -196,7 +196,7 @@ class RssParserService {
               lastPlayedAt: null,
               createdAt: now,
               updatedAt: now,
-              appleId: _getITunesElementText(item, 'id'),
+              itunesId: _getITunesElementText(item, 'id'),
               itunesArtworkUrl: _getITunesImageHref(item),
             ),
           );

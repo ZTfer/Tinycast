@@ -476,8 +476,16 @@ class PodcastRepositoryImpl implements PodcastRepository {
       subscribedAt: model.subscribedAt,
       artworkPath: model.artworkPath,
       createdAt: model.createdAt,
-      appleId: model.appleId,
+      itunesId: model.itunesId,
       itunesArtworkUrl: model.itunesArtworkUrl,
+      itunesPrimaryGenreName: model.itunesPrimaryGenreName,
+      itunesGenres: model.itunesGenres,
+      itunesGenreIds: model.itunesGenreIds,
+      itunesCollectionViewUrl: model.itunesCollectionViewUrl,
+      itunesCountry: model.itunesCountry,
+      itunesReleaseDate: model.itunesReleaseDate,
+      itunesCollectionExplicitness: model.itunesCollectionExplicitness,
+      itunesContentAdvisoryRating: model.itunesContentAdvisoryRating,
     );
   }
 
@@ -518,6 +526,11 @@ class PodcastRepositoryImpl implements PodcastRepository {
       lastPlayedAt: model.lastPlayedAt,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
+      itunesId: model.itunesId,
+      itunesArtworkUrl: model.itunesArtworkUrl,
+      itunesReleaseDate: model.itunesReleaseDate,
+      itunesExplicitness: model.itunesExplicitness,
+      itunesContentAdvisoryRating: model.itunesContentAdvisoryRating,
     );
   }
 }

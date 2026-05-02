@@ -66,6 +66,14 @@ class MockPodcastRepository extends _i1.Mock implements _i3.PodcastRepository {
           as _i4.Future<List<_i2.Podcast>>);
 
   @override
+  _i4.Future<List<_i2.Podcast>> getMergedSubscribedPodcasts() =>
+      (super.noSuchMethod(
+            Invocation.method(#getMergedSubscribedPodcasts, []),
+            returnValue: _i4.Future<List<_i2.Podcast>>.value(<_i2.Podcast>[]),
+          )
+          as _i4.Future<List<_i2.Podcast>>);
+
+  @override
   _i4.Future<_i2.Podcast?> getPodcastById(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#getPodcastById, [id]),
@@ -144,4 +152,12 @@ class MockPodcastRepository extends _i1.Mock implements _i3.PodcastRepository {
             returnValueForMissingStub: _i4.Future<void>.value(),
           )
           as _i4.Future<void>);
+
+  @override
+  _i4.Future<void>? getITunesSearchFuture(int? podcastId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getITunesSearchFuture, [podcastId]),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>?);
 }

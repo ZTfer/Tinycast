@@ -7,13 +7,50 @@ import '../../core/utils/app_constants.dart';
 import '../../core/utils/network_error_handler.dart';
 
 /// iTunes 播客搜索结果
+///
+/// 包含 iTunes Search API 返回的完整播客信息
 class ITunesSearchResult {
+  /// iTunes 播客 ID (collectionId)
   final String? collectionId;
+
+  /// 播客名称
   final String collectionName;
+
+  /// 600x600 封面图 URL
   final String? artworkUrl600;
+
+  /// RSS 源地址
   final String? feedUrl;
+
+  /// 官网地址
   final String? website;
+
+  /// 播客描述
   final String? description;
+
+  /// 主要流派名称 (如 "Design", "Technology")
+  final String? primaryGenreName;
+
+  /// 流派列表 (如 ["Design", "Arts", "Podcasts"])
+  final List<String>? genres;
+
+  /// 流派 ID 列表 (如 ["1402", "1301", "26"])
+  final List<String>? genreIds;
+
+  /// iTunes 详情页链接
+  final String? collectionViewUrl;
+
+  /// 国家代码 (如 "USA", "CHN")
+  final String? country;
+
+  /// 发布日期
+  final DateTime? releaseDate;
+
+  /// 播客成人内容标识 (如 "notExplicit", "explicit")
+  final String? collectionExplicitness;
+
+  /// 内容分级评级 (如 "Clean", "Explicit")
+  final String? contentAdvisoryRating;
 
   ITunesSearchResult({
     this.collectionId,
@@ -22,9 +59,24 @@ class ITunesSearchResult {
     this.feedUrl,
     this.website,
     this.description,
+    this.primaryGenreName,
+    this.genres,
+    this.genreIds,
+    this.collectionViewUrl,
+    this.country,
+    this.releaseDate,
+    this.collectionExplicitness,
+    this.contentAdvisoryRating,
   });
 
   factory ITunesSearchResult.fromJson(Map<String, dynamic> json) {
+    DateTime? releaseDate;
+    try {
+      if (json['releaseDate'] != null) {
+        releaseDate = DateTime.parse(json['releaseDate']);
+      }
+    } catch (_) {}
+
     return ITunesSearchResult(
       collectionId: json['collectionId']?.toString(),
       collectionName: json['collectionName'] ?? '',
@@ -32,13 +84,25 @@ class ITunesSearchResult {
       feedUrl: json['feedUrl'],
       website: json['website'],
       description: json['description'],
+      primaryGenreName: json['primaryGenreName'],
+      genres: json['genres'] != null
+          ? List<String>.from(json['genres'])
+          : null,
+      genreIds: json['genreIds'] != null
+          ? List<String>.from(json['genreIds'].map((e) => e.toString()))
+          : null,
+      collectionViewUrl: json['collectionViewUrl'],
+      country: json['country'],
+      releaseDate: releaseDate,
+      collectionExplicitness: json['collectionExplicitness'],
+      contentAdvisoryRating: json['contentAdvisoryRating'],
     );
   }
 }
 
 /// iTunes 搜索服务
 ///
-/// 负责搜索 iTunes 播客数据库，获取 Apple Podcast ID 和封面图信息
+/// 负责搜索 iTunes 播客数据库，获取 iTunes ID 和完整元数据信息
 class ITunesSearchService {
   /// Dio 实例
   final dio.Dio _dio;

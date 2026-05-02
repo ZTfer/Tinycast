@@ -412,20 +412,40 @@ class LocalPodcastDataSource {
     }
   }
 
-  Future<void> updateITunesInfo(int id, String appleId, String itunesArtworkUrl) async {
+  Future<void> updateFullITunesInfo(
+    int id, {
+    required String? itunesId,
+    required String? itunesArtworkUrl600,
+    required String? itunesPrimaryGenreName,
+    required List<String>? itunesGenres,
+    required List<String>? itunesGenreIds,
+    required String? itunesCollectionViewUrl,
+    required String? itunesCountry,
+    required DateTime? itunesReleaseDate,
+    required String? itunesCollectionExplicitness,
+    required String? itunesContentAdvisoryRating,
+  }) async {
     try {
-      Logger.info('更新播客 iTunes 信息: $id');
+      Logger.info('更新播客完整 iTunes 信息: $id');
 
       await _isarService.isar.writeTxn(() async {
         final podcast = await _isarService.isar.podcasts.get(id);
         if (podcast != null) {
-          podcast.appleId = appleId;
-          podcast.itunesArtworkUrl = itunesArtworkUrl;
+          podcast.itunesId = itunesId;
+          podcast.itunesArtworkUrl = itunesArtworkUrl600;
+          podcast.itunesPrimaryGenreName = itunesPrimaryGenreName;
+          podcast.itunesGenres = itunesGenres;
+          podcast.itunesGenreIds = itunesGenreIds;
+          podcast.itunesCollectionViewUrl = itunesCollectionViewUrl;
+          podcast.itunesCountry = itunesCountry;
+          podcast.itunesReleaseDate = itunesReleaseDate;
+          podcast.itunesCollectionExplicitness = itunesCollectionExplicitness;
+          podcast.itunesContentAdvisoryRating = itunesContentAdvisoryRating;
           await _isarService.isar.podcasts.put(podcast);
         }
       });
 
-      Logger.info('成功更新播客 iTunes 信息: $id');
+      Logger.info('成功更新播客完整 iTunes 信息: $id');
     } on IsarError catch (e, stackTrace) {
       Logger.error('更新 iTunes 信息失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
@@ -620,8 +640,16 @@ class LocalPodcastDataSource {
       ..episodeCount = entity.episodeCount
       ..isSubscribed = entity.isSubscribed
       ..subscribedAt = entity.subscribedAt
-      ..appleId = entity.appleId
-      ..itunesArtworkUrl = entity.itunesArtworkUrl;
+      ..itunesId = entity.itunesId
+      ..itunesArtworkUrl = entity.itunesArtworkUrl
+      ..itunesPrimaryGenreName = entity.itunesPrimaryGenreName
+      ..itunesGenres = entity.itunesGenres
+      ..itunesGenreIds = entity.itunesGenreIds
+      ..itunesCollectionViewUrl = entity.itunesCollectionViewUrl
+      ..itunesCountry = entity.itunesCountry
+      ..itunesReleaseDate = entity.itunesReleaseDate
+      ..itunesCollectionExplicitness = entity.itunesCollectionExplicitness
+      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
   }
 
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
@@ -675,6 +703,11 @@ class LocalPodcastDataSource {
       ..downloadProgress = entity.downloadProgress
       ..playProgress = entity.playProgress
       ..lastPlayedAt = entity.lastPlayedAt
-      ..updatedAt = entity.updatedAt;
+      ..updatedAt = entity.updatedAt
+      ..itunesId = entity.itunesId
+      ..itunesArtworkUrl = entity.itunesArtworkUrl
+      ..itunesReleaseDate = entity.itunesReleaseDate
+      ..itunesExplicitness = entity.itunesExplicitness
+      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
   }
 }

@@ -20,8 +20,16 @@ class Podcast {
   final DateTime? subscribedAt;
   final String? artworkPath;
   final DateTime createdAt;
-  final String? appleId;
+  final String? itunesId;
   final String? itunesArtworkUrl;
+  final String? itunesPrimaryGenreName;
+  final List<String>? itunesGenres;
+  final List<String>? itunesGenreIds;
+  final String? itunesCollectionViewUrl;
+  final String? itunesCountry;
+  final DateTime? itunesReleaseDate;
+  final String? itunesCollectionExplicitness;
+  final String? itunesContentAdvisoryRating;
 
   Podcast({
     required this.id,
@@ -45,7 +53,15 @@ class Podcast {
     this.subscribedAt,
     this.artworkPath,
     required this.createdAt,
-    this.appleId,
+    this.itunesId,
     this.itunesArtworkUrl,
+    this.itunesPrimaryGenreName,
+    this.itunesGenres,
+    this.itunesGenreIds,
+    this.itunesCollectionViewUrl,
+    this.itunesCountry,
+    this.itunesReleaseDate,
+    this.itunesCollectionExplicitness,
+    this.itunesContentAdvisoryRating,
   });
 }
