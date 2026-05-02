@@ -71,7 +71,7 @@ class RemotePodcastDataSource {
     if (searchService == null || localDataSource == null) return;
 
     try {
-      Logger.info('开始异步 iTunes 搜索: ${podcast.title}');
+      Logger.info('🎧 开始异步 iTunes 搜索: ${podcast.title}');
 
       ITunesSearchResult? match;
 
@@ -85,18 +85,18 @@ class RemotePodcastDataSource {
       }
 
       if (match == null) {
-        Logger.info('关键词搜索未找到匹配，尝试通过 feedUrl 查找');
+        Logger.info('🔍 关键词搜索未找到匹配，尝试通过 feedUrl 查找');
         match = await searchService.lookupByFeedUrl(rssUrl);
       }
 
       if (match == null || match.collectionId == null) {
-        Logger.info('iTunes 搜索未找到匹配: ${podcast.title}');
+        Logger.info('⚠️ iTunes 搜索未找到匹配: ${podcast.title}');
         return;
       }
 
       final podcastModel = await localDataSource.getPodcastByRssUrl(rssUrl);
       if (podcastModel == null) {
-        Logger.warning('无法获取播客模型进行 iTunes 信息更新');
+        Logger.warning('❌ 无法获取播客模型进行 iTunes 信息更新');
         return;
       }
 
@@ -110,11 +110,11 @@ class RemotePodcastDataSource {
       );
 
       Logger.info(
-        '成功更新 iTunes 信息: appleId=${match.collectionId}, artworkUrl=${match.artworkUrl600}',
+        '✅ 成功更新 iTunes 信息: appleId=${match.collectionId}, artworkUrl=${match.artworkUrl600}',
       );
     } catch (e, stackTrace) {
       Logger.error(
-        '异步 iTunes 搜索失败: ${podcast.title}',
+        '❌ 异步 iTunes 搜索失败: ${podcast.title}',
         error: e,
         stackTrace: stackTrace,
       );

@@ -70,9 +70,10 @@ class ITunesSearchService {
     final url = 'https://itunes.apple.com/search'
         '?feedUrl=${Uri.encodeComponent(feedUrl)}'
         '&media=podcast'
+        '&entity=podcast'
         '&limit=1';
 
-    Logger.info('通过 feedUrl 查找 iTunes 播客: $url');
+    Logger.info('🔍 通过 feedUrl 查找 iTunes 播客: $url');
 
     for (final country in _countries) {
       try {
@@ -96,16 +97,16 @@ class ITunesSearchService {
               .map((json) => ITunesSearchResult.fromJson(json))
               .toList();
           if (results.isNotEmpty && results.first.collectionId != null) {
-            Logger.info('通过 feedUrl 找到播客 ($country): ${results.first.collectionName}');
+            Logger.info('✅ 通过 feedUrl 找到播客 ($country): ${results.first.collectionName}');
             return results.first;
           }
         }
       } catch (e) {
-        Logger.warning('通过 feedUrl 查找失败 ($country): $e');
+        Logger.warning('❌ 通过 feedUrl 查找失败 ($country): $e');
       }
     }
 
-    Logger.info('通过 feedUrl 未找到播客: $feedUrl');
+    Logger.info('⚠️ 通过 feedUrl 未找到播客: $feedUrl');
     return null;
   }
 
@@ -118,7 +119,7 @@ class ITunesSearchService {
     required String term,
     int limit = 5,
   }) async {
-    Logger.info('开始搜索 iTunes 播客: $term');
+    Logger.info('🔍 开始搜索 iTunes 播客: $term');
 
     for (final country in _countries) {
       try {
@@ -128,15 +129,15 @@ class ITunesSearchService {
           country: country,
         );
         if (results.isNotEmpty) {
-          Logger.info('$country 区搜索成功，找到 ${results.length} 个结果');
+          Logger.info('✅ $country 区搜索成功，找到 ${results.length} 个结果');
           return results;
         }
       } catch (e) {
-        Logger.warning('$country 区搜索失败，尝试下一个区域: $e');
+        Logger.warning('⚠️ $country 区搜索失败，尝试下一个区域: $e');
       }
     }
 
-    Logger.info('iTunes 搜索未找到结果: $term');
+    Logger.info('❌ iTunes 搜索未找到结果: $term');
     return [];
   }
 
@@ -152,10 +153,11 @@ class ITunesSearchService {
     final url = 'https://itunes.apple.com/search?'
         'term=${Uri.encodeComponent(term)}'
         '&media=podcast'
+        '&entity=podcast'
         '&limit=$limit'
         '&country=$country';
 
-    Logger.info('请求 iTunes API: $url');
+    Logger.info('📡 请求 iTunes API: $url');
 
     while (retryCount <= _maxRetryCount) {
       try {
@@ -180,7 +182,7 @@ class ITunesSearchService {
         final resultCount = data['resultCount'] ?? 0;
 
         if (resultCount == 0) {
-          Logger.info('iTunes 搜索无结果 ($country)');
+          Logger.info('⚠️ iTunes 搜索无结果 ($country)');
           return [];
         }
 
@@ -191,15 +193,15 @@ class ITunesSearchService {
         return results;
       } on dio.DioException catch (e) {
         Logger.warning(
-          'iTunes 搜索失败 (尝试 ${retryCount + 1}/$_maxRetryCount): ${e.message}',
+          '❌ iTunes 搜索失败 (尝试 ${retryCount + 1}/$_maxRetryCount): ${e.message}',
         );
         lastException = NetworkErrorHandler.handleDioException(e);
       } on AppException catch (e) {
-        Logger.error('iTunes 搜索错误: ${e.message}');
+        Logger.error('❌ iTunes 搜索错误: ${e.message}');
         lastException = e;
         break;
       } catch (e, stackTrace) {
-        Logger.error('未知错误', error: e, stackTrace: stackTrace);
+        Logger.error('❌ 未知错误', error: e, stackTrace: stackTrace);
         lastException = AppException.unknown(
           'iTunes 搜索失败',
           originalError: e,
@@ -215,6 +217,6 @@ class ITunesSearchService {
     }
 
     throw lastException ??
-        AppException.network('iTunes 搜索失败，已重试 $_maxRetryCount 次');
+        AppException.network('❌ iTunes 搜索失败，已重试 $_maxRetryCount 次');
   }
 }
