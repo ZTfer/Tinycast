@@ -5,6 +5,7 @@ import '../../domain/entities/episode.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/app_constants.dart';
+import '../../core/utils/itunes_info_dto.dart';
 import '../services/rss_parser_service.dart';
 import '../services/itunes_search_service.dart';
 import 'local_podcast_datasource.dart';
@@ -113,16 +114,18 @@ class RemotePodcastDataSource {
 
       await localDataSource.updateFullITunesInfo(
         podcastModel.id,
-        itunesId: match.collectionId,
-        itunesArtworkUrl600: match.artworkUrl600,
-        itunesPrimaryGenreName: match.primaryGenreName,
-        itunesGenres: match.genres,
-        itunesGenreIds: match.genreIds,
-        itunesCollectionViewUrl: match.collectionViewUrl,
-        itunesCountry: match.country,
-        itunesReleaseDate: match.releaseDate,
-        itunesCollectionExplicitness: match.collectionExplicitness,
-        itunesContentAdvisoryRating: match.contentAdvisoryRating,
+        ITunesInfoDTO(
+          itunesId: match.collectionId,
+          itunesArtworkUrl600: match.artworkUrl600,
+          itunesPrimaryGenreName: match.primaryGenreName,
+          itunesGenres: match.genres,
+          itunesGenreIds: match.genreIds,
+          itunesCollectionViewUrl: match.collectionViewUrl,
+          itunesCountry: match.country,
+          itunesReleaseDate: match.releaseDate,
+          itunesCollectionExplicitness: match.collectionExplicitness,
+          itunesContentAdvisoryRating: match.contentAdvisoryRating,
+        ),
       );
 
       Logger.info(

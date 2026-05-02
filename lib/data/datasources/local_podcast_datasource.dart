@@ -3,6 +3,7 @@ import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
+import '../../core/utils/itunes_info_dto.dart';
 import '../database/isar_service.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
@@ -412,35 +413,23 @@ class LocalPodcastDataSource {
     }
   }
 
-  Future<void> updateFullITunesInfo(
-    int id, {
-    required String? itunesId,
-    required String? itunesArtworkUrl600,
-    required String? itunesPrimaryGenreName,
-    required List<String>? itunesGenres,
-    required List<String>? itunesGenreIds,
-    required String? itunesCollectionViewUrl,
-    required String? itunesCountry,
-    required DateTime? itunesReleaseDate,
-    required String? itunesCollectionExplicitness,
-    required String? itunesContentAdvisoryRating,
-  }) async {
+  Future<void> updateFullITunesInfo(int id, ITunesInfoDTO info) async {
     try {
       Logger.info('更新播客完整 iTunes 信息: $id');
 
       await _isarService.isar.writeTxn(() async {
         final podcast = await _isarService.isar.podcasts.get(id);
         if (podcast != null) {
-          podcast.itunesId = itunesId;
-          podcast.itunesArtworkUrl = itunesArtworkUrl600;
-          podcast.itunesPrimaryGenreName = itunesPrimaryGenreName;
-          podcast.itunesGenres = itunesGenres;
-          podcast.itunesGenreIds = itunesGenreIds;
-          podcast.itunesCollectionViewUrl = itunesCollectionViewUrl;
-          podcast.itunesCountry = itunesCountry;
-          podcast.itunesReleaseDate = itunesReleaseDate;
-          podcast.itunesCollectionExplicitness = itunesCollectionExplicitness;
-          podcast.itunesContentAdvisoryRating = itunesContentAdvisoryRating;
+          podcast.itunesId = info.itunesId;
+          podcast.itunesArtworkUrl = info.itunesArtworkUrl600;
+          podcast.itunesPrimaryGenreName = info.itunesPrimaryGenreName;
+          podcast.itunesGenres = info.itunesGenres;
+          podcast.itunesGenreIds = info.itunesGenreIds;
+          podcast.itunesCollectionViewUrl = info.itunesCollectionViewUrl;
+          podcast.itunesCountry = info.itunesCountry;
+          podcast.itunesReleaseDate = info.itunesReleaseDate;
+          podcast.itunesCollectionExplicitness = info.itunesCollectionExplicitness;
+          podcast.itunesContentAdvisoryRating = info.itunesContentAdvisoryRating;
           await _isarService.isar.podcasts.put(podcast);
         }
       });
