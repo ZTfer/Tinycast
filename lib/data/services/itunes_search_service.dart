@@ -64,7 +64,7 @@ class ITunesSearchService {
   Future<ITunesSearchResult?> lookupByFeedUrl(String feedUrl) async {
     final url = 'https://itunes.apple.com/search'
         '?feedUrl=${Uri.encodeComponent(feedUrl)}'
-        '&entity=podcast'
+        '&media=podcast'
         '&limit=1';
 
     Logger.info('通过 feedUrl 查找 iTunes 播客: $url');
@@ -160,7 +160,7 @@ class ITunesSearchService {
 
     final url = 'https://itunes.apple.com/search?'
         'term=${Uri.encodeComponent(term)}'
-        '&entity=podcast'
+        '&media=podcast'
         '&limit=$limit'
         '&country=$country';
 
