@@ -45,13 +45,18 @@ class ITunesSearchService {
   /// 最大重试次数
   final int _maxRetryCount;
 
+  /// 国家代码列表（按优先级排序）
+  final List<String> _countries;
+
   /// 构造函数
   ITunesSearchService({
     dio.Dio? dioInstance,
     int maxRetryCount = AppConstants.maxRetryCount,
     int timeout = AppConstants.defaultTimeout,
+    List<String> countries = AppConstants.itunesSearchCountries,
   }) : _dio = dioInstance ?? dio.Dio(),
-       _maxRetryCount = maxRetryCount {
+       _maxRetryCount = maxRetryCount,
+       _countries = countries {
     _dio.options.connectTimeout = Duration(milliseconds: timeout);
     _dio.options.receiveTimeout = Duration(milliseconds: timeout);
     _dio.options.sendTimeout = Duration(milliseconds: timeout);
@@ -69,7 +74,7 @@ class ITunesSearchService {
 
     Logger.info('通过 feedUrl 查找 iTunes 播客: $url');
 
-    for (final country in ['us', 'cn']) {
+    for (final country in _countries) {
       try {
         final response = await _dio.get(
           url,
@@ -115,34 +120,20 @@ class ITunesSearchService {
   }) async {
     Logger.info('开始搜索 iTunes 播客: $term');
 
-    // 优先尝试美国区
-    try {
-      final results = await _searchWithCountry(
-        term: term,
-        limit: limit,
-        country: 'us',
-      );
-      if (results.isNotEmpty) {
-        Logger.info('美国区搜索成功，找到 ${results.length} 个结果');
-        return results;
+    for (final country in _countries) {
+      try {
+        final results = await _searchWithCountry(
+          term: term,
+          limit: limit,
+          country: country,
+        );
+        if (results.isNotEmpty) {
+          Logger.info('$country 区搜索成功，找到 ${results.length} 个结果');
+          return results;
+        }
+      } catch (e) {
+        Logger.warning('$country 区搜索失败，尝试下一个区域: $e');
       }
-    } catch (e) {
-      Logger.warning('美国区搜索失败，尝试中国区: $e');
-    }
-
-    // 美国区失败或无结果，尝试中国区
-    try {
-      final results = await _searchWithCountry(
-        term: term,
-        limit: limit,
-        country: 'cn',
-      );
-      if (results.isNotEmpty) {
-        Logger.info('中国区搜索成功，找到 ${results.length} 个结果');
-        return results;
-      }
-    } catch (e) {
-      Logger.warning('中国区搜索也失败: $e');
     }
 
     Logger.info('iTunes 搜索未找到结果: $term');

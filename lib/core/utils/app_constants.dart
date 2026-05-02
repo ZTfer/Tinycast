@@ -72,4 +72,10 @@ class AppConstants {
 
   /// 可用的跳过时长选项（秒）
   static const List<int> skipTimes = [15, 30, 45, 60];
+
+  /// iTunes 搜索国家代码列表（按优先级排序）
+  static const List<String> itunesSearchCountries = ['us', 'cn'];
+
+  /// 默认 iTunes 搜索国家代码（优先使用）
+  static const String defaultITunesCountry = 'us';
 }
