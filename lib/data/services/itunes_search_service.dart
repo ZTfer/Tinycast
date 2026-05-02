@@ -25,7 +25,7 @@ class ITunesSearchResult {
 
   factory ITunesSearchResult.fromJson(Map<String, dynamic> json) {
     return ITunesSearchResult(
-      collectionId: 'id${json['collectionId']}',
+      collectionId: json['collectionId']?.toString() ?? '',
       collectionName: json['collectionName'] ?? '',
       artworkUrl600: json['artworkUrl600'] ?? '',
       feedUrl: json['feedUrl'],
