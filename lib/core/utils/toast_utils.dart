@@ -12,7 +12,7 @@ class ToastUtils {
     double iconSize = 36.0,
     double textSize = 12.0,
     Duration duration = const Duration(seconds: 2),
-    double verticalPosition = 0.7,
+    double verticalPosition = 0.3,
   }) {
     final overlay = Overlay.maybeOf(context);
     if (overlay == null) return;
