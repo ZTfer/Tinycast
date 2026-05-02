@@ -5,6 +5,7 @@ import '../../../domain/entities/episode.dart';
 import '../../../data/services/podcast_search_service.dart';
 import '../../../data/services/audio_download_service.dart';
 import '../../../data/services/settings_service.dart';
+import '../../../data/services/itunes_search_service.dart';
 import '../../../domain/repositories/podcast_repository.dart';
 import '../../../domain/usecases/subscribe_podcast_usecase.dart';
 import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
@@ -56,8 +57,15 @@ final podcastSearchServiceProvider = Provider<PodcastSearchService>((ref) {
   return PodcastSearchService();
 });
 
+final podcastSearchITunesServiceProvider = Provider<ITunesSearchService>((ref) {
+  return ITunesSearchService();
+});
+
 final podcastSearchRepositoryProvider = Provider<PodcastRepository>((ref) {
-  return PodcastRepositoryImpl();
+  final itunesService = ref.watch(podcastSearchITunesServiceProvider);
+  return PodcastRepositoryImpl(
+    itunesSearchService: itunesService,
+  );
 });
 
 final podcastSearchSubscribeUseCaseProvider = Provider<SubscribePodcastUseCase>(
@@ -130,8 +138,10 @@ class PodcastSearchNotifier extends Notifier<PodcastSearchState> {
 
     try {
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _subscribePodcastUseCase...');
-      final subscribedPodcast = await _subscribePodcastUseCase(rssUrl);
+      final result = await _subscribePodcastUseCase(rssUrl);
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] _subscribePodcastUseCase 完成');
+
+      final subscribedPodcast = result.podcast;
 
       Logger.info('🕒 [LIBRARY] [${stopwatch.elapsedMilliseconds}ms] 开始调用 _loadSubscribedPodcasts...');
       await _loadSubscribedPodcasts();

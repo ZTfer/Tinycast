@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
 import 'package:intl/intl.dart';
-import 'package:rss_dart/dart_rss.dart';
-import 'package:rss_dart/domain/rss_itunes_category.dart';
+import 'package:xml/xml.dart';
 import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
 import '../../core/utils/logger.dart';
@@ -13,7 +12,7 @@ import '../../core/utils/network_error_handler.dart';
 /// RSS 解析器服务
 ///
 /// 负责解析 RSS 订阅源，提取播客元数据和节目列表
-/// 支持 RSS 1.0、RSS 2.0 和 Atom 格式
+/// 使用 XML 库直接解析以完全掌控数据提取过程
 class RssParserService {
   /// Dio 实例
   final dio.Dio _dio;
@@ -106,41 +105,39 @@ class RssParserService {
   /// 从 RSS 内容提取播客元数据
   Podcast _extractPodcastFromRss(String xmlContent, String rssUrl) {
     try {
-      final rssFeed = RssFeed.parse(xmlContent);
+      final document = XmlDocument.parse(xmlContent);
+      final channel = document.findAllElements('channel').first;
 
       final now = DateTime.now();
 
       return Podcast(
         id: now.millisecondsSinceEpoch,
-        title: rssFeed.title ?? '未知播客',
-        subtitle: rssFeed.itunes?.subtitle,
-        author:
-            rssFeed.itunes?.author ??
-            rssFeed.dc?.creator ??
-            rssFeed.title ??
+        title: _getElementText(channel, 'title') ?? '未知播客',
+        subtitle: _getITunesElementText(channel, 'subtitle'),
+        author: _getITunesElementText(channel, 'author') ??
+            _getDublinCoreElementText(channel, 'creator') ??
+            _getElementText(channel, 'title') ??
             '未知',
-        description: rssFeed.description ?? rssFeed.itunes?.summary ?? '暂无描述',
-        artworkUrl:
-            rssFeed.itunes?.image?.href ??
-            rssFeed.image?.url ??
+        description: _getElementText(channel, 'description') ??
+            _getITunesElementText(channel, 'summary') ??
+            '暂无描述',
+        artworkUrl: _getITunesImageHref(channel) ??
+            _getElementText(channel, 'image', 'url') ??
             'https://via.placeholder.com/300x300?text=No+Image',
         rssUrl: rssUrl,
-        websiteUrl: rssFeed.link,
-        language: rssFeed.language,
-        copyright: rssFeed.dc?.rights,
-        categories:
-            rssFeed.itunes?.categories
-                .whereType<RssItunesCategory>()
-                .map((cat) => cat.category)
-                .whereType<String>()
-                .toList() ??
-            [],
-        keywords: rssFeed.itunes?.keywords ?? [],
-        isExplicit: rssFeed.itunes?.explicit ?? false,
-        ownerName: rssFeed.itunes?.owner?.name,
-        ownerEmail: rssFeed.itunes?.owner?.email,
-        lastUpdated: _parseDateTime(rssFeed.lastBuildDate) ?? now,
-        episodeCount: rssFeed.items.length,
+        websiteUrl: _getElementText(channel, 'link'),
+        language: _getElementText(channel, 'language'),
+        copyright: _getDublinCoreElementText(channel, 'rights'),
+        categories: _extractITunesCategories(channel),
+        keywords: _extractITunesKeywordsList(channel),
+        isExplicit: _parseExplicit(_getITunesElementText(channel, 'explicit')),
+        ownerName: _getITunesElementText(channel, 'owner', 'name'),
+        ownerEmail: _getITunesElementText(channel, 'owner', 'email'),
+        lastUpdated: _parseDateTime(
+          _getElementText(channel, 'lastBuildDate'),
+        ) ??
+            now,
+        episodeCount: channel.findAllElements('item').length,
         isSubscribed: false,
         subscribedAt: null,
         createdAt: now,
@@ -158,33 +155,39 @@ class RssParserService {
   /// 从 RSS 内容提取节目列表
   List<Episode> _extractEpisodesFromRss(String xmlContent, int podcastId) {
     try {
-      final rssFeed = RssFeed.parse(xmlContent);
+      final document = XmlDocument.parse(xmlContent);
+      final channel = document.findAllElements('channel').first;
+      final itemsList = channel.findAllElements('item').toList();
       final List<Episode> episodes = [];
       final now = DateTime.now();
 
-      for (var i = 0; i < rssFeed.items.length; i++) {
-        final item = rssFeed.items[i];
+      for (var i = 0; i < itemsList.length; i++) {
+        final item = itemsList[i];
 
         try {
+          final enclosure = item.getElement('enclosure');
+          
           episodes.add(
             Episode(
               id: now.millisecondsSinceEpoch + i,
               podcastId: podcastId,
-              title: item.title ?? '节目 $i',
-              description:
-                  item.description ??
-                  item.content?.value ??
-                  item.itunes?.summary ??
+              title: _getElementText(item, 'title') ?? '节目 $i',
+              description: _getElementText(item, 'description') ??
+                  _getITunesElementText(item, 'summary') ??
                   '',
-              link: item.link,
-              guid: item.guid,
-              author: item.author ?? item.dc?.creator,
-              pubDate: _parseDateTime(item.pubDate) ?? now,
-              audioUrl: item.enclosure?.url ?? '',
-              audioType: item.enclosure?.type ?? 'audio/mpeg',
-              duration: item.itunes?.duration?.inSeconds,
-              artworkUrl: item.itunes?.image?.href,
-              isExplicit: item.itunes?.explicit ?? false,
+              link: _getElementText(item, 'link'),
+              guid: _getElementText(item, 'guid'),
+              author: _getElementText(item, 'author') ??
+                  _getITunesElementText(item, 'author') ??
+                  _getDublinCoreElementText(item, 'creator'),
+              pubDate: _parseDateTime(_getElementText(item, 'pubDate')) ?? now,
+              audioUrl: enclosure?.getAttribute('url') ?? '',
+              audioType: enclosure?.getAttribute('type') ?? 'audio/mpeg',
+              duration: _parseDuration(_getITunesElementText(item, 'duration')),
+              artworkUrl: _getITunesImageHref(item),
+              isExplicit: _parseExplicit(
+                _getITunesElementText(item, 'explicit'),
+              ),
               isPlayed: false,
               isDownloaded: false,
               downloadedPath: null,
@@ -193,6 +196,8 @@ class RssParserService {
               lastPlayedAt: null,
               createdAt: now,
               updatedAt: now,
+              appleId: _getITunesElementText(item, 'id'),
+              itunesArtworkUrl: _getITunesImageHref(item),
             ),
           );
         } catch (e) {
@@ -213,6 +218,110 @@ class RssParserService {
     }
   }
 
+  /// 获取元素文本内容
+  String? _getElementText(XmlElement parent, String tagName, [String? subTag]) {
+    try {
+      if (subTag != null) {
+        final element = parent.getElement(tagName);
+        return element?.getElement(subTag)?.innerText;
+      }
+      return parent.getElement(tagName)?.innerText;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 获取 iTunes 命名空间元素文本
+  String? _getITunesElementText(XmlElement parent, String tagName, [String? subTag]) {
+    try {
+      final element = parent.getElement(tagName, namespace: 'itunes');
+      if (element == null) {
+        return parent.getElement('itunes:$tagName')?.innerText;
+      }
+      if (subTag != null) {
+        return element.getElement(subTag)?.innerText;
+      }
+      return element.innerText;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 获取 Dublin Core 命名空间元素文本
+  String? _getDublinCoreElementText(XmlElement parent, String tagName) {
+    try {
+      return parent.getElement(tagName, namespace: 'dc')?.innerText ??
+          parent.getElement('dc:$tagName')?.innerText;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 获取 iTunes 图片 URL
+  String? _getITunesImageHref(XmlElement parent) {
+    try {
+      return parent.getElement('image', namespace: 'itunes')?.getAttribute('href') ??
+          parent.getElement('itunes:image')?.getAttribute('href');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 提取 iTunes 分类
+  List<String> _extractITunesCategories(XmlElement channel) {
+    try {
+      final categories = <String>[];
+      for (final element in channel.findAllElements('category', namespace: 'itunes')) {
+        final cat = element.getAttribute('text');
+        if (cat != null && cat.isNotEmpty) {
+          categories.add(cat);
+        }
+      }
+      return categories;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// 提取 iTunes 关键词
+  List<String>? _extractITunesKeywordsList(XmlElement channel) {
+    try {
+      final keywords = channel.getElement('keywords', namespace: 'itunes')?.innerText ??
+          channel.getElement('itunes:keywords')?.innerText;
+      if (keywords == null) return null;
+      return keywords.split(',').map((k) => k.trim()).where((k) => k.isNotEmpty).toList();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 解析显式标志
+  bool _parseExplicit(String? value) {
+    if (value == null) return false;
+    return value.toLowerCase() == 'yes' || value.toLowerCase() == 'true' || value == '1';
+  }
+
+  /// 解析时长（秒）
+  int? _parseDuration(String? value) {
+    if (value == null || value.isEmpty) return null;
+    try {
+      final parts = value.split(':');
+      if (parts.length == 3) {
+        final hours = int.parse(parts[0]);
+        final minutes = int.parse(parts[1]);
+        final seconds = int.parse(parts[2]);
+        return hours * 3600 + minutes * 60 + seconds;
+      } else if (parts.length == 2) {
+        final minutes = int.parse(parts[0]);
+        final seconds = int.parse(parts[1]);
+        return minutes * 60 + seconds;
+      }
+      return int.parse(value);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// 解析日期时间
   ///
   /// 支持 RSS 标准格式 (RFC 822) 和 ISO 8601 格式
@@ -223,21 +332,8 @@ class RssParserService {
     }
 
     // 尝试解析 RSS 标准格式 (RFC 822)
-    // 格式: "Mon, 06 Sep 2021 04:00:00 GMT" 或 "Mon, 06 Sep 2021 04:00:00 +0000"
     final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss', 'en_US');
     try {
-      // 移除时区名称或偏移量，因为 DateFormat 解析时区比较复杂
-      // 正则解释：
-      // \s+              : 匹配一个或多个空白字符（作为分隔符）
-      // (                : 开始捕获组（我们要移除的部分）
-      //   [+-]           : 匹配 + 或 -
-      //   \d{2}          : 匹配2位小时
-      //   :?             : 可选的冒号 (兼容 +0800 和 +08:00)
-      //   \d{2}          : 匹配2位分钟
-      //   |              : 或者
-      //   [A-Z]{2,4}     : 匹配2到4个大写字母 (覆盖 GMT, UTC, EST, PST, Z 等)
-      // )                : 结束捕获组
-      // \s*$             : 匹配末尾可能存在的任意空白字符，直到字符串结束
       final timeZoneRegex = RegExp(r'\s+([+-]\d{2}:?\d{2}|[A-Z]{2,4})\s*$');
       final cleanedDate = dateTimeString.replaceFirst(timeZoneRegex, '');
       return rfc822Format.parse(cleanedDate, true);

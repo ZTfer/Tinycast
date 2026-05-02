@@ -1,12 +1,23 @@
+import 'dart:async';
 import '../entities/podcast.dart';
 import '../repositories/podcast_repository.dart';
+
+class SubscribePodcastResult {
+  final Podcast podcast;
+  final Future<void>? itunesSearchFuture;
+
+  SubscribePodcastResult({
+    required this.podcast,
+    this.itunesSearchFuture,
+  });
+}
 
 class SubscribePodcastUseCase {
   final PodcastRepository _repository;
 
   SubscribePodcastUseCase(this._repository);
 
-  Future<Podcast> call(String rssUrl) async {
+  Future<SubscribePodcastResult> call(String rssUrl) async {
     if (rssUrl.isEmpty) {
       throw ArgumentError('RSS URL cannot be empty');
     }
@@ -16,7 +27,13 @@ class SubscribePodcastUseCase {
     }
 
     try {
-      return await _repository.subscribe(rssUrl);
+      final podcast = await _repository.subscribe(rssUrl);
+      final itunesFuture = _repository.getITunesSearchFuture(podcast.id);
+
+      return SubscribePodcastResult(
+        podcast: podcast,
+        itunesSearchFuture: itunesFuture,
+      );
     } catch (e) {
       throw Exception('Failed to subscribe to podcast: $e');
     }

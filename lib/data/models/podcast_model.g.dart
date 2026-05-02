@@ -17,91 +17,97 @@ const PodcastSchema = CollectionSchema(
   name: r'Podcast',
   id: -1143728065732125040,
   properties: {
+    r'appleId': PropertySchema(id: 0, name: r'appleId', type: IsarType.string),
     r'artworkPath': PropertySchema(
-      id: 0,
+      id: 1,
       name: r'artworkPath',
       type: IsarType.string,
     ),
     r'artworkUrl': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'artworkUrl',
       type: IsarType.string,
     ),
-    r'author': PropertySchema(id: 2, name: r'author', type: IsarType.string),
+    r'author': PropertySchema(id: 3, name: r'author', type: IsarType.string),
     r'categories': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'categories',
       type: IsarType.stringList,
     ),
     r'copyright': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'copyright',
       type: IsarType.string,
     ),
     r'createdAt': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'description',
       type: IsarType.string,
     ),
     r'episodeCount': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'episodeCount',
       type: IsarType.long,
     ),
     r'isExplicit': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'isExplicit',
       type: IsarType.bool,
     ),
     r'isSubscribed': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'isSubscribed',
       type: IsarType.bool,
     ),
+    r'itunesArtworkUrl': PropertySchema(
+      id: 11,
+      name: r'itunesArtworkUrl',
+      type: IsarType.string,
+    ),
     r'keywords': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'keywords',
       type: IsarType.stringList,
     ),
     r'language': PropertySchema(
-      id: 11,
+      id: 13,
       name: r'language',
       type: IsarType.string,
     ),
     r'lastUpdated': PropertySchema(
-      id: 12,
+      id: 14,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'ownerEmail': PropertySchema(
-      id: 13,
+      id: 15,
       name: r'ownerEmail',
       type: IsarType.string,
     ),
     r'ownerName': PropertySchema(
-      id: 14,
+      id: 16,
       name: r'ownerName',
       type: IsarType.string,
     ),
-    r'rssUrl': PropertySchema(id: 15, name: r'rssUrl', type: IsarType.string),
+    r'rssUrl': PropertySchema(id: 17, name: r'rssUrl', type: IsarType.string),
     r'subscribedAt': PropertySchema(
-      id: 16,
+      id: 18,
       name: r'subscribedAt',
       type: IsarType.dateTime,
     ),
     r'subtitle': PropertySchema(
-      id: 17,
+      id: 19,
       name: r'subtitle',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 18, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 20, name: r'title', type: IsarType.string),
     r'websiteUrl': PropertySchema(
-      id: 19,
+      id: 21,
       name: r'websiteUrl',
       type: IsarType.string,
     ),
@@ -169,6 +175,12 @@ int _podcastEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.appleId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.artworkPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -195,6 +207,12 @@ int _podcastEstimateSize(
     }
   }
   bytesCount += 3 + object.description.length * 3;
+  {
+    final value = object.itunesArtworkUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   {
     final list = object.keywords;
     if (list != null) {
@@ -248,26 +266,28 @@ void _podcastSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.artworkPath);
-  writer.writeString(offsets[1], object.artworkUrl);
-  writer.writeString(offsets[2], object.author);
-  writer.writeStringList(offsets[3], object.categories);
-  writer.writeString(offsets[4], object.copyright);
-  writer.writeDateTime(offsets[5], object.createdAt);
-  writer.writeString(offsets[6], object.description);
-  writer.writeLong(offsets[7], object.episodeCount);
-  writer.writeBool(offsets[8], object.isExplicit);
-  writer.writeBool(offsets[9], object.isSubscribed);
-  writer.writeStringList(offsets[10], object.keywords);
-  writer.writeString(offsets[11], object.language);
-  writer.writeDateTime(offsets[12], object.lastUpdated);
-  writer.writeString(offsets[13], object.ownerEmail);
-  writer.writeString(offsets[14], object.ownerName);
-  writer.writeString(offsets[15], object.rssUrl);
-  writer.writeDateTime(offsets[16], object.subscribedAt);
-  writer.writeString(offsets[17], object.subtitle);
-  writer.writeString(offsets[18], object.title);
-  writer.writeString(offsets[19], object.websiteUrl);
+  writer.writeString(offsets[0], object.appleId);
+  writer.writeString(offsets[1], object.artworkPath);
+  writer.writeString(offsets[2], object.artworkUrl);
+  writer.writeString(offsets[3], object.author);
+  writer.writeStringList(offsets[4], object.categories);
+  writer.writeString(offsets[5], object.copyright);
+  writer.writeDateTime(offsets[6], object.createdAt);
+  writer.writeString(offsets[7], object.description);
+  writer.writeLong(offsets[8], object.episodeCount);
+  writer.writeBool(offsets[9], object.isExplicit);
+  writer.writeBool(offsets[10], object.isSubscribed);
+  writer.writeString(offsets[11], object.itunesArtworkUrl);
+  writer.writeStringList(offsets[12], object.keywords);
+  writer.writeString(offsets[13], object.language);
+  writer.writeDateTime(offsets[14], object.lastUpdated);
+  writer.writeString(offsets[15], object.ownerEmail);
+  writer.writeString(offsets[16], object.ownerName);
+  writer.writeString(offsets[17], object.rssUrl);
+  writer.writeDateTime(offsets[18], object.subscribedAt);
+  writer.writeString(offsets[19], object.subtitle);
+  writer.writeString(offsets[20], object.title);
+  writer.writeString(offsets[21], object.websiteUrl);
 }
 
 Podcast _podcastDeserialize(
@@ -277,26 +297,28 @@ Podcast _podcastDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Podcast();
-  object.artworkPath = reader.readStringOrNull(offsets[0]);
-  object.artworkUrl = reader.readString(offsets[1]);
-  object.author = reader.readString(offsets[2]);
-  object.categories = reader.readStringList(offsets[3]);
-  object.copyright = reader.readStringOrNull(offsets[4]);
-  object.description = reader.readString(offsets[6]);
-  object.episodeCount = reader.readLong(offsets[7]);
+  object.appleId = reader.readStringOrNull(offsets[0]);
+  object.artworkPath = reader.readStringOrNull(offsets[1]);
+  object.artworkUrl = reader.readString(offsets[2]);
+  object.author = reader.readString(offsets[3]);
+  object.categories = reader.readStringList(offsets[4]);
+  object.copyright = reader.readStringOrNull(offsets[5]);
+  object.description = reader.readString(offsets[7]);
+  object.episodeCount = reader.readLong(offsets[8]);
   object.id = id;
-  object.isExplicit = reader.readBool(offsets[8]);
-  object.isSubscribed = reader.readBool(offsets[9]);
-  object.keywords = reader.readStringList(offsets[10]);
-  object.language = reader.readStringOrNull(offsets[11]);
-  object.lastUpdated = reader.readDateTime(offsets[12]);
-  object.ownerEmail = reader.readStringOrNull(offsets[13]);
-  object.ownerName = reader.readStringOrNull(offsets[14]);
-  object.rssUrl = reader.readString(offsets[15]);
-  object.subscribedAt = reader.readDateTimeOrNull(offsets[16]);
-  object.subtitle = reader.readStringOrNull(offsets[17]);
-  object.title = reader.readString(offsets[18]);
-  object.websiteUrl = reader.readStringOrNull(offsets[19]);
+  object.isExplicit = reader.readBool(offsets[9]);
+  object.isSubscribed = reader.readBool(offsets[10]);
+  object.itunesArtworkUrl = reader.readStringOrNull(offsets[11]);
+  object.keywords = reader.readStringList(offsets[12]);
+  object.language = reader.readStringOrNull(offsets[13]);
+  object.lastUpdated = reader.readDateTime(offsets[14]);
+  object.ownerEmail = reader.readStringOrNull(offsets[15]);
+  object.ownerName = reader.readStringOrNull(offsets[16]);
+  object.rssUrl = reader.readString(offsets[17]);
+  object.subscribedAt = reader.readDateTimeOrNull(offsets[18]);
+  object.subtitle = reader.readStringOrNull(offsets[19]);
+  object.title = reader.readString(offsets[20]);
+  object.websiteUrl = reader.readStringOrNull(offsets[21]);
   return object;
 }
 
@@ -310,42 +332,46 @@ P _podcastDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readStringList(offset)) as P;
-    case 4:
-      return (reader.readStringOrNull(offset)) as P;
-    case 5:
-      return (reader.readDateTime(offset)) as P;
-    case 6:
       return (reader.readString(offset)) as P;
+    case 4:
+      return (reader.readStringList(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readDateTime(offset)) as P;
     case 7:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readBool(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 9:
       return (reader.readBool(offset)) as P;
     case 10:
-      return (reader.readStringList(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 11:
       return (reader.readStringOrNull(offset)) as P;
     case 12:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 15:
-      return (reader.readString(offset)) as P;
-    case 16:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 17:
       return (reader.readStringOrNull(offset)) as P;
-    case 18:
+    case 16:
+      return (reader.readStringOrNull(offset)) as P;
+    case 17:
       return (reader.readString(offset)) as P;
+    case 18:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 19:
+      return (reader.readStringOrNull(offset)) as P;
+    case 20:
+      return (reader.readString(offset)) as P;
+    case 21:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -720,6 +746,168 @@ extension PodcastQueryWhere on QueryBuilder<Podcast, Podcast, QWhereClause> {
 
 extension PodcastQueryFilter
     on QueryBuilder<Podcast, Podcast, QFilterCondition> {
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'appleId'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'appleId'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'appleId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'appleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'appleId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'appleId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> appleIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'appleId', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterFilterCondition> artworkPathIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1883,6 +2071,168 @@ extension PodcastQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'isSubscribed', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'itunesArtworkUrl'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'itunesArtworkUrl'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> itunesArtworkUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> itunesArtworkUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'itunesArtworkUrl',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'itunesArtworkUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> itunesArtworkUrlMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'itunesArtworkUrl',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'itunesArtworkUrl', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  itunesArtworkUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'itunesArtworkUrl', value: ''),
       );
     });
   }
@@ -3348,6 +3698,18 @@ extension PodcastQueryLinks
     on QueryBuilder<Podcast, Podcast, QFilterCondition> {}
 
 extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByAppleId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'appleId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByAppleIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'appleId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByArtworkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkPath', Sort.asc);
@@ -3453,6 +3815,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByIsSubscribedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSubscribed', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByItunesArtworkUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesArtworkUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByItunesArtworkUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesArtworkUrl', Sort.desc);
     });
   }
 
@@ -3567,6 +3941,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
 
 extension PodcastQuerySortThenBy
     on QueryBuilder<Podcast, Podcast, QSortThenBy> {
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByAppleId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'appleId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByAppleIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'appleId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByArtworkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'artworkPath', Sort.asc);
@@ -3687,6 +4073,18 @@ extension PodcastQuerySortThenBy
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByItunesArtworkUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesArtworkUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByItunesArtworkUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'itunesArtworkUrl', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByLanguage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'language', Sort.asc);
@@ -3798,6 +4196,14 @@ extension PodcastQuerySortThenBy
 
 extension PodcastQueryWhereDistinct
     on QueryBuilder<Podcast, Podcast, QDistinct> {
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctByAppleId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'appleId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QDistinct> distinctByArtworkPath({
     bool caseSensitive = true,
   }) {
@@ -3865,6 +4271,17 @@ extension PodcastQueryWhereDistinct
   QueryBuilder<Podcast, Podcast, QDistinct> distinctByIsSubscribed() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isSubscribed');
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctByItunesArtworkUrl({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'itunesArtworkUrl',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
@@ -3951,6 +4368,12 @@ extension PodcastQueryProperty
     });
   }
 
+  QueryBuilder<Podcast, String?, QQueryOperations> appleIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'appleId');
+    });
+  }
+
   QueryBuilder<Podcast, String?, QQueryOperations> artworkPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'artworkPath');
@@ -4008,6 +4431,12 @@ extension PodcastQueryProperty
   QueryBuilder<Podcast, bool, QQueryOperations> isSubscribedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isSubscribed');
+    });
+  }
+
+  QueryBuilder<Podcast, String?, QQueryOperations> itunesArtworkUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'itunesArtworkUrl');
     });
   }
 

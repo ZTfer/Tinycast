@@ -20,6 +20,8 @@ class Podcast {
   final DateTime? subscribedAt;
   final String? artworkPath;
   final DateTime createdAt;
+  final String? appleId;
+  final String? itunesArtworkUrl;
 
   Podcast({
     required this.id,
@@ -43,5 +45,7 @@ class Podcast {
     this.subscribedAt,
     this.artworkPath,
     required this.createdAt,
+    this.appleId,
+    this.itunesArtworkUrl,
   });
 }

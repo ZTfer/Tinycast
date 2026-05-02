@@ -4,6 +4,8 @@ import '../../domain/repositories/podcast_repository.dart';
 import '../datasources/remote_podcast_datasource.dart';
 import '../datasources/local_podcast_datasource.dart';
 import '../services/file_storage_service.dart';
+import '../services/itunes_search_service.dart';
+import '../services/podcast_merge_service.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
 import '../../core/utils/app_exception.dart';
@@ -14,11 +16,18 @@ class PodcastRepositoryImpl implements PodcastRepository {
   final LocalPodcastDataSource _localDataSource;
   final FileStorageService _fileStorageService;
 
+  final Map<int, Future<void>> _itunesSearchFutures = {};
+
   PodcastRepositoryImpl({
     RemotePodcastDataSource? remoteDataSource,
     LocalPodcastDataSource? localDataSource,
     FileStorageService? fileStorageService,
-  }) : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
+    ITunesSearchService? itunesSearchService,
+  }) : _remoteDataSource = remoteDataSource ??
+            RemotePodcastDataSource(
+              localDataSource: localDataSource ?? LocalPodcastDataSource(),
+              itunesSearchService: itunesSearchService,
+            ),
        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
        _fileStorageService = fileStorageService ?? FileStorageService.instance;
 
@@ -95,6 +104,11 @@ class PodcastRepositoryImpl implements PodcastRepository {
       Logger.info(
         '获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}',
       );
+
+      final itunesFuture = _remoteDataSource.getITunesSearchFuture();
+      if (itunesFuture != null) {
+        _itunesSearchFutures[podcastId] = itunesFuture;
+      }
 
       final podcast = _convertPodcastModelToEntity(podcastModel);
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 订阅流程完成，即将返回 podcast');
@@ -178,6 +192,42 @@ class PodcastRepositoryImpl implements PodcastRepository {
       Logger.error('获取已订阅播客列表失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '获取已订阅播客列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  @override
+  Future<List<Podcast>> getMergedSubscribedPodcasts() async {
+    try {
+      Logger.info('获取合并后的已订阅播客列表');
+
+      final podcastModels = await _localDataSource.getSubscribedPodcasts();
+
+      final primaryPodcasts = PodcastMergeService.filterPrimaryPodcasts(
+        podcastModels,
+      );
+
+      final podcasts = primaryPodcasts
+          .map((model) => _convertPodcastModelToEntity(model))
+          .toList();
+
+      Logger.info(
+        '成功获取合并后的 ${podcasts.length} 个播客（原始 ${podcastModels.length} 个）',
+      );
+
+      return podcasts;
+    } on AppException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Logger.error(
+        '获取合并后的已订阅播客列表失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.unknown(
+        '获取合并后的已订阅播客列表失败',
         originalError: e,
         stackTrace: stackTrace,
       );
@@ -426,6 +476,8 @@ class PodcastRepositoryImpl implements PodcastRepository {
       subscribedAt: model.subscribedAt,
       artworkPath: model.artworkPath,
       createdAt: model.createdAt,
+      appleId: model.appleId,
+      itunesArtworkUrl: model.itunesArtworkUrl,
     );
   }
 
@@ -435,6 +487,11 @@ class PodcastRepositoryImpl implements PodcastRepository {
       '📋 [PODCAST-REPO] updateIsPlayed 调用, episodeId: $episodeId, isPlayed: $isPlayed',
     );
     await _localDataSource.updateIsPlayed(episodeId, isPlayed);
+  }
+
+  @override
+  Future<void>? getITunesSearchFuture(int podcastId) {
+    return _itunesSearchFutures[podcastId];
   }
 
   Episode _convertEpisodeModelToEntity(model.Episode model) {

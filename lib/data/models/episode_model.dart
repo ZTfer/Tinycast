@@ -49,4 +49,8 @@ class Episode {
   final DateTime createdAt = DateTime.now();
 
   late DateTime updatedAt;
+
+  String? appleId;
+
+  String? itunesArtworkUrl;
 }

@@ -48,4 +48,8 @@ class Podcast {
   String? artworkPath;
 
   final DateTime createdAt = DateTime.now();
+
+  String? appleId;
+
+  String? itunesArtworkUrl;
 }

@@ -9,6 +9,7 @@ import '../../domain/usecases/get_podcast_by_id_usecase.dart';
 import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
 import '../../domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
+import '../../data/services/itunes_search_service.dart';
 import '../../core/utils/logger.dart';
 
 enum PodcastStatus { initial, loading, success, error }
@@ -45,8 +46,15 @@ class PodcastState {
   }
 }
 
+final itunesSearchServiceProvider = Provider<ITunesSearchService>((ref) {
+  return ITunesSearchService();
+});
+
 final podcastRepositoryProvider = Provider<PodcastRepository>((ref) {
-  return PodcastRepositoryImpl();
+  final itunesSearchService = ref.watch(itunesSearchServiceProvider);
+  return PodcastRepositoryImpl(
+    itunesSearchService: itunesSearchService,
+  );
 });
 
 final subscribePodcastUseCaseProvider = Provider<SubscribePodcastUseCase>((
@@ -104,8 +112,11 @@ class PodcastNotifier extends Notifier<PodcastState> {
   Future<void> subscribe(String rssUrl) async {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
-      final podcast = await _subscribePodcastUseCase(rssUrl);
-      state = state.copyWith(status: PodcastStatus.success, podcast: podcast);
+      final result = await _subscribePodcastUseCase(rssUrl);
+      state = state.copyWith(
+        status: PodcastStatus.success,
+        podcast: result.podcast,
+      );
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,

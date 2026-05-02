@@ -22,6 +22,8 @@ class Episode {
   final DateTime? lastPlayedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? appleId;
+  final String? itunesArtworkUrl;
 
   Episode({
     required this.id,
@@ -47,5 +49,7 @@ class Episode {
     this.lastPlayedAt,
     required this.createdAt,
     required this.updatedAt,
+    this.appleId,
+    this.itunesArtworkUrl,
   });
 }

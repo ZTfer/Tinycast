@@ -1,5 +1,6 @@
 import '../entities/podcast.dart';
 import '../entities/episode.dart';
+import 'dart:async';
 
 abstract class PodcastRepository {
   Future<Podcast> subscribe(String rssUrl);
@@ -7,6 +8,8 @@ abstract class PodcastRepository {
   Future<void> unsubscribe(int podcastId);
 
   Future<List<Podcast>> getSubscribedPodcasts();
+
+  Future<List<Podcast>> getMergedSubscribedPodcasts();
 
   Future<Podcast?> getPodcastById(int id);
 
@@ -28,4 +31,6 @@ abstract class PodcastRepository {
   Future<List<Episode>> searchEpisodes(String keyword);
 
   Future<void> updateIsPlayed(int episodeId, bool isPlayed);
+
+  Future<void>? getITunesSearchFuture(int podcastId);
 }

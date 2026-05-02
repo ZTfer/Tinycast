@@ -412,6 +412,37 @@ class LocalPodcastDataSource {
     }
   }
 
+  Future<void> updateITunesInfo(int id, String appleId, String itunesArtworkUrl) async {
+    try {
+      Logger.info('更新播客 iTunes 信息: $id');
+
+      await _isarService.isar.writeTxn(() async {
+        final podcast = await _isarService.isar.podcasts.get(id);
+        if (podcast != null) {
+          podcast.appleId = appleId;
+          podcast.itunesArtworkUrl = itunesArtworkUrl;
+          await _isarService.isar.podcasts.put(podcast);
+        }
+      });
+
+      Logger.info('成功更新播客 iTunes 信息: $id');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('更新 iTunes 信息失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '更新 iTunes 信息失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('更新 iTunes 信息失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '更新 iTunes 信息失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<List<model.Episode>> getUnplayedEpisodes() async {
     try {
       Logger.info('获取所有未播放节目');
@@ -588,7 +619,9 @@ class LocalPodcastDataSource {
       ..lastUpdated = entity.lastUpdated
       ..episodeCount = entity.episodeCount
       ..isSubscribed = entity.isSubscribed
-      ..subscribedAt = entity.subscribedAt;
+      ..subscribedAt = entity.subscribedAt
+      ..appleId = entity.appleId
+      ..itunesArtworkUrl = entity.itunesArtworkUrl;
   }
 
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
