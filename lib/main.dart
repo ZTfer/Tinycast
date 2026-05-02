@@ -31,10 +31,11 @@ Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
   await controller.show();
 }
 
-/// Supabase 开发环境默认配置
-/// 仅在 .env 文件未找到且未使用 --dart-define 时使用
-const _devSupabaseUrl = 'https://mxbrxxwunpbxvxwraqyf.supabase.co';
-const _devSupabaseAnonKey = 'sb_publishable_v7w2bXmX-jNi3eGIAkdgvQ_8U6J7Zxa';
+/// Supabase 开发环境默认配置（占位符）
+/// 实际使用时请替换为你的 Supabase 项目凭据
+/// 获取方式：https://supabase.com/dashboard/project/_/settings/api
+const _devSupabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
+const _devSupabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 
 /// 全局 Supabase 配置（用于 .env 加载失败时的回退）
 String? _fallbackSupabaseUrl;
