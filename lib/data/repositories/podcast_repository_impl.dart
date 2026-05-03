@@ -84,6 +84,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
           itunesReleaseDate: episode.itunesReleaseDate,
           itunesExplicitness: episode.itunesExplicitness,
           itunesContentAdvisoryRating: episode.itunesContentAdvisoryRating,
+          podcastITunesId: episode.podcastITunesId,
         );
       }).toList();
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] episodesWithPodcastId map 完成');
