@@ -442,6 +442,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         lastPlayedAt: episode.lastPlayedAt,
         createdAt: episode.createdAt,
         updatedAt: episode.updatedAt,
+        itunesId: episode.itunesId,
+        podcastITunesId: episode.podcastITunesId,
+        itunesArtworkUrl: episode.itunesArtworkUrl,
+        itunesReleaseDate: episode.itunesReleaseDate,
+        itunesExplicitness: episode.itunesExplicitness,
+        itunesContentAdvisoryRating: episode.itunesContentAdvisoryRating,
       );
 
       _currentEpisodeId = domainEpisode.id;

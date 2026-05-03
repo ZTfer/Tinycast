@@ -98,6 +98,12 @@ class _HistoryItem extends ConsumerWidget {
         isFavorite: false,
         createdAt: episodeModel.createdAt,
         updatedAt: episodeModel.updatedAt,
+        itunesId: episodeModel.itunesId,
+        podcastITunesId: episodeModel.podcastITunesId,
+        itunesArtworkUrl: episodeModel.itunesArtworkUrl,
+        itunesReleaseDate: episodeModel.itunesReleaseDate,
+        itunesExplicitness: episodeModel.itunesExplicitness,
+        itunesContentAdvisoryRating: episodeModel.itunesContentAdvisoryRating,
       );
     } catch (e) {
       debugPrint('❌ [History] Error loading episode: $e');

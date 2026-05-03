@@ -130,6 +130,14 @@ WindowArguments parseArguments(String arguments) {
             : null,
         createdAt: DateTime.parse(ep['createdAt']),
         updatedAt: DateTime.parse(ep['updatedAt']),
+        itunesId: ep['itunesId'],
+        podcastITunesId: ep['podcastITunesId'],
+        itunesArtworkUrl: ep['itunesArtworkUrl'],
+        itunesReleaseDate: ep['itunesReleaseDate'] != null
+            ? DateTime.parse(ep['itunesReleaseDate'])
+            : null,
+        itunesExplicitness: ep['itunesExplicitness'],
+        itunesContentAdvisoryRating: ep['itunesContentAdvisoryRating'],
       );
     }
 
