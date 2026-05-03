@@ -127,7 +127,8 @@ class RssParserService {
         rssUrl: rssUrl,
         websiteUrl: _getElementText(channel, 'link'),
         language: _getElementText(channel, 'language'),
-        copyright: _getDublinCoreElementText(channel, 'rights'),
+        copyright: _getElementText(channel, 'copyright') ??
+            _getDublinCoreElementText(channel, 'rights'),
         categories: _extractITunesCategories(channel),
         keywords: _extractITunesKeywordsList(channel),
         isExplicit: _parseExplicit(_getITunesElementText(channel, 'explicit')),
