@@ -132,10 +132,6 @@ class _HistoryItem extends ConsumerWidget {
       updatedAt: history.lastUpdateTime,
       itunesId: history.episodeITunesId,
       podcastITunesId: history.podcastITunesId,
-      itunesArtworkUrl: null,
-      itunesReleaseDate: null,
-      itunesExplicitness: null,
-      itunesContentAdvisoryRating: null,
     );
   }
 
