@@ -110,7 +110,7 @@ class _ShowInfoWithDownloadStatusState
       await playHistoryRepo.removeByPodcastId(podcast.id);
 
       final queueRepo = QueueRepositoryImpl();
-      await queueRepo.removeFromQueueByPodcastId(podcast.id);
+      await queueRepo.removeFromQueueByPodcast(podcast.id, podcastITunesId: podcast.itunesId);
 
       final downloadService = AudioDownloadService.instance;
       await downloadService.unfollowPodcast(podcast.id);

@@ -204,14 +204,16 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> _onEpisodeCompleted(int episodeId) async {
-    // 1. 从队列中移除已完成的剧集
     final queueState = ref.read(queueNotifierProvider);
-    final isInQueue = queueState.queueEpisodes.any((e) => e.id == episodeId);
-    if (isInQueue) {
+    final episode = queueState.queueEpisodes.firstWhere(
+      (e) => e.id == episodeId,
+      orElse: () => throw Exception('Episode $episodeId not found in queue'),
+    );
+    if (queueState.queueEpisodes.any((e) => e.id == episodeId)) {
       debugPrint('🎯 [Playback] Episode $episodeId completed, removing from queue...');
       try {
         await ref.read(queueNotifierProvider.notifier)
-            .removeFromQueueByEpisodeId(episodeId);
+            .removeFromQueueByEpisodeId(episode);
       } catch (e, stackTrace) {
         debugPrint('❌ [Playback] Failed to remove episode $episodeId from queue: $e\n$stackTrace');
       }

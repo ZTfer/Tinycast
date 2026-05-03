@@ -1,3 +1,4 @@
+import '../entities/episode.dart';
 import '../repositories/queue_repository.dart';
 
 class RemoveFromQueueByEpisodeIdUseCase {
@@ -5,7 +6,7 @@ class RemoveFromQueueByEpisodeIdUseCase {
 
   RemoveFromQueueByEpisodeIdUseCase(this._repository);
 
-  Future<void> call(int episodeId) async {
-    await _repository.removeFromQueueByEpisodeId(episodeId);
+  Future<void> call(Episode episode) async {
+    await _repository.removeFromQueueByEpisode(episode);
   }
 }

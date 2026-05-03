@@ -128,14 +128,14 @@ class QueueNotifier extends Notifier<QueueState> {
     }
   }
 
-  Future<void> addToQueue(int episodeId) async {
+  Future<void> addToQueue(Episode episode) async {
     Logger.info(
-      '📋 [QUEUE-PROVIDER] ====== addToQueue 开始, episodeId: $episodeId ======',
+      '📋 [QUEUE-PROVIDER] ====== addToQueue 开始, episodeId: ${episode.id} ======',
     );
 
     try {
-      await _addToQueueUseCase(episodeId);
-      Logger.info('📋 [QUEUE-PROVIDER] addToQueue 成功! episodeId: $episodeId');
+      await _addToQueueUseCase(episode);
+      Logger.info('📋 [QUEUE-PROVIDER] addToQueue 成功! episodeId: ${episode.id}');
     } catch (e, stackTrace) {
       Logger.error(
         '📋 [QUEUE-PROVIDER] addToQueue 失败!',
@@ -151,15 +151,15 @@ class QueueNotifier extends Notifier<QueueState> {
     );
   }
 
-  Future<void> insertToQueueFront(int episodeId) async {
+  Future<void> insertToQueueFront(Episode episode) async {
     Logger.info(
-      '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 开始, episodeId: $episodeId ======',
+      '📋 [QUEUE-PROVIDER] ====== insertToQueueFront 开始, episodeId: ${episode.id} ======',
     );
 
     try {
-      await _insertToQueueFrontUseCase(episodeId);
+      await _insertToQueueFrontUseCase(episode);
       Logger.info(
-        '📋 [QUEUE-PROVIDER] insertToQueueFront 成功! episodeId: $episodeId',
+        '📋 [QUEUE-PROVIDER] insertToQueueFront 成功! episodeId: ${episode.id}',
       );
     } catch (e, stackTrace) {
       Logger.error(
@@ -199,15 +199,15 @@ class QueueNotifier extends Notifier<QueueState> {
     );
   }
 
-  Future<void> removeFromQueueByEpisodeId(int episodeId) async {
+  Future<void> removeFromQueueByEpisodeId(Episode episode) async {
     Logger.info(
-      '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 开始, episodeId: $episodeId ======',
+      '📋 [QUEUE-PROVIDER] ====== removeFromQueueByEpisodeId 开始, episodeId: ${episode.id} ======',
     );
 
     try {
-      await _removeFromQueueByEpisodeIdUseCase(episodeId);
+      await _removeFromQueueByEpisodeIdUseCase(episode);
       Logger.info(
-        '📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 成功! episodeId: $episodeId',
+        '📋 [QUEUE-PROVIDER] removeFromQueueByEpisodeId 成功! episodeId: ${episode.id}',
       );
     } catch (e, stackTrace) {
       Logger.error(

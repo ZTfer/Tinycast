@@ -111,7 +111,7 @@ class _LibraryState extends ConsumerState<Library> {
 
       // 清理队列记录（在 episodes 被删除前执行）
       final queueRepo = QueueRepositoryImpl();
-      await queueRepo.removeFromQueueByPodcastId(podcast.id);
+      await queueRepo.removeFromQueueByPodcast(podcast.id, podcastITunesId: podcast.itunesId);
 
       // 执行取消关注（会删除 episodes 和 podcasts 表中的数据）
       final downloadService = AudioDownloadService.instance;

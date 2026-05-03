@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/entities/episode.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../../data/repositories/favorite_repository_impl.dart';
 import '../../core/utils/logger.dart';
@@ -69,19 +70,19 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
   }
 
   /// 切换收藏状态（核心方法）
-  Future<void> toggleFavorite(int episodeId) async {
-    final currentlyFavorite = state.isEpisodeFavorite(episodeId);
+  Future<void> toggleFavorite(Episode episode) async {
+    final currentlyFavorite = state.isEpisodeFavorite(episode.id);
     Logger.info('⭐ [FAVORITE-PROVIDER] ====== toggleFavorite 开始 ======');
-    Logger.info('⭐ [FAVORITE-PROVIDER] episodeId: $episodeId, 当前状态: ${currentlyFavorite ? "已收藏" : "未收藏"}');
+    Logger.info('⭐ [FAVORITE-PROVIDER] episodeId: ${episode.id}, 当前状态: ${currentlyFavorite ? "已收藏" : "未收藏"}');
 
     if (currentlyFavorite) {
       // 取消收藏
       Logger.info('⭐ [FAVORITE-PROVIDER] 执行取消收藏操作...');
       try {
-        await _repository.removeFavorite(episodeId);
-        final newIds = Set<int>.from(state.favoriteEpisodeIds)..remove(episodeId);
+        await _repository.removeFavorite(episode);
+        final newIds = Set<int>.from(state.favoriteEpisodeIds)..remove(episode.id);
         state = state.copyWith(favoriteEpisodeIds: newIds);
-        Logger.info('⭐ [FAVORITE-PROVIDER] 取消收藏成功! episodeId: $episodeId, 剩余收藏数: ${state.favoriteEpisodeIds.length}');
+        Logger.info('⭐ [FAVORITE-PROVIDER] 取消收藏成功! episodeId: ${episode.id}, 剩余收藏数: ${state.favoriteEpisodeIds.length}');
       } catch (e, stackTrace) {
         Logger.error('⭐ [FAVORITE-PROVIDER] 取消收藏失败!', error: e, stackTrace: stackTrace);
         rethrow;
@@ -90,10 +91,10 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
       // 添加收藏
       Logger.info('⭐ [FAVORITE-PROVIDER] 执行添加收藏操作...');
       try {
-        await _repository.addFavorite(episodeId);
-        final newIds = Set<int>.from(state.favoriteEpisodeIds)..add(episodeId);
+        await _repository.addFavorite(episode);
+        final newIds = Set<int>.from(state.favoriteEpisodeIds)..add(episode.id);
         state = state.copyWith(favoriteEpisodeIds: newIds);
-        Logger.info('⭐ [FAVORITE-PROVIDER] 添加收藏成功! episodeId: $episodeId, 总收藏数: ${state.favoriteEpisodeIds.length}');
+        Logger.info('⭐ [FAVORITE-PROVIDER] 添加收藏成功! episodeId: ${episode.id}, 总收藏数: ${state.favoriteEpisodeIds.length}');
       } catch (e, stackTrace) {
         Logger.error('⭐ [FAVORITE-PROVIDER] 添加收藏失败!', error: e, stackTrace: stackTrace);
         rethrow;
@@ -104,10 +105,10 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
   }
 
   /// 检查单个 episode 是否收藏（不修改状态）
-  Future<bool> checkIsFavorite(int episodeId) async {
-    Logger.debug('⭐ [FAVORITE-PROVIDER] checkIsFavorite, episodeId: $episodeId');
+  Future<bool> checkIsFavorite(Episode episode) async {
+    Logger.debug('⭐ [FAVORITE-PROVIDER] checkIsFavorite, episodeId: ${episode.id}');
     try {
-      final result = await _repository.isFavorite(episodeId);
+      final result = await _repository.isFavorite(episode);
       Logger.debug('⭐ [FAVORITE-PROVIDER] checkIsFavorite 结果: $result');
       return result;
     } catch (e, stackTrace) {
@@ -116,16 +117,19 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
     }
   }
 
-  /// 根据 episode ID 列表移除收藏（用于取消关注时清理）
-  Future<void> removeByEpisodeIds(List<int> episodeIds) async {
+  /// 根据 episode 列表移除收藏（用于取消关注时清理）
+  Future<void> removeByEpisodes(List<Episode> episodes) async {
+    final episodeIds = episodes.map((e) => e.id).toSet();
     final toRemove = state.favoriteEpisodeIds.where((id) => episodeIds.contains(id)).toList();
     if (toRemove.isEmpty) return;
 
-    for (final id in toRemove) {
-      try {
-        await _repository.removeFavorite(id);
-      } catch (e) {
-        Logger.warning('⭐ [FAVORITE-PROVIDER] 移除收藏失败 episodeId: $id, $e');
+    for (final episode in episodes) {
+      if (toRemove.contains(episode.id)) {
+        try {
+          await _repository.removeFavorite(episode);
+        } catch (e) {
+          Logger.warning('⭐ [FAVORITE-PROVIDER] 移除收藏失败 episodeId: ${episode.id}, $e');
+        }
       }
     }
 

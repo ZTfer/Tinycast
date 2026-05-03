@@ -1,3 +1,4 @@
+import '../entities/episode.dart';
 import '../repositories/queue_repository.dart';
 
 class AddToQueueUseCase {
@@ -5,7 +6,7 @@ class AddToQueueUseCase {
 
   AddToQueueUseCase(this._repository);
 
-  Future<void> call(int episodeId) async {
-    await _repository.addToQueue(episodeId);
+  Future<void> call(Episode episode) async {
+    await _repository.addToQueue(episode);
   }
 }

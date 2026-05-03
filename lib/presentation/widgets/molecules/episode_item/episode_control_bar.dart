@@ -18,37 +18,22 @@ import 'package:tinycast/core/utils/toast_utils.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/download_status_icon.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 
-/// Episode 控制栏组件
-///
-/// 用于待播放队列列表项中的操作区域。
-/// 包含播放按钮（带时长）和更多选项图标。
-/// 点击更多选项图标会显示下拉菜单。
 class EpisodeControlBar extends ConsumerStatefulWidget {
-  /// 节目 ID
   final int episodeId;
-
-  /// 节目时长（如 "32 min"）
+  final Episode? episode;
   final String duration;
-
-  /// 播放按钮点击回调（播放新音频）
   final VoidCallback? onPlayPressed;
-
-  /// episode 的链接地址（用于拷贝链接功能）
   final String? link;
-
-  /// 是否已下载
   final bool isDownloaded;
-
-  /// 是否显示'从待播清单移除'菜单项，默认值 false
   final bool showRemoveFromQueue;
-
-  /// 从队列移除回调
   final VoidCallback? onRemoveFromQueue;
 
   const EpisodeControlBar({
     super.key,
     required this.episodeId,
+    this.episode,
     required this.duration,
     this.onPlayPressed,
     this.link,
@@ -192,7 +177,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '❤️ [EPISODE-CONTROL-BAR] 用户点击收藏切换, episodeId: ${widget.episodeId}',
     );
-    if (!mounted) return;
+    if (!mounted || widget.episode == null) return;
     try {
       final isFav = ref
           .read(favoriteProvider)
@@ -200,7 +185,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       final successMessage = isFav ? '已取消收藏' : '已收藏';
       await ref
           .read(favoriteProvider.notifier)
-          .toggleFavorite(widget.episodeId);
+          .toggleFavorite(widget.episode!);
       ref.read(favoriteEpisodesNotifierProvider.notifier).refresh();
       _hideDropdown();
 
@@ -244,11 +229,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '📋 [EPISODE-CONTROL-BAR] 用户点击插播, episodeId: ${widget.episodeId}',
     );
-    if (!mounted) return;
+    if (!mounted || widget.episode == null) return;
     try {
       await ref
           .read(queueNotifierProvider.notifier)
-          .insertToQueueFront(widget.episodeId);
+          .insertToQueueFront(widget.episode!);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 插播成功');
       if (mounted) {
         ToastUtils.showSuccessToast(context, message: '已插播到队列最前');
@@ -266,11 +251,11 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '📋 [EPISODE-CONTROL-BAR] 用户点击添加到队列, episodeId: ${widget.episodeId}',
     );
-    if (!mounted) return;
+    if (!mounted || widget.episode == null) return;
     try {
       await ref
           .read(queueNotifierProvider.notifier)
-          .addToQueue(widget.episodeId);
+          .addToQueue(widget.episode!);
       Logger.info('📋 [EPISODE-CONTROL-BAR] 添加到队列成功');
       if (mounted) {
         ToastUtils.showSuccessToast(context, message: '已添加到队列末尾');
@@ -287,7 +272,7 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     Logger.info(
       '✅ [EPISODE-CONTROL-BAR] 用户点击标记为已播放, episodeId: ${widget.episodeId}',
     );
-    if (!mounted) return;
+    if (!mounted || widget.episode == null) return;
     try {
       final podcastRepository = ref.read(podcastRepositoryProvider);
       await podcastRepository.updateIsPlayed(widget.episodeId, true);
@@ -296,12 +281,16 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       final playHistoryRepository = ref.read(playHistoryRepositoryProvider);
       await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(
         widget.episodeId,
+        episodeGuid: widget.episode!.guid,
+        episodeITunesId: widget.episode!.itunesId,
+        podcastGuid: null,
+        podcastITunesId: widget.episode!.podcastITunesId,
       );
       Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
 
       await ref
           .read(queueNotifierProvider.notifier)
-          .removeFromQueueByEpisodeId(widget.episodeId);
+          .removeFromQueueByEpisodeId(widget.episode!);
       Logger.info('✅ [EPISODE-CONTROL-BAR] 已从 queue 移除');
 
       ref.invalidate(completedHistoriesProvider);

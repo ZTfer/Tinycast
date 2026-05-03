@@ -109,6 +109,7 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
         // 操作栏
         EpisodeControlBar(
           episodeId: widget.episode.id,
+          episode: widget.episode,
           duration: widget.duration,
           onPlayPressed: widget.onPlayPressed,
           link: widget.episode.link,
