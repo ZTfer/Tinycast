@@ -32,44 +32,64 @@ const PlayHistorySchema = CollectionSchema(
       name: r'description',
       type: IsarType.string,
     ),
-    r'episodeId': PropertySchema(
+    r'episodeGuid': PropertySchema(
       id: 3,
+      name: r'episodeGuid',
+      type: IsarType.string,
+    ),
+    r'episodeITunesId': PropertySchema(
+      id: 4,
+      name: r'episodeITunesId',
+      type: IsarType.string,
+    ),
+    r'episodeId': PropertySchema(
+      id: 5,
       name: r'episodeId',
       type: IsarType.long,
     ),
     r'isDeleted': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'isDeleted',
       type: IsarType.bool,
     ),
-    r'isPlayed': PropertySchema(id: 5, name: r'isPlayed', type: IsarType.bool),
+    r'isPlayed': PropertySchema(id: 7, name: r'isPlayed', type: IsarType.bool),
     r'lastPlayedPositionMs': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'lastPlayedPositionMs',
       type: IsarType.long,
     ),
     r'lastUpdateTime': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'lastUpdateTime',
       type: IsarType.dateTime,
     ),
     r'playedDuration': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'playedDuration',
       type: IsarType.long,
     ),
+    r'podcastGuid': PropertySchema(
+      id: 11,
+      name: r'podcastGuid',
+      type: IsarType.string,
+    ),
+    r'podcastITunesId': PropertySchema(
+      id: 12,
+      name: r'podcastITunesId',
+      type: IsarType.string,
+    ),
     r'podcastId': PropertySchema(
-      id: 9,
+      id: 13,
       name: r'podcastId',
       type: IsarType.long,
     ),
     r'status': PropertySchema(
-      id: 10,
+      id: 14,
       name: r'status',
       type: IsarType.byte,
       enumMap: _PlayHistorystatusEnumValueMap,
     ),
-    r'title': PropertySchema(id: 11, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 15, name: r'title', type: IsarType.string),
   },
 
   estimateSize: _playHistoryEstimateSize,
@@ -145,6 +165,30 @@ int _playHistoryEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.episodeGuid;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.episodeITunesId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.podcastGuid;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.podcastITunesId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.title.length * 3;
   return bytesCount;
 }
@@ -158,15 +202,19 @@ void _playHistorySerialize(
   writer.writeString(offsets[0], object.artworkUrl);
   writer.writeDateTime(offsets[1], object.createdAt);
   writer.writeString(offsets[2], object.description);
-  writer.writeLong(offsets[3], object.episodeId);
-  writer.writeBool(offsets[4], object.isDeleted);
-  writer.writeBool(offsets[5], object.isPlayed);
-  writer.writeLong(offsets[6], object.lastPlayedPositionMs);
-  writer.writeDateTime(offsets[7], object.lastUpdateTime);
-  writer.writeLong(offsets[8], object.playedDuration);
-  writer.writeLong(offsets[9], object.podcastId);
-  writer.writeByte(offsets[10], object.status.index);
-  writer.writeString(offsets[11], object.title);
+  writer.writeString(offsets[3], object.episodeGuid);
+  writer.writeString(offsets[4], object.episodeITunesId);
+  writer.writeLong(offsets[5], object.episodeId);
+  writer.writeBool(offsets[6], object.isDeleted);
+  writer.writeBool(offsets[7], object.isPlayed);
+  writer.writeLong(offsets[8], object.lastPlayedPositionMs);
+  writer.writeDateTime(offsets[9], object.lastUpdateTime);
+  writer.writeLong(offsets[10], object.playedDuration);
+  writer.writeString(offsets[11], object.podcastGuid);
+  writer.writeString(offsets[12], object.podcastITunesId);
+  writer.writeLong(offsets[13], object.podcastId);
+  writer.writeByte(offsets[14], object.status.index);
+  writer.writeString(offsets[15], object.title);
 }
 
 PlayHistory _playHistoryDeserialize(
@@ -178,18 +226,22 @@ PlayHistory _playHistoryDeserialize(
   final object = PlayHistory();
   object.artworkUrl = reader.readStringOrNull(offsets[0]);
   object.description = reader.readStringOrNull(offsets[2]);
-  object.episodeId = reader.readLong(offsets[3]);
+  object.episodeGuid = reader.readStringOrNull(offsets[3]);
+  object.episodeITunesId = reader.readStringOrNull(offsets[4]);
+  object.episodeId = reader.readLong(offsets[5]);
   object.id = id;
-  object.isDeleted = reader.readBool(offsets[4]);
-  object.isPlayed = reader.readBool(offsets[5]);
-  object.lastPlayedPositionMs = reader.readLong(offsets[6]);
-  object.lastUpdateTime = reader.readDateTime(offsets[7]);
-  object.playedDuration = reader.readLong(offsets[8]);
-  object.podcastId = reader.readLong(offsets[9]);
+  object.isDeleted = reader.readBool(offsets[6]);
+  object.isPlayed = reader.readBool(offsets[7]);
+  object.lastPlayedPositionMs = reader.readLong(offsets[8]);
+  object.lastUpdateTime = reader.readDateTime(offsets[9]);
+  object.playedDuration = reader.readLong(offsets[10]);
+  object.podcastGuid = reader.readStringOrNull(offsets[11]);
+  object.podcastITunesId = reader.readStringOrNull(offsets[12]);
+  object.podcastId = reader.readLong(offsets[13]);
   object.status =
-      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[10])] ??
+      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[14])] ??
       PlayHistoryStatus.playing;
-  object.title = reader.readString(offsets[11]);
+  object.title = reader.readString(offsets[15]);
   return object;
 }
 
@@ -207,24 +259,32 @@ P _playHistoryDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readBool(offset)) as P;
-    case 6:
       return (reader.readLong(offset)) as P;
+    case 6:
+      return (reader.readBool(offset)) as P;
     case 7:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 8:
       return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 10:
+      return (reader.readLong(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
+    case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
+      return (reader.readLong(offset)) as P;
+    case 14:
       return (_PlayHistorystatusValueEnumMap[reader.readByteOrNull(offset)] ??
               PlayHistoryStatus.playing)
           as P;
-    case 11:
+    case 15:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1049,6 +1109,324 @@ extension PlayHistoryQueryFilter
   }
 
   QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'episodeGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'episodeGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'episodeGuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'episodeGuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'episodeGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeGuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'episodeGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'episodeITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'episodeITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'episodeITunesId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'episodeITunesId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'episodeITunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  episodeITunesIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'episodeITunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
   episodeIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1345,6 +1723,324 @@ extension PlayHistoryQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'podcastGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'podcastGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'podcastGuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'podcastGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'podcastGuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'podcastGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastGuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'podcastGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'podcastITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'podcastITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'podcastITunesId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'podcastITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'podcastITunesId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'podcastITunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  podcastITunesIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'podcastITunesId', value: ''),
       );
     });
   }
@@ -1654,6 +2350,31 @@ extension PlayHistoryQuerySortBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByEpisodeGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByEpisodeGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByEpisodeITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  sortByEpisodeITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'episodeId', Sort.asc);
@@ -1730,6 +2451,31 @@ extension PlayHistoryQuerySortBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPodcastGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPodcastGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPodcastITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  sortByPodcastITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastITunesId', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPodcastId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'podcastId', Sort.asc);
@@ -1802,6 +2548,31 @@ extension PlayHistoryQuerySortThenBy
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByEpisodeGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByEpisodeGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByEpisodeITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  thenByEpisodeITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.desc);
     });
   }
 
@@ -1893,6 +2664,31 @@ extension PlayHistoryQuerySortThenBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPodcastGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPodcastGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPodcastITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  thenByPodcastITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'podcastITunesId', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPodcastId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'podcastId', Sort.asc);
@@ -1954,6 +2750,25 @@ extension PlayHistoryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByEpisodeGuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'episodeGuid', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByEpisodeITunesId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'episodeITunesId',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'episodeId');
@@ -1988,6 +2803,25 @@ extension PlayHistoryQueryWhereDistinct
   QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByPlayedDuration() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'playedDuration');
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByPodcastGuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'podcastGuid', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByPodcastITunesId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'podcastITunesId',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
@@ -2038,6 +2872,19 @@ extension PlayHistoryQueryProperty
     });
   }
 
+  QueryBuilder<PlayHistory, String?, QQueryOperations> episodeGuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'episodeGuid');
+    });
+  }
+
+  QueryBuilder<PlayHistory, String?, QQueryOperations>
+  episodeITunesIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'episodeITunesId');
+    });
+  }
+
   QueryBuilder<PlayHistory, int, QQueryOperations> episodeIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'episodeId');
@@ -2073,6 +2920,19 @@ extension PlayHistoryQueryProperty
   QueryBuilder<PlayHistory, int, QQueryOperations> playedDurationProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'playedDuration');
+    });
+  }
+
+  QueryBuilder<PlayHistory, String?, QQueryOperations> podcastGuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'podcastGuid');
+    });
+  }
+
+  QueryBuilder<PlayHistory, String?, QQueryOperations>
+  podcastITunesIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'podcastITunesId');
     });
   }
 

@@ -9,5 +9,9 @@ class Favorite {
   @Index()
   late int episodeId;
 
+  String? episodeGuid;
+
+  String? episodeITunesId;
+
   final DateTime createdAt = DateTime.now();
 }

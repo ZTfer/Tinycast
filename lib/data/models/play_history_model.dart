@@ -11,8 +11,16 @@ class PlayHistory {
   @Index()
   late int episodeId;
 
+  String? episodeGuid;
+
+  String? episodeITunesId;
+
   @Index()
   late int podcastId;
+
+  String? podcastGuid;
+
+  String? podcastITunesId;
 
   late String title;
 

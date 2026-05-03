@@ -22,8 +22,18 @@ const FavoriteSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'episodeId': PropertySchema(
+    r'episodeGuid': PropertySchema(
       id: 1,
+      name: r'episodeGuid',
+      type: IsarType.string,
+    ),
+    r'episodeITunesId': PropertySchema(
+      id: 2,
+      name: r'episodeITunesId',
+      type: IsarType.string,
+    ),
+    r'episodeId': PropertySchema(
+      id: 3,
       name: r'episodeId',
       type: IsarType.long,
     ),
@@ -64,6 +74,18 @@ int _favoriteEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.episodeGuid;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.episodeITunesId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -74,7 +96,9 @@ void _favoriteSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeLong(offsets[1], object.episodeId);
+  writer.writeString(offsets[1], object.episodeGuid);
+  writer.writeString(offsets[2], object.episodeITunesId);
+  writer.writeLong(offsets[3], object.episodeId);
 }
 
 Favorite _favoriteDeserialize(
@@ -84,7 +108,9 @@ Favorite _favoriteDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Favorite();
-  object.episodeId = reader.readLong(offsets[1]);
+  object.episodeGuid = reader.readStringOrNull(offsets[1]);
+  object.episodeITunesId = reader.readStringOrNull(offsets[2]);
+  object.episodeId = reader.readLong(offsets[3]);
   object.id = id;
   return object;
 }
@@ -99,6 +125,10 @@ P _favoriteDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
+      return (reader.readStringOrNull(offset)) as P;
+    case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -369,6 +399,330 @@ extension FavoriteQueryFilter
     });
   }
 
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'episodeGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeGuidIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'episodeGuid'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeGuidGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'episodeGuid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'episodeGuid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'episodeGuid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeGuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'episodeGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeGuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'episodeGuid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'episodeITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'episodeITunesId'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'episodeITunesId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'episodeITunesId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'episodeITunesId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'episodeITunesId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  episodeITunesIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'episodeITunesId', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Favorite, Favorite, QAfterFilterCondition> episodeIdEqualTo(
     int value,
   ) {
@@ -505,6 +859,30 @@ extension FavoriteQuerySortBy on QueryBuilder<Favorite, Favorite, QSortBy> {
     });
   }
 
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'episodeId', Sort.asc);
@@ -529,6 +907,30 @@ extension FavoriteQuerySortThenBy
   QueryBuilder<Favorite, Favorite, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenByEpisodeGuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenByEpisodeGuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeGuid', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenByEpisodeITunesId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenByEpisodeITunesIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'episodeITunesId', Sort.desc);
     });
   }
 
@@ -565,6 +967,25 @@ extension FavoriteQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Favorite, Favorite, QDistinct> distinctByEpisodeGuid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'episodeGuid', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QDistinct> distinctByEpisodeITunesId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'episodeITunesId',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
   QueryBuilder<Favorite, Favorite, QDistinct> distinctByEpisodeId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'episodeId');
@@ -583,6 +1004,18 @@ extension FavoriteQueryProperty
   QueryBuilder<Favorite, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Favorite, String?, QQueryOperations> episodeGuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'episodeGuid');
+    });
+  }
+
+  QueryBuilder<Favorite, String?, QQueryOperations> episodeITunesIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'episodeITunesId');
     });
   }
 

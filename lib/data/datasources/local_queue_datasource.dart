@@ -1,15 +1,67 @@
 import 'package:isar_community/isar.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
+import '../../domain/entities/episode.dart' as domain;
 import '../database/isar_service.dart';
 import '../models/queue_model.dart';
-import '../models/episode_model.dart';
+import '../models/episode_model.dart' as model;
 
 class LocalQueueDataSource {
   final IsarService _isarService;
 
   LocalQueueDataSource({IsarService? isarService})
     : _isarService = isarService ?? IsarService.instance;
+
+  Queue? _findQueueByEpisode(domain.Episode episode) {
+    final isar = _isarService.isar;
+
+    if (episode.podcastITunesId != null && episode.podcastITunesId!.isNotEmpty) {
+      final queues = isar.queues
+          .filter()
+          .podcastITunesIdIsNotNull()
+          .and()
+          .podcastITunesIdIsNotEmpty()
+          .findAllSync();
+
+      for (final queue in queues) {
+        if (queue.podcastITunesId == episode.podcastITunesId) {
+          final queueEpisode = isar.episodes
+              .where()
+              .idEqualTo(queue.episodeId)
+              .findFirstSync();
+          if (queueEpisode != null &&
+              queueEpisode.itunesId == episode.itunesId &&
+              episode.itunesId != null &&
+              episode.itunesId!.isNotEmpty) {
+            return queue;
+          }
+        }
+      }
+    }
+
+    final queues = isar.queues
+        .filter()
+        .podcastIdIsNotNull()
+        .findAllSync();
+
+    for (final queue in queues) {
+      if (queue.podcastId == episode.podcastId) {
+        final queueEpisode = isar.episodes
+            .where()
+            .idEqualTo(queue.episodeId)
+            .findFirstSync();
+        if (queueEpisode != null && queueEpisode.guid == episode.guid &&
+            episode.guid != null && episode.guid!.isNotEmpty) {
+          return queue;
+        }
+      }
+    }
+
+    return isar.queues
+        .where()
+        .episodeIdEqualTo(episode.id)
+        .findFirstSync();
+  }
 
   Future<List<Queue>> getAll() async {
     try {
@@ -29,17 +81,14 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<void> addToQueue(int episodeId) async {
+  Future<void> addToQueue(domain.Episode episode) async {
     try {
-      Logger.info('📋 [QUEUE-DS] 开始添加到队列, episodeId: $episodeId');
+      Logger.info('📋 [QUEUE-DS] 开始添加到队列, episodeId: ${episode.id}, guid: ${episode.guid}');
 
-      final existing = await _isarService.isar.queues
-          .where()
-          .episodeIdEqualTo(episodeId)
-          .findFirst();
+      final existing = _findQueueByEpisode(episode);
 
       if (existing != null) {
-        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 已存在于队列中, 跳过添加');
+        Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 已存在于队列中, 跳过添加');
         return;
       }
 
@@ -50,13 +99,18 @@ class LocalQueueDataSource {
         final maxPosition = allItems.isEmpty ? 0 : allItems.map((e) => e.position).reduce((a, b) => a > b ? a : b);
 
         queueItem = Queue()
-          ..episodeId = episodeId
+          ..episodeId = episode.id
+          ..episodeGuid = episode.guid
+          ..episodeITunesId = episode.itunesId
+          ..podcastId = episode.podcastId
+          ..podcastGuid = null
+          ..podcastITunesId = episode.podcastITunesId
           ..position = maxPosition + 1;
 
         await _isarService.isar.queues.put(queueItem!);
       });
 
-      Logger.info('📋 [QUEUE-DS] 队列添加成功, episodeId: $episodeId, position: ${queueItem?.position}, id: ${queueItem?.id}');
+      Logger.info('📋 [QUEUE-DS] 队列添加成功, episodeId: ${episode.id}, position: ${queueItem?.position}, id: ${queueItem?.id}');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 添加到队列失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('添加到队列失败', originalError: e, stackTrace: stackTrace);
@@ -66,17 +120,14 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<void> insertToQueueFront(int episodeId) async {
+  Future<void> insertToQueueFront(domain.Episode episode) async {
     try {
-      Logger.info('📋 [QUEUE-DS] 开始插播到队列最前, episodeId: $episodeId');
+      Logger.info('📋 [QUEUE-DS] 开始插播到队列最前, episodeId: ${episode.id}');
 
-      final existing = await _isarService.isar.queues
-          .where()
-          .episodeIdEqualTo(episodeId)
-          .findFirst();
+      final existing = _findQueueByEpisode(episode);
 
       if (existing != null) {
-        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 已存在于队列中, 先移除再插播');
+        Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 已存在于队列中, 先移除再插播');
         await removeFromQueue(existing.id);
       }
 
@@ -87,7 +138,11 @@ class LocalQueueDataSource {
       }
 
       final queueItem = Queue()
-        ..episodeId = episodeId
+        ..episodeId = episode.id
+        ..episodeGuid = episode.guid
+        ..episodeITunesId = episode.itunesId
+        ..podcastId = episode.podcastId
+        ..podcastITunesId = episode.podcastITunesId
         ..position = 0;
 
       await _isarService.isar.writeTxn(() async {
@@ -97,7 +152,7 @@ class LocalQueueDataSource {
         await _isarService.isar.queues.put(queueItem);
       });
 
-      Logger.info('📋 [QUEUE-DS] 插播成功, episodeId: $episodeId, position: 0, id: ${queueItem.id}, 更新了 ${allItems.length} 条后续记录');
+      Logger.info('📋 [QUEUE-DS] 插播成功, episodeId: ${episode.id}, position: 0, id: ${queueItem.id}, 更新了 ${allItems.length} 条后续记录');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 插播到队列失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('插播到队列失败', originalError: e, stackTrace: stackTrace);
@@ -149,30 +204,27 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<void> removeFromQueueByEpisodeId(int episodeId) async {
+  Future<void> removeFromQueueByEpisode(domain.Episode episode) async {
     try {
-      Logger.info('📋 [QUEUE-DS] 开始根据 episodeId 从队列移除, episodeId: $episodeId');
+      Logger.info('📋 [QUEUE-DS] 开始根据 episode 从队列移除, episodeId: ${episode.id}');
 
-      final item = await _isarService.isar.queues
-          .where()
-          .episodeIdEqualTo(episodeId)
-          .findFirst();
+      final item = _findQueueByEpisode(episode);
 
       if (item == null) {
-        Logger.warning('📋 [QUEUE-DS] episodeId: $episodeId 不在队列中, 跳过移除');
+        Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 不在队列中, 跳过移除');
         return;
       }
 
       Logger.info('📋 [QUEUE-DS] 找到队列记录, queueId: ${item.id}, position: ${item.position}, 开始移除');
       await removeFromQueue(item.id);
 
-      Logger.info('📋 [QUEUE-DS] 根据 episodeId 移除队列成功, episodeId: $episodeId');
+      Logger.info('📋 [QUEUE-DS] 根据 episode 移除队列成功, episodeId: ${episode.id}');
     } on IsarError catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-DS] 根据 episodeId 移除队列失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('根据 episodeId 移除队列失败', originalError: e, stackTrace: stackTrace);
+      Logger.error('📋 [QUEUE-DS] 根据 episode 移除队列失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('根据 episode 移除队列失败', originalError: e, stackTrace: stackTrace);
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-DS] 根据 episodeId 移除队列异常', error: e, stackTrace: stackTrace);
-      throw AppException.unknown('根据 episodeId 移除队列失败', originalError: e, stackTrace: stackTrace);
+      Logger.error('📋 [QUEUE-DS] 根据 episode 移除队列异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('根据 episode 移除队列失败', originalError: e, stackTrace: stackTrace);
     }
   }
 
@@ -194,11 +246,10 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<void> removeFromQueueByPodcastId(int podcastId) async {
+  Future<void> removeFromQueueByPodcastId(int podcastId, {String? podcastGuid, String? podcastITunesId}) async {
     try {
-      Logger.info('📋 [QUEUE-DS] 开始根据 podcastId 从队列移除, podcastId: $podcastId');
+      Logger.info('📋 [QUEUE-DS] 开始根据 podcastId 从队列移除, podcastId: $podcastId, podcastITunesId: $podcastITunesId');
 
-      // 先查询该 podcast 的所有 episodes（在事务外）
       final episodes = await _isarService.isar.episodes
           .filter()
           .podcastIdEqualTo(podcastId)
@@ -207,7 +258,6 @@ class LocalQueueDataSource {
       final episodeIdsToRemove = episodes.map((e) => e.id).toSet();
       Logger.info('📋 [QUEUE-DS] 找到 ${episodeIdsToRemove.length} 个 episodes 需要清理');
 
-      // 获取队列中的所有记录（在事务外）
       final allQueueItems = await _isarService.isar.queues.where().findAll();
       
       if (allQueueItems.isEmpty) {
@@ -215,15 +265,28 @@ class LocalQueueDataSource {
         return;
       }
 
-      // 找出需要删除的队列记录
       final queueIdsToDelete = <int>[];
       for (final queueItem in allQueueItems) {
-        // 如果 episodeId 在目标列表中，或者 episode 不存在（孤立记录），则标记删除
+        if (podcastITunesId != null && podcastITunesId.isNotEmpty) {
+          if (queueItem.podcastITunesId == podcastITunesId) {
+            queueIdsToDelete.add(queueItem.id);
+            Logger.info('📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（podcastITunesId 匹配）');
+            continue;
+          }
+        }
+
+        if (podcastGuid != null && podcastGuid.isNotEmpty) {
+          if (queueItem.podcastGuid == podcastGuid) {
+            queueIdsToDelete.add(queueItem.id);
+            Logger.info('📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（podcastGuid 匹配）');
+            continue;
+          }
+        }
+
         if (episodeIdsToRemove.contains(queueItem.episodeId)) {
           queueIdsToDelete.add(queueItem.id);
           Logger.info('📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（podcastId 匹配）');
         } else {
-          // 检查是否为孤立记录
           final episode = await _isarService.isar.episodes
               .where()
               .idEqualTo(queueItem.episodeId)
@@ -240,7 +303,6 @@ class LocalQueueDataSource {
         return;
       }
 
-      // 在事务中批量删除
       await _isarService.isar.writeTxn(() async {
         await _isarService.isar.queues.deleteAll(queueIdsToDelete);
       });
@@ -255,17 +317,14 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<bool> isInQueue(int episodeId) async {
+  Future<bool> isInQueue(domain.Episode episode) async {
     try {
-      Logger.debug('📋 [QUEUE-DS] 检查是否在队列中, episodeId: $episodeId');
+      Logger.debug('📋 [QUEUE-DS] 检查是否在队列中, episodeId: ${episode.id}');
 
-      final count = await _isarService.isar.queues
-          .where()
-          .episodeIdEqualTo(episodeId)
-          .count();
+      final existing = _findQueueByEpisode(episode);
+      final result = existing != null;
 
-      final result = count > 0;
-      Logger.debug('📋 [QUEUE-DS] 队列检查结果, episodeId: $episodeId, isInQueue: $result, count: $count');
+      Logger.debug('📋 [QUEUE-DS] 队列检查结果, episodeId: ${episode.id}, isInQueue: $result');
       return result;
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 检查队列状态失败', error: e, stackTrace: stackTrace);

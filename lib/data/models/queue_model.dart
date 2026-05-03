@@ -9,6 +9,16 @@ class Queue {
   @Index()
   late int episodeId;
 
+  String? episodeGuid;
+
+  String? episodeITunesId;
+
+  int? podcastId;
+
+  String? podcastGuid;
+
+  String? podcastITunesId;
+
   @Index()
   late int position;
 

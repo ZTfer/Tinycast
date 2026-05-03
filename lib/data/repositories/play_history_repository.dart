@@ -5,6 +5,45 @@ import 'package:tinycast/data/models/episode_model.dart';
 import 'package:flutter/foundation.dart';
 
 class PlayHistoryRepository {
+  PlayHistory? _findHistoryByEpisode(Isar isar, int episodeId, String? episodeGuid, String? episodeITunesId) {
+    if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
+      final histories = isar.playHistorys
+          .filter()
+          .episodeITunesIdIsNotNull()
+          .and()
+          .episodeITunesIdIsNotEmpty()
+          .findAllSync();
+
+      for (final history in histories) {
+        if (history.episodeITunesId == episodeITunesId) {
+          return history;
+        }
+      }
+    }
+
+    if (episodeGuid != null && episodeGuid.isNotEmpty) {
+      final histories = isar.playHistorys
+          .filter()
+          .episodeGuidIsNotNull()
+          .and()
+          .episodeGuidIsNotEmpty()
+          .findAllSync();
+
+      for (final history in histories) {
+        if (history.episodeGuid == episodeGuid) {
+          return history;
+        }
+      }
+    }
+
+    return isar.playHistorys
+        .filter()
+        .episodeIdEqualTo(episodeId)
+        .and()
+        .isDeletedEqualTo(false)
+        .findFirstSync();
+  }
+
   Future<List<PlayHistory>> getCompletedHistories() async {
     final isar = IsarService.instance.isar;
 
@@ -40,20 +79,15 @@ class PlayHistoryRepository {
         .findFirst();
   }
 
-  Future<PlayHistory?> getByEpisodeId(int episodeId) async {
+  Future<PlayHistory?> getByEpisodeId(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
-    return isar.playHistorys
-        .filter()
-        .episodeIdEqualTo(episodeId)
-        .and()
-        .isDeletedEqualTo(false)
-        .findFirst();
+    return _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
   }
 
   Future<void> saveOrUpdate(PlayHistory history) async {
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
-      final existing = await getByEpisodeId(history.episodeId);
+      final existing = _findHistoryByEpisode(isar, history.episodeId, history.episodeGuid, history.episodeITunesId);
       if (existing != null) {
         history.id = existing.id;
       }
@@ -61,10 +95,10 @@ class PlayHistoryRepository {
     });
   }
 
-  Future<void> updateProgress(int episodeId, int positionMs, int duration) async {
+  Future<void> updateProgress(int episodeId, int positionMs, int duration, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
-      final history = await getByEpisodeId(episodeId);
+      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
       if (history != null) {
         history.lastPlayedPositionMs = positionMs;
         history.playedDuration += duration;
@@ -74,10 +108,10 @@ class PlayHistoryRepository {
     });
   }
 
-  Future<void> markAsCompleted(int episodeId) async {
+  Future<void> markAsCompleted(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
-      final history = await getByEpisodeId(episodeId);
+      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
       if (history != null) {
         history.isPlayed = true;
         history.status = PlayHistoryStatus.completed;
@@ -87,10 +121,10 @@ class PlayHistoryRepository {
     });
   }
 
-  Future<void> updateOrCreatePlayHistoryAsCompleted(int episodeId) async {
+  Future<void> updateOrCreatePlayHistoryAsCompleted(int episodeId, {String? episodeGuid, String? episodeITunesId, String? podcastGuid, String? podcastITunesId}) async {
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
-      final history = await getByEpisodeId(episodeId);
+      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
       if (history != null) {
         history.isPlayed = true;
         history.status = PlayHistoryStatus.completed;
@@ -98,7 +132,35 @@ class PlayHistoryRepository {
         await isar.playHistorys.put(history);
         debugPrint('✅ [PlayHistory] 已更新 episodeId=$episodeId 为 completed 状态');
       } else {
-        final episode = await isar.episodes.get(episodeId);
+        Episode? episode;
+        if (episodeGuid != null && episodeGuid.isNotEmpty) {
+          episode = isar.episodes
+              .filter()
+              .guidIsNotNull()
+              .and()
+              .guidIsNotEmpty()
+              .findAllSync()
+              .firstWhere(
+                (e) => e.guid == episodeGuid,
+                orElse: () => throw Exception('Episode not found'),
+              );
+        } else if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
+          final episodes = isar.episodes
+              .filter()
+              .itunesIdIsNotNull()
+              .and()
+              .itunesIdIsNotEmpty()
+              .findAllSync();
+          for (final ep in episodes) {
+            if (ep.itunesId == episodeITunesId) {
+              episode = ep;
+              break;
+            }
+          }
+        } else {
+          episode = await isar.episodes.get(episodeId);
+        }
+
         if (episode == null) {
           debugPrint('⚠️ [PlayHistory] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
           return;
@@ -106,7 +168,11 @@ class PlayHistoryRepository {
 
         final newHistory = PlayHistory()
           ..episodeId = episodeId
+          ..episodeGuid = episodeGuid
+          ..episodeITunesId = episodeITunesId
           ..podcastId = episode.podcastId
+          ..podcastGuid = podcastGuid
+          ..podcastITunesId = podcastITunesId
           ..title = episode.title
           ..description = episode.description
           ..artworkUrl = episode.artworkUrl
@@ -121,14 +187,14 @@ class PlayHistoryRepository {
     });
   }
 
-  Future<void> softDelete(int episodeId) async {
+  Future<void> softDelete(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
-    await isar.writeTxn(() async {
-      final histories = await isar.playHistorys
-          .where()
-          .episodeIdEqualTo(episodeId)
-          .findAll();
+    final histories = isar.playHistorys
+        .where()
+        .episodeIdEqualTo(episodeId)
+        .findAllSync();
 
+    await isar.writeTxn(() async {
       for (final history in histories) {
         history.isDeleted = true;
         await isar.playHistorys.put(history);
@@ -136,14 +202,27 @@ class PlayHistoryRepository {
     });
   }
 
-  Future<void> removeByPodcastId(int podcastId) async {
-    debugPrint('🗑️ [PlayHistory] 开始清理 podcastId=$podcastId 的历史记录');
+  Future<void> removeByPodcastId(int podcastId, {String? podcastGuid, String? podcastITunesId}) async {
+    debugPrint('🗑️ [PlayHistory] 开始清理 podcastId=$podcastId 的历史记录, podcastITunesId: $podcastITunesId');
     final isar = IsarService.instance.isar;
     await isar.writeTxn(() async {
-      final histories = await isar.playHistorys
-          .filter()
-          .podcastIdEqualTo(podcastId)
-          .findAll();
+      List<PlayHistory> histories;
+      if (podcastITunesId != null && podcastITunesId.isNotEmpty) {
+        histories = isar.playHistorys
+            .filter()
+            .podcastITunesIdEqualTo(podcastITunesId)
+            .findAllSync();
+      } else if (podcastGuid != null && podcastGuid.isNotEmpty) {
+        histories = isar.playHistorys
+            .filter()
+            .podcastGuidEqualTo(podcastGuid)
+            .findAllSync();
+      } else {
+        histories = isar.playHistorys
+            .filter()
+            .podcastIdEqualTo(podcastId)
+            .findAllSync();
+      }
 
       debugPrint('🗑️ [PlayHistory] 找到 ${histories.length} 条记录待清理');
       for (final history in histories) {

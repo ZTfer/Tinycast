@@ -1,3 +1,4 @@
+import '../../domain/entities/episode.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../datasources/local_favorite_datasource.dart';
 import '../../core/utils/logger.dart';
@@ -9,21 +10,21 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
     : _dataSource = dataSource ?? LocalFavoriteDataSource();
 
   @override
-  Future<void> addFavorite(int episodeId) async {
-    Logger.info('⭐ [FAVORITE-REPO] addFavorite 调用, episodeId: $episodeId');
-    await _dataSource.addFavorite(episodeId);
+  Future<void> addFavorite(Episode episode) async {
+    Logger.info('⭐ [FAVORITE-REPO] addFavorite 调用, episodeId: ${episode.id}');
+    await _dataSource.addFavorite(episode);
   }
 
   @override
-  Future<void> removeFavorite(int episodeId) async {
-    Logger.info('⭐ [FAVORITE-REPO] removeFavorite 调用, episodeId: $episodeId');
-    await _dataSource.removeFavorite(episodeId);
+  Future<void> removeFavorite(Episode episode) async {
+    Logger.info('⭐ [FAVORITE-REPO] removeFavorite 调用, episodeId: ${episode.id}');
+    await _dataSource.removeFavorite(episode);
   }
 
   @override
-  Future<bool> isFavorite(int episodeId) async {
-    Logger.debug('⭐ [FAVORITE-REPO] isFavorite 调用, episodeId: $episodeId');
-    return await _dataSource.isFavorite(episodeId);
+  Future<bool> isFavorite(Episode episode) async {
+    Logger.debug('⭐ [FAVORITE-REPO] isFavorite 调用, episodeId: ${episode.id}');
+    return await _dataSource.isFavorite(episode);
   }
 
   @override

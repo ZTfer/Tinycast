@@ -1,3 +1,4 @@
+import '../../domain/entities/episode.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../datasources/local_queue_datasource.dart';
 import '../models/queue_model.dart';
@@ -16,15 +17,15 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> addToQueue(int episodeId) async {
-    Logger.info('📋 [QUEUE-REPO] addToQueue 调用, episodeId: $episodeId');
-    await _dataSource.addToQueue(episodeId);
+  Future<void> addToQueue(Episode episode) async {
+    Logger.info('📋 [QUEUE-REPO] addToQueue 调用, episodeId: ${episode.id}');
+    await _dataSource.addToQueue(episode);
   }
 
   @override
-  Future<void> insertToQueueFront(int episodeId) async {
-    Logger.info('📋 [QUEUE-REPO] insertToQueueFront 调用, episodeId: $episodeId');
-    await _dataSource.insertToQueueFront(episodeId);
+  Future<void> insertToQueueFront(Episode episode) async {
+    Logger.info('📋 [QUEUE-REPO] insertToQueueFront 调用, episodeId: ${episode.id}');
+    await _dataSource.insertToQueueFront(episode);
   }
 
   @override
@@ -34,9 +35,9 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> removeFromQueueByEpisodeId(int episodeId) async {
-    Logger.info('📋 [QUEUE-REPO] removeFromQueueByEpisodeId 调用, episodeId: $episodeId');
-    await _dataSource.removeFromQueueByEpisodeId(episodeId);
+  Future<void> removeFromQueueByEpisode(Episode episode) async {
+    Logger.info('📋 [QUEUE-REPO] removeFromQueueByEpisode 调用, episodeId: ${episode.id}');
+    await _dataSource.removeFromQueueByEpisode(episode);
   }
 
   @override
@@ -46,14 +47,14 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> removeFromQueueByPodcastId(int podcastId) async {
-    Logger.info('📋 [QUEUE-REPO] removeFromQueueByPodcastId 调用, podcastId: $podcastId');
-    await _dataSource.removeFromQueueByPodcastId(podcastId);
+  Future<void> removeFromQueueByPodcast(int podcastId, {String? podcastGuid, String? podcastITunesId}) async {
+    Logger.info('📋 [QUEUE-REPO] removeFromQueueByPodcast 调用, podcastId: $podcastId');
+    await _dataSource.removeFromQueueByPodcastId(podcastId, podcastGuid: podcastGuid, podcastITunesId: podcastITunesId);
   }
 
   @override
-  Future<bool> isInQueue(int episodeId) async {
-    Logger.debug('📋 [QUEUE-REPO] isInQueue 调用, episodeId: $episodeId');
-    return await _dataSource.isInQueue(episodeId);
+  Future<bool> isInQueue(Episode episode) async {
+    Logger.debug('📋 [QUEUE-REPO] isInQueue 调用, episodeId: ${episode.id}');
+    return await _dataSource.isInQueue(episode);
   }
 }
