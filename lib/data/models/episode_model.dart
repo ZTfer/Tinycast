@@ -52,6 +52,8 @@ class Episode {
 
   String? itunesId;
 
+  String? podcastITunesId;
+
   String? itunesArtworkUrl;
 
   DateTime? itunesReleaseDate;

@@ -128,6 +128,11 @@ class RemotePodcastDataSource {
         ),
       );
 
+      await localDataSource.updateEpisodesPodcastITunesId(
+        podcastModel.id,
+        match.collectionId,
+      );
+
       Logger.info(
         '✅ 成功更新完整 iTunes 信息: itunesId=${match.collectionId}, '
         'artworkUrl=${match.artworkUrl600}, '

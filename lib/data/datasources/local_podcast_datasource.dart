@@ -452,6 +452,46 @@ class LocalPodcastDataSource {
     }
   }
 
+  /// 将播客的 iTunes ID 批量关联到其所有 episode
+  Future<void> updateEpisodesPodcastITunesId(
+    int podcastId,
+    String? podcastITunesId,
+  ) async {
+    try {
+      Logger.info('更新播客 $podcastId 下所有 episode 的 podcastITunesId: $podcastITunesId');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .podcastIdEqualTo(podcastId)
+          .findAll();
+
+      if (episodes.isEmpty) return;
+
+      await _isarService.isar.writeTxn(() async {
+        for (final episode in episodes) {
+          episode.podcastITunesId = podcastITunesId;
+        }
+        await _isarService.isar.episodes.putAll(episodes);
+      });
+
+      Logger.info('成功更新 ${episodes.length} 个 episode 的 podcastITunesId');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('更新 episode podcastITunesId 失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '更新 episode iTunes 关联失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('更新 episode podcastITunesId 失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '更新 episode iTunes 关联失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<List<model.Episode>> getUnplayedEpisodes() async {
     try {
       Logger.info('获取所有未播放节目');
@@ -694,6 +734,7 @@ class LocalPodcastDataSource {
       ..lastPlayedAt = entity.lastPlayedAt
       ..updatedAt = entity.updatedAt
       ..itunesId = entity.itunesId
+      ..podcastITunesId = entity.podcastITunesId
       ..itunesArtworkUrl = entity.itunesArtworkUrl
       ..itunesReleaseDate = entity.itunesReleaseDate
       ..itunesExplicitness = entity.itunesExplicitness

@@ -23,6 +23,7 @@ class Episode {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? itunesId;
+  final String? podcastITunesId;
   final String? itunesArtworkUrl;
   final DateTime? itunesReleaseDate;
   final String? itunesExplicitness;
@@ -53,6 +54,7 @@ class Episode {
     required this.createdAt,
     required this.updatedAt,
     this.itunesId,
+    this.podcastITunesId,
     this.itunesArtworkUrl,
     this.itunesReleaseDate,
     this.itunesExplicitness,
