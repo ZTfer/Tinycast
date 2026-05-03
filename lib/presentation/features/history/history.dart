@@ -130,6 +130,12 @@ class _HistoryItem extends ConsumerWidget {
       isFavorite: false,
       createdAt: history.createdAt,
       updatedAt: history.lastUpdateTime,
+      itunesId: history.episodeITunesId,
+      podcastITunesId: history.podcastITunesId,
+      itunesArtworkUrl: null,
+      itunesReleaseDate: null,
+      itunesExplicitness: null,
+      itunesContentAdvisoryRating: null,
     );
   }
 
