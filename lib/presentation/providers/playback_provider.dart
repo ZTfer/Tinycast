@@ -227,8 +227,16 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
     // 4. 刷新未播放剧集列表（必须等待刷新完成，否则后续会获取到旧的列表）
     debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
-    await ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
-    debugPrint('✅ [Playback] Unplayed episodes list refreshed');
+    try {
+      await ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
+      debugPrint('✅ [Playback] Unplayed episodes list refreshed');
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to refresh unplayed episodes',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
 
     // 5. 检查睡眠定时器（优先级高于连续播放）
     final settingsAsync = ref.read(settingsProvider);
