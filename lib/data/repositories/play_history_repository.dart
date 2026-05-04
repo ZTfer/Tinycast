@@ -100,94 +100,100 @@ class PlayHistoryRepository {
 
   Future<void> updateProgress(int episodeId, int positionMs, int duration, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
-    await isar.writeTxn(() async {
-      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
-      if (history != null) {
-        history.lastPlayedPositionMs = positionMs;
-        history.playedDuration += duration;
-        history.lastUpdateTime = DateTime.now();
+    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    if (history != null) {
+      history.lastPlayedPositionMs = positionMs;
+      history.playedDuration += duration;
+      history.lastUpdateTime = DateTime.now();
+      await isar.writeTxn(() async {
         await isar.playHistorys.put(history);
-      }
-    });
+      });
+    }
   }
 
   Future<void> markAsCompleted(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
-    await isar.writeTxn(() async {
-      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
-      if (history != null) {
-        history.isPlayed = true;
-        history.status = PlayHistoryStatus.completed;
-        history.lastUpdateTime = DateTime.now();
+    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    if (history != null) {
+      history.isPlayed = true;
+      history.status = PlayHistoryStatus.completed;
+      history.lastUpdateTime = DateTime.now();
+      await isar.writeTxn(() async {
         await isar.playHistorys.put(history);
-      }
-    });
+      });
+    }
   }
 
   Future<void> updateOrCreatePlayHistoryAsCompleted(int episodeId, {String? episodeGuid, String? episodeITunesId, String? podcastGuid, String? podcastITunesId}) async {
     final isar = IsarService.instance.isar;
-    await isar.writeTxn(() async {
-      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
-      if (history != null) {
-        history.isPlayed = true;
-        history.status = PlayHistoryStatus.completed;
-        history.lastUpdateTime = DateTime.now();
-        await isar.playHistorys.put(history);
-        debugPrint('✅ [PlayHistory] 已更新 episodeId=$episodeId 为 completed 状态');
-      } else {
-        Episode? episode;
-        if (episodeGuid != null && episodeGuid.isNotEmpty) {
-          episode = isar.episodes
-              .filter()
-              .guidIsNotNull()
-              .and()
-              .guidIsNotEmpty()
-              .findAllSync()
-              .firstWhere(
-                (e) => e.guid == episodeGuid,
-                orElse: () => throw Exception('Episode not found'),
-              );
-        } else if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
-          final episodes = isar.episodes
-              .filter()
-              .itunesIdIsNotNull()
-              .and()
-              .itunesIdIsNotEmpty()
-              .findAllSync();
-          for (final ep in episodes) {
-            if (ep.itunesId == episodeITunesId) {
-              episode = ep;
-              break;
-            }
+    final existing = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    
+    if (existing != null) {
+      existing.isPlayed = true;
+      existing.status = PlayHistoryStatus.completed;
+      existing.lastUpdateTime = DateTime.now();
+      await isar.writeTxn(() async {
+        await isar.playHistorys.put(existing);
+      });
+      debugPrint('✅ [PlayHistory] 已更新 episodeId=$episodeId 为 completed 状态');
+    } else {
+      Episode? episode;
+      if (episodeGuid != null && episodeGuid.isNotEmpty) {
+        final episodes = isar.episodes
+            .filter()
+            .guidIsNotNull()
+            .and()
+            .guidIsNotEmpty()
+            .findAllSync();
+        for (final ep in episodes) {
+          if (ep.guid == episodeGuid) {
+            episode = ep;
+            break;
           }
-        } else {
-          episode = await isar.episodes.get(episodeId);
         }
-
-        if (episode == null) {
-          debugPrint('⚠️ [PlayHistory] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
-          return;
+      } else if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
+        final episodes = isar.episodes
+            .filter()
+            .itunesIdIsNotNull()
+            .and()
+            .itunesIdIsNotEmpty()
+            .findAllSync();
+        for (final ep in episodes) {
+          if (ep.itunesId == episodeITunesId) {
+            episode = ep;
+            break;
+          }
         }
-
-        final newHistory = PlayHistory()
-          ..episodeId = episodeId
-          ..episodeGuid = episodeGuid
-          ..episodeITunesId = episodeITunesId
-          ..podcastId = episode.podcastId
-          ..podcastGuid = podcastGuid
-          ..podcastITunesId = podcastITunesId
-          ..title = episode.title
-          ..description = episode.description
-          ..artworkUrl = episode.artworkUrl
-          ..isPlayed = true
-          ..status = PlayHistoryStatus.completed
-          ..playedDuration = 0
-          ..lastUpdateTime = DateTime.now()
-          ..isDeleted = false;
-        await isar.playHistorys.put(newHistory);
-        debugPrint('🆕 [PlayHistory] 已创建新记录 episodeId=$episodeId, 标题: ${episode.title}, 状态为 completed');
+      } else {
+        episode = isar.episodes.getSync(episodeId);
       }
-    });
+
+      if (episode == null) {
+        debugPrint('⚠️ [PlayHistory] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
+        return;
+      }
+
+      final newHistory = PlayHistory()
+        ..episodeId = episodeId
+        ..episodeGuid = episodeGuid
+        ..episodeITunesId = episodeITunesId
+        ..podcastId = episode.podcastId
+        ..podcastGuid = podcastGuid
+        ..podcastITunesId = podcastITunesId
+        ..title = episode.title
+        ..description = episode.description
+        ..artworkUrl = episode.artworkUrl
+        ..isPlayed = true
+        ..status = PlayHistoryStatus.completed
+        ..playedDuration = 0
+        ..lastUpdateTime = DateTime.now()
+        ..isDeleted = false;
+      
+      await isar.writeTxn(() async {
+        await isar.playHistorys.put(newHistory);
+      });
+      debugPrint('🆕 [PlayHistory] 已创建新记录 episodeId=$episodeId, 标题: ${episode.title}, 状态为 completed');
+    }
   }
 
   Future<void> softDelete(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
