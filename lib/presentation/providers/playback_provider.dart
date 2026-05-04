@@ -225,9 +225,10 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     // 3. 检查并自动删除下载的音频文件
     await _handleAutoDeleteDownload(episodeId);
 
-    // 4. 刷新未播放剧集列表
+    // 4. 刷新未播放剧集列表（必须等待刷新完成，否则后续会获取到旧的列表）
     debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
-    ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
+    await ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
+    debugPrint('✅ [Playback] Unplayed episodes list refreshed');
 
     // 5. 检查睡眠定时器（优先级高于连续播放）
     final settingsAsync = ref.read(settingsProvider);
@@ -300,22 +301,33 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       final settingsAsync = ref.read(settingsProvider);
       final continuousPlay = settingsAsync.value?.continuousPlay ?? true;
 
+      if (!continuousPlay) {
+        debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
+        return;
+      }
+
+      // 优先从队列中获取下一集
+      final queueState = ref.read(queueNotifierProvider);
+      if (queueState.queueEpisodes.isNotEmpty) {
+        final nextFromQueue = queueState.queueEpisodes.first;
+        debugPrint('🎯 [Playback] Next from queue: ${nextFromQueue.title} (id: ${nextFromQueue.id})');
+        await playEpisode(nextFromQueue);
+        return;
+      }
+
+      // 队列空则从未播放列表中获取
       final unplayedState = ref.read(unplayedEpisodesNotifierProvider);
       final nextEpisode = unplayedState.episodes.isNotEmpty
           ? unplayedState.episodes.first
           : null;
 
       if (nextEpisode == null) {
-        debugPrint('🎯 [Playback] No more unplayed episodes');
+        debugPrint('🎯 [Playback] No more episodes in queue or unplayed list');
         return;
       }
 
-      if (continuousPlay) {
-        debugPrint('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
-        await playEpisode(nextEpisode);
-      } else {
-        debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
-      }
+      debugPrint('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
+      await playEpisode(nextEpisode);
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to handle next episode playback',
