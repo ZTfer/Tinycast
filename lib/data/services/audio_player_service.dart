@@ -191,9 +191,10 @@ class AudioPlayerService {
     try {
       String? localAudioPath;
       if (episode.downloadedPath != null) {
-        final dir = await getApplicationSupportDirectory();
-        localAudioPath = '${dir.path}/${episode.downloadedPath}';
-        Logger.info('Checking local file: $localAudioPath');
+        localAudioPath = await _findLocalAudioPath(episode.downloadedPath!);
+        if (localAudioPath != null) {
+          Logger.info('Found local file: $localAudioPath');
+        }
       }
 
       final audioPath = localAudioPath ?? episode.audioUrl;
@@ -204,16 +205,8 @@ class AudioPlayerService {
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
       } else if (localAudioPath != null) {
-        final file = File(localAudioPath);
-        if (await file.exists()) {
-          Logger.info('Local file exists, playing: $localAudioPath');
-          await _player.setFilePath(localAudioPath);
-        } else {
-          Logger.warning(
-            'Local file not found: $localAudioPath, falling back to remote URL',
-          );
-          await _player.setUrl(episode.audioUrl);
-        }
+        Logger.info('Local file exists, playing: $localAudioPath');
+        await _player.setFilePath(localAudioPath);
       } else {
         Logger.error('No valid audio path available for episode: ${episode.title}');
         throw Exception('No valid audio path');
@@ -457,6 +450,37 @@ class AudioPlayerService {
         stackTrace: stackTrace,
       );
     }
+  }
+
+  Future<String?> _findLocalAudioPath(String relativePath) async {
+    // 优先检查应用支持目录（当前标准路径）
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final primaryPath = '${supportDir.path}/$relativePath';
+      final primaryFile = File(primaryPath);
+      if (await primaryFile.exists()) {
+        Logger.info('Found in support directory: $primaryPath');
+        return primaryPath;
+      }
+    } catch (e) {
+      Logger.warning('Failed to check support directory: $e');
+    }
+
+    // 回退到文档目录（兼容旧版本下载的文件）
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final fallbackPath = '${docsDir.path}/$relativePath';
+      final fallbackFile = File(fallbackPath);
+      if (await fallbackFile.exists()) {
+        Logger.info('Found in documents directory (legacy): $fallbackPath');
+        return fallbackPath;
+      }
+    } catch (e) {
+      Logger.warning('Failed to check documents directory: $e');
+    }
+
+    Logger.warning('Local audio file not found in any directory: $relativePath');
+    return null;
   }
 
   Future<void> _updateEpisodeLastPlayedAt(int episodeId) async {
