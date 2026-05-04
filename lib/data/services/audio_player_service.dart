@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
@@ -188,23 +189,34 @@ class AudioPlayerService {
     bool updateLastPlayedAt = true,
   }) async {
     try {
-      final audioPath = episode.downloadedPath ?? episode.audioUrl;
+      String? localAudioPath;
+      if (episode.downloadedPath != null) {
+        final dir = await getApplicationDocumentsDirectory();
+        localAudioPath = '${dir.path}/${episode.downloadedPath}';
+        Logger.info('Checking local file: $localAudioPath');
+      }
+
+      final audioPath = localAudioPath ?? episode.audioUrl;
       final action = autoPlay ? 'Playing' : 'Loading';
 
       Logger.info('$action episode: ${episode.title} from $audioPath');
 
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
-      } else {
-        final file = File(audioPath);
+      } else if (localAudioPath != null) {
+        final file = File(localAudioPath);
         if (await file.exists()) {
-          await _player.setFilePath(audioPath);
+          Logger.info('Local file exists, playing: $localAudioPath');
+          await _player.setFilePath(localAudioPath);
         } else {
           Logger.warning(
-            'Local file not found: $audioPath, falling back to remote URL',
+            'Local file not found: $localAudioPath, falling back to remote URL',
           );
           await _player.setUrl(episode.audioUrl);
         }
+      } else {
+        Logger.error('No valid audio path available for episode: ${episode.title}');
+        throw Exception('No valid audio path');
       }
 
       _currentEpisode = episode;

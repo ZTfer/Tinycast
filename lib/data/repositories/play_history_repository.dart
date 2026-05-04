@@ -86,11 +86,14 @@ class PlayHistoryRepository {
 
   Future<void> saveOrUpdate(PlayHistory history) async {
     final isar = IsarService.instance.isar;
+    
+    final existing = _findHistoryByEpisode(isar, history.episodeId, history.episodeGuid, history.episodeITunesId);
+    
+    if (existing != null) {
+      history.id = existing.id;
+    }
+    
     await isar.writeTxn(() async {
-      final existing = _findHistoryByEpisode(isar, history.episodeId, history.episodeGuid, history.episodeITunesId);
-      if (existing != null) {
-        history.id = existing.id;
-      }
       await isar.playHistorys.put(history);
     });
   }
