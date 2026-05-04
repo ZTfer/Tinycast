@@ -191,7 +191,7 @@ class AudioPlayerService {
     try {
       String? localAudioPath;
       if (episode.downloadedPath != null) {
-        final dir = await getApplicationDocumentsDirectory();
+        final dir = await getApplicationSupportDirectory();
         localAudioPath = '${dir.path}/${episode.downloadedPath}';
         Logger.info('Checking local file: $localAudioPath');
       }
