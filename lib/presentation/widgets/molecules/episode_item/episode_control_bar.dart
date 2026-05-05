@@ -409,12 +409,12 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
       Logger.info('▶️ [PLAY-PAUSE] isPlaying: ${playerState.isPlaying}');
       
       // 只有当 episode 匹配且音频已加载时才切换播放/暂停
-      final isAudioLoaded = playerState.currentEpisode != null && playerState.isPlaying;
+      final isAudioLoaded = playerState.currentEpisode != null;
       Logger.info('▶️ [PLAY-PAUSE] isAudioLoaded: $isAudioLoaded');
       
       if (isCurrentEpisode && isAudioLoaded) {
-        // 当前音频正在播放，切换暂停
-        Logger.info('▶️ [PLAY-PAUSE] Pausing current episode');
+        // 当前音频已加载，切换播放/暂停
+        Logger.info('▶️ [PLAY-PAUSE] Toggling play/pause for current episode');
         ref.read(playbackProvider.notifier).togglePlayPause();
       } else if (isCurrentEpisode) {
         // episode 匹配但音频未播放，尝试继续播放

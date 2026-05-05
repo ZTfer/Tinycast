@@ -158,17 +158,15 @@ class LocalPodcastDataSource {
     try {
       Logger.info('删除播客: $id');
 
-      final podcast = await _isarService.isar.podcasts.get(id);
-      if (podcast == null) {
-        Logger.warning('播客不存在，跳过删除: $id');
-        return;
-      }
-
-      await _isarService.isar.writeTxn(() async {
-        await _isarService.isar.podcasts.delete(id);
+      final deleted = await _isarService.isar.writeTxn(() async {
+        return await _isarService.isar.podcasts.delete(id);
       });
 
-      Logger.info('成功删除播客: $id');
+      if (deleted) {
+        Logger.info('成功删除播客: $id');
+      } else {
+        Logger.warning('播客不存在，跳过删除: $id');
+      }
     } on IsarError catch (e, stackTrace) {
       Logger.error('删除播客失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
