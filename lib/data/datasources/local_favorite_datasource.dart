@@ -11,45 +11,29 @@ class LocalFavoriteDataSource {
   LocalFavoriteDataSource({IsarService? isarService})
     : _isarService = isarService ?? IsarService.instance;
 
-  Favorite? _findFavoriteByEpisode(Episode episode) {
+  Future<Favorite?> _findFavoriteByEpisode(Episode episode) async {
     final isar = _isarService.isar;
 
-    if (episode.podcastITunesId != null && episode.podcastITunesId!.isNotEmpty) {
-      final favorites = isar.favorites
+    if (episode.itunesId != null && episode.itunesId!.isNotEmpty) {
+      final fav = await isar.favorites
           .filter()
-          .episodeITunesIdIsNotNull()
-          .and()
-          .episodeITunesIdIsNotEmpty()
-          .findAllSync();
-
-      for (final fav in favorites) {
-        if (fav.episodeITunesId == episode.itunesId &&
-            episode.itunesId != null &&
-            episode.itunesId!.isNotEmpty) {
-          return fav;
-        }
-      }
+          .episodeITunesIdEqualTo(episode.itunesId)
+          .findFirst();
+      if (fav != null) return fav;
     }
 
     if (episode.guid != null && episode.guid!.isNotEmpty) {
-      final favorites = isar.favorites
+      final fav = await isar.favorites
           .filter()
-          .episodeGuidIsNotNull()
-          .and()
-          .episodeGuidIsNotEmpty()
-          .findAllSync();
-
-      for (final fav in favorites) {
-        if (fav.episodeGuid == episode.guid) {
-          return fav;
-        }
-      }
+          .episodeGuidEqualTo(episode.guid)
+          .findFirst();
+      if (fav != null) return fav;
     }
 
     return isar.favorites
         .where()
         .episodeIdEqualTo(episode.id)
-        .findFirstSync();
+        .findFirst();
   }
 
   /// 添加收藏
@@ -57,7 +41,7 @@ class LocalFavoriteDataSource {
     try {
       Logger.info('⭐ [FAVORITE-DS] 开始添加收藏, episodeId: ${episode.id}, guid: ${episode.guid}, itunesId: ${episode.itunesId}');
 
-      final existing = _findFavoriteByEpisode(episode);
+      final existing = await _findFavoriteByEpisode(episode);
 
       if (existing != null) {
         Logger.warning('⭐ [FAVORITE-DS] episodeId: ${episode.id} 已存在于收藏中, 跳过添加');
@@ -88,7 +72,7 @@ class LocalFavoriteDataSource {
     try {
       Logger.info('⭐ [FAVORITE-DS] 开始移除收藏, episodeId: ${episode.id}');
 
-      final existing = _findFavoriteByEpisode(episode);
+      final existing = await _findFavoriteByEpisode(episode);
 
       if (existing == null) {
         Logger.warning('⭐ [FAVORITE-DS] episodeId: ${episode.id} 不在收藏中, 跳过移除');
@@ -114,7 +98,7 @@ class LocalFavoriteDataSource {
     try {
       Logger.debug('⭐ [FAVORITE-DS] 检查收藏状态, episodeId: ${episode.id}');
 
-      final existing = _findFavoriteByEpisode(episode);
+      final existing = await _findFavoriteByEpisode(episode);
       final isFav = existing != null;
 
       Logger.debug('⭐ [FAVORITE-DS] 收藏状态查询结果, episodeId: ${episode.id}, isFavorite: $isFav');
