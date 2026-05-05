@@ -179,9 +179,9 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     );
     if (!mounted) return;
     try {
-      final isFav = ref
-          .read(favoriteProvider)
-          .isEpisodeFavorite(widget.episodeId);
+      final isFav = await ref
+          .read(favoriteProvider.notifier)
+          .checkIsFavorite(widget.episode);
       final successMessage = isFav ? '已取消收藏' : '已收藏';
       await ref
           .read(favoriteProvider.notifier)
