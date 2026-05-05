@@ -62,9 +62,29 @@ class RssParserService {
           );
         }
 
+        final contentType = response.headers.value('content-type')?.toLowerCase() ?? '';
         final xmlContent = response.data as String;
         if (xmlContent.isEmpty) {
           throw AppException.validation('RSS 内容为空');
+        }
+
+        final isCaptchaChallenge = _isCaptchaChallenge(response, xmlContent);
+        if (isCaptchaChallenge) {
+          Logger.warning('检测到反爬虫验证挑战 (SG-Captcha): $rssUrl');
+          throw AppException.network(
+            '该网站启用了反机器人验证（安全网关），当前网络环境无法直接访问其 RSS 源。\n'
+            '建议尝试：\n'
+            '1. 切换网络（如手机热点）后重试\n'
+            '2. 稍等片刻后再试\n'
+            '3. 使用该播客的其他 RSS 订阅地址',
+            statusCode: response.statusCode,
+          );
+        }
+
+        if (_isHtmlResponse(contentType, xmlContent)) {
+          throw AppException.validation(
+            '服务器返回了 HTML 页面而非 RSS 数据，该 URL 可能需要通过网页查找订阅链接',
+          );
         }
 
         final podcast = _extractPodcastFromRss(xmlContent, rssUrl);
@@ -349,5 +369,35 @@ class RssParserService {
       Logger.debug('解析日期时间失败: $dateTimeString');
       return null;
     }
+  }
+
+  bool _isHtmlResponse(String contentType, String content) {
+    if (contentType.contains('text/html') || contentType.contains('application/xhtml')) {
+      return true;
+    }
+    final trimmed = content.trimLeft();
+    if (trimmed.startsWith('<!DOCTYPE html') || trimmed.startsWith('<html') || trimmed.startsWith('<HTML')) {
+      return true;
+    }
+    if (trimmed.startsWith('<head') || trimmed.startsWith('<HEAD')) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isCaptchaChallenge(dio.Response response, String content) {
+    final hasCaptchaHeader = response.headers.value('sg-captcha') != null;
+    if (hasCaptchaHeader) {
+      return true;
+    }
+    final challengePattern = RegExp(r'sgcaptcha|sg-captcha|captcha.*challenge|well-known.*challenge', caseSensitive: false);
+    if (challengePattern.hasMatch(content)) {
+      return true;
+    }
+    final metaRefreshPattern = RegExp("meta\\s+http-equiv=['\"]refresh['\"]", caseSensitive: false);
+    if (metaRefreshPattern.hasMatch(content) && content.length < 500) {
+      return true;
+    }
+    return false;
   }
 }

@@ -83,7 +83,20 @@ class PodcastSearchService {
   Future<Map<String, dynamic>> _parseXmlFile(String xmlUrl) async {
     try {
       return await _rssParserService.parseRssFeed(xmlUrl);
+    } on AppException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('html') || msg.contains('xmlexception') || msg.contains('xmltagexception')) {
+        Logger.warning('XML URL 返回了非 XML 内容，尝试作为网页处理: $xmlUrl');
+        return await _searchFromHtml(xmlUrl);
+      }
+      Logger.error('解析 XML 文件失败: $xmlUrl', error: e);
+      rethrow;
     } catch (e) {
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('xmlexception') || errorMsg.contains('xmltagexception')) {
+        Logger.warning('XML 解析失败，内容可能是 HTML，尝试作为网页处理: $xmlUrl');
+        return await _searchFromHtml(xmlUrl);
+      }
       Logger.error('解析 XML 文件失败: $xmlUrl', error: e);
       throw AppException.validation('无法解析 RSS 文件', originalError: e);
     }

@@ -50,9 +50,19 @@ class RemotePodcastDataSource {
         'episodes': episodes,
       };
     } on AppException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('html') && !msg.contains('captcha')) {
+        Logger.warning('RSS URL 返回了 HTML 内容，尝试从页面提取真实 RSS 链接: $rssUrl');
+        return await _tryExtractRssFromHtmlPage(rssUrl);
+      }
       Logger.error('获取播客数据失败: ${e.message}');
       rethrow;
     } catch (e, stackTrace) {
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('xmlexception') || errorMsg.contains('xmltagexception')) {
+        Logger.warning('XML 解析失败，内容可能是 HTML，尝试从页面提取: $rssUrl');
+        return await _tryExtractRssFromHtmlPage(rssUrl);
+      }
       Logger.error('获取播客数据失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '获取播客数据失败',
@@ -60,6 +70,62 @@ class RemotePodcastDataSource {
         stackTrace: stackTrace,
       );
     }
+  }
+
+  Future<Map<String, dynamic>> _tryExtractRssFromHtmlPage(String url) async {
+    try {
+      final response = await _dio.get(
+        url,
+        options: dio.Options(
+          headers: {
+            'Accept': 'text/html, application/xhtml+xml, application/xml, */*',
+            'User-Agent': 'TinyCast/${AppConstants.appVersion}',
+          },
+        ),
+      );
+
+      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
+        throw AppException.network('无法访问该页面，状态码: ${response.statusCode}');
+      }
+
+      final htmlContent = response.data as String;
+      if (htmlContent.isEmpty) throw AppException.validation('页面内容为空');
+
+      final rssUrl = _extractRssLinkFromHtml(htmlContent, url);
+      if (rssUrl == null || rssUrl.isEmpty) {
+        throw AppException.validation('未能在页面中找到 RSS 订阅链接');
+      }
+
+      Logger.info('从 HTML 页面提取到 RSS 链接: $rssUrl');
+      return await getPodcastFromRss(rssUrl);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.validation('无法从网页中提取 RSS 链接', originalError: e);
+    }
+  }
+
+  String? _extractRssLinkFromHtml(String htmlContent, String baseUrl) {
+    final linkRegExp = RegExp(r'''<link[^>]+type=["']application/rss\+xml["'][^>]*href=["']([^"']+)["']''', caseSensitive: false);
+    final match = linkRegExp.firstMatch(htmlContent);
+    if (match != null) {
+      var href = match.group(1) ?? '';
+      if (Uri.tryParse(href)?.hasScheme == false) {
+        href = Uri.parse(baseUrl).resolve(href).toString();
+      }
+      return href;
+    }
+
+    final anchorRegExp = RegExp(r'''<a[^>]+href=["']([^"']*\.xml[^"']*)["']''', caseSensitive: false);
+    final anchorMatch = anchorRegExp.firstMatch(htmlContent);
+    if (anchorMatch != null) {
+      var href = anchorMatch.group(1) ?? '';
+      if (Uri.tryParse(href)?.hasScheme == false) {
+        href = Uri.parse(baseUrl).resolve(href).toString();
+      }
+      return href;
+    }
+
+    return null;
   }
 
   Future<void>? getITunesSearchFuture() {
