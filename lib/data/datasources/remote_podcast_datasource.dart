@@ -234,7 +234,7 @@ class RemotePodcastDataSource {
         ),
       );
 
-      final isValid = response.statusCode == 200;
+      final isValid = response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300;
       
       if (isValid) {
         Logger.info('RSS URL 验证成功: $rssUrl');

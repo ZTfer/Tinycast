@@ -55,7 +55,7 @@ class RssParserService {
           ),
         );
 
-        if (response.statusCode != 200) {
+        if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
           throw AppException.network(
             '请求失败，状态码: ${response.statusCode}',
             statusCode: response.statusCode,

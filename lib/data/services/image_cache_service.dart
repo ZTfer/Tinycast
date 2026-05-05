@@ -79,7 +79,7 @@ class ImageCacheService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
         final imagesDir = await _fileStorageService.getImagesDirectory();
         final fileName = _fileStorageService.generateImageFileName(url);
         final targetFile = File('${imagesDir.path}/$fileName');
@@ -160,7 +160,7 @@ class ImageCacheService {
       Logger.info('   📦 响应状态码: ${response.statusCode}');
       Logger.info('   📏 数据大小: ${response.data?.length ?? 0} bytes');
 
-      if (response.statusCode != 200) {
+      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
         Logger.error('❌ [ImageCache] HTTP 错误: ${response.statusCode}');
         throw AppException.network(
           'Failed to download episode artwork: HTTP ${response.statusCode}',
@@ -263,7 +263,7 @@ class ImageCacheService {
       Logger.info('   📦 响应状态码: ${response.statusCode}');
       Logger.info('   📏 数据大小: ${response.data?.length ?? 0} bytes');
 
-      if (response.statusCode != 200) {
+      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
         Logger.error('❌ [ImageCache] HTTP 错误: ${response.statusCode}');
         throw AppException.network(
           'Failed to download podcast artwork: HTTP ${response.statusCode}',
