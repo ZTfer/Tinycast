@@ -205,14 +205,8 @@ class AudioPlayerService {
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
       } else if (localAudioPath != null) {
-        final file = File(localAudioPath);
-        if (await file.exists()) {
-          Logger.info('Local file exists, playing: $localAudioPath');
-          await _player.setFilePath(localAudioPath);
-        } else {
-          Logger.warning('Local file not found, falling back to remote: ${episode.audioUrl}');
-          await _player.setUrl(episode.audioUrl);
-        }
+        Logger.info('Local file exists, playing: $localAudioPath');
+        await _player.setFilePath(localAudioPath);
       } else {
         Logger.error('No valid audio path available for episode: ${episode.title}');
         throw Exception('No valid audio path');
