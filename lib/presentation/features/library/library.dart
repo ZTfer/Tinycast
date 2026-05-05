@@ -104,41 +104,46 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
+    Logger.info('🚫 [LIBRARY-UNFOLLOW] 开始取消关注 podcast: ${podcast.title} (id: ${podcast.id})');
     try {
-      // 清理播放历史记录（在 episodes 被删除前执行）
+      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 1/5: 清理播放历史记录...');
       final playHistoryRepo = PlayHistoryRepository();
       await playHistoryRepo.removeByPodcastId(podcast.id);
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 播放历史记录清理完成');
 
-      // 清理队列记录（在 episodes 被删除前执行）
+      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 2/5: 清理队列记录...');
       final queueRepo = QueueRepositoryImpl();
       await queueRepo.removeFromQueueByPodcast(podcast.id, podcastITunesId: podcast.itunesId);
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 队列记录清理完成');
 
-      // 执行取消关注（会删除 episodes 和 podcasts 表中的数据）
+      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 3/5: 取消关注播客（删除文件和数据库）...');
       final downloadService = AudioDownloadService.instance;
       await downloadService.unfollowPodcast(podcast.id);
       await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 取消关注完成');
 
-      // 从内存状态中移除（对已加载的 provider 立即生效）
+      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 4/5: 清理内存状态...');
       ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
       ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
-
-      // Invalidate 各页面消费的 NotifierProvider，使其在下次被 watch 时从已清理的数据库重新加载
       ref.invalidate(queueNotifierProvider);
       ref.invalidate(completedHistoriesProvider);
       ref.invalidate(favoriteEpisodesNotifierProvider);
       ref.invalidate(downloadedEpisodesNotifierProvider);
       ref.invalidate(unplayedEpisodesNotifierProvider);
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 内存状态清理完成');
 
-      // 重新加载播客列表（从已清理的数据库）
+      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 5/5: 重新加载播客列表...');
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
       ref.read(downloadNotifierProvider.notifier).manualRefresh();
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 播客列表重新加载完成');
 
       if (!mounted) return;
       ToastUtils.showSuccessToast(context, message: '已取消关注');
-    } catch (e) {
-      Logger.error('取消关注失败', error: e);
+      Logger.info('✅ [LIBRARY-UNFOLLOW] 取消关注流程全部完成');
+    } catch (e, stackTrace) {
+      Logger.error('❌ [LIBRARY-UNFOLLOW] 取消关注失败', error: e, stackTrace: stackTrace);
       if (!mounted) return;
-      ToastUtils.showErrorToast(context, message: '取消关注失败');
+      ToastUtils.showErrorToast(context, message: '取消关注失败: $e');
     }
   }
 

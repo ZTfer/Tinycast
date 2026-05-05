@@ -503,6 +503,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
     await _createOrUpdatePlayHistory(episode);
 
+    _currentEpisodeId = episode.id;
+
     await _audioPlayerService.playEpisode(
       episode,
       startPosition: startPosition,
