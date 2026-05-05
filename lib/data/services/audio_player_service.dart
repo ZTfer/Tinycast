@@ -192,7 +192,16 @@ class AudioPlayerService {
       Logger.info('🎧 [AUDIO] _loadEpisodeAudio called: ${episode.title}');
       Logger.info('🎧 [AUDIO] downloadedPath: ${episode.downloadedPath}');
       Logger.info('🎧 [AUDIO] audioUrl: ${episode.audioUrl}');
-      
+
+      // 先停止当前播放，避免播放器处于错误状态
+      try {
+        if (_player.playing) {
+          await _player.stop();
+        }
+      } catch (e) {
+        Logger.warning('🎧 [AUDIO] Failed to stop player before loading: $e');
+      }
+
       String? localAudioPath;
       if (episode.downloadedPath != null) {
         Logger.info('🎧 [AUDIO] downloadedPath is not null, searching for local file...');
@@ -214,26 +223,24 @@ class AudioPlayerService {
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
       } else if (localAudioPath != null) {
-        try {
-          final file = File(localAudioPath);
-          if (await file.exists()) {
-            Logger.info('Local file exists, playing: $localAudioPath');
+        final file = File(localAudioPath);
+        if (await file.exists()) {
+          Logger.info('🎧 [AUDIO] Local file exists, playing: $localAudioPath');
+          try {
             await _player.setFilePath(localAudioPath);
-          } else {
-            Logger.warning(
-              'Local file not found at playback time (race condition or DB inconsistency), '
-              'falling back to remote: ${episode.audioUrl}',
-            );
+          } catch (e) {
+            Logger.warning('🎧 [AUDIO] setFilePath failed, falling back to remote: $e');
             await _player.setUrl(episode.audioUrl);
           }
-        } catch (e) {
+        } else {
           Logger.warning(
-            'Failed to check local file existence, falling back to remote: $e',
+            '🎧 [AUDIO] Local file not found at playback time, '
+            'falling back to remote: ${episode.audioUrl}',
           );
           await _player.setUrl(episode.audioUrl);
         }
       } else {
-        Logger.error('No valid audio path available for episode: ${episode.title}');
+        Logger.error('🎧 [AUDIO] No valid audio path available for episode: ${episode.title}');
         throw Exception('No valid audio path');
       }
 
@@ -271,6 +278,16 @@ class AudioPlayerService {
         error: e,
         stackTrace: stackTrace,
       );
+      // 加载失败时重置播放器状态
+      try {
+        await _player.stop();
+        _currentEpisode = null;
+        if (!_currentEpisodeController.isClosed) {
+          _currentEpisodeController.add(null);
+        }
+      } catch (resetError) {
+        Logger.warning('🎧 [AUDIO] Failed to reset player after error: $resetError');
+      }
       rethrow;
     }
   }
