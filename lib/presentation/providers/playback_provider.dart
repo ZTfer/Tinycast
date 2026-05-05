@@ -497,18 +497,26 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
+    debugPrint('🎵 [PLAYBACK] playEpisode called: ${episode.title} (id: ${episode.id})');
+    debugPrint('🎵 [PLAYBACK] _currentEpisodeId: $_currentEpisodeId, episode.id: ${episode.id}');
+    
     if (_currentEpisodeId != null && _currentEpisodeId != episode.id) {
+      debugPrint('🎵 [PLAYBACK] Different episode, saving current progress...');
       await _saveCurrentProgress();
     }
 
+    debugPrint('🎵 [PLAYBACK] Creating play history...');
     await _createOrUpdatePlayHistory(episode);
 
     _currentEpisodeId = episode.id;
+    debugPrint('🎵 [PLAYBACK] _currentEpisodeId updated to: $_currentEpisodeId');
 
+    debugPrint('🎵 [PLAYBACK] Calling AudioPlayerService.playEpisode...');
     await _audioPlayerService.playEpisode(
       episode,
       startPosition: startPosition,
     );
+    debugPrint('🎵 [PLAYBACK] AudioPlayerService.playEpisode completed');
   }
 
   Future<void> play() async {

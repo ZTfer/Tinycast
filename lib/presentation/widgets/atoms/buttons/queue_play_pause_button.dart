@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -53,6 +54,11 @@ class _QueuePlayPauseButtonContentState
     extends State<_QueuePlayPauseButtonContent> {
   bool _isHovering = false;
   bool _isPressed = false;
+
+  void _handleTap() {
+    debugPrint('🔘 [BUTTON] QueuePlayPauseButton tapped, showPauseIcon: ${widget.showPauseIcon}');
+    widget.onPressed.call();
+  }
 
   @override
   Widget build(BuildContext context) {

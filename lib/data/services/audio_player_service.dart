@@ -189,18 +189,27 @@ class AudioPlayerService {
     bool updateLastPlayedAt = true,
   }) async {
     try {
+      Logger.info('🎧 [AUDIO] _loadEpisodeAudio called: ${episode.title}');
+      Logger.info('🎧 [AUDIO] downloadedPath: ${episode.downloadedPath}');
+      Logger.info('🎧 [AUDIO] audioUrl: ${episode.audioUrl}');
+      
       String? localAudioPath;
       if (episode.downloadedPath != null) {
+        Logger.info('🎧 [AUDIO] downloadedPath is not null, searching for local file...');
         localAudioPath = await _findLocalAudioPath(episode.downloadedPath!);
         if (localAudioPath != null) {
-          Logger.info('Found local file: $localAudioPath');
+          Logger.info('🎧 [AUDIO] Found local file: $localAudioPath');
+        } else {
+          Logger.warning('🎧 [AUDIO] Local file not found, will use remote URL');
         }
+      } else {
+        Logger.info('🎧 [AUDIO] downloadedPath is null, using remote URL');
       }
 
       final audioPath = localAudioPath ?? episode.audioUrl;
       final action = autoPlay ? 'Playing' : 'Loading';
 
-      Logger.info('$action episode: ${episode.title} from $audioPath');
+      Logger.info('🎧 [AUDIO] $action episode from: $audioPath');
 
       if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
         await _player.setUrl(audioPath);
@@ -255,10 +264,10 @@ class AudioPlayerService {
 
       await _updateMediaItem(episode);
 
-      Logger.info('${autoPlay ? "Started playing" : "Loaded"} episode: ${episode.title}');
+      Logger.info('🎧 [AUDIO] ${autoPlay ? "Started playing" : "Loaded"} episode: ${episode.title}');
     } catch (e, stackTrace) {
       Logger.error(
-        'Failed to ${autoPlay ? "play" : "load"} episode: ${episode.title}',
+        '🎧 [AUDIO] Failed to ${autoPlay ? "play" : "load"} episode: ${episode.title}',
         error: e,
         stackTrace: stackTrace,
       );

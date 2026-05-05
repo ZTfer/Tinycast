@@ -402,11 +402,15 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
     // 处理播放/暂停切换
     void handlePlayPause() {
+      Logger.info('▶️ [PLAY-PAUSE] handlePlayPause called, episodeId: ${widget.episodeId}');
+      Logger.info('▶️ [PLAY-PAUSE] isCurrentEpisode: $isCurrentEpisode');
       if (isCurrentEpisode) {
         // 当前音频正在播放或暂停中，切换播放/暂停状态
+        Logger.info('▶️ [PLAY-PAUSE] Toggling play/pause for current episode');
         ref.read(playbackProvider.notifier).togglePlayPause();
       } else {
         // 播放新音频
+        Logger.info('▶️ [PLAY-PAUSE] Calling onPlayPressed callback');
         widget.onPlayPressed?.call();
       }
     }
