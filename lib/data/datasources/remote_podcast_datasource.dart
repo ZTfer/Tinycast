@@ -5,6 +5,7 @@ import '../../domain/entities/episode.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/app_constants.dart';
+import '../../core/utils/html_rss_extractor.dart';
 import '../../core/utils/itunes_info_dto.dart';
 import '../services/rss_parser_service.dart';
 import '../services/itunes_search_service.dart';
@@ -105,27 +106,7 @@ class RemotePodcastDataSource {
   }
 
   String? _extractRssLinkFromHtml(String htmlContent, String baseUrl) {
-    final linkRegExp = RegExp(r'''<link[^>]+type=["']application/rss\+xml["'][^>]*href=["']([^"']+)["']''', caseSensitive: false);
-    final match = linkRegExp.firstMatch(htmlContent);
-    if (match != null) {
-      var href = match.group(1) ?? '';
-      if (Uri.tryParse(href)?.hasScheme == false) {
-        href = Uri.parse(baseUrl).resolve(href).toString();
-      }
-      return href;
-    }
-
-    final anchorRegExp = RegExp(r'''<a[^>]+href=["']([^"']*\.xml[^"']*)["']''', caseSensitive: false);
-    final anchorMatch = anchorRegExp.firstMatch(htmlContent);
-    if (anchorMatch != null) {
-      var href = anchorMatch.group(1) ?? '';
-      if (Uri.tryParse(href)?.hasScheme == false) {
-        href = Uri.parse(baseUrl).resolve(href).toString();
-      }
-      return href;
-    }
-
-    return null;
+    return HtmlRssExtractor.extractRssLink(htmlContent, baseUrl);
   }
 
   Future<void>? getITunesSearchFuture() {

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
-import 'package:html/parser.dart' as html_parser;
+import '../../core/utils/html_rss_extractor.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/app_constants.dart';
@@ -202,79 +202,6 @@ class PodcastSearchService {
   /// [baseUrl] 基础 URL，用于解析相对路径
   /// 返回找到的 RSS 链接，如果未找到则返回 null
   String? _extractRssLinkFromHtml(String htmlContent, String baseUrl) {
-    try {
-      final document = html_parser.parse(htmlContent);
-
-      final rssUrl =
-          _findRssLinkInHead(document) ?? _findXmlLinkInHref(document);
-
-      if (rssUrl == null || rssUrl.isEmpty) {
-        return null;
-      }
-
-      return _resolveUrl(rssUrl, baseUrl);
-    } catch (e, stackTrace) {
-      Logger.error('解析 HTML 失败', error: e, stackTrace: stackTrace);
-      return null;
-    }
-  }
-
-  /// 在 HTML head 中查找 type="application/rss+xml" 的 link 标签
-  ///
-  /// [document] HTML 文档对象
-  /// 返回找到的 RSS 链接，如果未找到则返回 null
-  String? _findRssLinkInHead(dynamic document) {
-    final linkElements = document.querySelectorAll(
-      'link[type="application/rss+xml"]',
-    );
-
-    for (final link in linkElements) {
-      final href = link.attributes['href'];
-      if (href != null && href.isNotEmpty) {
-        Logger.debug('找到 RSS link 标签: $href');
-        return href;
-      }
-    }
-
-    return null;
-  }
-
-  /// 在 href 属性中查找包含 .xml 的链接
-  ///
-  /// [document] HTML 文档对象
-  /// 返回找到的 XML 链接，如果未找到则返回 null
-  String? _findXmlLinkInHref(dynamic document) {
-    final anchors = document.querySelectorAll('a[href]');
-
-    for (final anchor in anchors) {
-      final href = anchor.attributes['href'];
-      if (href != null && href.toLowerCase().contains('.xml')) {
-        Logger.debug('找到 .xml 链接: $href');
-        return href;
-      }
-    }
-
-    return null;
-  }
-
-  /// 解析 URL（处理相对路径）
-  ///
-  /// [url] 要解析的 URL
-  /// [baseUrl] 基础 URL
-  /// 返回解析后的绝对 URL
-  String _resolveUrl(String url, String baseUrl) {
-    try {
-      final uri = Uri.parse(url);
-      if (uri.hasScheme) {
-        return url;
-      }
-
-      final baseUri = Uri.parse(baseUrl);
-      final resolvedUri = baseUri.resolveUri(uri);
-      return resolvedUri.toString();
-    } catch (e) {
-      Logger.warning('解析 URL 失败: $url, 基础 URL: $baseUrl');
-      return url;
-    }
+    return HtmlRssExtractor.extractRssLink(htmlContent, baseUrl);
   }
 }
