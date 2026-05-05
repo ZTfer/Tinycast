@@ -158,6 +158,12 @@ class LocalPodcastDataSource {
     try {
       Logger.info('删除播客: $id');
 
+      final podcast = await _isarService.isar.podcasts.get(id);
+      if (podcast == null) {
+        Logger.warning('播客不存在，跳过删除: $id');
+        return;
+      }
+
       await _isarService.isar.writeTxn(() async {
         await _isarService.isar.podcasts.delete(id);
       });

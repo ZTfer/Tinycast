@@ -402,15 +402,27 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
     // 处理播放/暂停切换
     void handlePlayPause() {
-      Logger.info('▶️ [PLAY-PAUSE] handlePlayPause called, episodeId: ${widget.episodeId}');
+      Logger.info('▶️ [PLAY-PAUSE] handlePlayPause called');
+      Logger.info('▶️ [PLAY-PAUSE] episodeId: ${widget.episodeId}');
       Logger.info('▶️ [PLAY-PAUSE] isCurrentEpisode: $isCurrentEpisode');
-      if (isCurrentEpisode) {
-        // 当前音频正在播放或暂停中，切换播放/暂停状态
-        Logger.info('▶️ [PLAY-PAUSE] Toggling play/pause for current episode');
+      Logger.info('▶️ [PLAY-PAUSE] playerState.currentEpisode?.id: ${playerState.currentEpisode?.id}');
+      Logger.info('▶️ [PLAY-PAUSE] isPlaying: ${playerState.isPlaying}');
+      
+      // 只有当 episode 匹配且音频已加载时才切换播放/暂停
+      final isAudioLoaded = playerState.currentEpisode != null && playerState.isPlaying;
+      Logger.info('▶️ [PLAY-PAUSE] isAudioLoaded: $isAudioLoaded');
+      
+      if (isCurrentEpisode && isAudioLoaded) {
+        // 当前音频正在播放，切换暂停
+        Logger.info('▶️ [PLAY-PAUSE] Pausing current episode');
         ref.read(playbackProvider.notifier).togglePlayPause();
+      } else if (isCurrentEpisode) {
+        // episode 匹配但音频未播放，尝试继续播放
+        Logger.info('▶️ [PLAY-PAUSE] Resuming current episode');
+        ref.read(playbackProvider.notifier).play();
       } else {
         // 播放新音频
-        Logger.info('▶️ [PLAY-PAUSE] Calling onPlayPressed callback');
+        Logger.info('▶️ [PLAY-PAUSE] Playing new episode');
         widget.onPlayPressed?.call();
       }
     }

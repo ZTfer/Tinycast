@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/episode_model.dart' as episode_model;
 import 'package:tinycast/data/models/play_history_model.dart';
@@ -478,21 +480,61 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
       state = state.copyWith(currentEpisode: domainEpisode);
 
-      final startPosition = Duration(
-        milliseconds: latestHistory.lastPlayedPositionMs,
-      );
+      // 检查本地文件是否存在
+      bool fileExists = false;
+      if (domainEpisode.downloadedPath != null) {
+        try {
+          final supportDir = await getApplicationSupportDirectory();
+          final primaryPath = '${supportDir.path}/${domainEpisode.downloadedPath!}';
+          final primaryFile = File(primaryPath);
+          fileExists = await primaryFile.exists();
+          
+          if (!fileExists) {
+            final docsDir = await getApplicationDocumentsDirectory();
+            final fallbackPath = '${docsDir.path}/${domainEpisode.downloadedPath!}';
+            final fallbackFile = File(fallbackPath);
+            fileExists = await fallbackFile.exists();
+          }
+        } catch (e) {
+          debugPrint('Failed to check file existence: $e');
+          fileExists = false;
+        }
+      }
 
-      debugPrint('Initializing AudioPlayerService with restored episode...');
-      await _audioPlayerService.loadEpisode(
-        domainEpisode,
-        startPosition: startPosition,
-      );
+      // 如果本地文件存在则加载，否则仅恢复 UI 状态而不加载音频
+      if (fileExists || domainEpisode.audioUrl.isNotEmpty) {
+        final startPosition = Duration(
+          milliseconds: latestHistory.lastPlayedPositionMs,
+        );
 
-      debugPrint(
-        'Playback state restored successfully - all controls should work',
-      );
-    } catch (e) {
+        debugPrint('Initializing AudioPlayerService with restored episode...');
+        try {
+          await _audioPlayerService.loadEpisode(
+            domainEpisode,
+            startPosition: startPosition,
+          );
+
+          debugPrint(
+            'Playback state restored successfully - all controls should work',
+          );
+        } catch (e, stackTrace) {
+          debugPrint('Failed to load audio for restored episode: $e');
+          debugPrint('Stack trace: $stackTrace');
+          // 加载音频失败时，清除状态但保留 UI 显示
+          _currentEpisodeId = null;
+          _lastSavedPositionMs = 0;
+          state = state.copyWith(currentEpisode: null);
+        }
+      } else {
+        debugPrint('Local file not found and no remote URL, skipping audio load');
+      }
+    } catch (e, stackTrace) {
       debugPrint('Error restoring playback state: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 恢复失败时，清除状态
+      _currentEpisodeId = null;
+      _lastSavedPositionMs = 0;
+      state = state.copyWith(currentEpisode: null);
     }
   }
 
