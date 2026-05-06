@@ -13,28 +13,36 @@ class LocalQueueDataSource {
     : _isarService = isarService ?? IsarService.instance;
 
   Future<Queue?> _findQueueByEpisode(domain.Episode episode) async {
-    final isar = _isarService.isar;
+    try {
+      final isar = _isarService.isar;
 
-    if (episode.itunesId != null && episode.itunesId!.isNotEmpty) {
-      final queue = await isar.queues
-          .filter()
-          .episodeITunesIdEqualTo(episode.itunesId)
+      if (episode.itunesId != null && episode.itunesId!.isNotEmpty) {
+        final queue = await isar.queues
+            .filter()
+            .episodeITunesIdEqualTo(episode.itunesId)
+            .findFirst();
+        if (queue != null) return queue;
+      }
+
+      if (episode.guid != null && episode.guid!.isNotEmpty) {
+        final queue = await isar.queues
+            .filter()
+            .episodeGuidEqualTo(episode.guid)
+            .findFirst();
+        if (queue != null) return queue;
+      }
+
+      return isar.queues
+          .where()
+          .episodeIdEqualTo(episode.id)
           .findFirst();
-      if (queue != null) return queue;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 查找队列记录失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage('查找队列记录失败', originalError: e, stackTrace: stackTrace);
+    } catch (e, stackTrace) {
+      Logger.error('📋 [QUEUE-DS] 查找队列记录异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown('查找队列记录失败', originalError: e, stackTrace: stackTrace);
     }
-
-    if (episode.guid != null && episode.guid!.isNotEmpty) {
-      final queue = await isar.queues
-          .filter()
-          .episodeGuidEqualTo(episode.guid)
-          .findFirst();
-      if (queue != null) return queue;
-    }
-
-    return isar.queues
-        .where()
-        .episodeIdEqualTo(episode.id)
-        .findFirst();
   }
 
   Future<List<Queue>> getAll() async {
