@@ -36,11 +36,11 @@ class LocalQueueDataSource {
           .where()
           .episodeIdEqualTo(episode.id)
           .findFirst();
-    } on IsarError catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-DS] 查找队列记录失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('查找队列记录失败', originalError: e, stackTrace: stackTrace);
     } catch (e, stackTrace) {
-      Logger.error('📋 [QUEUE-DS] 查找队列记录异常', error: e, stackTrace: stackTrace);
+      Logger.error('📋 [QUEUE-DS] 查找队列记录失败', error: e, stackTrace: stackTrace);
+      if (e is IsarError) {
+        throw AppException.storage('查找队列记录失败', originalError: e, stackTrace: stackTrace);
+      }
       throw AppException.unknown('查找队列记录失败', originalError: e, stackTrace: stackTrace);
     }
   }
