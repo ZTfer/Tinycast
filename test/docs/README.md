@@ -34,8 +34,12 @@ presentation：测试 lib/presentation 目录下的内容
 
 测试 lib/presentation/features 目录下的内容
 
-
-
+1. queue.md: 测试 lib/presentation/features/queue 目录下的内容，对播放列表模块进行测试
+2. library.md: 测试 lib/presentation/features/library 目录下的内容，对资料库模块进行测试
+3. history.md: 测试 lib/presentation/features/history 目录下的内容，对历史模块进行测试
+4. favorites.md: 测试 lib/presentation/features/favorites 目录下的内容，对收藏模块进行测试
+5. downloads.md: 测试 lib/presentation/features/downloads 目录下的内容，对下载模块进行测试
+6. subscribe.md: 测试 lib/presentation/features/subscribe 目录下的内容，对订阅模块进行测试
 
 #### Providers
 
