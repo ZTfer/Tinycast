@@ -239,7 +239,11 @@ class CacheCleanupService {
           }
         }
 
-        await _updateEpisodeDownloadStatus(episode.id, false, null);
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: episode.id,
+          isDownloaded: false,
+          downloadedPath: null,
+        );
       }
 
       Logger.info('保留最近节目完成: $deletedCount 个文件已删除');
@@ -275,7 +279,11 @@ class CacheCleanupService {
           }
         }
 
-        await _updateEpisodeDownloadStatus(episode.id, false, null);
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: episode.id,
+          isDownloaded: false,
+          downloadedPath: null,
+        );
       }
 
       Logger.info('播客文件清理完成: $deletedCount 个文件已删除');
@@ -395,7 +403,11 @@ class CacheCleanupService {
             Logger.warning('删除最旧节目文件失败: ${episode.downloadedPath}');
           }
 
-          await _updateEpisodeDownloadStatus(episode.id, false, null);
+          await _isarService.updateEpisodeDownloadStatus(
+            episodeId: episode.id,
+            isDownloaded: false,
+            downloadedPath: null,
+          );
         }
 
         final currentCacheSize = await getCacheSize();
@@ -412,32 +424,6 @@ class CacheCleanupService {
       Logger.error('清理最旧文件失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
         '清理最旧文件失败',
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _updateEpisodeDownloadStatus(
-    int episodeId,
-    bool isDownloaded,
-    String? downloadedPath,
-  ) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(episodeId);
-        if (episode != null) {
-          episode.isDownloaded = isDownloaded;
-          episode.downloadedPath = downloadedPath;
-          episode.downloadProgress = isDownloaded ? 1.0 : 0.0;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error('更新节目下载状态失败: $episodeId', error: e, stackTrace: stackTrace);
-      throw AppException.storage(
-        '更新节目下载状态失败',
         originalError: e,
         stackTrace: stackTrace,
       );

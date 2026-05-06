@@ -214,8 +214,8 @@ class AudioDownloadService {
           status: DownloadStatus.completed,
           progress: 1.0,
         );
-        await _updateEpisodeDownloadStatus(
-          episodeId: episodeId,
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: int.parse(episodeId),
           isDownloaded: true,
           downloadedPath: 'audio/$fileName',
           downloadProgress: 1.0,
@@ -284,8 +284,8 @@ class AudioDownloadService {
 
       _downloadTasks[episodeId] = downloadTask;
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: int.parse(episodeId),
         isDownloaded: false,
         downloadedPath: null,
         downloadProgress: 0.0,
@@ -367,8 +367,8 @@ class AudioDownloadService {
         Logger.error('❌ 文件保存失败: $absoluteFilePath');
       }
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: int.parse(episodeId),
         isDownloaded: true,
         downloadedPath: relativeFilePath,
         downloadProgress: 1.0,
@@ -550,8 +550,8 @@ class AudioDownloadService {
 
       task.status = DownloadStatus.cancelled;
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: int.parse(episodeId),
         isDownloaded: false,
         downloadedPath: null,
         downloadProgress: 0.0,
@@ -638,8 +638,8 @@ class AudioDownloadService {
         );
       }
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: int.parse(episodeId),
         isDownloaded: false,
         downloadedPath: null,
         downloadProgress: 0.0,
@@ -705,8 +705,8 @@ class AudioDownloadService {
     // 文件删除成功后，更新数据库状态
     if (deletedCount > 0) {
       for (final episode in downloadedEpisodes) {
-        await _updateEpisodeDownloadStatus(
-          episodeId: episode.id.toString(),
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: episode.id,
           isDownloaded: false,
           downloadedPath: null,
           downloadProgress: 0.0,
@@ -750,35 +750,6 @@ class AudioDownloadService {
     }
 
     Logger.info('已清理播客 $podcastId 的所有文件');
-  }
-
-  Future<void> _updateEpisodeDownloadStatus({
-    required String episodeId,
-    required bool isDownloaded,
-    required String? downloadedPath,
-    required double downloadProgress,
-  }) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(
-          int.parse(episodeId),
-        );
-
-        if (episode != null) {
-          episode.isDownloaded = isDownloaded;
-          episode.downloadedPath = downloadedPath;
-          episode.downloadProgress = downloadProgress;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error updating episode download status: $episodeId',
-        error: e,
-        stackTrace: stackTrace,
-      );
-    }
   }
 
   void _notifyStatusChange(String episodeId, DownloadStatus status) {
@@ -1053,8 +1024,8 @@ class AudioDownloadService {
 
       await File(downloadTask.tempFilePath).rename(absoluteFilePath);
 
-      await _updateEpisodeDownloadStatus(
-        episodeId: episodeId,
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: int.parse(episodeId),
         isDownloaded: true,
         downloadedPath: downloadTask.relativeFilePath,
         downloadProgress: 1.0,
@@ -1095,8 +1066,8 @@ class AudioDownloadService {
     _downloadTasks.remove(episodeId);
     _disposeControllers(episodeId);
 
-    await _updateEpisodeDownloadStatus(
-      episodeId: episodeId,
+    await _isarService.updateEpisodeDownloadStatus(
+      episodeId: int.parse(episodeId),
       isDownloaded: false,
       downloadedPath: null,
       downloadProgress: 0.0,

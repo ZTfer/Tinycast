@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/models/search_history_model.dart';
@@ -100,4 +102,35 @@ class IsarService {
   }
 
   static int get currentVersion => _currentVersion;
+
+  Future<void> updateEpisodeDownloadStatus({
+    required int episodeId,
+    required bool isDownloaded,
+    String? downloadedPath,
+    double? downloadProgress,
+  }) async {
+    try {
+      await isar.writeTxn(() async {
+        final episode = await isar.episodes.get(episodeId);
+        if (episode != null) {
+          episode.isDownloaded = isDownloaded;
+          episode.downloadedPath = downloadedPath;
+          episode.downloadProgress = downloadProgress ?? (isDownloaded ? 1.0 : 0.0);
+          episode.updatedAt = DateTime.now();
+          await isar.episodes.put(episode);
+        }
+      });
+    } catch (e, stackTrace) {
+      Logger.error(
+        '更新 episode 下载状态失败: episodeId=$episodeId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.storage(
+        '更新 episode 下载状态失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
 }
