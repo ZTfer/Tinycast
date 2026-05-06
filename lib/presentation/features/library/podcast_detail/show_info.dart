@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
@@ -39,7 +38,6 @@ class ShowInfo extends StatelessWidget {
     overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
-          // 透明背景，点击关闭下拉菜单
           Positioned.fill(
             child: GestureDetector(
               onTap: () => overlayEntry.remove(),
@@ -77,28 +75,12 @@ class ShowInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 2,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox(
-            width: 64,
-            height: 64,
-            child: ArtworkImage(
-              artworkUrl: artworkUrl,
-              width: 64,
-              height: 64,
-              fit: BoxFit.cover,
-              placeholder: SvgPicture.asset(
-                'assets/images/image_placeholder.svg',
-                width: 64,
-                height: 64,
-              ),
-              errorWidget: SvgPicture.asset(
-                'assets/images/image_placeholder.svg',
-                width: 64,
-                height: 64,
-              ),
-            ),
-          ),
+        ArtworkImage(
+          artworkUrl: artworkUrl,
+          width: 64,
+          height: 64,
+          fit: BoxFit.cover,
+          borderRadius: 4,
         ),
         const SizedBox(width: 4),
         Expanded(

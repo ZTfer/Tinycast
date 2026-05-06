@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/domain/entities/podcast.dart' as domain_podcast;
 import 'package:tinycast/data/models/episode_model.dart' as data;
@@ -11,6 +12,8 @@ import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 class ArtworkImage extends StatefulWidget {
+  static const String _placeholderAsset = 'assets/images/image_placeholder.svg';
+
   final String? artworkPath;
   final String? artworkUrl;
   final domain.Episode? episode;
@@ -18,8 +21,9 @@ class ArtworkImage extends StatefulWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
-  final Widget placeholder;
-  final Widget errorWidget;
+  final double borderRadius;
+  final Widget? placeholder;
+  final Widget? errorWidget;
 
   const ArtworkImage({
     super.key,
@@ -30,18 +34,9 @@ class ArtworkImage extends StatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.placeholder = const SizedBox(
-      width: 24,
-      height: 24,
-      child: Center(
-        child: SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-    ),
-    this.errorWidget = const Icon(Icons.broken_image, color: Colors.grey, size: 24),
+    this.borderRadius = 0,
+    this.placeholder,
+    this.errorWidget,
   });
 
   ArtworkImage.fromEpisode(
@@ -50,18 +45,9 @@ class ArtworkImage extends StatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.placeholder = const SizedBox(
-      width: 24,
-      height: 24,
-      child: Center(
-        child: SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-    ),
-    this.errorWidget = const Icon(Icons.broken_image, color: Colors.grey, size: 24),
+    this.borderRadius = 0,
+    this.placeholder,
+    this.errorWidget,
     this.podcast,
   })  : artworkPath = episode.artworkPath,
         artworkUrl = episode.artworkUrl;
@@ -72,21 +58,33 @@ class ArtworkImage extends StatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.placeholder = const SizedBox(
-      width: 24,
-      height: 24,
-      child: Center(
-        child: SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-    ),
-    this.errorWidget = const Icon(Icons.broken_image, color: Colors.grey, size: 24),
+    this.borderRadius = 0,
+    this.placeholder,
+    this.errorWidget,
     this.episode,
   })  : artworkPath = podcast.artworkPath,
         artworkUrl = podcast.artworkUrl;
+
+  static Widget buildPlaceholder({
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+    double borderRadius = 0,
+  }) {
+    Widget placeholder = SvgPicture.asset(
+      _placeholderAsset,
+      width: width,
+      height: height,
+      fit: fit,
+    );
+    if (borderRadius > 0) {
+      placeholder = ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: placeholder,
+      );
+    }
+    return placeholder;
+  }
 
   @override
   State<ArtworkImage> createState() => _ArtworkImageState();
@@ -114,6 +112,36 @@ class _ArtworkImageState extends State<ArtworkImage> {
     }
   }
 
+  Widget _buildPlaceholder() {
+    return widget.placeholder ??
+        SvgPicture.asset(
+          ArtworkImage._placeholderAsset,
+          width: widget.width,
+          height: widget.height,
+          fit: widget.fit,
+        );
+  }
+
+  Widget _buildErrorWidget() {
+    return widget.errorWidget ??
+        SvgPicture.asset(
+          ArtworkImage._placeholderAsset,
+          width: widget.width,
+          height: widget.height,
+          fit: widget.fit,
+        );
+  }
+
+  Widget _wrapWithBorderRadius(Widget child) {
+    if (widget.borderRadius > 0) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        child: child,
+      );
+    }
+    return child;
+  }
+
   Future<void> _checkAndTriggerDownload() async {
     if (_isCheckingLocal) return;
     _isCheckingLocal = true;
@@ -134,7 +162,7 @@ class _ArtworkImageState extends State<ArtworkImage> {
       } else {
         Logger.info('📭 [ArtworkImage] artworkPath 为空，需要从网络加载或下载');
       }
-      
+
       if (!_downloadTriggered && mounted) {
         _triggerBackgroundDownload();
       }
@@ -159,16 +187,16 @@ class _ArtworkImageState extends State<ArtworkImage> {
       try {
         final imageCacheService = ImageCacheService.instance;
         final isarService = IsarService.instance;
-        
+
         if (widget.episode != null && widget.episode!.artworkUrl != null) {
           Logger.info('🎯 [ArtworkImage] 开始下载 Episode 封面图: ${widget.episode!.title}');
           Logger.info('   URL: ${widget.episode!.artworkUrl}');
           Logger.info('   Episode ID: ${widget.episode!.id}');
-          
+
           final dataEpisode = await isarService.isar.episodes.get(widget.episode!.id);
           if (dataEpisode != null) {
             final downloadedFile = await imageCacheService.downloadAndSaveEpisodeArtwork(dataEpisode);
-            
+
             if (downloadedFile != null && mounted) {
               setState(() {
                 _localFile = downloadedFile;
@@ -182,11 +210,11 @@ class _ArtworkImageState extends State<ArtworkImage> {
           Logger.info('🎯 [ArtworkImage] 开始下载 Podcast 封面图: ${widget.podcast!.title}');
           Logger.info('   URL: ${widget.podcast!.artworkUrl}');
           Logger.info('   Podcast ID: ${widget.podcast!.id}');
-          
+
           final dataPodcast = await isarService.isar.podcasts.get(widget.podcast!.id);
           if (dataPodcast != null) {
             final downloadedFile = await imageCacheService.downloadAndSavePodcastArtwork(dataPodcast);
-            
+
             if (downloadedFile != null && mounted) {
               setState(() {
                 _localFile = downloadedFile;
@@ -207,21 +235,20 @@ class _ArtworkImageState extends State<ArtworkImage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_localFile != null) {
-      Logger.debug('🖼️ [ArtworkImage] 使用本地文件渲染: ${_localFile!.path}');
-      return Image.file(
-        _localFile!,
-        width: widget.width,
-        height: widget.height,
-        fit: widget.fit,
-        errorBuilder: (_, error, stack) {
-          Logger.warning('⚠️ [ArtworkImage] 本地文件加载失败: $error');
-          return _buildNetworkImage();
-        },
-      );
-    }
-
-    return _buildNetworkImage();
+    return _wrapWithBorderRadius(
+      _localFile != null
+          ? Image.file(
+              _localFile!,
+              width: widget.width,
+              height: widget.height,
+              fit: widget.fit,
+              errorBuilder: (_, error, stack) {
+                Logger.warning('⚠️ [ArtworkImage] 本地文件加载失败: $error');
+                return _buildNetworkImage();
+              },
+            )
+          : _buildNetworkImage(),
+    );
   }
 
   Widget _buildNetworkImage() {
@@ -234,17 +261,17 @@ class _ArtworkImageState extends State<ArtworkImage> {
         fit: widget.fit,
         placeholder: (context, url) {
           Logger.debug('⏳ [ArtworkImage] 网络图片加载中...');
-          return widget.placeholder;
+          return _buildPlaceholder();
         },
         errorWidget: (context, url, error) {
           Logger.warning('❌ [ArtworkImage] 网络图片加载失败: $error');
-          return widget.errorWidget;
+          return _buildErrorWidget();
         },
       );
     }
-    
+
     Logger.warning('⚠️ [ArtworkImage] 无可用的图片URL');
-    return widget.errorWidget;
+    return _buildErrorWidget();
   }
 
   Future<File?> _getLocalFile(String relativePath) async {

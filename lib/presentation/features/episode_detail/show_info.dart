@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
@@ -23,7 +22,6 @@ class ShowInfo extends ConsumerWidget {
         children: [
           _buildArtwork(),
           const SizedBox(width: 4),
-          // Podcast 标题
           Text(
             podcast?.title ?? '',
             style: const TextStyle(
@@ -41,30 +39,15 @@ class ShowInfo extends ConsumerWidget {
   }
 
   Widget _buildArtwork() {
-    final artworkUrl = podcast?.artworkUrl;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: SizedBox(
+    if (podcast != null) {
+      return ArtworkImage.fromPodcast(
+        podcast!,
         width: 24,
         height: 24,
-        child: ArtworkImage(
-          artworkUrl: artworkUrl,
-          width: 24,
-          height: 24,
-          fit: BoxFit.cover,
-          placeholder: _buildPlaceholder(),
-          errorWidget: _buildPlaceholder(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return SvgPicture.asset(
-      'assets/images/image_placeholder.svg',
-      width: 24,
-      height: 24,
-    );
+        fit: BoxFit.cover,
+        borderRadius: 4,
+      );
+    }
+    return ArtworkImage.buildPlaceholder(width: 24, height: 24, borderRadius: 4);
   }
 }

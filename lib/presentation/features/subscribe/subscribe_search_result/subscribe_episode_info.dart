@@ -3,7 +3,6 @@ import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
 
 class SubscribeEpisodeInfo extends StatelessWidget {
-  /// 播客信息
   final Podcast podcast;
 
   const SubscribeEpisodeInfo({
@@ -16,34 +15,12 @@ class SubscribeEpisodeInfo extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox(
-            width: 40,
-            height: 40,
-            child: ArtworkImage(
-              artworkUrl: podcast.artworkUrl,
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-              placeholder: Container(
-                width: 40,
-                height: 40,
-                color: const Color(0xFFE0E0E0),
-                child: const Center(
-                  child: Text('Cover', style: TextStyle(fontSize: 8)),
-                ),
-              ),
-              errorWidget: Container(
-                width: 40,
-                height: 40,
-                color: const Color(0xFFE0E0E0),
-                child: const Center(
-                  child: Text('Cover', style: TextStyle(fontSize: 8)),
-                ),
-              ),
-            ),
-          ),
+        ArtworkImage.fromPodcast(
+          podcast,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          borderRadius: 4,
         ),
         const SizedBox(width: 12),
         Expanded(

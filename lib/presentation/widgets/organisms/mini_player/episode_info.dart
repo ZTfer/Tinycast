@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
@@ -30,20 +29,12 @@ class EpisodeInfo extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: ArtworkImage(
-                artworkUrl: artworkUrl,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-                placeholder: _buildPlaceholder(),
-                errorWidget: _buildPlaceholder(),
-              ),
-            ),
+          ArtworkImage(
+            artworkUrl: artworkUrl,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            borderRadius: 4,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -79,16 +70,6 @@ class EpisodeInfo extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  /// 构建占位图
-  Widget _buildPlaceholder() {
-    return SvgPicture.asset(
-      'assets/images/image_placeholder.svg',
-      width: 40,
-      height: 40,
-      fit: BoxFit.cover,
     );
   }
 }
