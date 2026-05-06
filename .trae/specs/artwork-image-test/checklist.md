@@ -1,0 +1,14 @@
+- [ ] 测试文件 `test/presentation/widgets/atoms/artwork_image_test.dart` 存在且可运行
+- [ ] 默认构造函数 `ArtworkImage()` 正确渲染
+- [ ] `ArtworkImage.fromEpisode()` 自动提取 artworkPath 和 artworkUrl
+- [ ] `ArtworkImage.fromPodcast()` 自动提取 artworkPath 和 artworkUrl
+- [ ] artworkUrl 不为空时渲染 CachedNetworkImage
+- [ ] artworkUrl 为空时渲染默认 SVG 占位图
+- [ ] 自定义 placeholder 传入时在网络加载中展示
+- [ ] 自定义 errorWidget 传入时在加载失败时展示
+- [ ] borderRadius > 0 时存在 ClipRRect 包裹
+- [ ] borderRadius = 0 时无 ClipRRect 包裹
+- [ ] `ArtworkImage.buildPlaceholder()` 带圆角返回 ClipRRect + SvgPicture
+- [ ] `ArtworkImage.buildPlaceholder()` 无圆角返回 SvgPicture
+- [ ] artworkPath 变化时状态重置并重新检查
+- [ ] 所有测试通过 `flutter test test/presentation/widgets/atoms/artwork_image_test.dart`
