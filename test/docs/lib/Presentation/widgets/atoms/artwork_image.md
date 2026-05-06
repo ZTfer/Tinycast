@@ -4,6 +4,11 @@
 
 用于展示对应episode的podcast或者episode封面图，或者不展示封面图
 
+### 文件路径
+
+原始代码逻辑路径：lib/presentation/widgets/atoms/artwork_image
+测试代码路径：test/presentation/widgets/atoms/artwork_image_test.dart
+
 ## 参数调节
 
 支持在调用处决定是展示podcast封面图、episode封面图、或者不展示封面图
