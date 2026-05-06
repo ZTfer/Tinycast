@@ -12,55 +12,29 @@ class LocalQueueDataSource {
   LocalQueueDataSource({IsarService? isarService})
     : _isarService = isarService ?? IsarService.instance;
 
-  Queue? _findQueueByEpisode(domain.Episode episode) {
+  Future<Queue?> _findQueueByEpisode(domain.Episode episode) async {
     final isar = _isarService.isar;
 
-    if (episode.podcastITunesId != null && episode.podcastITunesId!.isNotEmpty) {
-      final queues = isar.queues
+    if (episode.itunesId != null && episode.itunesId!.isNotEmpty) {
+      final queue = await isar.queues
           .filter()
-          .podcastITunesIdIsNotNull()
-          .and()
-          .podcastITunesIdIsNotEmpty()
-          .findAllSync();
-
-      for (final queue in queues) {
-        if (queue.podcastITunesId == episode.podcastITunesId) {
-          final queueEpisode = isar.episodes
-              .where()
-              .idEqualTo(queue.episodeId)
-              .findFirstSync();
-          if (queueEpisode != null &&
-              queueEpisode.itunesId == episode.itunesId &&
-              episode.itunesId != null &&
-              episode.itunesId!.isNotEmpty) {
-            return queue;
-          }
-        }
-      }
+          .episodeITunesIdEqualTo(episode.itunesId)
+          .findFirst();
+      if (queue != null) return queue;
     }
 
-    final queues = isar.queues
-        .filter()
-        .podcastIdIsNotNull()
-        .findAllSync();
-
-    for (final queue in queues) {
-      if (queue.podcastId == episode.podcastId) {
-        final queueEpisode = isar.episodes
-            .where()
-            .idEqualTo(queue.episodeId)
-            .findFirstSync();
-        if (queueEpisode != null && queueEpisode.guid == episode.guid &&
-            episode.guid != null && episode.guid!.isNotEmpty) {
-          return queue;
-        }
-      }
+    if (episode.guid != null && episode.guid!.isNotEmpty) {
+      final queue = await isar.queues
+          .filter()
+          .episodeGuidEqualTo(episode.guid)
+          .findFirst();
+      if (queue != null) return queue;
     }
 
     return isar.queues
         .where()
         .episodeIdEqualTo(episode.id)
-        .findFirstSync();
+        .findFirst();
   }
 
   Future<List<Queue>> getAll() async {
@@ -85,7 +59,7 @@ class LocalQueueDataSource {
     try {
       Logger.info('📋 [QUEUE-DS] 开始添加到队列, episodeId: ${episode.id}, guid: ${episode.guid}');
 
-      final existing = _findQueueByEpisode(episode);
+      final existing = await _findQueueByEpisode(episode);
 
       if (existing != null) {
         Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 已存在于队列中, 跳过添加');
@@ -124,7 +98,7 @@ class LocalQueueDataSource {
     try {
       Logger.info('📋 [QUEUE-DS] 开始插播到队列最前, episodeId: ${episode.id}');
 
-      final existing = _findQueueByEpisode(episode);
+      final existing = await _findQueueByEpisode(episode);
 
       if (existing != null) {
         Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 已存在于队列中, 先移除再插播');
@@ -208,7 +182,7 @@ class LocalQueueDataSource {
     try {
       Logger.info('📋 [QUEUE-DS] 开始根据 episode 从队列移除, episodeId: ${episode.id}');
 
-      final item = _findQueueByEpisode(episode);
+      final item = await _findQueueByEpisode(episode);
 
       if (item == null) {
         Logger.warning('📋 [QUEUE-DS] episodeId: ${episode.id} 不在队列中, 跳过移除');
@@ -321,7 +295,7 @@ class LocalQueueDataSource {
     try {
       Logger.debug('📋 [QUEUE-DS] 检查是否在队列中, episodeId: ${episode.id}');
 
-      final existing = _findQueueByEpisode(episode);
+      final existing = await _findQueueByEpisode(episode);
       final result = existing != null;
 
       Logger.debug('📋 [QUEUE-DS] 队列检查结果, episodeId: ${episode.id}, isInQueue: $result');
