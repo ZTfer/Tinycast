@@ -37,6 +37,11 @@ const FavoriteSchema = CollectionSchema(
       name: r'episodeId',
       type: IsarType.long,
     ),
+    r'supabaseId': PropertySchema(
+      id: 4,
+      name: r'supabaseId',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _favoriteEstimateSize,
@@ -86,6 +91,12 @@ int _favoriteEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.supabaseId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -99,6 +110,7 @@ void _favoriteSerialize(
   writer.writeString(offsets[1], object.episodeGuid);
   writer.writeString(offsets[2], object.episodeITunesId);
   writer.writeLong(offsets[3], object.episodeId);
+  writer.writeString(offsets[4], object.supabaseId);
 }
 
 Favorite _favoriteDeserialize(
@@ -112,6 +124,7 @@ Favorite _favoriteDeserialize(
   object.episodeITunesId = reader.readStringOrNull(offsets[2]);
   object.episodeId = reader.readLong(offsets[3]);
   object.id = id;
+  object.supabaseId = reader.readStringOrNull(offsets[4]);
   return object;
 }
 
@@ -130,6 +143,8 @@ P _favoriteDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readLong(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -838,6 +853,170 @@ extension FavoriteQueryFilter
       );
     });
   }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'supabaseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'supabaseId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition> supabaseIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterFilterCondition>
+  supabaseIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'supabaseId', value: ''),
+      );
+    });
+  }
 }
 
 extension FavoriteQueryObject
@@ -892,6 +1071,18 @@ extension FavoriteQuerySortBy on QueryBuilder<Favorite, Favorite, QSortBy> {
   QueryBuilder<Favorite, Favorite, QAfterSortBy> sortByEpisodeIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'episodeId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> sortBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
     });
   }
 }
@@ -957,6 +1148,18 @@ extension FavoriteQuerySortThenBy
       return query.addSortBy(r'id', Sort.desc);
     });
   }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Favorite, Favorite, QAfterSortBy> thenBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
+    });
+  }
 }
 
 extension FavoriteQueryWhereDistinct
@@ -991,6 +1194,14 @@ extension FavoriteQueryWhereDistinct
       return query.addDistinctBy(r'episodeId');
     });
   }
+
+  QueryBuilder<Favorite, Favorite, QDistinct> distinctBySupabaseId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'supabaseId', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension FavoriteQueryProperty
@@ -1022,6 +1233,12 @@ extension FavoriteQueryProperty
   QueryBuilder<Favorite, int, QQueryOperations> episodeIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'episodeId');
+    });
+  }
+
+  QueryBuilder<Favorite, String?, QQueryOperations> supabaseIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'supabaseId');
     });
   }
 }

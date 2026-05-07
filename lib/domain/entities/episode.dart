@@ -1,5 +1,6 @@
 class Episode {
   final int id;
+  final String? supabaseId;
   final int podcastId;
   final String title;
   final String description;
@@ -31,6 +32,7 @@ class Episode {
 
   Episode({
     required this.id,
+    this.supabaseId,
     required this.podcastId,
     required this.title,
     required this.description,

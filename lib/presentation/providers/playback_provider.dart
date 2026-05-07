@@ -256,8 +256,22 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   /// 标记 episode 为已播放
+  /// 先写入 PlayHistory（唯一数据源），再更新 Episode 缓存字段
   Future<void> _markEpisodeAsPlayed(int episodeId) async {
     try {
+      final currentEpisode = state.currentEpisode;
+
+      // 1. 先写入 PlayHistory（唯一数据源）
+      await _playHistoryRepository.markAsPlayedWithProgress(
+        episodeId,
+        1.0,
+        episodeGuid: currentEpisode?.guid,
+        episodeITunesId: currentEpisode?.itunesId,
+        podcastGuid: null,
+        podcastITunesId: currentEpisode?.podcastITunesId,
+      );
+
+      // 2. 再更新 Episode 缓存字段
       final isar = IsarService.instance.isar;
       await isar.writeTxn(() async {
         final episode = await isar.episodes.get(episodeId);
@@ -266,7 +280,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           episode.playProgress = 1.0;
           episode.updatedAt = DateTime.now();
           await isar.episodes.put(episode);
-          debugPrint('✅ [Playback] Marked episode $episodeId as played');
+          debugPrint('✅ [Playback] Marked episode $episodeId as played (cache synced)');
         }
       });
     } catch (e, stackTrace) {
@@ -379,13 +393,32 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     if (currentEpisode == null) return;
 
     final positionMs = state.currentPosition.inMilliseconds;
+    final durationMs = state.duration.inMilliseconds;
 
     try {
-      await _playHistoryRepository.updateProgress(
+      // 计算 progressRatio
+      final progressRatio = durationMs > 0 ? positionMs / durationMs : 0.0;
+
+      // 先写入 PlayHistory（唯一数据源）
+      await _playHistoryRepository.updatePlayProgress(
         currentEpisode.id,
         positionMs,
-        positionMs - _lastSavedPositionMs,
+        progressRatio,
+        episodeGuid: currentEpisode.guid,
+        episodeITunesId: currentEpisode.itunesId,
       );
+
+      // 再更新 Episode 缓存字段
+      final isar = IsarService.instance.isar;
+      await isar.writeTxn(() async {
+        final episode = await isar.episodes.get(currentEpisode.id);
+        if (episode != null) {
+          episode.playProgress = progressRatio;
+          episode.lastPlayedAt = DateTime.now();
+          episode.updatedAt = DateTime.now();
+          await isar.episodes.put(episode);
+        }
+      });
 
       _lastSavedPositionMs = positionMs;
       _lastSaveTime = DateTime.now();
@@ -396,13 +429,21 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   Future<void> _createOrUpdatePlayHistory(Episode episode) async {
     try {
+      final durationMs = state.duration.inMilliseconds;
+      final positionMs = state.currentPosition.inMilliseconds;
+      final progressRatio = durationMs > 0 ? positionMs / durationMs : 0.0;
+
       final history = PlayHistory()
         ..episodeId = episode.id
+        ..episodeGuid = episode.guid
+        ..episodeITunesId = episode.itunesId
         ..podcastId = episode.podcastId
+        ..podcastITunesId = episode.podcastITunesId
         ..title = episode.title
         ..description = episode.description
         ..artworkUrl = episode.artworkUrl
-        ..lastPlayedPositionMs = state.currentPosition.inMilliseconds
+        ..lastPlayedPositionMs = positionMs
+        ..playProgress = progressRatio
         ..isPlayed = false
         ..playedDuration = 0
         ..status = PlayHistoryStatus.playing
@@ -411,7 +452,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
       await _playHistoryRepository.saveOrUpdate(history);
       _currentEpisodeId = episode.id;
-      _lastSavedPositionMs = state.currentPosition.inMilliseconds;
+      _lastSavedPositionMs = positionMs;
       _lastSaveTime = DateTime.now();
     } catch (e) {
       debugPrint('Error creating play history: $e');
@@ -457,12 +498,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         duration: episode.duration,
         artworkUrl: episode.artworkUrl,
         isExplicit: episode.isExplicit,
-        isPlayed: episode.isPlayed,
+        isPlayed: latestHistory.isPlayed,
         isDownloaded: episode.isDownloaded,
         isFavorite: false,
         downloadedPath: episode.downloadedPath,
         downloadProgress: episode.downloadProgress,
-        playProgress: episode.playProgress,
+        playProgress: latestHistory.playProgress,
         lastPlayedAt: episode.lastPlayedAt,
         createdAt: episode.createdAt,
         updatedAt: episode.updatedAt,
@@ -477,6 +518,23 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       _currentEpisodeId = domainEpisode.id;
       _lastSavedPositionMs = latestHistory.lastPlayedPositionMs;
       _lastSaveTime = DateTime.now();
+
+      // 同步 PlayHistory 的播放状态到 Episode 缓存
+      try {
+        final isar = IsarService.instance.isar;
+        await isar.writeTxn(() async {
+          final ep = await isar.episodes.get(episode.id);
+          if (ep != null && (ep.isPlayed != latestHistory.isPlayed || ep.playProgress != latestHistory.playProgress)) {
+            ep.isPlayed = latestHistory.isPlayed;
+            ep.playProgress = latestHistory.playProgress;
+            ep.updatedAt = DateTime.now();
+            await isar.episodes.put(ep);
+            debugPrint('🔄 [Playback] Synced Episode cache from PlayHistory: isPlayed=${latestHistory.isPlayed}, playProgress=${latestHistory.playProgress}');
+          }
+        });
+      } catch (e) {
+        debugPrint('⚠️ [Playback] Failed to sync Episode cache from PlayHistory: $e');
+      }
 
       state = state.copyWith(currentEpisode: domainEpisode);
 
@@ -606,7 +664,26 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           debugPrint(
             '🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed',
           );
-          await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+          // 先写入 PlayHistory（唯一数据源）
+          await _playHistoryRepository.markAsPlayedWithProgress(
+            currentEpisode.id,
+            1.0,
+            episodeGuid: currentEpisode.guid,
+            episodeITunesId: currentEpisode.itunesId,
+            podcastGuid: null,
+            podcastITunesId: currentEpisode.podcastITunesId,
+          );
+          // 再更新 Episode 缓存
+          final isar = IsarService.instance.isar;
+          await isar.writeTxn(() async {
+            final episode = await isar.episodes.get(currentEpisode.id);
+            if (episode != null) {
+              episode.isPlayed = true;
+              episode.playProgress = 1.0;
+              episode.updatedAt = DateTime.now();
+              await isar.episodes.put(episode);
+            }
+          });
 
           debugPrint('🔄 [Playback] Auto-refreshing History list...');
           ref.read(completedHistoriesProvider.notifier).refresh();
@@ -633,7 +710,26 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         debugPrint(
           '🎯 [Playback] Stop: Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed',
         );
-        await _playHistoryRepository.markAsCompleted(currentEpisode.id);
+        // 先写入 PlayHistory（唯一数据源）
+        await _playHistoryRepository.markAsPlayedWithProgress(
+          currentEpisode.id,
+          1.0,
+          episodeGuid: currentEpisode.guid,
+          episodeITunesId: currentEpisode.itunesId,
+          podcastGuid: null,
+          podcastITunesId: currentEpisode.podcastITunesId,
+        );
+        // 再更新 Episode 缓存
+        final isar = IsarService.instance.isar;
+        await isar.writeTxn(() async {
+          final episode = await isar.episodes.get(currentEpisode.id);
+          if (episode != null) {
+            episode.isPlayed = true;
+            episode.playProgress = 1.0;
+            episode.updatedAt = DateTime.now();
+            await isar.episodes.put(episode);
+          }
+        });
 
         debugPrint('🔄 [Playback] Auto-refreshing History list...');
         ref.read(completedHistoriesProvider.notifier).refresh();

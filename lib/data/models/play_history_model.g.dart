@@ -63,33 +63,43 @@ const PlayHistorySchema = CollectionSchema(
       name: r'lastUpdateTime',
       type: IsarType.dateTime,
     ),
-    r'playedDuration': PropertySchema(
+    r'playProgress': PropertySchema(
       id: 10,
+      name: r'playProgress',
+      type: IsarType.double,
+    ),
+    r'playedDuration': PropertySchema(
+      id: 11,
       name: r'playedDuration',
       type: IsarType.long,
     ),
     r'podcastGuid': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'podcastGuid',
       type: IsarType.string,
     ),
     r'podcastITunesId': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'podcastITunesId',
       type: IsarType.string,
     ),
     r'podcastId': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'podcastId',
       type: IsarType.long,
     ),
     r'status': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'status',
       type: IsarType.byte,
       enumMap: _PlayHistorystatusEnumValueMap,
     ),
-    r'title': PropertySchema(id: 15, name: r'title', type: IsarType.string),
+    r'supabaseId': PropertySchema(
+      id: 16,
+      name: r'supabaseId',
+      type: IsarType.string,
+    ),
+    r'title': PropertySchema(id: 17, name: r'title', type: IsarType.string),
   },
 
   estimateSize: _playHistoryEstimateSize,
@@ -189,6 +199,12 @@ int _playHistoryEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.supabaseId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.title.length * 3;
   return bytesCount;
 }
@@ -209,12 +225,14 @@ void _playHistorySerialize(
   writer.writeBool(offsets[7], object.isPlayed);
   writer.writeLong(offsets[8], object.lastPlayedPositionMs);
   writer.writeDateTime(offsets[9], object.lastUpdateTime);
-  writer.writeLong(offsets[10], object.playedDuration);
-  writer.writeString(offsets[11], object.podcastGuid);
-  writer.writeString(offsets[12], object.podcastITunesId);
-  writer.writeLong(offsets[13], object.podcastId);
-  writer.writeByte(offsets[14], object.status.index);
-  writer.writeString(offsets[15], object.title);
+  writer.writeDouble(offsets[10], object.playProgress);
+  writer.writeLong(offsets[11], object.playedDuration);
+  writer.writeString(offsets[12], object.podcastGuid);
+  writer.writeString(offsets[13], object.podcastITunesId);
+  writer.writeLong(offsets[14], object.podcastId);
+  writer.writeByte(offsets[15], object.status.index);
+  writer.writeString(offsets[16], object.supabaseId);
+  writer.writeString(offsets[17], object.title);
 }
 
 PlayHistory _playHistoryDeserialize(
@@ -234,14 +252,16 @@ PlayHistory _playHistoryDeserialize(
   object.isPlayed = reader.readBool(offsets[7]);
   object.lastPlayedPositionMs = reader.readLong(offsets[8]);
   object.lastUpdateTime = reader.readDateTime(offsets[9]);
-  object.playedDuration = reader.readLong(offsets[10]);
-  object.podcastGuid = reader.readStringOrNull(offsets[11]);
-  object.podcastITunesId = reader.readStringOrNull(offsets[12]);
-  object.podcastId = reader.readLong(offsets[13]);
+  object.playProgress = reader.readDouble(offsets[10]);
+  object.playedDuration = reader.readLong(offsets[11]);
+  object.podcastGuid = reader.readStringOrNull(offsets[12]);
+  object.podcastITunesId = reader.readStringOrNull(offsets[13]);
+  object.podcastId = reader.readLong(offsets[14]);
   object.status =
-      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[14])] ??
+      _PlayHistorystatusValueEnumMap[reader.readByteOrNull(offsets[15])] ??
       PlayHistoryStatus.playing;
-  object.title = reader.readString(offsets[15]);
+  object.supabaseId = reader.readStringOrNull(offsets[16]);
+  object.title = reader.readString(offsets[17]);
   return object;
 }
 
@@ -273,18 +293,22 @@ P _playHistoryDeserializeProp<P>(
     case 9:
       return (reader.readDateTime(offset)) as P;
     case 10:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 11:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 14:
+      return (reader.readLong(offset)) as P;
+    case 15:
       return (_PlayHistorystatusValueEnumMap[reader.readByteOrNull(offset)] ??
               PlayHistoryStatus.playing)
           as P;
-    case 15:
+    case 16:
+      return (reader.readStringOrNull(offset)) as P;
+    case 17:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1673,6 +1697,81 @@ extension PlayHistoryQueryFilter
   }
 
   QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  playProgressEqualTo(double value, {double epsilon = Query.epsilon}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'playProgress',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  playProgressGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'playProgress',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  playProgressLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'playProgress',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  playProgressBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'playProgress',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
   playedDurationEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2157,6 +2256,165 @@ extension PlayHistoryQueryFilter
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'supabaseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'supabaseId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition>
+  supabaseIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -2438,6 +2696,19 @@ extension PlayHistoryQuerySortBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPlayProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playProgress', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  sortByPlayProgressDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playProgress', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByPlayedDuration() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playedDuration', Sort.asc);
@@ -2497,6 +2768,18 @@ extension PlayHistoryQuerySortBy
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortByStatusDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> sortBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
     });
   }
 
@@ -2651,6 +2934,19 @@ extension PlayHistoryQuerySortThenBy
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPlayProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playProgress', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy>
+  thenByPlayProgressDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playProgress', Sort.desc);
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByPlayedDuration() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playedDuration', Sort.asc);
@@ -2710,6 +3006,18 @@ extension PlayHistoryQuerySortThenBy
   QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenByStatusDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'status', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterSortBy> thenBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
     });
   }
 
@@ -2800,6 +3108,12 @@ extension PlayHistoryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByPlayProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'playProgress');
+    });
+  }
+
   QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByPlayedDuration() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'playedDuration');
@@ -2834,6 +3148,14 @@ extension PlayHistoryQueryWhereDistinct
   QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctByStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'status');
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QDistinct> distinctBySupabaseId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'supabaseId', caseSensitive: caseSensitive);
     });
   }
 
@@ -2917,6 +3239,12 @@ extension PlayHistoryQueryProperty
     });
   }
 
+  QueryBuilder<PlayHistory, double, QQueryOperations> playProgressProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'playProgress');
+    });
+  }
+
   QueryBuilder<PlayHistory, int, QQueryOperations> playedDurationProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'playedDuration');
@@ -2946,6 +3274,12 @@ extension PlayHistoryQueryProperty
   statusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'status');
+    });
+  }
+
+  QueryBuilder<PlayHistory, String?, QQueryOperations> supabaseIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'supabaseId');
     });
   }
 

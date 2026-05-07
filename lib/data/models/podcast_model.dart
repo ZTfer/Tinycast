@@ -6,6 +6,8 @@ part 'podcast_model.g.dart';
 class Podcast {
   Id id = Isar.autoIncrement;
 
+  String? supabaseId;
+
   @Index()
   late String title;
 

@@ -8,6 +8,8 @@ enum PlayHistoryStatus { playing, completed, skipped }
 class PlayHistory {
   Id id = Isar.autoIncrement;
 
+  String? supabaseId;
+
   @Index()
   late int episodeId;
 
@@ -29,6 +31,8 @@ class PlayHistory {
   String? artworkUrl;
 
   int lastPlayedPositionMs = 0;
+
+  double playProgress = 0.0;
 
   bool isPlayed = false;
 

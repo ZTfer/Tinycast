@@ -149,9 +149,14 @@ const PodcastSchema = CollectionSchema(
       name: r'subtitle',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 28, name: r'title', type: IsarType.string),
+    r'supabaseId': PropertySchema(
+      id: 28,
+      name: r'supabaseId',
+      type: IsarType.string,
+    ),
+    r'title': PropertySchema(id: 29, name: r'title', type: IsarType.string),
     r'websiteUrl': PropertySchema(
-      id: 29,
+      id: 30,
       name: r'websiteUrl',
       type: IsarType.string,
     ),
@@ -348,6 +353,12 @@ int _podcastEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.supabaseId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.title.length * 3;
   {
     final value = object.websiteUrl;
@@ -392,8 +403,9 @@ void _podcastSerialize(
   writer.writeString(offsets[25], object.rssUrl);
   writer.writeDateTime(offsets[26], object.subscribedAt);
   writer.writeString(offsets[27], object.subtitle);
-  writer.writeString(offsets[28], object.title);
-  writer.writeString(offsets[29], object.websiteUrl);
+  writer.writeString(offsets[28], object.supabaseId);
+  writer.writeString(offsets[29], object.title);
+  writer.writeString(offsets[30], object.websiteUrl);
 }
 
 Podcast _podcastDeserialize(
@@ -431,8 +443,9 @@ Podcast _podcastDeserialize(
   object.rssUrl = reader.readString(offsets[25]);
   object.subscribedAt = reader.readDateTimeOrNull(offsets[26]);
   object.subtitle = reader.readStringOrNull(offsets[27]);
-  object.title = reader.readString(offsets[28]);
-  object.websiteUrl = reader.readStringOrNull(offsets[29]);
+  object.supabaseId = reader.readStringOrNull(offsets[28]);
+  object.title = reader.readString(offsets[29]);
+  object.websiteUrl = reader.readStringOrNull(offsets[30]);
   return object;
 }
 
@@ -500,8 +513,10 @@ P _podcastDeserializeProp<P>(
     case 27:
       return (reader.readStringOrNull(offset)) as P;
     case 28:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 29:
+      return (reader.readString(offset)) as P;
+    case 30:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -4862,6 +4877,168 @@ extension PodcastQueryFilter
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'supabaseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'supabaseId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> supabaseIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -5472,6 +5649,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -5805,6 +5994,18 @@ extension PodcastQuerySortThenBy
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -6050,6 +6251,14 @@ extension PodcastQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctBySupabaseId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'supabaseId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QDistinct> distinctByTitle({
     bool caseSensitive = true,
   }) {
@@ -6247,6 +6456,12 @@ extension PodcastQueryProperty
   QueryBuilder<Podcast, String?, QQueryOperations> subtitleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'subtitle');
+    });
+  }
+
+  QueryBuilder<Podcast, String?, QQueryOperations> supabaseIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'supabaseId');
     });
   }
 

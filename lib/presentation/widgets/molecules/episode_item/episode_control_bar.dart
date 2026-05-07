@@ -274,19 +274,22 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     );
     if (!mounted) return;
     try {
-      final podcastRepository = ref.read(podcastRepositoryProvider);
-      await podcastRepository.updateIsPlayed(widget.episodeId, true);
-      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 episode isPlayed');
-
+      // 1. 先写入 PlayHistory（唯一数据源）
       final playHistoryRepository = ref.read(playHistoryRepositoryProvider);
-      await playHistoryRepository.updateOrCreatePlayHistoryAsCompleted(
+      await playHistoryRepository.markAsPlayedWithProgress(
         widget.episodeId,
+        1.0,
         episodeGuid: widget.episode.guid,
         episodeITunesId: widget.episode.itunesId,
         podcastGuid: null,
         podcastITunesId: widget.episode.podcastITunesId,
       );
-      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态');
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 PlayHistory 状态（唯一数据源）');
+
+      // 2. 再更新 Episode 缓存字段
+      final podcastRepository = ref.read(podcastRepositoryProvider);
+      await podcastRepository.updateIsPlayed(widget.episodeId, true);
+      Logger.info('✅ [EPISODE-CONTROL-BAR] 成功更新 Episode 缓存 isPlayed');
 
       await ref
           .read(queueNotifierProvider.notifier)

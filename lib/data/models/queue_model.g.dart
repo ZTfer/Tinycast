@@ -53,6 +53,11 @@ const QueueSchema = CollectionSchema(
       type: IsarType.long,
     ),
     r'position': PropertySchema(id: 7, name: r'position', type: IsarType.long),
+    r'supabaseId': PropertySchema(
+      id: 8,
+      name: r'supabaseId',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _queueEstimateSize,
@@ -127,6 +132,12 @@ int _queueEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.supabaseId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -144,6 +155,7 @@ void _queueSerialize(
   writer.writeString(offsets[5], object.podcastITunesId);
   writer.writeLong(offsets[6], object.podcastId);
   writer.writeLong(offsets[7], object.position);
+  writer.writeString(offsets[8], object.supabaseId);
 }
 
 Queue _queueDeserialize(
@@ -161,6 +173,7 @@ Queue _queueDeserialize(
   object.podcastITunesId = reader.readStringOrNull(offsets[5]);
   object.podcastId = reader.readLongOrNull(offsets[6]);
   object.position = reader.readLong(offsets[7]);
+  object.supabaseId = reader.readStringOrNull(offsets[8]);
   return object;
 }
 
@@ -187,6 +200,8 @@ P _queueDeserializeProp<P>(
       return (reader.readLongOrNull(offset)) as P;
     case 7:
       return (reader.readLong(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1463,6 +1478,168 @@ extension QueueQueryFilter on QueryBuilder<Queue, Queue, QFilterCondition> {
       );
     });
   }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'supabaseId'),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'supabaseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'supabaseId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'supabaseId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'supabaseId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterFilterCondition> supabaseIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'supabaseId', value: ''),
+      );
+    });
+  }
 }
 
 extension QueueQueryObject on QueryBuilder<Queue, Queue, QFilterCondition> {}
@@ -1563,6 +1740,18 @@ extension QueueQuerySortBy on QueryBuilder<Queue, Queue, QSortBy> {
   QueryBuilder<Queue, Queue, QAfterSortBy> sortByPositionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'position', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterSortBy> sortBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterSortBy> sortBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
     });
   }
 }
@@ -1675,6 +1864,18 @@ extension QueueQuerySortThenBy on QueryBuilder<Queue, Queue, QSortThenBy> {
       return query.addSortBy(r'position', Sort.desc);
     });
   }
+
+  QueryBuilder<Queue, Queue, QAfterSortBy> thenBySupabaseId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Queue, Queue, QAfterSortBy> thenBySupabaseIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'supabaseId', Sort.desc);
+    });
+  }
 }
 
 extension QueueQueryWhereDistinct on QueryBuilder<Queue, Queue, QDistinct> {
@@ -1739,6 +1940,14 @@ extension QueueQueryWhereDistinct on QueryBuilder<Queue, Queue, QDistinct> {
       return query.addDistinctBy(r'position');
     });
   }
+
+  QueryBuilder<Queue, Queue, QDistinct> distinctBySupabaseId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'supabaseId', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension QueueQueryProperty on QueryBuilder<Queue, Queue, QQueryProperty> {
@@ -1793,6 +2002,12 @@ extension QueueQueryProperty on QueryBuilder<Queue, Queue, QQueryProperty> {
   QueryBuilder<Queue, int, QQueryOperations> positionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'position');
+    });
+  }
+
+  QueryBuilder<Queue, String?, QQueryOperations> supabaseIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'supabaseId');
     });
   }
 }

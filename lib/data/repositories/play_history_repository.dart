@@ -111,6 +111,123 @@ class PlayHistoryRepository {
     }
   }
 
+  /// 更新播放进度（同时更新 lastPlayedPositionMs 和 playProgress）
+  /// PlayHistory 是播放状态的唯一数据源，Episode 中的对应字段为缓存
+  Future<void> updatePlayProgress(int episodeId, int positionMs, double progressRatio, {String? episodeGuid, String? episodeITunesId}) async {
+    final isar = IsarService.instance.isar;
+    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    if (history != null) {
+      history.lastPlayedPositionMs = positionMs;
+      history.playProgress = progressRatio;
+      history.lastUpdateTime = DateTime.now();
+      await isar.writeTxn(() async {
+        await isar.playHistorys.put(history);
+      });
+    }
+  }
+
+  /// 获取 episode 的播放进度（playProgress）
+  Future<double?> getPlayProgress(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
+    final isar = IsarService.instance.isar;
+    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    return history?.playProgress;
+  }
+
+  /// 检查 episode 是否已播放（从 PlayHistory 判断，PlayHistory 是唯一数据源）
+  Future<bool> isEpisodePlayed(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
+    final isar = IsarService.instance.isar;
+    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+    return history?.isPlayed ?? false;
+  }
+
+  /// 标记 episode 为已播放并设置 playProgress=1.0
+  /// PlayHistory 是唯一数据源，调用方应同时更新 Episode 缓存字段
+  Future<void> markAsPlayedWithProgress(int episodeId, double progressRatio, {String? episodeGuid, String? episodeITunesId, String? podcastGuid, String? podcastITunesId}) async {
+    final isar = IsarService.instance.isar;
+    final existing = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+
+    if (existing != null) {
+      existing.isPlayed = true;
+      existing.playProgress = progressRatio;
+      existing.status = PlayHistoryStatus.completed;
+      existing.lastUpdateTime = DateTime.now();
+      await isar.writeTxn(() async {
+        await isar.playHistorys.put(existing);
+      });
+      debugPrint('✅ [PlayHistory] markAsPlayedWithProgress: 已更新 episodeId=$episodeId, playProgress=$progressRatio');
+    } else {
+      Episode? episode;
+      if (episodeGuid != null && episodeGuid.isNotEmpty) {
+        final episodes = isar.episodes
+            .filter()
+            .guidIsNotNull()
+            .and()
+            .guidIsNotEmpty()
+            .findAllSync();
+        for (final ep in episodes) {
+          if (ep.guid == episodeGuid) {
+            episode = ep;
+            break;
+          }
+        }
+      } else if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
+        final episodes = isar.episodes
+            .filter()
+            .itunesIdIsNotNull()
+            .and()
+            .itunesIdIsNotEmpty()
+            .findAllSync();
+        for (final ep in episodes) {
+          if (ep.itunesId == episodeITunesId) {
+            episode = ep;
+            break;
+          }
+        }
+      } else {
+        episode = isar.episodes.getSync(episodeId);
+      }
+
+      if (episode == null) {
+        debugPrint('⚠️ [PlayHistory] markAsPlayedWithProgress: 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
+        return;
+      }
+
+      final newHistory = PlayHistory()
+        ..episodeId = episodeId
+        ..episodeGuid = episodeGuid
+        ..episodeITunesId = episodeITunesId
+        ..podcastId = episode.podcastId
+        ..podcastGuid = podcastGuid
+        ..podcastITunesId = podcastITunesId
+        ..title = episode.title
+        ..description = episode.description
+        ..artworkUrl = episode.artworkUrl
+        ..isPlayed = true
+        ..playProgress = progressRatio
+        ..status = PlayHistoryStatus.completed
+        ..playedDuration = 0
+        ..lastUpdateTime = DateTime.now()
+        ..isDeleted = false;
+
+      await isar.writeTxn(() async {
+        await isar.playHistorys.put(newHistory);
+      });
+      debugPrint('🆕 [PlayHistory] markAsPlayedWithProgress: 已创建新记录 episodeId=$episodeId, playProgress=$progressRatio');
+    }
+  }
+
+  /// 获取所有已播放的 episode ID 集合（用于交叉过滤未播放列表）
+  Future<Set<int>> getPlayedEpisodeIds() async {
+    final isar = IsarService.instance.isar;
+    final playedHistories = isar.playHistorys
+        .filter()
+        .isPlayedEqualTo(true)
+        .and()
+        .isDeletedEqualTo(false)
+        .findAllSync();
+    return playedHistories.map((h) => h.episodeId).toSet();
+  }
+
   Future<void> markAsCompleted(int episodeId, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = IsarService.instance.isar;
     final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);

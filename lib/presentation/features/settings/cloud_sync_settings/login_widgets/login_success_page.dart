@@ -1,7 +1,11 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tinycast/core/providers/sync_provider.dart';
+import 'package:tinycast/core/services/sync_service.dart';
 
-class LoginSuccessPage extends StatelessWidget {
+class LoginSuccessPage extends ConsumerStatefulWidget {
   final User user;
   final VoidCallback onSignOut;
 
@@ -12,9 +16,16 @@ class LoginSuccessPage extends StatelessWidget {
   });
 
   @override
+  ConsumerState<LoginSuccessPage> createState() => _LoginSuccessPageState();
+}
+
+class _LoginSuccessPageState extends ConsumerState<LoginSuccessPage> {
+  @override
   Widget build(BuildContext context) {
-    final email = user.email ?? '未绑定邮箱';
-    final displayName = user.userMetadata?['name'] as String? ?? email;
+    final email = widget.user.email ?? '未绑定邮箱';
+    final displayName = widget.user.userMetadata?['name'] as String? ?? email;
+    final syncState = ref.watch(syncProvider);
+    final isSyncing = syncState.status == SyncStatus.syncing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,11 +43,89 @@ class LoginSuccessPage extends StatelessWidget {
           email,
           style: const TextStyle(fontSize: 12, color: Color(0x4D000000)),
         ),
+        const SizedBox(height: 12),
+        const Divider(height: 1),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Text(
+              '同步状态：',
+              style: TextStyle(fontSize: 12, color: Color(0x99000000)),
+            ),
+            _buildSyncStatusIndicator(syncState),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            const Text(
+              '上次同步：',
+              style: TextStyle(fontSize: 12, color: Color(0x99000000)),
+            ),
+            Text(
+              syncState.lastSyncTime != null
+                  ? DateFormat(
+                      'yyyy-MM-dd HH:mm',
+                    ).format(syncState.lastSyncTime!)
+                  : '从未同步',
+              style: const TextStyle(fontSize: 12, color: Color(0x990000000)),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: onSignOut,
+            onTap: isSyncing
+                ? null
+                : () => ref.read(syncProvider.notifier).syncNow(),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSyncing
+                    ? const Color(0xFFE5E7EB)
+                    : const Color(0xFFDBEAFE),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: isSyncing
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF3B82F6),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          '同步中...',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF3B82F6),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Text(
+                      '手动同步',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: widget.onSignOut,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -57,5 +146,25 @@ class LoginSuccessPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildSyncStatusIndicator(SyncState syncState) {
+    switch (syncState.status) {
+      case SyncStatus.idle:
+        return const Text(
+          '已同步',
+          style: TextStyle(fontSize: 12, color: Color(0xFF22C55E)),
+        );
+      case SyncStatus.syncing:
+        return const Text(
+          '同步中...',
+          style: TextStyle(fontSize: 12, color: Color(0xFF3B82F6)),
+        );
+      case SyncStatus.error:
+        return const Text(
+          '同步失败',
+          style: TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+        );
+    }
   }
 }
