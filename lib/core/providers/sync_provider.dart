@@ -51,7 +51,7 @@ class SyncNotifier extends Notifier<SyncState> {
 
       if (isLoggedIn && !wasLoggedIn) {
         _startPeriodicSync();
-        syncNow();
+        Future.microtask(() => syncNow());
       } else if (!isLoggedIn && wasLoggedIn) {
         _stopPeriodicSync();
       }
@@ -61,7 +61,7 @@ class SyncNotifier extends Notifier<SyncState> {
     if (isLoggedIn) {
       _startPeriodicSync();
       _loadLastSyncTime();
-      syncNow();
+      Future.microtask(() => syncNow());
     }
 
     ref.onDispose(() {

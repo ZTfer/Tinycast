@@ -70,6 +70,8 @@ class SyncService {
       Logger.info('🔄 [SYNC] Starting sync...');
       _notifyProgress(const SyncProgress(currentTable: 'preparing'));
 
+      await _ensureUserProfile();
+
       final lastSyncTime = await getLastSyncTime();
       final isFirstSync = lastSyncTime == null;
 
@@ -91,6 +93,34 @@ class SyncService {
       Logger.info('✅ [SYNC] Sync completed at $now');
     } catch (e, stackTrace) {
       Logger.error('❌ [SYNC] Sync failed', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> _ensureUserProfile() async {
+    final userId = _userId;
+    if (userId == null) return;
+
+    try {
+      final client = SupabaseService().client;
+      final existing = await client
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (existing == null) {
+        final user = client.auth.currentUser;
+        await client.from('profiles').insert({
+          'id': userId,
+          'email': user?.email,
+          'full_name': user?.userMetadata?['name'],
+          'is_premium': false,
+        });
+        Logger.info('Created user profile for sync');
+      }
+    } catch (e) {
+      Logger.error('Failed to ensure user profile', error: e);
       rethrow;
     }
   }

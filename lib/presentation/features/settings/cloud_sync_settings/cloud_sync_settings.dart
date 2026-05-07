@@ -53,24 +53,26 @@ class CloudSyncSettings extends ConsumerWidget {
           ],
         ),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 12,
-            children: [
-              authState.when(
-                data: (user) {
-                  if (user != null) {
-                    return LoginSuccessPage(
-                      user: user,
-                      onSignOut: () => _handleSignOut(context),
-                    );
-                  }
-                  return _buildLoginSection(context);
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => const Text('加载失败'),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 12,
+              children: [
+                authState.when(
+                  data: (user) {
+                    if (user != null) {
+                      return LoginSuccessPage(
+                        user: user,
+                        onSignOut: () => _handleSignOut(context),
+                      );
+                    }
+                    return _buildLoginSection(context);
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => const Text('加载失败'),
+                ),
+              ],
+            ),
           ),
         ),
       ],
