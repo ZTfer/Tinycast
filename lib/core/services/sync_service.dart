@@ -305,6 +305,10 @@ class SyncService {
     }
 
     await isar.writeTxn(() async {
+      final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
+
+      if (cloudSubscriptions.isEmpty && allSubscribedPodcasts.isEmpty) return;
+
       for (final sub in cloudSubscriptions) {
         final podcastCloudId = sub['podcast_id']?.toString();
         if (podcastCloudId == null) continue;
@@ -319,7 +323,6 @@ class SyncService {
         }
       }
 
-      final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
       for (final podcast in allSubscribedPodcasts) {
         if (podcast.supabaseId != null && !subscribedPodcastCloudIds.contains(podcast.supabaseId)) {
           podcast.isSubscribed = false;
