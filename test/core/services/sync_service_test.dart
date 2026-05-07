@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 import 'package:tinycast/data/datasources/remote_sync_datasource.dart';

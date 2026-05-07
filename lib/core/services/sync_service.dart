@@ -294,8 +294,15 @@ class SyncService {
   }
 
   Future<void> _mergeSubscriptionsFromCloud(List<Map<String, dynamic>> cloudSubscriptions) async {
-    if (cloudSubscriptions.isEmpty) return;
     final isar = IsarService.instance.isar;
+
+    final subscribedPodcastCloudIds = <String>{};
+    for (final sub in cloudSubscriptions) {
+      final podcastCloudId = sub['podcast_id']?.toString();
+      if (podcastCloudId != null) {
+        subscribedPodcastCloudIds.add(podcastCloudId);
+      }
+    }
 
     await isar.writeTxn(() async {
       for (final sub in cloudSubscriptions) {
@@ -309,6 +316,15 @@ class SyncService {
             podcast.subscribedAt = _parseDateTime(sub['subscribed_at']);
             await isar.podcasts.put(podcast);
           }
+        }
+      }
+
+      final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
+      for (final podcast in allSubscribedPodcasts) {
+        if (podcast.supabaseId != null && !subscribedPodcastCloudIds.contains(podcast.supabaseId)) {
+          podcast.isSubscribed = false;
+          podcast.subscribedAt = null;
+          await isar.podcasts.put(podcast);
         }
       }
     });

@@ -68,7 +68,7 @@ class _LoginSuccessPageState extends ConsumerState<LoginSuccessPage> {
                       'yyyy-MM-dd HH:mm',
                     ).format(syncState.lastSyncTime!)
                   : '从未同步',
-              style: const TextStyle(fontSize: 12, color: Color(0x990000000)),
+              style: const TextStyle(fontSize: 12, color: Color(0x99000000)),
             ),
           ],
         ),
