@@ -751,7 +751,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     try {
       ref.read(syncProvider.notifier).requestSync();
     } catch (e) {
-      Logger.warning('Sync request failed: $e');
+      Logger.warning('Sync request failed: $e', tag: 'PlaybackProvider');
     }
   }
 }
