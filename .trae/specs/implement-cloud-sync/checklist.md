@@ -1,0 +1,39 @@
+# Checklist
+
+- [ ] Supabase podcasts 表已创建，包含所有同步字段（itunes_id UNIQUE, rss_urls text[], itunes_genre_ids text[], itunes_genres text[], keywords text[] 等）
+- [ ] Supabase episodes 表已创建，包含所有同步字段（guid, podcast_itunes_id, (guid, podcast_id) UNIQUE 约束）
+- [ ] Supabase user_podcast_subscriptions 表已创建，UNIQUE(user_id, podcast_id) 约束
+- [ ] Supabase playback_history 表已创建，包含所有同步字段，UNIQUE(user_id, episode_id) 约束
+- [ ] Supabase favorites 表已创建，UNIQUE(user_id, episode_id) 约束
+- [ ] Supabase queue_items 表已创建，UNIQUE(user_id, episode_id) 约束
+- [ ] 所有 Supabase 表已启用 RLS 策略
+- [ ] Podcast Isar 模型包含 supabaseId 字段
+- [ ] Episode Isar 模型包含 supabaseId 字段
+- [ ] PlayHistory Isar 模型包含 supabaseId 和 playProgress 字段
+- [ ] Favorite Isar 模型包含 supabaseId 字段
+- [ ] Queue Isar 模型包含 supabaseId 字段
+- [ ] Isar 生成代码已更新（build_runner build 成功）
+- [ ] PlaybackNotifier 播放状态写入 PlayHistory 而非直接修改 Episode
+- [ ] PlaybackNotifier._markEpisodeAsPlayed 同步更新 PlayHistory 和 Episode 缓存
+- [ ] PlaybackNotifier._saveCurrentProgress 将 playProgress 写入 PlayHistory
+- [ ] PlaybackNotifier._restoreLastPlaybackState 从 PlayHistory 恢复播放进度
+- [ ] 未播放列表查询从 PlayHistory 判断 isPlayed
+- [ ] RemoteSyncDataSource 实现所有表的 upsert 和增量查询方法
+- [ ] SyncService 实现全量同步逻辑（首次同步）
+- [ ] SyncService 实现增量同步逻辑（基于 updated_at 时间戳）
+- [ ] SyncService 实现冲突解决逻辑（Last Write Wins）
+- [ ] SyncService 实现本地→云端推送逻辑
+- [ ] SyncService 实现云端→本地拉取逻辑
+- [ ] SyncService 同步后更新本地 Isar 记录的 supabaseId
+- [ ] SyncService 实现同步进度回调
+- [ ] SyncNotifier 管理同步状态（idle/syncing/error）
+- [ ] 定时同步机制（5 分钟间隔）正常工作
+- [ ] 同步完成后通知相关 Provider 刷新（queue、library、history、favorite）
+- [ ] 登录状态变化时自动启动/停止同步服务
+- [ ] CloudSyncSettings 页面显示同步状态信息
+- [ ] CloudSyncSettings 页面有手动触发同步按钮
+- [ ] 同步测试需求文档已生成在 test/docs/ 目录下
+- [ ] remote_sync_datasource_test.dart 测试文件已创建
+- [ ] sync_service_test.dart 测试文件已创建
+- [ ] sync_provider_test.dart 测试文件已创建
+- [ ] 所有测试通过
