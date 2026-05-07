@@ -16,6 +16,7 @@ import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/providers/sync_provider.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
 
 class PlayerState {
@@ -130,6 +131,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         await pause();
         await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
         await SettingsService.instance.setSleepTimerEndTimeMillis(null);
+        _requestSync();
       }
     } catch (e, stackTrace) {
       Logger.error(
@@ -248,6 +250,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       await pause();
       await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
       await SettingsService.instance.setSleepTimerEndTimeMillis(null);
+      _requestSync();
       return;
     }
 
@@ -290,6 +293,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         stackTrace: stackTrace,
       );
     }
+    _requestSync();
   }
 
   /// 检查设置并在需要时自动删除已播放的下载文件
@@ -625,6 +629,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   Future<void> pause() async {
     await _audioPlayerService.pause();
+    _requestSync();
   }
 
   Future<void> togglePlayPause() async {
@@ -687,6 +692,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
           debugPrint('🔄 [Playback] Auto-refreshing History list...');
           ref.read(completedHistoriesProvider.notifier).refresh();
+          _requestSync();
         }
       }
     }
@@ -739,6 +745,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _currentEpisodeId = null;
 
     await _audioPlayerService.stop();
+  }
+
+  void _requestSync() {
+    try {
+      ref.read(syncProvider.notifier).requestSync();
+    } catch (_) {}
   }
 }
 

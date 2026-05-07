@@ -39,7 +39,9 @@ class SyncState {
 
 class SyncNotifier extends Notifier<SyncState> {
   Timer? _syncTimer;
+  Timer? _debounceTimer;
   static const Duration _syncInterval = Duration(minutes: 5);
+  static const Duration _debounceDelay = Duration(seconds: 10);
 
   @override
   SyncState build() {
@@ -59,10 +61,12 @@ class SyncNotifier extends Notifier<SyncState> {
     if (isLoggedIn) {
       _startPeriodicSync();
       _loadLastSyncTime();
+      syncNow();
     }
 
     ref.onDispose(() {
       _stopPeriodicSync();
+      _debounceTimer?.cancel();
     });
 
     return const SyncState();
@@ -93,6 +97,13 @@ class SyncNotifier extends Notifier<SyncState> {
     _syncTimer = null;
     state = state.copyWith(status: SyncStatus.idle);
     Logger.info('Periodic sync stopped');
+  }
+
+  void requestSync() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(_debounceDelay, () {
+      syncNow();
+    });
   }
 
   Future<void> syncNow() async {

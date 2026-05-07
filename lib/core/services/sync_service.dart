@@ -307,6 +307,7 @@ class SyncService {
     await isar.writeTxn(() async {
       final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
 
+      // 两个列表都为空时无需操作；仅云端为空时仍需执行下方循环以取消本地订阅
       if (cloudSubscriptions.isEmpty && allSubscribedPodcasts.isEmpty) return;
 
       for (final sub in cloudSubscriptions) {
