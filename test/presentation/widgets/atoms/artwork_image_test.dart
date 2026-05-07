@@ -1,21 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-import 'package:tinycast/data/services/file_storage_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/widgets/atoms/artwork_image/artwork_image.dart';
-
-import 'artwork_image_test.mocks.dart';
-
-@GenerateMocks([FileStorageService])
 class _TestAssetBundle extends AssetBundle {
   _TestAssetBundle();
 
