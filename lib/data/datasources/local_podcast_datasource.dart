@@ -159,42 +159,32 @@ class LocalPodcastDataSource {
           .map((episode) => _convertEpisodeEntityToModel(episode))
           .toList();
 
-      final podcastIdsToLookup = <int>{};
-      for (final episodeModel in episodeModels) {
-        if (episodeModel.podcastITunesId == null ||
-            episodeModel.podcastITunesId!.isEmpty) {
-          podcastIdsToLookup.add(episodeModel.podcastId);
-        }
-      }
-
       final podcastITunesIdMap = <int, String>{};
-      if (podcastIdsToLookup.isNotEmpty) {
-        final minId = podcastIdsToLookup.reduce((a, b) => a < b ? a : b);
-        final maxId = podcastIdsToLookup.reduce((a, b) => a > b ? a : b);
-        final allPodcasts = await _isarService.isar.podcasts
-            .filter()
-            .idBetween(minId, maxId, includeLower: true, includeUpper: true)
-            .findAll();
-        for (final podcast in allPodcasts) {
-          if (podcastIdsToLookup.contains(podcast.id) &&
-              podcast.itunesId != null &&
-              podcast.itunesId!.isNotEmpty) {
-            podcastITunesIdMap[podcast.id] = podcast.itunesId!;
-          }
-        }
-      }
+      final isar = _isarService.isar;
 
-      await _isarService.isar.writeTxn(() async {
+      await isar.writeTxn(() async {
         for (final episodeModel in episodeModels) {
           if (episodeModel.podcastITunesId == null ||
               episodeModel.podcastITunesId!.isEmpty) {
-            final itunesId = podcastITunesIdMap[episodeModel.podcastId];
+            final podcastId = episodeModel.podcastId;
+            String? itunesId = podcastITunesIdMap[podcastId];
+
+            if (itunesId == null) {
+              final podcast = isar.podcasts.getSync(podcastId);
+              if (podcast != null &&
+                  podcast.itunesId != null &&
+                  podcast.itunesId!.isNotEmpty) {
+                itunesId = podcast.itunesId!;
+                podcastITunesIdMap[podcastId] = itunesId;
+              }
+            }
+
             if (itunesId != null) {
               episodeModel.podcastITunesId = itunesId;
             }
           }
         }
-        await _isarService.isar.episodes.putAll(episodeModels);
+        await isar.episodes.putAll(episodeModels);
       });
 
       Logger.info('成功保存 ${episodes.length} 个节目');
