@@ -161,17 +161,37 @@ class SyncService {
     _notifyProgress(const SyncProgress(currentTable: 'push_podcasts'));
     final localPodcasts = await isar.podcasts.where().findAll();
     if (localPodcasts.isNotEmpty) {
-      final podcastMaps = localPodcasts.map(_podcastToCloudMap).toList();
-      final results = await _remoteDataSource.upsertPodcasts(podcastMaps);
-      await _updatePodcastSupabaseIds(localPodcasts, results);
+      final podcastMaps = localPodcasts
+          .where((p) => p.itunesId != null && p.itunesId!.isNotEmpty)
+          .map(_podcastToCloudMap)
+          .where((m) => m['id'] != null || m['itunes_id'] != null)
+          .map((m) {
+            m.remove('id');
+            return m;
+          })
+          .toList();
+      if (podcastMaps.isNotEmpty) {
+        final results = await _remoteDataSource.upsertPodcasts(podcastMaps);
+        await _updatePodcastSupabaseIds(localPodcasts, results);
+      }
     }
 
     _notifyProgress(const SyncProgress(currentTable: 'push_episodes'));
     final localEpisodes = await isar.episodes.where().findAll();
     if (localEpisodes.isNotEmpty) {
-      final episodeMaps = localEpisodes.map(_episodeToCloudMap).toList();
-      final results = await _remoteDataSource.upsertEpisodes(episodeMaps);
-      await _updateEpisodeSupabaseIds(localEpisodes, results);
+      final episodeMaps = localEpisodes
+          .where((e) => e.guid != null && e.guid!.isNotEmpty)
+          .map(_episodeToCloudMap)
+          .where((m) => m.containsKey('podcast_id'))
+          .map((m) {
+            m.remove('id');
+            return m;
+          })
+          .toList();
+      if (episodeMaps.isNotEmpty) {
+        final results = await _remoteDataSource.upsertEpisodes(episodeMaps);
+        await _updateEpisodeSupabaseIds(localEpisodes, results);
+      }
     }
 
     _notifyProgress(const SyncProgress(currentTable: 'push_subscriptions'));
@@ -638,7 +658,8 @@ class SyncService {
     if (p.itunesReleaseDate != null) map['itunes_release_date'] = p.itunesReleaseDate!.toIso8601String();
     if (p.keywords != null) map['keywords'] = p.keywords;
     if (p.rssUrl.isNotEmpty) map['rss_urls'] = [p.rssUrl];
-    if (p.supabaseId != null) map['id'] = int.tryParse(p.supabaseId!);
+    final podcastCloudId = p.supabaseId != null ? int.tryParse(p.supabaseId!) : null;
+    if (podcastCloudId != null) map['id'] = podcastCloudId;
 
     return map;
   }
@@ -663,13 +684,15 @@ class SyncService {
     if (e.link != null) map['link'] = e.link;
     if (e.podcastITunesId != null) map['podcast_itunes_id'] = e.podcastITunesId;
     map['pub_date'] = e.pubDate.toIso8601String();
-    if (e.supabaseId != null) map['id'] = int.tryParse(e.supabaseId!);
+    final episodeCloudId = e.supabaseId != null ? int.tryParse(e.supabaseId!) : null;
+    if (episodeCloudId != null) map['id'] = episodeCloudId;
 
     if (e.podcastId > 0) {
       final isar = IsarService.instance.isar;
       final podcast = isar.podcasts.getSync(e.podcastId);
       if (podcast?.supabaseId != null) {
-        map['podcast_id'] = int.tryParse(podcast!.supabaseId!);
+        final podcastId = int.tryParse(podcast!.supabaseId!);
+        if (podcastId != null) map['podcast_id'] = podcastId;
       }
     }
 
@@ -697,7 +720,8 @@ class SyncService {
       final isar = IsarService.instance.isar;
       final episode = isar.episodes.getSync(h.episodeId);
       if (episode?.supabaseId != null) {
-        map['episode_id'] = int.tryParse(episode!.supabaseId!);
+        final epId = int.tryParse(episode!.supabaseId!);
+        if (epId != null) map['episode_id'] = epId;
       }
     }
 
@@ -714,7 +738,8 @@ class SyncService {
       final isar = IsarService.instance.isar;
       final episode = isar.episodes.getSync(f.episodeId);
       if (episode?.supabaseId != null) {
-        map['episode_id'] = int.tryParse(episode!.supabaseId!);
+        final epId = int.tryParse(episode!.supabaseId!);
+        if (epId != null) map['episode_id'] = epId;
       }
     }
 
@@ -735,7 +760,8 @@ class SyncService {
       final isar = IsarService.instance.isar;
       final episode = isar.episodes.getSync(q.episodeId);
       if (episode?.supabaseId != null) {
-        map['episode_id'] = int.tryParse(episode!.supabaseId!);
+        final epId = int.tryParse(episode!.supabaseId!);
+        if (epId != null) map['episode_id'] = epId;
       }
     }
 
