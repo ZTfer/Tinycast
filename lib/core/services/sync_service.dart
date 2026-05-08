@@ -233,6 +233,9 @@ class SyncService {
     _notifyProgress(const SyncProgress(currentTable: 'push_episodes'));
     await _safeStep('push_episodes', () async {
       final localEpisodes = await isar.episodes.where().findAll();
+
+      await _backfillEpisodePodcastITunesId(isar, localEpisodes);
+
       if (localEpisodes.isNotEmpty) {
         final episodeMaps = localEpisodes
             .where((e) => e.guid != null && e.guid!.isNotEmpty)
@@ -1071,6 +1074,27 @@ class SyncService {
   }
 
   // ========== Utility methods ==========
+
+  Future<void> _backfillEpisodePodcastITunesId(Isar isar, List<Episode> episodes) async {
+    final episodesToUpdate = <Episode>[];
+
+    for (final episode in episodes) {
+      if ((episode.podcastITunesId == null || episode.podcastITunesId!.isEmpty) && episode.podcastId > 0) {
+        final podcast = isar.podcasts.getSync(episode.podcastId);
+        if (podcast != null && podcast.itunesId != null && podcast.itunesId!.isNotEmpty) {
+          episode.podcastITunesId = podcast.itunesId;
+          episodesToUpdate.add(episode);
+        }
+      }
+    }
+
+    if (episodesToUpdate.isNotEmpty) {
+      Logger.info('[SYNC] Backfilling podcastITunesId for ${episodesToUpdate.length} episodes');
+      await isar.writeTxn(() async {
+        await isar.episodes.putAll(episodesToUpdate);
+      });
+    }
+  }
 
   DateTime? _parseDateTime(dynamic value) {
     if (value == null) return null;
