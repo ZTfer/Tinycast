@@ -38,13 +38,7 @@ class LocalPodcastDataSource {
           '🕒 [DATASOURCE] 发现 ${unsubscribedWithRss.length} 个有 RSS URL 但 isSubscribed=false 的播客，自动修复',
         );
         await _repairSubscriptionFlag(unsubscribedWithRss);
-        Logger.info('🕒 [DATASOURCE] 修复完成，重新查询数据库获取最新订阅状态');
-        final refreshedPodcasts = await _isarService.isar.podcasts.where().findAll();
-        final podcasts = refreshedPodcasts.where((p) => p.isSubscribed).toList();
-        Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 重新查询完成, 已订阅 ${podcasts.length} 个');
-        Logger.info('成功获取 ${podcasts.length} 个已订阅播客, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
-        stopwatch.stop();
-        return podcasts;
+        Logger.info('🕒 [DATASOURCE] 修复完成，内存中播客对象状态已更新');
       }
 
       Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始过滤 isSubscribed');
@@ -166,6 +160,14 @@ class LocalPodcastDataSource {
           .toList();
 
       await _isarService.isar.writeTxn(() async {
+        for (final episodeModel in episodeModels) {
+          if (episodeModel.podcastITunesId == null || episodeModel.podcastITunesId!.isEmpty) {
+            final podcast = await _isarService.isar.podcasts.get(episodeModel.podcastId);
+            if (podcast != null && podcast.itunesId != null && podcast.itunesId!.isNotEmpty) {
+              episodeModel.podcastITunesId = podcast.itunesId;
+            }
+          }
+        }
         await _isarService.isar.episodes.putAll(episodeModels);
       });
 
