@@ -72,14 +72,16 @@ class SyncService {
 
       await _ensureUserProfile();
 
+      await _repairSubscriptionState();
+
       final lastSyncTime = await getLastSyncTime();
       final isFirstSync = lastSyncTime == null;
 
       Logger.info('🔄 [SYNC] First sync: $isFirstSync, last sync: $lastSyncTime');
 
-      await _pullAndMergeCloudChanges(lastSyncTime);
-
       await _pushLocalChanges(lastSyncTime);
+
+      await _pullAndMergeCloudChanges(lastSyncTime);
 
       final now = DateTime.now();
       await _saveLastSyncTime(now);
@@ -95,6 +97,39 @@ class SyncService {
       Logger.error('❌ [SYNC] Sync failed', error: e, stackTrace: stackTrace);
       rethrow;
     }
+  }
+
+  Future<void> _repairSubscriptionState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final repairDone = prefs.getBool('sync_subscription_repair_done') ?? false;
+    if (repairDone) return;
+
+    final isar = IsarService.instance.isar;
+    final allPodcasts = await isar.podcasts.where().findAll();
+    final unsubscribedPodcasts = allPodcasts.where((p) => !p.isSubscribed).toList();
+
+    if (unsubscribedPodcasts.isEmpty) {
+      await prefs.setBool('sync_subscription_repair_done', true);
+      return;
+    }
+
+    Logger.info('[SYNC-REPAIR] Found ${unsubscribedPodcasts.length} unsubscribed podcasts, checking if repair needed...');
+
+    final cloudSubscriptions = await _remoteDataSource.fetchUserPodcastSubscriptions();
+
+    if (cloudSubscriptions.isEmpty) {
+      Logger.info('[SYNC-REPAIR] Cloud has no subscriptions, repairing all local unsubscribed podcasts to subscribed');
+      await isar.writeTxn(() async {
+        for (final podcast in unsubscribedPodcasts) {
+          podcast.isSubscribed = true;
+          podcast.subscribedAt ??= podcast.createdAt;
+          await isar.podcasts.put(podcast);
+          Logger.info('[SYNC-REPAIR] Repaired: ${podcast.title} -> isSubscribed=true');
+        }
+      });
+    }
+
+    await prefs.setBool('sync_subscription_repair_done', true);
   }
 
   Future<void> _ensureUserProfile() async {
@@ -355,10 +390,10 @@ class SyncService {
     }
 
     await isar.writeTxn(() async {
-      final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
-
-      // 两个列表都为空时无需操作；仅云端为空时仍需执行下方循环以取消本地订阅
-      if (cloudSubscriptions.isEmpty && allSubscribedPodcasts.isEmpty) return;
+      if (cloudSubscriptions.isEmpty) {
+        Logger.info('[SYNC] Cloud subscriptions empty, skip unsubscribe to protect local data');
+        return;
+      }
 
       for (final sub in cloudSubscriptions) {
         final podcastCloudId = sub['podcast_id']?.toString();
@@ -374,8 +409,10 @@ class SyncService {
         }
       }
 
+      final allSubscribedPodcasts = await isar.podcasts.filter().isSubscribedEqualTo(true).findAll();
       for (final podcast in allSubscribedPodcasts) {
         if (podcast.supabaseId != null && !subscribedPodcastCloudIds.contains(podcast.supabaseId)) {
+          Logger.info('[SYNC] Unsubscribing local podcast (not in cloud): ${podcast.title}');
           podcast.isSubscribed = false;
           podcast.subscribedAt = null;
           await isar.podcasts.put(podcast);
