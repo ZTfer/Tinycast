@@ -29,6 +29,21 @@ class LocalPodcastDataSource {
         );
       }
 
+      final unsubscribedWithRss = allPodcasts
+          .where((p) => !p.isSubscribed && p.rssUrl.isNotEmpty)
+          .toList();
+
+      if (unsubscribedWithRss.isNotEmpty) {
+        Logger.info(
+          '🕒 [DATASOURCE] 发现 ${unsubscribedWithRss.length} 个有 RSS URL 但 isSubscribed=false 的播客，自动修复',
+        );
+        await _repairSubscriptionFlag(unsubscribedWithRss);
+        for (final p in unsubscribedWithRss) {
+          p.isSubscribed = true;
+          p.subscribedAt ??= p.createdAt;
+        }
+      }
+
       Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始过滤 isSubscribed');
       final podcasts = allPodcasts.where((p) => p.isSubscribed).toList();
       Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 过滤完成, 已订阅 ${podcasts.length} 个');
@@ -51,6 +66,21 @@ class LocalPodcastDataSource {
         originalError: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  Future<void> _repairSubscriptionFlag(List<model.Podcast> podcasts) async {
+    try {
+      await _isarService.isar.writeTxn(() async {
+        for (final p in podcasts) {
+          p.isSubscribed = true;
+          p.subscribedAt ??= p.createdAt;
+          await _isarService.isar.podcasts.put(p);
+        }
+      });
+      Logger.info('🕒 [DATASOURCE] 已修复 ${podcasts.length} 个播客的订阅状态');
+    } catch (e, stackTrace) {
+      Logger.error('🕒 [DATASOURCE] 修复订阅状态失败', error: e, stackTrace: stackTrace);
     }
   }
 
