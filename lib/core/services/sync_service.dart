@@ -115,7 +115,13 @@ class SyncService {
 
     Logger.info('[SYNC-REPAIR] Found ${unsubscribedPodcasts.length} unsubscribed podcasts, checking if repair needed...');
 
-    final cloudSubscriptions = await _remoteDataSource.fetchUserPodcastSubscriptions();
+    List<Map<String, dynamic>> cloudSubscriptions;
+    try {
+      cloudSubscriptions = await _remoteDataSource.fetchUserPodcastSubscriptions();
+    } catch (e, stackTrace) {
+      Logger.error('[SYNC-REPAIR] Failed to fetch cloud subscriptions for repair', error: e, stackTrace: stackTrace);
+      return;
+    }
 
     if (cloudSubscriptions.isEmpty) {
       Logger.info('[SYNC-REPAIR] Cloud has no subscriptions, repairing all local unsubscribed podcasts to subscribed');
