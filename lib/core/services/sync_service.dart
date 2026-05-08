@@ -120,7 +120,6 @@ class SyncService {
       cloudSubscriptions = await _remoteDataSource.fetchUserPodcastSubscriptions();
     } catch (e, stackTrace) {
       Logger.error('[SYNC-REPAIR] Failed to fetch cloud subscriptions for repair', error: e, stackTrace: stackTrace);
-      await prefs.setBool('sync_subscription_repair_done', true);
       return;
     }
 
