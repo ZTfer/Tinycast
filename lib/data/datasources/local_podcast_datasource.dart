@@ -159,12 +159,38 @@ class LocalPodcastDataSource {
           .map((episode) => _convertEpisodeEntityToModel(episode))
           .toList();
 
+      final podcastIdsToLookup = <int>{};
+      for (final episodeModel in episodeModels) {
+        if (episodeModel.podcastITunesId == null ||
+            episodeModel.podcastITunesId!.isEmpty) {
+          podcastIdsToLookup.add(episodeModel.podcastId);
+        }
+      }
+
+      final podcastITunesIdMap = <int, String>{};
+      if (podcastIdsToLookup.isNotEmpty) {
+        final minId = podcastIdsToLookup.reduce((a, b) => a < b ? a : b);
+        final maxId = podcastIdsToLookup.reduce((a, b) => a > b ? a : b);
+        final allPodcasts = await _isarService.isar.podcasts
+            .filter()
+            .idBetween(minId, maxId, includeLower: true, includeUpper: true)
+            .findAll();
+        for (final podcast in allPodcasts) {
+          if (podcastIdsToLookup.contains(podcast.id) &&
+              podcast.itunesId != null &&
+              podcast.itunesId!.isNotEmpty) {
+            podcastITunesIdMap[podcast.id] = podcast.itunesId!;
+          }
+        }
+      }
+
       await _isarService.isar.writeTxn(() async {
         for (final episodeModel in episodeModels) {
-          if (episodeModel.podcastITunesId == null || episodeModel.podcastITunesId!.isEmpty) {
-            final podcast = await _isarService.isar.podcasts.get(episodeModel.podcastId);
-            if (podcast != null && podcast.itunesId != null && podcast.itunesId!.isNotEmpty) {
-              episodeModel.podcastITunesId = podcast.itunesId;
+          if (episodeModel.podcastITunesId == null ||
+              episodeModel.podcastITunesId!.isEmpty) {
+            final itunesId = podcastITunesIdMap[episodeModel.podcastId];
+            if (itunesId != null) {
+              episodeModel.podcastITunesId = itunesId;
             }
           }
         }
