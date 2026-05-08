@@ -27,7 +27,7 @@ class PodcastMergeService {
     final unmatchedByItunesId = <model.Podcast>[];
 
     for (final podcast in subscribed) {
-      final itunesId = podcast.itunesId;
+      final itunesId = podcast.itunesId?.toLowerCase().trim();
       if (itunesId != null && itunesId.isNotEmpty) {
         itunesIdGroups.putIfAbsent(itunesId, () => []).add(podcast);
       } else {
