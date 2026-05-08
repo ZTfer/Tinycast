@@ -64,41 +64,37 @@ class IsarService {
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
-| title | String | - | - | 播客标题 |
-| description | String | - | - | 播客描述 |
-| link | String? | - | null | 播客官网链接 |
-| author | String? | - | null | 播客作者 |
-| email | String? | - | null | 联系邮箱 |
-| copyright | String? | - | null | 版权信息 |
+| supabaseId | String? | - | null | Supabase 同步 ID |
+| title | String | ✅ 有 | - | 播客标题 |
 | subtitle | String? | - | null | 副标题 |
-| summary | String? | - | null | 摘要 |
-| explicit | String? | - | null | 是否包含成人内容 |
-| category | String? | - | null | 分类 |
-| imageUrl | String? | - | null | 封面图片 URL |
-| itunesType | String? | - | null | iTunes 播客类型 |
+| author | String | - | - | 播客作者 |
+| description | String | - | - | 播客描述 |
+| artworkUrl | String | - | - | 封面图片 URL |
+| rssUrl | String | ✅ 唯一 | - | RSS Feed URL（唯一） |
+| websiteUrl | String? | - | null | 官网链接 |
+| language | String? | - | null | 语言代码 |
+| copyright | String? | - | null | 版权信息 |
+| categories | List\<String\>? | - | null | 分类列表 |
+| keywords | List\<String\>? | - | null | 关键词列表 |
+| isExplicit | bool | - | - | 是否包含成人内容 |
 | ownerName | String? | - | null | 所有者名称 |
 | ownerEmail | String? | - | null | 所有者邮箱 |
-| language | String? | - | null | 语言代码 |
-| pubDate | DateTime? | - | null | 发布日期 |
-| lastBuildDate | DateTime? | - | null | 最后构建日期 |
-| generator | String? | - | null | RSS 生成器 |
-| feedUrl | String? | - | null | RSS Feed URL |
-| webUrl | String? | - | null | 网页 URL |
-| itunesId | String? | - | null | Apple Podcasts ID（iTunes Search API collectionId） |
-| itunesArtworkUrl600 | String? | - | null | 600x600 封面图 URL |
+| lastUpdated | DateTime | ✅ 有 | - | 最后更新时间 |
+| episodeCount | int | - | - | 剧集数量 |
+| isSubscribed | bool | - | - | 是否已订阅 |
+| subscribedAt | DateTime? | - | null | 订阅时间 |
+| artworkPath | String? | - | null | 本地封面图片路径 |
+| createdAt | DateTime | - | DateTime.now() | 创建时间 |
+| itunesId | String? | - | null | Apple Podcasts ID |
+| itunesArtworkUrl | String? | - | null | iTunes 封面图 URL |
 | itunesPrimaryGenreName | String? | - | null | 主分类名称 |
 | itunesGenres | List\<String\>? | - | null | 全部分类列表 |
 | itunesGenreIds | List\<String\>? | - | null | 分类 ID 列表 |
 | itunesCollectionViewUrl | String? | - | null | Apple Podcasts 页面 URL |
-| country | String? | - | null | iTunes 搜索国家代码 |
+| itunesCountry | String? | - | null | iTunes 搜索国家代码 |
 | itunesReleaseDate | DateTime? | - | null | iTunes 发布日期 |
 | itunesCollectionExplicitness | String? | - | null | iTunes 内容分级 |
 | itunesContentAdvisoryRating | String? | - | null | iTunes 内容评级 |
-| artworkPath | String? | - | null | 本地封面图片路径 |
-| isSubscribed | bool | - | false | 是否已订阅 |
-| lastRefreshedAt | DateTime | - | DateTime.now() | 最后刷新时间 |
-| createdAt | DateTime | - | DateTime.now() | 创建时间 |
-| updatedAt | DateTime | - | DateTime.now() | 更新时间 |
 
 **关联:** 1 对多 → Episode (podcastId)
 
@@ -111,6 +107,7 @@ class IsarService {
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
+| supabaseId | String? | - | null | Supabase 同步 ID |
 | podcastId | int | ✅ 有 | - | 所属播客 ID（外键关联） |
 | title | String | - | - | 剧集标题 |
 | description | String | - | - | 剧集描述 |
@@ -159,6 +156,7 @@ sortByPubDateDesc() / sortByPubDateAsc()
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
+| supabaseId | String? | - | null | Supabase 同步 ID |
 | episodeId | int | ✅ 有 | - | 剧集 ID |
 | episodeGuid | String? | - | null | 剧集 GUID（用于 fallback 关联） |
 | episodeITunesId | String? | - | null | 剧集 iTunes ID（用于 fallback 关联） |
@@ -178,6 +176,7 @@ sortByPubDateDesc() / sortByPubDateAsc()
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
+| supabaseId | String? | - | null | Supabase 同步 ID |
 | episodeId | int | ✅ 有 | - | 剧集 ID |
 | episodeGuid | String? | - | null | 剧集 GUID（用于 fallback 关联） |
 | episodeITunesId | String? | - | null | 剧集 iTunes ID（用于 fallback 关联） |
@@ -210,6 +209,7 @@ removeFromQueueByPodcast(podcastId, podcastITunesId: ...)
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
+| supabaseId | String? | - | null | Supabase 同步 ID |
 | episodeId | int | ✅ 有 | - | 剧集 ID |
 | episodeGuid | String? | - | null | 剧集 GUID（用于 fallback 关联） |
 | episodeITunesId | String? | - | null | 剧集 iTunes ID（用于 fallback 关联） |
@@ -220,6 +220,7 @@ removeFromQueueByPodcast(podcastId, podcastITunesId: ...)
 | description | String? | - | null | 剧集描述（快照） |
 | artworkUrl | String? | - | null | 封面图 URL（快照） |
 | lastPlayedPositionMs | int | - | 0 | 最后播放位置（毫秒） |
+| playProgress | double | - | 0.0 | 播放进度 (0.0-1.0) |
 | isPlayed | bool | - | false | 是否已播放完成 |
 | playedDuration | int | - | 0 | 已播放时长（毫秒） |
 | status | PlayHistoryStatus | - | playing | 播放状态枚举 |
@@ -264,8 +265,8 @@ filter()
 | 字段名 | 类型 | 索引 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | Id (int) | 主键 | Isar.autoIncrement | 自增主键 |
-| query | String | - | - | 搜索关键词 |
-| createdAt | DateTime | - | DateTime.now() | 搜索时间 |
+| keyword | String | - | - | 搜索关键词 |
+| searchedAt | DateTime | ✅ 有 | - | 搜索时间 |
 
 ---
 
@@ -329,12 +330,13 @@ enum SleepTimerEnum {
 │     Podcast     │──────────────────▶│     Episode     │
 │                 │   podcastId      │                 │
 │  id (PK)        │                  │  id (PK)        │
-│  title          │                  │  podcastId (FK) │
-│  description    │                  │  title          │
-│  itunesId       │                  │  guid           │
-│  imageUrl       │                  │  itunesId       │
-│  feedUrl        │                  │  podcastITunesId│
-│  isSubscribed   │                  │  audioUrl       │
+│  rssUrl (UQ)    │                  │  podcastId (FK) │
+│  title          │                  │  title          │
+│  author         │                  │  guid           │
+│  artworkUrl     │                  │  itunesId       │
+│  isSubscribed   │                  │  podcastITunesId│
+│  itunesId       │                  │  audioUrl       │
+│  supabaseId     │                  │  supabaseId     │
 │  ...            │                  │  ...            │
 └────────┬────────┘                  └────────┬────────┘
          │                                    │
@@ -347,7 +349,8 @@ enum SleepTimerEnum {
 │  playbackSpeed  │                  │  episodeId (FK) │
 │  volume         │                  │  podcastId (FK) │
 │  ...            │                  │  title (快照)   │
-└─────────────────┘                  │  ...            │
+└─────────────────┘                  │  supabaseId     │
+                                     │  ...            │
                                      └────────┬────────┘
                                               │
          ┌─────────────────┐                  │
@@ -357,12 +360,13 @@ enum SleepTimerEnum {
          │  episodeId (FK) │◀─────────────────┘
          │  episodeGuid    │
          │  episodeITunesId│                  ┌─────────────────┐
-         └────────┬────────┘                  │      Queue      │
-                  │                           │                 │
+         │  supabaseId     │                  │      Queue      │
+         └────────┬────────┘                  │                 │
                   │                           │  id (PK)        │
                   │                           │  episodeId (FK) │
                   └───────────────────────────▶│  podcastId      │
                                                │  position       │
+                                               │  supabaseId     │
                                                │  ...            │
                                                └─────────────────┘
 ```
