@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/multi_window.dart';
+import 'package:tinycast/macos_window_utils.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
@@ -10,7 +11,6 @@ import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'package:tinycast/macos_window_utils.dart';
 
 /// 打开节目详情窗口
 ///
@@ -65,6 +65,7 @@ class AppConfig {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await MacosWindowUtils.initialize();
 
   // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();
@@ -108,7 +109,6 @@ void main(List<String> args) async {
 }
 
 Future<void> _initializeApp(AppConfig config) async {
-  await MacosWindowUtils.initialize();
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
@@ -132,7 +132,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Tinycast',
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0x00000000),
       onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(

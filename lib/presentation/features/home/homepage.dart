@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0x00000000),
       child: Column(
         children: [
           const HomeToolbar(),

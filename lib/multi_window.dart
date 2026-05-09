@@ -7,6 +7,7 @@ import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/episode_detail/episode_detail.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:tinycast/macos_window_utils.dart';
 
 /// 窗口参数类
 ///
@@ -189,11 +190,15 @@ Future<void> initMainWindow() async {
     center: true,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
+    backgroundColor: const Color(0x00000000),
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });
+
+  await MacosWindowUtils.applyFrostedGlassEffect();
+  await MacosWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化设置窗口
@@ -207,7 +212,7 @@ Future<void> initSettingsWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 380),
     center: true,
-    backgroundColor: const Color(0xFFEBEBEB),
+    backgroundColor: const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -215,6 +220,9 @@ Future<void> initSettingsWindow() async {
     await windowManager.show();
     await windowManager.focus();
   });
+
+  await MacosWindowUtils.applyFrostedGlassEffect();
+  await MacosWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化订阅窗口
@@ -228,7 +236,7 @@ Future<void> initSubscribeWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(500, 600),
     center: true,
-    backgroundColor: const Color(0xFFFFFFFF),
+    backgroundColor: const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -236,6 +244,9 @@ Future<void> initSubscribeWindow() async {
     await windowManager.show();
     await windowManager.focus();
   });
+
+  await MacosWindowUtils.applyFrostedGlassEffect();
+  await MacosWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化节目详情窗口
@@ -249,7 +260,7 @@ Future<void> initEpisodeDetailWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 700),
     center: true,
-    backgroundColor: const Color(0xFFFFFFFF),
+    backgroundColor: const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -257,6 +268,9 @@ Future<void> initEpisodeDetailWindow() async {
     await windowManager.show();
     await windowManager.focus();
   });
+
+  await MacosWindowUtils.applyFrostedGlassEffect();
+  await MacosWindowUtils.enableFullSizeContent();
 }
 
 /// 设置窗口应用组件
@@ -270,7 +284,7 @@ class SettingsWindowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Settings',
-      color: const Color(0xFFEBEBEB),
+      color: const Color(0x00000000),
       onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
@@ -289,9 +303,8 @@ class SettingsWindowApp extends StatelessWidget {
         return Directionality(
           textDirection: TextDirection.ltr,
           child: Container(
-            // 设置窗口背景颜色为 #EBEBEB, 窗口内边距为 12px
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFFFFFFF),
+            color: const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
@@ -311,7 +324,7 @@ class SubscribeWindowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Subscribe',
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0x00000000),
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,
@@ -330,7 +343,7 @@ class SubscribeWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFFFFFFF),
+            color: const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
@@ -353,7 +366,7 @@ class EpisodeDetailWindowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Episode Detail',
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0x00000000),
       onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
@@ -373,7 +386,7 @@ class EpisodeDetailWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFFFFFFF),
+            color: const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
