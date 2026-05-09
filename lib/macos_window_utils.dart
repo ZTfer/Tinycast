@@ -11,7 +11,9 @@ class MacosWindowUtils {
   /// 必须在应用启动时调用，建议在 main() 函数中调用
   /// [enableWindowDelegate] 是否启用窗口代理，用于监听窗口事件
   static Future<void> initialize({bool enableWindowDelegate = true}) async {
-    await WindowManipulator.initialize(enableWindowDelegate: enableWindowDelegate);
+    await WindowManipulator.initialize(
+      enableWindowDelegate: enableWindowDelegate,
+    );
   }
 
   /// 应用毛玻璃效果到窗口
@@ -19,9 +21,7 @@ class MacosWindowUtils {
   /// 设置窗口的 NSVisualEffectView 材质为 HUD 毛玻璃效果
   /// 这是 macOS 原生的半透明模糊背景效果
   static Future<void> applyFrostedGlassEffect() async {
-    await WindowManipulator.setMaterial(
-      NSVisualEffectViewMaterial.hudWindow,
-    );
+    await WindowManipulator.setMaterial(NSVisualEffectViewMaterial.sidebar);
   }
 
   /// 应用侧边栏毛玻璃效果
@@ -90,9 +90,7 @@ class MacosFrostedSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TransparentMacOSSidebar(
-      child: child,
-    );
+    return TransparentMacOSSidebar(child: child);
   }
 }
 
@@ -107,8 +105,6 @@ class MacosTitlebarSafeArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TitlebarSafeArea(
-      child: child,
-    );
+    return TitlebarSafeArea(child: child);
   }
 }

@@ -14,9 +14,7 @@ class MiniPlayer extends ConsumerWidget {
     final episode = playerState.currentEpisode;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFFFFFFF),
-      ),
+      decoration: const BoxDecoration(color: Color(0x00FFFFFF)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -30,9 +28,12 @@ class MiniPlayer extends ConsumerWidget {
           ),
           EpisodeControlBar(
             isPlaying: playerState.isPlaying,
-            onPlayPause: () => ref.read(playbackProvider.notifier).togglePlayPause(),
-            onSeekForward: () => ref.read(playbackProvider.notifier).seekForward(),
-            onSeekBackward: () => ref.read(playbackProvider.notifier).seekBackward(),
+            onPlayPause: () =>
+                ref.read(playbackProvider.notifier).togglePlayPause(),
+            onSeekForward: () =>
+                ref.read(playbackProvider.notifier).seekForward(),
+            onSeekBackward: () =>
+                ref.read(playbackProvider.notifier).seekBackward(),
           ),
           EpisodeProgress(
             position: playerState.currentPosition,
