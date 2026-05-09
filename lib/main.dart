@@ -10,6 +10,7 @@ import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/macos_window_utils.dart';
 
 /// 打开节目详情窗口
 ///
@@ -107,6 +108,7 @@ void main(List<String> args) async {
 }
 
 Future<void> _initializeApp(AppConfig config) async {
+  await MacosWindowUtils.initialize();
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
