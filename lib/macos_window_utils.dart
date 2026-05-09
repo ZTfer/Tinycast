@@ -18,7 +18,7 @@ class MacosWindowUtils {
 
   /// 应用毛玻璃效果到窗口
   ///
-  /// 设置窗口的 NSVisualEffectView 材质为 HUD 毛玻璃效果
+  /// 设置窗口的 NSVisualEffectView 材质为 Sidebar 毛玻璃效果
   /// 这是 macOS 原生的半透明模糊背景效果
   static Future<void> applyFrostedGlassEffect() async {
     await WindowManipulator.setMaterial(NSVisualEffectViewMaterial.sidebar);

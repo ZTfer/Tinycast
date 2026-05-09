@@ -284,7 +284,7 @@ class SettingsWindowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       title: 'Settings',
-      color: const Color(0x00000000),
+      color: const Color(0xFFFFFFFF),
       onGenerateRoute: AppRouter.generateRoute,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
@@ -304,7 +304,7 @@ class SettingsWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0x00000000),
+            color: const Color(0xFFFFFFFF),
             child: child ?? const SizedBox(),
           ),
         );
