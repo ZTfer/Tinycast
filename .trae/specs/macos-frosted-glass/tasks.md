@@ -1,7 +1,7 @@
 # Tasks
-- [ ] Task 1: Add macos_window_utils dependency
-  - [ ] SubTask 1.1: Run `flutter pub add macos_window_utils` to add the package
-  - [ ] SubTask 1.2: Verify pubspec.yaml contains the dependency
+- [x] Task 1: Add macos_window_utils dependency
+  - [x] SubTask 1.1: Run `flutter pub add macos_window_utils` to add the package
+  - [x] SubTask 1.2: Verify pubspec.yaml contains the dependency
 - [ ] Task 2: Create macos_window_utils.dart file
   - [ ] SubTask 2.1: Create `lib/macos_window_utils.dart` file
   - [ ] SubTask 2.2: Implement `applyFrostedGlassEffect()` method using `WindowManipulator.setWindowMaterial()`
