@@ -1,0 +1,5 @@
+- [ ] macos_window_utils dependency added to pubspec.yaml
+- [ ] lib/macos_window_utils.dart file created with frosted glass implementation
+- [ ] Window initialization methods updated to apply frosted glass effect
+- [ ] flutter analyze passes with no errors
+- [ ] Application builds successfully
