@@ -1,0 +1,12 @@
+- [ ] JSON theme loader successfully parses colors.json and generates Flutter Color objects
+- [ ] All colors from colors.json are accessible via static getters in AppColors
+- [ ] Colors use const Color(0x...) format for compile-time constants
+- [ ] Custom theme data class (AppThemeData) exists without Material ThemeData dependency
+- [ ] Light and dark mode palettes are properly loaded and accessible
+- [ ] Typography constants (font sizes, weights) are defined and accessible
+- [ ] AppTheme provides unified static access to all design tokens
+- [ ] No references to Theme.of(context) in the new theme system
+- [ ] Documentation (docs/theme_usage.md) exists with usage examples
+- [ ] Documentation covers JSON file structure and conventions
+- [ ] Documentation provides code examples for common use cases
+- [ ] Dart analyzer passes with no errors in theme-related files
