@@ -632,13 +632,80 @@ Text('标题', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700))
 
 ---
 
-## 7. 文件引用速查
+## 7. 双模式：编译时常量 vs 运行时解析
+
+本系统提供**两种主题使用方式**，可根据场景自由选择：
+
+### 模式 A：编译时常量（推荐日常使用）
+
+颜色定义为 `const Color`，性能最优，支持 Widget 树的 const 优化。
+
+```dart
+// 使用编译时常量颜色
+Container(color: AppColors.backgroundPrimaryLight)
+Text('标题', style: AppTextStyles.bodyLargeLight)
+```
+
+**适用场景：** 固定的 UI 颜色，不需要动态切换
+
+### 模式 B：运行时 JSON 解析（适合动态换肤）
+
+通过 `ThemeLoader` 或 `themeProvider` 从 JSON 加载颜色，支持远程配置。
+
+#### 方式 1：直接使用 ThemeLoader
+
+```dart
+final config = await ThemeLoader.loadThemeConfig(isDark: false);
+Container(color: config.backgroundPrimary)
+```
+
+#### 方式 2：使用 Riverpod Provider（推荐）
+
+```dart
+class MyWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(themeProvider);
+
+    return themeState.when(
+      data: (state) {
+        final brightness = MediaQuery.platformBrightnessOf(context);
+        final config = state.forBrightness(brightness);
+
+        return Container(
+          color: config.backgroundPrimary,
+          child: Text(
+            'Hello',
+            style: TextStyle(color: config.labelPrimary),
+          ),
+        );
+      },
+      loading: () => const CircularProgressIndicator(),
+      error: (e, _) => const Text('主题加载失败'),
+    );
+  }
+}
+```
+
+#### 方式 3：从远程 JSON 加载（动态换肤）
+
+```dart
+ref.read(themeProvider.notifier).loadFromRemoteJson(jsonString);
+```
+
+**适用场景：** 需要从服务器下发新主题、无需发版即可换肤
+
+---
+
+## 8. 文件引用速查
 
 | 文件 | 路径 | 职责 |
 |---|---|---|
 | colors.json | `assets/themes/colors.json` | 颜色 JSON 源文件 |
 | theme_loader.dart | `lib/core/theme/theme_loader.dart` | JSON 加载与缓存 |
-| app_colors.dart | `lib/core/theme/app_colors.dart` | Color 常量定义 |
+| app_colors.dart | `lib/core/theme/app_colors.dart` | Color 常量定义（编译时） |
+| app_theme_config.dart | `lib/core/theme/app_theme_config.dart` | 运行时主题配置类 |
 | app_text_styles.dart | `lib/core/theme/app_text_styles.dart` | 文字样式定义 |
 | theme_data.dart | `lib/core/theme/theme_data.dart` | AppThemeData + Spacing + BorderRadius + Shadows |
 | app_theme.dart | `lib/core/theme/app_theme.dart` | 主题访问入口 |
+| theme_provider.dart | `lib/core/providers/theme_provider.dart` | Riverpod 主题状态管理 |
