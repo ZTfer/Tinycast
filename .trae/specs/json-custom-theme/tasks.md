@@ -1,27 +1,27 @@
 # Tasks
-- [ ] Task 1: Create theme loader for JSON parsing
-  - [ ] SubTask 1.1: Create `lib/core/theme/theme_loader.dart` with JSON loading and parsing logic
-  - [ ] SubTask 1.2: Implement hex color string to Flutter Color conversion utility
-  - [ ] SubTask 1.3: Support loading both light and dark mode palettes from JSON
-- [ ] Task 2: Refactor app_colors.dart to use JSON-based colors
-  - [ ] SubTask 2.1: Create color constants that parse from `colors.json`
-  - [ ] SubTask 2.2: Provide light/dark mode color access via static getters
-  - [ ] SubTask 2.3: Ensure all colors use `const Color(0x...)` format for compile-time optimization
-- [ ] Task 3: Create custom theme data class
-  - [ ] SubTask 3.1: Create `lib/core/theme/theme_data.dart` with custom theme data structure
-  - [ ] SubTask 3.2: Include color, typography, spacing, and border radius design tokens
-  - [ ] SubTask 3.3: Remove dependency on Material `ThemeData`
-- [ ] Task 4: Create typography support
-  - [ ] SubTask 4.1: Create `lib/core/theme/app_text_styles.dart` with font size constants
-  - [ ] SubTask 4.2: Define standard text styles matching the JSON color system
-- [ ] Task 5: Refactor app_theme.dart
-  - [ ] SubTask 5.1: Update `AppTheme` to use new JSON-based theme system
-  - [ ] SubTask 5.2: Provide easy-to-use static accessors for colors and text styles
-  - [ ] SubTask 5.3: Ensure backward compatibility during migration
-- [ ] Task 6: Write theme usage documentation
-  - [ ] SubTask 6.1: Create `docs/theme_usage.md` with comprehensive usage guide
-  - [ ] SubTask 6.2: Document JSON file structure and conventions
-  - [ ] SubTask 6.3: Provide code examples for common use cases
+- [x] Task 1: Create theme loader for JSON parsing
+  - [x] SubTask 1.1: Create `lib/core/theme/theme_loader.dart` with JSON loading and parsing logic
+  - [x] SubTask 1.2: Implement hex color string to Flutter Color conversion utility
+  - [x] SubTask 1.3: Support loading both light and dark mode palettes from JSON
+- [x] Task 2: Refactor app_colors.dart to use JSON-based colors
+  - [x] SubTask 2.1: Create color constants that parse from `colors.json`
+  - [x] SubTask 2.2: Provide light/dark mode color access via static getters
+  - [x] SubTask 2.3: Ensure all colors use `const Color(0x...)` format for compile-time optimization
+- [x] Task 3: Create custom theme data class
+  - [x] SubTask 3.1: Create `lib/core/theme/theme_data.dart` with custom theme data structure
+  - [x] SubTask 3.2: Include color, typography, spacing, and border radius design tokens
+  - [x] SubTask 3.3: Remove dependency on Material `ThemeData`
+- [x] Task 4: Create typography support
+  - [x] SubTask 4.1: Create `lib/core/theme/app_text_styles.dart` with font size constants
+  - [x] SubTask 4.2: Define standard text styles matching the JSON color system
+- [x] Task 5: Refactor app_theme.dart
+  - [x] SubTask 5.1: Update `AppTheme` to use new JSON-based theme system
+  - [x] SubTask 5.2: Provide easy-to-use static accessors for colors and text styles
+  - [x] SubTask 5.3: Ensure backward compatibility during migration
+- [x] Task 6: Write theme usage documentation
+  - [x] SubTask 6.1: Create `docs/theme_usage.md` with comprehensive usage guide
+  - [x] SubTask 6.2: Document JSON file structure and conventions
+  - [x] SubTask 6.3: Provide code examples for common use cases
 
 # Task Dependencies
 - [Task 2] depends on [Task 1]
