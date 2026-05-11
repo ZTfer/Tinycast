@@ -1,35 +1,71 @@
 {
+  "version": 1.0,
   "palettes": {
     "brand": {
       "primary": {
-        "light": "#6200EE",
-        "dark": "#BB86FC"
+        "light": "#FF6200EE",
+        "dark": "#FFBB86FC"
       },
       "secondary": {
-        "light": "#03DAC6",
-        "dark": "#03DAC6"
+        "light": "#FF03DAC6",
+        "dark": "#FF03DAC6"
       },
       "blue": {
-        "light": "#0088FF",
-        "dark": "#0091FF"
+        "light": "#FF0088FF",
+        "dark": "#FF0091FF"
       }
     },
-    "neutral": {
-      "white": "#FFFFFF",
-      "black": "#000000",
-      "gray_900": "#121212"
-    }
-  },
-  "semantics": {
-    "light": {
-      "background": "{neutral.white}",
-      "primary_action": "{brand.primary.light}",
-      "primary_action_text": "{brand.on_primary.light}"
+    "background": {
+      "primary": {
+        "light": "#FFFFFFFF",
+        "dark": "#FF000000"
+      },
+      "secondary": {
+        "light": "#FFF2F2F7",
+        "dark": "#FF1C1C1E"
+      },
+      "tertiary": {
+        "light": "#FFFFFFFF",
+        "dark": "#FF2C2C2E"
+      }
     },
-    "dark": {
-      "background": "{neutral.gray_900}",
-      "primary_action": "{brand.primary.dark}",
-      "primary_action_text": "{brand.on_primary.dark}"
+    "gray": {
+      "black": {
+        "light": "#FF000000",
+        "dark": "#FF000000"
+      },
+      "gray-30": {
+        "light": "#30000000",
+        "dark": "#30FFFFFF"
+      }
+    },
+    "label": {
+      "primary": {
+        "light": "#95000000",
+        "dark": "#95FFFFFF"
+      },
+      "secondary": {
+        "light": "#603C3C43",
+        "dark": "#70EBEBF5"
+      },
+      "tertiary": {
+        "light": "#303C3C43",
+        "dark": "#30EBEBF5"
+      },
+      "quaternary": {
+        "light": "#183C3C43",
+        "dark": "#16EBEBF5"
+      }
+    },
+    "overlay": {
+      "default": {
+        "light": "#20000000",
+        "dark": "#48000000"
+      },
+      "transparent": {
+        "light": "#00000000",
+        "dark": "#00FFFFFF"
+      }
     }
   }
 }
