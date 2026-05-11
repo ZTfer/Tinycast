@@ -1,0 +1,35 @@
+{
+  "palettes": {
+    "brand": {
+      "primary": {
+        "light": "#6200EE",
+        "dark": "#BB86FC"
+      },
+      "secondary": {
+        "light": "#03DAC6",
+        "dark": "#03DAC6"
+      },
+      "blue": {
+        "light": "#0088FF",
+        "dark": "#0091FF"
+      }
+    },
+    "neutral": {
+      "white": "#FFFFFF",
+      "black": "#000000",
+      "gray_900": "#121212"
+    }
+  },
+  "semantics": {
+    "light": {
+      "background": "{neutral.white}",
+      "primary_action": "{brand.primary.light}",
+      "primary_action_text": "{brand.on_primary.light}"
+    },
+    "dark": {
+      "background": "{neutral.gray_900}",
+      "primary_action": "{brand.primary.dark}",
+      "primary_action_text": "{brand.on_primary.dark}"
+    }
+  }
+}
