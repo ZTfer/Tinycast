@@ -3,14 +3,14 @@ import 'package:flutter/widgets.dart';
 class AppColors {
   AppColors._();
 
-  static const Color brandPrimaryLight = Color(0xFFFF6200EE);
-  static const Color brandPrimaryDark = Color(0xFFFFBB86FC);
+  static const Color brandPrimaryLight = Color(0xFF6200EE);
+  static const Color brandPrimaryDark = Color(0xFFBB86FC);
 
-  static const Color brandSecondaryLight = Color(0xFFFF03DAC6);
-  static const Color brandSecondaryDark = Color(0xFFFF03DAC6);
+  static const Color brandSecondaryLight = Color(0xFF03DAC6);
+  static const Color brandSecondaryDark = Color(0xFF03DAC6);
 
-  static const Color brandBlueLight = Color(0xFFFF0088FF);
-  static const Color brandBlueDark = Color(0xFFFF0091FF);
+  static const Color brandBlueLight = Color(0xFF0088FF);
+  static const Color brandBlueDark = Color(0xFF0091FF);
 
   static const Color backgroundPrimaryLight = Color(0xFFFFFFFF);
   static const Color backgroundPrimaryDark = Color(0xFF000000);
