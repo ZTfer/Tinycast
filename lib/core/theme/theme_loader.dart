@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'app_theme_config.dart';
 
 /// HOCON 轻量解析器
-/// 支持：# 和 // 单行注释、点号路径展开（a.b.c = "x" → {a:{b:{c:"x"}}}）
+/// 支持：# 和 // 单行注释、嵌套对象语法、点号路径
 class HoconParser {
   static Map<String, dynamic> parse(String content) {
     final lines = content.split('\n');
@@ -15,7 +15,10 @@ class HoconParser {
 
     final cleaned = buffer.toString().trim();
     final String jsonStr = cleaned.startsWith('{') ? cleaned : '{$cleaned}';
-    return _expandDottedKeys(jsonDecode(jsonStr) as Map<String, dynamic>);
+
+    final Map<String, dynamic> result =
+        jsonDecode(jsonStr) as Map<String, dynamic>;
+    return _expandDottedKeys(result);
   }
 
   static String _stripComment(String line) {
