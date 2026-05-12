@@ -38,13 +38,13 @@ class AppThemeConfig {
   factory AppThemeConfig.fromJson(Map<String, dynamic> json) {
     final palettes = json['palettes'] as Map<String, dynamic>;
 
-    Map<String, dynamic> _color(String palette, String name) {
+    Map<String, dynamic> getColor(String palette, String name) {
       return (palettes[palette] as Map<String, dynamic>)[name]
           as Map<String, dynamic>;
     }
 
-    Color _parse(String palette, String name) {
-      final entry = _color(palette, name);
+    Color parseColor(String palette, String name) {
+      final entry = getColor(palette, name);
       final hex = (entry['light'] as String).replaceFirst('#', '');
       final value = int.parse(hex, radix: 16);
       return hex.length == 8 ? Color(value) : Color(0xFF000000 | value);
@@ -52,20 +52,20 @@ class AppThemeConfig {
 
     return AppThemeConfig(
       name: json['name'] as String? ?? 'Unknown',
-      brandPrimary: _parse('brand', 'primary'),
-      brandSecondary: _parse('brand', 'secondary'),
-      brandBlue: _parse('brand', 'blue'),
-      backgroundPrimary: _parse('background', 'primary'),
-      backgroundSecondary: _parse('background', 'secondary'),
-      backgroundTertiary: _parse('background', 'tertiary'),
-      grayBlack: _parse('gray', 'black'),
-      gray30: _parse('gray', 'gray-30'),
-      labelPrimary: _parse('label', 'primary'),
-      labelSecondary: _parse('label', 'secondary'),
-      labelTertiary: _parse('label', 'tertiary'),
-      labelQuaternary: _parse('label', 'quaternary'),
-      overlayDefault: _parse('overlay', 'default'),
-      overlayTransparent: _parse('overlay', 'transparent'),
+      brandPrimary: parseColor('brand', 'primary'),
+      brandSecondary: parseColor('brand', 'secondary'),
+      brandBlue: parseColor('brand', 'blue'),
+      backgroundPrimary: parseColor('background', 'primary'),
+      backgroundSecondary: parseColor('background', 'secondary'),
+      backgroundTertiary: parseColor('background', 'tertiary'),
+      grayBlack: parseColor('gray', 'black'),
+      gray30: parseColor('gray', 'gray-30'),
+      labelPrimary: parseColor('label', 'primary'),
+      labelSecondary: parseColor('label', 'secondary'),
+      labelTertiary: parseColor('label', 'tertiary'),
+      labelQuaternary: parseColor('label', 'quaternary'),
+      overlayDefault: parseColor('overlay', 'default'),
+      overlayTransparent: parseColor('overlay', 'transparent'),
     );
   }
 
@@ -75,13 +75,13 @@ class AppThemeConfig {
   }) {
     final palettes = json['palettes'] as Map<String, dynamic>;
 
-    Map<String, dynamic> _color(String palette, String name) {
+    Map<String, dynamic> getColor(String palette, String name) {
       return (palettes[palette] as Map<String, dynamic>)[name]
           as Map<String, dynamic>;
     }
 
-    Color _parse(String palette, String name) {
-      final entry = _color(palette, name);
+    Color parseColor(String palette, String name) {
+      final entry = getColor(palette, name);
       final mode = isDark ? 'dark' : 'light';
       final hex = (entry[mode] as String).replaceFirst('#', '');
       final value = int.parse(hex, radix: 16);
@@ -90,20 +90,20 @@ class AppThemeConfig {
 
     return AppThemeConfig(
       name: isDark ? 'Dark' : 'Light',
-      brandPrimary: _parse('brand', 'primary'),
-      brandSecondary: _parse('brand', 'secondary'),
-      brandBlue: _parse('brand', 'blue'),
-      backgroundPrimary: _parse('background', 'primary'),
-      backgroundSecondary: _parse('background', 'secondary'),
-      backgroundTertiary: _parse('background', 'tertiary'),
-      grayBlack: _parse('gray', 'black'),
-      gray30: _parse('gray', 'gray-30'),
-      labelPrimary: _parse('label', 'primary'),
-      labelSecondary: _parse('label', 'secondary'),
-      labelTertiary: _parse('label', 'tertiary'),
-      labelQuaternary: _parse('label', 'quaternary'),
-      overlayDefault: _parse('overlay', 'default'),
-      overlayTransparent: _parse('overlay', 'transparent'),
+      brandPrimary: parseColor('brand', 'primary'),
+      brandSecondary: parseColor('brand', 'secondary'),
+      brandBlue: parseColor('brand', 'blue'),
+      backgroundPrimary: parseColor('background', 'primary'),
+      backgroundSecondary: parseColor('background', 'secondary'),
+      backgroundTertiary: parseColor('background', 'tertiary'),
+      grayBlack: parseColor('gray', 'black'),
+      gray30: parseColor('gray', 'gray-30'),
+      labelPrimary: parseColor('label', 'primary'),
+      labelSecondary: parseColor('label', 'secondary'),
+      labelTertiary: parseColor('label', 'tertiary'),
+      labelQuaternary: parseColor('label', 'quaternary'),
+      overlayDefault: parseColor('overlay', 'default'),
+      overlayTransparent: parseColor('overlay', 'transparent'),
     );
   }
 
