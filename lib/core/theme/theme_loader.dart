@@ -2,8 +2,41 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'app_theme_config.dart';
 
+/// HOCON 轻量解析器：移除注释后按 JSON 解析
+/// 支持 # 和 // 单行注释，不支持多行注释和 include
+class HoconParser {
+  static Map<String, dynamic> parse(String content) {
+    final lines = content.split('\n');
+    final buffer = StringBuffer();
+
+    for (final line in lines) {
+      buffer.writeln(_stripComment(line));
+    }
+
+    final cleaned = buffer.toString();
+    return jsonDecode(cleaned) as Map<String, dynamic>;
+  }
+
+  static String _stripComment(String line) {
+    bool inString = false;
+    for (int i = 0; i < line.length; i++) {
+      if (line[i] == '"' && (i == 0 || line[i - 1] != '\\')) {
+        inString = !inString;
+      } else if (!inString && i + 1 < line.length) {
+        if (line[i] == '/' && line[i + 1] == '/') {
+          return line.substring(0, i);
+        }
+        if (line[i] == '#') {
+          return line.substring(0, i);
+        }
+      }
+    }
+    return line;
+  }
+}
+
 class ThemeLoader {
-  static const String _themePath = 'assets/themes/colors.json';
+  static const String _themePath = 'assets/themes/colors.hocon';
 
   static Map<String, dynamic>? _cachedJson;
 
@@ -12,9 +45,8 @@ class ThemeLoader {
       return _cachedJson!;
     }
 
-    final String jsonString = await rootBundle.loadString(_themePath);
-    final Map<String, dynamic> json =
-        jsonDecode(jsonString) as Map<String, dynamic>;
+    final String content = await rootBundle.loadString(_themePath);
+    final Map<String, dynamic> json = HoconParser.parse(content);
     _cachedJson = json;
     return json;
   }

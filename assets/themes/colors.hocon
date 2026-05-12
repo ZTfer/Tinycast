@@ -1,0 +1,101 @@
+// TinyCast 颜色主题配置
+// 支持 HOCON 格式，可添加 # 或 // 注释
+
+{
+  // 配置文件版本，未来扩展时可能需要
+  "version": 0.1,
+  "name": "Colors",
+
+  // 调色板分类
+  "palettes": {
+    // 品牌色：用于 Logo、主按钮、高亮元素
+    "brand": {
+      "primary": {
+        // 主品牌色 - Purple
+        "light": "#FF6200EE",
+        "dark": "#FFBB86FC"
+      },
+      "secondary": {
+        // 辅助品牌色 - Teal
+        "light": "#FF03DAC6",
+        "dark": "#FF03DAC6"
+      },
+      "blue": {
+        // 蓝色强调色
+        "light": "#FF0088FF",
+        "dark": "#FF0091FF"
+      }
+    },
+
+    // 背景色：页面、卡片、容器的底色
+    "background": {
+      "primary": {
+        // 主背景：白色 / 纯黑
+        "light": "#FFFFFFFF",
+        "dark": "#FF000000"
+      },
+      "secondary": {
+        // 次背景：浅灰 / 深灰卡片
+        "light": "#FFF2F2F7",
+        "dark": "#FF1C1C1E"
+      },
+      "tertiary": {
+        // 第三背景：浮层、对话框
+        "light": "#FFFFFFFF",
+        "dark": "#FF2C2C2E"
+      }
+    },
+
+    // 灰色阶：边框、分隔线、禁用态
+    "gray": {
+      "black": {
+        // 纯黑，用于阴影
+        "light": "#FF000000",
+        "dark": "#FF000000"
+      },
+      "gray-30": {
+        // 30% 透明度的灰，用于边框和分隔线
+        "light": "#30000000",
+        "dark": "#30FFFFFF"
+      }
+    },
+
+    // 文字颜色：标题、正文、辅助文字
+    "label": {
+      "primary": {
+        // 主文字：高对比度
+        "light": "#95000000",
+        "dark": "#95FFFFFF"
+      },
+      "secondary": {
+        // 次要文字：中等对比度
+        "light": "#603C3C43",
+        "dark": "#70EBEBF5"
+      },
+      "tertiary": {
+        // 辅助文字：低对比度
+        "light": "#303C3C43",
+        "dark": "#30EBEBF5"
+      },
+      "quaternary": {
+        // 占位文字：最低对比度
+        "light": "#183C3C43",
+        "dark": "#16EBEBF5"
+      }
+    },
+
+    // 遮罩层：弹窗背景、加载遮罩
+    "overlay": {
+      "default": {
+        // 默认遮罩透明度
+        "light": "#20000000",
+        "dark": "#48000000"
+      },
+      "transparent": {
+        // 完全透明
+        "light": "#00000000",
+        "dark": "#00FFFFFF"
+      }
+    }
+  }
+}

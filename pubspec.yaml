@@ -184,4 +184,5 @@ flutter:
     # Gravity Icons 图标资源
     - assets/gravity_icons/
     # 主题颜色资源
-    - assets/themes/colors.json
+    - assets/themes/colors.hocon
+    - assets/themes/typography.hocon
