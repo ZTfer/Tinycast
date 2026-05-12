@@ -4,10 +4,7 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String _fontFamily = '.SF Pro Text';
-
-  static final TextStyle h1Light = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h1Light = TextStyle(
     fontSize: 34,
     fontWeight: FontWeight.w700,
     color: AppColors.labelPrimaryLight,
@@ -15,8 +12,7 @@ class AppTextStyles {
     letterSpacing: 0.37,
   );
 
-  static final TextStyle h1Dark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h1Dark = TextStyle(
     fontSize: 34,
     fontWeight: FontWeight.w700,
     color: AppColors.labelPrimaryDark,
@@ -24,8 +20,7 @@ class AppTextStyles {
     letterSpacing: 0.37,
   );
 
-  static final TextStyle h2Light = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h2Light = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.labelPrimaryLight,
@@ -33,8 +28,7 @@ class AppTextStyles {
     letterSpacing: 0.35,
   );
 
-  static final TextStyle h2Dark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h2Dark = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.labelPrimaryDark,
@@ -42,8 +36,7 @@ class AppTextStyles {
     letterSpacing: 0.35,
   );
 
-  static final TextStyle h3Light = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h3Light = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimaryLight,
@@ -51,8 +44,7 @@ class AppTextStyles {
     letterSpacing: 0.35,
   );
 
-  static final TextStyle h3Dark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle h3Dark = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimaryDark,
@@ -60,8 +52,7 @@ class AppTextStyles {
     letterSpacing: 0.35,
   );
 
-  static final TextStyle bodyLargeLight = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodyLargeLight = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     color: AppColors.labelPrimaryLight,
@@ -69,8 +60,7 @@ class AppTextStyles {
     letterSpacing: -0.41,
   );
 
-  static final TextStyle bodyLargeDark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodyLargeDark = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,
     color: AppColors.labelPrimaryDark,
@@ -78,8 +68,7 @@ class AppTextStyles {
     letterSpacing: -0.41,
   );
 
-  static final TextStyle bodyMediumLight = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodyMediumLight = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w400,
     color: AppColors.labelPrimaryLight,
@@ -87,8 +76,7 @@ class AppTextStyles {
     letterSpacing: -0.24,
   );
 
-  static final TextStyle bodyMediumDark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodyMediumDark = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w400,
     color: AppColors.labelPrimaryDark,
@@ -96,8 +84,7 @@ class AppTextStyles {
     letterSpacing: -0.24,
   );
 
-  static final TextStyle bodySmallLight = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodySmallLight = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w400,
     color: AppColors.labelSecondaryLight,
@@ -105,8 +92,7 @@ class AppTextStyles {
     letterSpacing: -0.08,
   );
 
-  static final TextStyle bodySmallDark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle bodySmallDark = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w400,
     color: AppColors.labelSecondaryDark,
@@ -114,8 +100,7 @@ class AppTextStyles {
     letterSpacing: -0.08,
   );
 
-  static final TextStyle captionLight = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle captionLight = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.labelTertiaryLight,
@@ -123,8 +108,7 @@ class AppTextStyles {
     letterSpacing: 0,
   );
 
-  static final TextStyle captionDark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle captionDark = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.labelTertiaryDark,
@@ -132,8 +116,7 @@ class AppTextStyles {
     letterSpacing: 0,
   );
 
-  static final TextStyle buttonLight = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle buttonLight = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimaryLight,
@@ -141,8 +124,7 @@ class AppTextStyles {
     letterSpacing: -0.41,
   );
 
-  static final TextStyle buttonDark = TextStyle(
-    fontFamily: _fontFamily,
+  static const TextStyle buttonDark = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     color: AppColors.labelPrimaryDark,
