@@ -1,0 +1,85 @@
+{
+  "version": 0.1,
+  "name": "Typography",
+  "heading": {
+    "largetitle": {
+      "desktop": {
+        "fontsize": "12",
+        "fontweight": "bold",
+        "lineheight": "16/12"
+      },
+      "tablet": {
+        "desktop": "16",
+        "tablet": "16",
+        "mobile": "24"
+      },
+      "mobile": {
+        "desktop": "14",
+        "tablet": "14",
+        "mobile": "20"
+      }
+    },
+    "title1": {
+      "desktop": {
+        "fontsize": "16",
+        "fontweight": "bold",
+        "lineheight": "16/12"
+      },
+      "tablet": {
+        "fontsize": "14",
+        "fontweight": "bold",
+        "lineheight": "14/12"
+      },
+      "mobile": {
+        "fontsize": "18",
+        "fontweight": "bold",
+        "lineheight": "18/12"
+      }
+    },
+    "title2": {
+      "desktop": {
+        "fontsize": "14",
+        "fontweight": "bold",
+        "lineheight": "14/12"
+      },
+      "tablet": {
+        "fontsize": "12",
+        "fontweight": "bold",
+        "lineheight": "12/12"
+      },
+      "mobile": {
+        "fontsize": "16",
+        "fontweight": "bold",
+        "lineheight": "16/12"
+      }
+    },
+    "title3": {
+      "desktop": {
+        "fontsize": "16",
+        "fontweight": "bold",
+        "lineheight": "16/12"
+      },
+      "tablet": {
+        "fontsize": "14",
+        "fontweight": "bold",
+        "lineheight": "14/12"
+      },
+      "mobile": {
+        "fontsize": "18",
+        "fontweight": "bold",
+        "lineheight": "18/12"
+      }
+    },
+    "headline": {
+      "desktop": {
+        "fontsize": "18",
+        "fontweight": "bold",
+        "lineheight": "18/12"
+      },
+      "transparent": {
+        "light": "#00000000",
+        "dark": "#00FFFFFF"
+      }
+    }
+  }
+}
