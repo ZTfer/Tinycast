@@ -46,7 +46,8 @@ class AppThemeConfig {
     Color _parse(String palette, String name) {
       final entry = _color(palette, name);
       final hex = (entry['light'] as String).replaceFirst('#', '');
-      return Color(int.parse(hex, radix: 16));
+      final value = int.parse(hex, radix: 16);
+      return hex.length == 8 ? Color(value) : Color(0xFF000000 | value);
     }
 
     return AppThemeConfig(
@@ -83,7 +84,8 @@ class AppThemeConfig {
       final entry = _color(palette, name);
       final mode = isDark ? 'dark' : 'light';
       final hex = (entry[mode] as String).replaceFirst('#', '');
-      return Color(int.parse(hex, radix: 16));
+      final value = int.parse(hex, radix: 16);
+      return hex.length == 8 ? Color(value) : Color(0xFF000000 | value);
     }
 
     return AppThemeConfig(
