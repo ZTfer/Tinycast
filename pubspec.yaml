@@ -3,7 +3,7 @@
 # ============================================================================
 name: tinycast
 description: "A Tiny Podcast App."
-publish_to: 'none'
+publish_to: "none"
 
 # 版本号: 主版本号.次版本号.修订号+构建号
 version: 1.0.0+1
@@ -183,3 +183,5 @@ flutter:
     - assets/icons/
     # Gravity Icons 图标资源
     - assets/gravity_icons/
+    # 主题颜色资源
+    - assets/themes/colors.json
