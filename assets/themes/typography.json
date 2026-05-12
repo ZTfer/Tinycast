@@ -76,9 +76,15 @@
         "fontweight": "bold",
         "lineheight": "18/12"
       },
-      "transparent": {
-        "light": "#00000000",
-        "dark": "#00FFFFFF"
+      "tablet": {
+        "fontsize": "16",
+        "fontweight": "bold",
+        "lineheight": "16/12"
+      },
+      "mobile": {
+        "fontsize": "18",
+        "fontweight": "bold",
+        "lineheight": "18/12"
       }
     }
   }
