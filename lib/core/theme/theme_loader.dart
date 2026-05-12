@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'app_theme_config.dart';
 
-/// HOCON 轻量解析器：移除注释后按 JSON 解析
-/// 支持 # 和 // 单行注释，不支持多行注释和 include
+/// HOCON 轻量解析器
+/// 支持：# 和 // 单行注释、点号路径展开（a.b.c = "x" → {a:{b:{c:"x"}}}）
 class HoconParser {
   static Map<String, dynamic> parse(String content) {
     final lines = content.split('\n');
@@ -13,8 +13,9 @@ class HoconParser {
       buffer.writeln(_stripComment(line));
     }
 
-    final cleaned = buffer.toString();
-    return jsonDecode(cleaned) as Map<String, dynamic>;
+    final cleaned = buffer.toString().trim();
+    final String jsonStr = cleaned.startsWith('{') ? cleaned : '{$cleaned}';
+    return _expandDottedKeys(jsonDecode(jsonStr) as Map<String, dynamic>);
   }
 
   static String _stripComment(String line) {
@@ -33,10 +34,58 @@ class HoconParser {
     }
     return line;
   }
+
+  static Map<String, dynamic> _expandDottedKeys(Map<String, dynamic> map) {
+    final result = <String, dynamic>{};
+
+    for (final entry in map.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      if (value is Map) {
+        final expanded = _expandDottedKeys(value as Map<String, dynamic>);
+        result[key] = _merge(result[key], expanded);
+      } else if (key.contains('.')) {
+        final parts = key.split('.');
+        _setNested(result, parts, value);
+      } else {
+        result[key] = value;
+      }
+    }
+
+    return result;
+  }
+
+  static void _setNested(
+    Map<String, dynamic> target,
+    List<String> parts,
+    dynamic value,
+  ) {
+    Map<String, dynamic> current = target;
+    for (int i = 0; i < parts.length - 1; i++) {
+      if (!current.containsKey(parts[i]) ||
+          current[parts[i]] is! Map<String, dynamic>) {
+        current[parts[i]] = <String, dynamic>{};
+      }
+      current = current[parts[i]] as Map<String, dynamic>;
+    }
+    current[parts.last] = value;
+  }
+
+  static dynamic _merge(dynamic existing, dynamic incoming) {
+    if (existing is Map<String, dynamic> && incoming is Map<String, dynamic>) {
+      final merged = Map<String, dynamic>.from(existing);
+      for (final entry in incoming.entries) {
+        merged[entry.key] = _merge(merged[entry.key], entry.value);
+      }
+      return merged;
+    }
+    return incoming;
+  }
 }
 
 class ThemeLoader {
-  static const String _themePath = 'assets/themes/colors.hocon';
+  static const String _themePath = 'assets/themes/colors.conf';
 
   static Map<String, dynamic>? _cachedJson;
 

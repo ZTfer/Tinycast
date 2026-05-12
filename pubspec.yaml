@@ -183,6 +183,6 @@ flutter:
     - assets/icons/
     # Gravity Icons 图标资源
     - assets/gravity_icons/
-    # 主题颜色资源
-    - assets/themes/colors.hocon
-    - assets/themes/typography.hocon
+    # 主题颜色资源（HOCON 格式，支持注释）
+    - assets/themes/colors.conf
+    - assets/themes/typography.conf
