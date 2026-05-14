@@ -647,18 +647,32 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     final currentEpisode = state.currentEpisode;
     if (currentEpisode == null) return;
 
-    final progressRatio = state.progressRatio;
-    final remainingMs = state.duration.inMilliseconds - state.currentPosition.inMilliseconds;
-    const remainingThresholdMs = 60 * 1000; // 60 秒
+    final durationMs = state.duration.inMilliseconds;
+    if (durationMs <= 0) return;
 
-    final isProgressCompleted = progressRatio >= 0.95;
-    final isTimeNearEnd = remainingMs <= remainingThresholdMs && remainingMs >= 0;
+    final positionMs = state.currentPosition.inMilliseconds;
+    final remainingMs = durationMs - positionMs;
+    if (remainingMs < 0) return;
 
-    if (!isProgressCompleted && !isTimeNearEnd) return;
+    final progressRatio = positionMs / durationMs;
 
-    final reason = isProgressCompleted
-        ? 'Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%'
-        : 'Remaining ${remainingMs ~/ 1000}s <= 60s';
+    const shortEpisodeThreshold = 5 * 60 * 1000; // 5 分钟
+    const longEpisodeRemainingThreshold = 60 * 1000; // 60 秒
+
+    final bool isCompleted;
+    final String reason;
+
+    if (durationMs <= shortEpisodeThreshold) {
+      final shortProgressThreshold = 0.95;
+      isCompleted = progressRatio >= shortProgressThreshold;
+      reason = 'Short episode (${durationMs ~/ 1000}s), progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%';
+    } else {
+      isCompleted = remainingMs <= longEpisodeRemainingThreshold;
+      reason = 'Long episode (${durationMs ~/ 1000}s), remaining ${remainingMs ~/ 1000}s <= 60s';
+    }
+
+    if (!isCompleted) return;
+
     debugPrint('🎯 [Playback] $reason, marking as completed');
 
     try {
