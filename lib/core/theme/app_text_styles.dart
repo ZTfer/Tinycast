@@ -52,6 +52,22 @@ class AppTextStyles {
     letterSpacing: 0.35,
   );
 
+  static const TextStyle h3DesktopLight = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.labelPrimaryLight,
+    height: 1.3,
+    letterSpacing: 0.35,
+  );
+
+  static const TextStyle h3DesktopDark = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.labelPrimaryDark,
+    height: 1.3,
+    letterSpacing: 0.35,
+  );
+
   static const TextStyle bodyLargeLight = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w400,

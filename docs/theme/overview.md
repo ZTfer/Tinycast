@@ -24,14 +24,15 @@ Material 的 `ThemeData` 耦合了大量我们不需要的组件样式（如 FAB
 ```
 assets/themes/
 ├── colors.conf        # 颜色配置（HOCON 格式）
-└── typography.conf    # 字体排版配置（HOCON 格式）
+├── typography.conf    # 字体排版配置（HOCON 格式）
+└── styles.conf        # 样式整合配置（导入 colors + typography，定义 Widget 样式）
 
 lib/core/theme/
 ├── app_colors.dart        # 颜色常量定义（编译时常量）
 ├── app_text_styles.dart   # 文字样式定义
 ├── app_theme_config.dart  # 运行时主题配置类
 ├── app_theme.dart         # 主题访问入口
-├── theme_data.dart        # AppThemeData 类 + 间距 + 圆角 + 阴影
+├── theme_data.dart        # AppThemeData 类 + 间距 + 圆角 + 阴影 + Widget 样式
 └── theme_loader.dart      # HOCON 文件加载器
 
 lib/core/providers/

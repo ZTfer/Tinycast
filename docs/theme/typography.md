@@ -41,6 +41,43 @@ heading {
 | `fontweight` | 字重 | `"bold"`, `"regular"`, `"semibold"` |
 | `lineheight` | 行高（格式：`行高/字号`） | `"16/12"` |
 
+### 1.3 响应式变体（desktop / tablet / mobile）
+
+部分文字样式（如 `h3`、`caption`）支持按设备类型定义不同的排版参数。在 HOCON 中使用嵌套对象表达：
+
+```hocon
+h3 {
+  desktop {
+    fontsize = "14"
+    fontweight = "500"
+    lineheight = "1.3"
+    letterspacing = "0.35"
+  }
+  tablet {
+    fontsize = "22"
+    fontweight = "600"
+    lineheight = "1.3"
+    letterspacing = "0.35"
+  }
+  mobile {
+    fontsize = "22"
+    fontweight = "600"
+    lineheight = "1.3"
+    letterspacing = "0.35"
+  }
+  color = "labelPrimary"
+}
+```
+
+每个设备变体包含独立的 `fontsize`、`fontweight`、`lineheight`、`letterspacing` 配置，`color` 在顶层统一指定，引用 `colors.conf` 中的颜色 key。
+
+目前支持响应式变体的样式：
+
+| 样式名 | desktop | tablet | mobile |
+|---|---|---|---|
+| `h3` | 14pt / w500 | 22pt / w600 | 22pt / w600 |
+| `caption` | 12pt / w400 | 12pt / w400 | 12pt / w400 |
+
 ---
 
 ## 2. Dart 文字样式

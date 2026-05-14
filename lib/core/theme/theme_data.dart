@@ -160,6 +160,16 @@ class AppThemeData {
           ? AppTextStyles.buttonLight
           : AppTextStyles.buttonDark;
 
+  TextStyle get episodeItemTitle =>
+      mode == AppThemeMode.light
+          ? AppTextStyles.h3DesktopLight
+          : AppTextStyles.h3DesktopDark;
+
+  TextStyle get episodeItemDescription =>
+      mode == AppThemeMode.light
+          ? AppTextStyles.captionLight
+          : AppTextStyles.captionDark;
+
   double get spacingXxs => AppSpacing.xxs;
   double get spacingXs => AppSpacing.xs;
   double get spacingSm => AppSpacing.sm;

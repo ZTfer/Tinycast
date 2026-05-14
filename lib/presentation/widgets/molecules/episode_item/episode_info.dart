@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 import 'package:tinycast/core/utils/time_formatter.dart';
 import 'package:tinycast/domain/entities/episode.dart';
@@ -52,6 +53,9 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
   @override
   Widget build(BuildContext context) {
     final timeAgo = TimeFormatter.formatTimeAgo(widget.episode.pubDate);
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,14 +79,11 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
             onTap: _handleTap,
             child: Text(
               widget.episode.title,
-              style: TextStyle(
-                fontSize: 14,
-                color: const Color(0xFF333333),
-                fontWeight: FontWeight.w500,
+              style: theme.episodeItemTitle.copyWith(
                 decoration: _isHovering
                     ? TextDecoration.underline
                     : TextDecoration.none,
-                decorationColor: const Color(0xFF333333),
+                decorationColor: theme.labelPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -96,12 +97,7 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
             widget.episode.description,
             maxLength: 80,
           ),
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF999999),
-            fontWeight: FontWeight.normal,
-            decoration: TextDecoration.none,
-          ),
+          style: theme.episodeItemDescription,
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
         ),
