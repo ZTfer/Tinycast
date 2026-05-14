@@ -27,7 +27,7 @@ class AppColors {
   static const Color gray30Light = Color(0x30000000);
   static const Color gray30Dark = Color(0x30FFFFFF);
 
-  static const Color labelPrimaryLight = Color(0x95000000);
+  static const Color labelPrimaryLight = Color(0xFF000000);
   static const Color labelPrimaryDark = Color(0x95FFFFFF);
 
   static const Color labelSecondaryLight = Color(0x603C3C43);
