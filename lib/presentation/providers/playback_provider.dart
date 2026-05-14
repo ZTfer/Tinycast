@@ -648,11 +648,18 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     if (currentEpisode == null) return;
 
     final progressRatio = state.progressRatio;
-    if (progressRatio < 0.95) return;
+    final remainingMs = state.duration.inMilliseconds - state.currentPosition.inMilliseconds;
+    const remainingThresholdMs = 60 * 1000; // 60 秒
 
-    debugPrint(
-      '🎯 [Playback] Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%, marking as completed',
-    );
+    final isProgressCompleted = progressRatio >= 0.95;
+    final isTimeNearEnd = remainingMs <= remainingThresholdMs && remainingMs >= 0;
+
+    if (!isProgressCompleted && !isTimeNearEnd) return;
+
+    final reason = isProgressCompleted
+        ? 'Progress ${((progressRatio) * 100).toStringAsFixed(1)}% >= 95%'
+        : 'Remaining ${remainingMs ~/ 1000}s <= 60s';
+    debugPrint('🎯 [Playback] $reason, marking as completed');
 
     try {
       await _playProgressService.markEpisodeAsPlayed(
