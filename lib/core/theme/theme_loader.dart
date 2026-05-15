@@ -443,6 +443,12 @@ class ThemeLoader {
   }
 
   static Future<void> preloadThemeConfigs() async {
+    _cachedStylesJson = null;
+    _cachedColorsJson = null;
+    _cachedTypographyJson = null;
+    _cachedWidgetStyles = null;
+    _cachedThemeConfigs = null;
+
     final colorsJson = await loadColors();
     _cachedThemeConfigs = _buildThemeConfigs(colorsJson);
     _cachedWidgetStyles = {};
