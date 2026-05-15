@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'app_colors.dart';
-import 'app_text_styles.dart';
 import 'app_theme_config.dart';
 
 /// HOCON 轻量解析器
@@ -156,15 +155,7 @@ class ThemeLoader {
       final styleName = entry.key;
       final styleDef = entry.value as Map<String, dynamic>;
 
-      Color getColorFromConfig(String palette, String name, bool isDark) {
-        final theme = isDark ? 'dark' : 'light';
-        return isDark
-            ? themeConfigs['dark']!._getColorByName(palette, name)
-            : themeConfigs['light']!._getColorByName(palette, name);
-      }
-
       Color resolveColor(String colorKey) {
-        final isDark = false;
         switch (colorKey) {
           case 'labelPrimary':
             return themeConfigs['light']!.labelPrimary;
@@ -201,7 +192,7 @@ class ThemeLoader {
           styles[styleName] = TextStyle(
             fontSize: fontSize,
             fontWeight: FontWeight.values.firstWhere(
-              (w) => w.index == fontWeight,
+              (w) => w.value == fontWeight,
               orElse: () => FontWeight.w400,
             ),
             height: lineHeight,
@@ -212,7 +203,7 @@ class ThemeLoader {
           styles['${styleName}_$suffix'] = TextStyle(
             fontSize: fontSize,
             fontWeight: FontWeight.values.firstWhere(
-              (w) => w.index == fontWeight,
+              (w) => w.value == fontWeight,
               orElse: () => FontWeight.w400,
             ),
             height: lineHeight,
@@ -355,42 +346,5 @@ class ThemeLoader {
     _cachedStylesJson = null;
     _cachedThemeConfigs = null;
     _cachedWidgetStyles = null;
-  }
-}
-
-extension on AppThemeConfig {
-  Color _getColorByName(String palette, String name) {
-    switch ('$palette.$name') {
-      case 'brand.primary':
-        return brandPrimary;
-      case 'brand.secondary':
-        return brandSecondary;
-      case 'brand.blue':
-        return brandBlue;
-      case 'background.primary':
-        return backgroundPrimary;
-      case 'background.secondary':
-        return backgroundSecondary;
-      case 'background.tertiary':
-        return backgroundTertiary;
-      case 'gray.black':
-        return grayBlack;
-      case 'gray.gray-30':
-        return gray30;
-      case 'label.primary':
-        return labelPrimary;
-      case 'label.secondary':
-        return labelSecondary;
-      case 'label.tertiary':
-        return labelTertiary;
-      case 'label.quaternary':
-        return labelQuaternary;
-      case 'overlay.default':
-        return overlayDefault;
-      case 'overlay.transparent':
-        return overlayTransparent;
-      default:
-        return labelPrimary;
-    }
   }
 }

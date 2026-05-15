@@ -54,12 +54,9 @@ class AppThemeData {
     : _useHardcoded = true,
       _brightnessKey = 'const';
 
-  AppThemeData.fromSource({
-    required AppThemeMode mode,
-    required bool useHardcoded,
-  }) : _useHardcoded = useHardcoded,
-       mode = mode,
-       _brightnessKey = mode == AppThemeMode.light ? 'light' : 'dark';
+  AppThemeData.fromSource({required this.mode, required bool useHardcoded})
+    : _useHardcoded = useHardcoded,
+      _brightnessKey = mode == AppThemeMode.light ? 'light' : 'dark';
 
   bool get _isHocon => !_useHardcoded;
 
