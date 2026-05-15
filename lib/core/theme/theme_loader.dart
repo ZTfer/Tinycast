@@ -452,7 +452,7 @@ class ThemeLoader {
           color: color,
         );
 
-        final styleKey = '${widgetName}_${sectionName}';
+        final styleKey = '$widgetName$sectionName';
         result['${styleKey}_light'] = lightStyle;
         result['${styleKey}_dark'] = lightStyle.copyWith(
           color: themeConfigs['dark']!.labelPrimary,

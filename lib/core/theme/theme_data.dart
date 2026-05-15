@@ -70,6 +70,14 @@ class AppThemeData {
     return styles['${key}_$suffix'] as TextStyle?;
   }
 
+  TextStyle? _widgetStyle(String key) {
+    if (!_isHocon) return null;
+    final styles = ThemeLoader.cachedWidgetStyles['widgetTextStyles'];
+    if (styles == null) return null;
+    final suffix = mode == AppThemeMode.light ? 'light' : 'dark';
+    return styles['${key}_$suffix'] as TextStyle?;
+  }
+
   TextStyle? _resolveWidgetTextStyle(String name, {String? variant}) {
     if (_isHocon) {
       final key = variant != null ? '${name}_$variant' : name;
@@ -223,7 +231,7 @@ class AppThemeData {
             : AppTextStyles.buttonDark);
 
   TextStyle get episodeItemTitle => _isHocon
-      ? (_resolveWidgetTextStyle('h3', variant: 'desktop') ??
+      ? (_widgetStyle('episode_item_title') ??
             _hardcodedTextStyle(
               AppTextStyles.h3DesktopLight,
               AppTextStyles.h3DesktopDark,
@@ -233,7 +241,7 @@ class AppThemeData {
             : AppTextStyles.h3DesktopDark);
 
   TextStyle get episodeItemDescription => _isHocon
-      ? (_resolveWidgetTextStyle('caption', variant: 'desktop') ??
+      ? (_widgetStyle('episode_item_description') ??
             _hardcodedTextStyle(
               AppTextStyles.captionLight,
               AppTextStyles.captionDark,
