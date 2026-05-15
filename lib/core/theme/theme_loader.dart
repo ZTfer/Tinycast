@@ -155,30 +155,36 @@ class ThemeLoader {
       final styleName = entry.key;
       final styleDef = entry.value as Map<String, dynamic>;
 
-      Color resolveColor(String colorKey) {
+      Color resolveColor(String colorKey, String brightness) {
+        final config = themeConfigs[brightness]!;
         switch (colorKey) {
           case 'labelPrimary':
-            return themeConfigs['light']!.labelPrimary;
+            return config.labelPrimary;
           case 'labelSecondary':
-            return themeConfigs['light']!.labelSecondary;
+            return config.labelSecondary;
           case 'labelTertiary':
-            return themeConfigs['light']!.labelTertiary;
+            return config.labelTertiary;
           case 'labelQuaternary':
-            return themeConfigs['light']!.labelQuaternary;
+            return config.labelQuaternary;
           case 'brandPrimary':
-            return themeConfigs['light']!.brandPrimary;
+            return config.brandPrimary;
           case 'brandSecondary':
-            return themeConfigs['light']!.brandSecondary;
+            return config.brandSecondary;
           case 'backgroundPrimary':
-            return themeConfigs['light']!.backgroundPrimary;
+            return config.backgroundPrimary;
           case 'backgroundSecondary':
-            return themeConfigs['light']!.backgroundSecondary;
+            return config.backgroundSecondary;
           default:
-            return AppColors.labelPrimaryLight;
+            return brightness == 'light'
+                ? AppColors.labelPrimaryLight
+                : AppColors.labelPrimaryDark;
         }
       }
 
-      void addStyle(String suffix, Map<String, dynamic> values) {
+      TextStyle buildStyle(
+        Map<String, dynamic> values,
+        String brightness,
+      ) {
         final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
         final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
         final lineHeight =
@@ -188,41 +194,41 @@ class ThemeLoader {
 
         final colorKey = styleDef['color'] as String? ?? 'labelPrimary';
 
+        return TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.values.firstWhere(
+            (w) => w.value == fontWeight,
+            orElse: () => FontWeight.w400,
+          ),
+          height: lineHeight,
+          letterSpacing: letterSpacing,
+          color: resolveColor(colorKey, brightness),
+        );
+      }
+
+      void addStylePair(String suffix, Map<String, dynamic> values) {
+        final lightStyle = buildStyle(values, 'light');
+        final darkStyle = buildStyle(values, 'dark');
+
         if (suffix.isEmpty) {
-          styles[styleName] = TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.values.firstWhere(
-              (w) => w.value == fontWeight,
-              orElse: () => FontWeight.w400,
-            ),
-            height: lineHeight,
-            letterSpacing: letterSpacing,
-            color: resolveColor(colorKey),
-          );
+          styles['${styleName}_light'] = lightStyle;
+          styles['${styleName}_dark'] = darkStyle;
         } else {
-          styles['${styleName}_$suffix'] = TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.values.firstWhere(
-              (w) => w.value == fontWeight,
-              orElse: () => FontWeight.w400,
-            ),
-            height: lineHeight,
-            letterSpacing: letterSpacing,
-            color: resolveColor(colorKey),
-          );
+          styles['${styleName}_${suffix}_light'] = lightStyle;
+          styles['${styleName}_${suffix}_dark'] = darkStyle;
         }
       }
 
       if (styleDef.containsKey('desktop')) {
-        addStyle('desktop', styleDef['desktop'] as Map<String, dynamic>);
+        addStylePair('desktop', styleDef['desktop'] as Map<String, dynamic>);
         if (styleDef.containsKey('tablet')) {
-          addStyle('tablet', styleDef['tablet'] as Map<String, dynamic>);
+          addStylePair('tablet', styleDef['tablet'] as Map<String, dynamic>);
         }
         if (styleDef.containsKey('mobile')) {
-          addStyle('mobile', styleDef['mobile'] as Map<String, dynamic>);
+          addStylePair('mobile', styleDef['mobile'] as Map<String, dynamic>);
         }
       } else {
-        addStyle('', styleDef);
+        addStylePair('', styleDef);
       }
     }
 

@@ -9,6 +9,8 @@ import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
+import 'package:tinycast/core/theme/theme_loader.dart';
+import 'package:tinycast/core/theme/theme_source_flag.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 
@@ -112,6 +114,13 @@ Future<void> _initializeApp(AppConfig config) async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
+
+  if (!ThemeSource.useHardcoded) {
+    await ThemeLoader.preloadThemeConfigs();
+    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
+  } else {
+    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
+  }
 
   // 初始化 Supabase（如果配置了有效凭据）
   if (!config.isPlaceholder) {

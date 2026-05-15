@@ -66,7 +66,8 @@ class AppThemeData {
     if (!_isHocon) return null;
     final styles = ThemeLoader.cachedWidgetStyles['textStyles'];
     if (styles == null) return null;
-    return styles[key] as TextStyle?;
+    final suffix = mode == AppThemeMode.light ? 'light' : 'dark';
+    return styles['${key}_$suffix'] as TextStyle?;
   }
 
   TextStyle? _resolveWidgetTextStyle(String name, {String? variant}) {
