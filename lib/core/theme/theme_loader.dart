@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'app_colors.dart';
@@ -125,8 +124,6 @@ class HoconParser {
     final tokens = HoconParser._tokenize(content);
 
     Map<String, dynamic> merged = {};
-    final stack = [merged];
-    final keys = <String?>[];
 
     for (final token in tokens) {
       if (token is _IncludeToken) {
@@ -141,24 +138,11 @@ class HoconParser {
         } catch (_) {
           // skip include errors
         }
-      } else if (token is _OpenBraceToken) {
-        if (keys.isNotEmpty) {
-          final parent = stack.last;
-          final key = keys.removeLast();
-          if (key != null) {
-            final child = <String, dynamic>{};
-            parent[key] = child;
-            stack.add(child);
-          }
-        }
-      } else if (token is _CloseBraceToken) {
-        if (stack.length > 1) stack.removeLast();
-      } else if (token is _KeyToken) {
-        keys.add(token.key);
-      } else if (token is _KeyValueToken) {
-        stack.last[token.key] = _stripQuotes(token.value);
       }
     }
+
+    final parsed = HoconParser._parseObject(tokens);
+    _deepMerge(merged, parsed);
 
     return HoconParser._resolveReferences(merged);
   }
@@ -422,13 +406,61 @@ class ThemeLoader {
     } catch (_) {}
 
     try {
-      _cachedStylesJson = await loadStyles();
-      if (_cachedStylesJson != null &&
-          _cachedStylesJson!.containsKey('widgets')) {
-        _cachedWidgetStyles!['widgets'] =
-            _cachedStylesJson!['widgets'] as Map<String, dynamic>;
+      final stylesJson = await loadStyles();
+      if (stylesJson != null && stylesJson.containsKey('widgets')) {
+        final widgets = stylesJson['widgets'] as Map<String, dynamic>;
+        _cachedWidgetStyles!['widgets'] = widgets;
+        _cachedWidgetStyles!['widgetTextStyles'] = _buildWidgetTextStyles(
+          widgets,
+          _cachedThemeConfigs!,
+        );
       }
     } catch (_) {}
+  }
+
+  static Map<String, TextStyle> _buildWidgetTextStyles(
+    Map<String, dynamic> widgets,
+    Map<String, AppThemeConfig> themeConfigs,
+  ) {
+    final result = <String, TextStyle>{};
+
+    for (final widgetEntry in widgets.entries) {
+      final widgetName = widgetEntry.key;
+      final sections = widgetEntry.value as Map<String, dynamic>;
+
+      for (final sectionEntry in sections.entries) {
+        final sectionName = sectionEntry.key;
+        final values = sectionEntry.value as Map<String, dynamic>;
+
+        final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
+        final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
+        final lineHeight =
+            double.tryParse(values['lineheight'] as String) ?? 1.4;
+        final letterSpacing =
+            double.tryParse(values['letterspacing'] as String) ?? 0.0;
+        final colorStr = values['color'] as String? ?? '#FF000000';
+        final color = Color(int.parse(colorStr.replaceAll('#', '0x')));
+
+        final lightStyle = TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.values.firstWhere(
+            (w) => w.value == fontWeight,
+            orElse: () => FontWeight.w400,
+          ),
+          height: lineHeight,
+          letterSpacing: letterSpacing,
+          color: color,
+        );
+
+        final styleKey = '${widgetName}_${sectionName}';
+        result['${styleKey}_light'] = lightStyle;
+        result['${styleKey}_dark'] = lightStyle.copyWith(
+          color: themeConfigs['dark']!.labelPrimary,
+        );
+      }
+    }
+
+    return result;
   }
 
   static Future<Map<String, dynamic>> loadColors() async {
