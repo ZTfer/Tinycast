@@ -241,11 +241,14 @@ class AppThemeData {
             : AppTextStyles.h3DesktopDark);
 
   TextStyle get episodeItemDescription => _isHocon
-      ? (_widgetStyle('episode_item_description') ??
-            _hardcodedTextStyle(
-              AppTextStyles.captionLight,
-              AppTextStyles.captionDark,
-            ))
+      ? (() {
+          final style = _widgetStyle('episode_item_description');
+          return style ??
+              _hardcodedTextStyle(
+                AppTextStyles.captionLight,
+                AppTextStyles.captionDark,
+              );
+        })()
       : (mode == AppThemeMode.light
             ? AppTextStyles.captionLight
             : AppTextStyles.captionDark);

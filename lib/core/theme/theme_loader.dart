@@ -3,6 +3,10 @@ import 'package:flutter/widgets.dart';
 import 'app_colors.dart';
 import 'app_theme_config.dart';
 
+void _debug(String msg) {
+  debugPrint('[ThemeLoader] $msg');
+}
+
 /// HOCON 轻量解析器
 /// 支持：# 和 // 单行注释、嵌套对象语法、点号路径、include、${} 引用
 class HoconParser {
@@ -25,13 +29,29 @@ class HoconParser {
         if (match != null) {
           tokens.add(_IncludeToken(match.group(1)!));
         }
-      } else if (line.contains('{')) {
+        continue;
+      }
+
+      final hasOpenBrace =
+          line.contains('{') && !_isInsideRef(line, line.indexOf('{'));
+      final hasCloseBrace =
+          line.contains('}') && !_isInsideRef(line, line.indexOf('}'));
+
+      if (hasOpenBrace) {
         final before = line.substring(0, line.indexOf('{')).trim();
         if (before.isNotEmpty) {
           tokens.add(_KeyToken(before));
         }
         tokens.add(_OpenBraceToken());
-      } else if (line.contains('}')) {
+
+        final after = line.substring(line.indexOf('{') + 1).trim();
+        if (after.isNotEmpty && !after.startsWith('}')) {
+          final kv = RegExp(r'^([\w-]+)\s*=\s*(.+)$').firstMatch(after);
+          if (kv != null) {
+            tokens.add(_KeyValueToken(kv.group(1)!, kv.group(2)!.trim()));
+          }
+        }
+      } else if (hasCloseBrace) {
         final before = line.substring(0, line.indexOf('}')).trim();
         if (before.isNotEmpty) {
           final kv = RegExp(r'^([\w-]+)\s*=\s*(.+)$').firstMatch(before);
@@ -49,6 +69,17 @@ class HoconParser {
     }
 
     return tokens;
+  }
+
+  static bool _isInsideRef(String line, int braceIndex) {
+    for (int i = 0; i < braceIndex; i++) {
+      if (line.codeUnitAt(i) == 36 &&
+          i + 1 < line.length &&
+          line.codeUnitAt(i + 1) == 123) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static String _stripComment(String line) {
@@ -135,8 +166,8 @@ class HoconParser {
           final includeTokens = HoconParser._tokenize(includeContent);
           final included = HoconParser._parseObject(includeTokens);
           _deepMerge(merged, included);
-        } catch (_) {
-          // skip include errors
+        } catch (e) {
+          _debug('include error: $e');
         }
       }
     }
@@ -144,7 +175,20 @@ class HoconParser {
     final parsed = HoconParser._parseObject(tokens);
     _deepMerge(merged, parsed);
 
-    return HoconParser._resolveReferences(merged);
+    final resolved = HoconParser._resolveReferences(merged);
+
+    if (resolved.containsKey('widgets')) {
+      final widgets = resolved['widgets'] as Map<String, dynamic>;
+      for (final wEntry in widgets.entries) {
+        final widgetName = wEntry.key;
+        final sections = wEntry.value as Map<String, dynamic>;
+        for (final sEntry in sections.entries) {
+          _debug('$widgetName.${sEntry.key}: ${sEntry.value}');
+        }
+      }
+    }
+
+    return resolved;
   }
 
   static void _deepMerge(
@@ -200,7 +244,9 @@ class HoconParser {
     final refMatch = RegExp(r'^\$\{([^}]+)\}$').firstMatch(value);
     if (refMatch != null) {
       final refPath = refMatch.group(1)!;
-      return _lookupPath(root, refPath.split('.'));
+      final result = _lookupPath(root, refPath.split('.'));
+      _debug('  resolve: ${value} -> ${refPath} -> "$result"');
+      return result;
     }
     return value;
   }
@@ -211,11 +257,19 @@ class HoconParser {
       if (current is Map && current.containsKey(part)) {
         current = current[part];
       } else {
+        _debug('    lookup failed at: ${parts.join('.')} (current key: $part)');
         return '';
       }
     }
     return current is String ? current : current.toString();
   }
+
+  static List<_Token> tokenizeForTest(String content) => _tokenize(content);
+  static Map<String, dynamic> parseObjectForTest(List<_Token> tokens) =>
+      _parseObject(tokens);
+  static Map<String, dynamic> resolveReferencesForTest(
+    Map<String, dynamic> map,
+  ) => _resolveReferences(map);
 }
 
 sealed class _Token {}
@@ -407,15 +461,24 @@ class ThemeLoader {
 
     try {
       final stylesJson = await loadStyles();
+      _debug('stylesJson keys: ${stylesJson?.keys.toList()}');
+      _debug('has widgets: ${stylesJson?.containsKey('widgets')}');
       if (stylesJson != null && stylesJson.containsKey('widgets')) {
         final widgets = stylesJson['widgets'] as Map<String, dynamic>;
+        _debug('widgets keys: ${widgets.keys.toList()}');
+
         _cachedWidgetStyles!['widgets'] = widgets;
-        _cachedWidgetStyles!['widgetTextStyles'] = _buildWidgetTextStyles(
+
+        final widgetTextStyles = _buildWidgetTextStyles(
           widgets,
           _cachedThemeConfigs!,
         );
+        _debug('widgetTextStyles keys: ${widgetTextStyles.keys.toList()}');
+        _cachedWidgetStyles!['widgetTextStyles'] = widgetTextStyles;
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      _debug('preload error: $e\n$stack');
+    }
   }
 
   static Map<String, TextStyle> _buildWidgetTextStyles(
@@ -432,14 +495,34 @@ class ThemeLoader {
         final sectionName = sectionEntry.key;
         final values = sectionEntry.value as Map<String, dynamic>;
 
-        final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
-        final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
-        final lineHeight =
-            double.tryParse(values['lineheight'] as String) ?? 1.4;
-        final letterSpacing =
-            double.tryParse(values['letterspacing'] as String) ?? 0.0;
-        final colorStr = values['color'] as String? ?? '#FF000000';
-        final color = Color(int.parse(colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr));
+        _debug('building style: $widgetName.$sectionName');
+        _debug('values: $values');
+
+        final fontSizeStr = values['fontsize']?.toString();
+        final fontWeightStr = values['fontweight']?.toString();
+        final lineHeightStr = values['lineheight']?.toString();
+        final letterSpacingStr = values['letterspacing']?.toString();
+        final colorStr = values['color']?.toString();
+
+        final fontSize = double.tryParse(fontSizeStr ?? '') ?? 14.0;
+        final fontWeight = int.tryParse(fontWeightStr ?? '') ?? 400;
+        final lineHeight = double.tryParse(lineHeightStr ?? '') ?? 1.4;
+        final letterSpacing = double.tryParse(letterSpacingStr ?? '') ?? 0.0;
+
+        _debug(
+          'parsed: fontSize=$fontSize fontWeight=$fontWeight color=$colorStr',
+        );
+
+        if (colorStr == null || colorStr.isEmpty) {
+          _debug('skipping $widgetName.$sectionName: no color');
+          continue;
+        }
+
+        final color = Color(
+          int.parse(
+            colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+          ),
+        );
 
         final lightStyle = TextStyle(
           fontSize: fontSize,
@@ -452,7 +535,7 @@ class ThemeLoader {
           color: color,
         );
 
-        final styleKey = '$widgetName$sectionName';
+        final styleKey = '$widgetName\_$sectionName';
         result['${styleKey}_light'] = lightStyle;
         result['${styleKey}_dark'] = lightStyle.copyWith(
           color: themeConfigs['dark']!.labelPrimary,
