@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'app_colors.dart';
+import 'app_text_styles.dart';
 import 'app_theme_config.dart';
 
 /// HOCON 轻量解析器
@@ -88,19 +91,221 @@ class HoconParser {
 }
 
 class ThemeLoader {
-  static const String _themePath = 'assets/themes/colors.conf';
+  static const String _colorsPath = 'assets/themes/colors.conf';
+  static const String _typographyPath = 'assets/themes/typography.conf';
+  static const String _stylesPath = 'assets/themes/styles.conf';
 
-  static Map<String, dynamic>? _cachedJson;
+  static Map<String, dynamic>? _cachedColorsJson;
+  static Map<String, dynamic>? _cachedTypographyJson;
+  static Map<String, dynamic>? _cachedStylesJson;
 
-  static Future<Map<String, dynamic>> load() async {
-    if (_cachedJson != null) {
-      return _cachedJson!;
+  static Map<String, AppThemeConfig>? _cachedThemeConfigs;
+  static Map<String, Map<String, dynamic>>? _cachedWidgetStyles;
+
+  static Map<String, AppThemeConfig> get cachedThemeConfigs =>
+      _cachedThemeConfigs ?? _defaultThemeConfigs;
+
+  static Map<String, Map<String, dynamic>> get cachedWidgetStyles =>
+      _cachedWidgetStyles ?? {};
+
+  static final Map<String, AppThemeConfig> _defaultThemeConfigs = {
+    'light': const AppThemeConfig(
+      name: 'Light',
+      brandPrimary: AppColors.brandPrimaryLight,
+      brandSecondary: AppColors.brandSecondaryLight,
+      brandBlue: AppColors.brandBlueLight,
+      backgroundPrimary: AppColors.backgroundPrimaryLight,
+      backgroundSecondary: AppColors.backgroundSecondaryLight,
+      backgroundTertiary: AppColors.backgroundTertiaryLight,
+      grayBlack: AppColors.grayBlackLight,
+      gray30: AppColors.gray30Light,
+      labelPrimary: AppColors.labelPrimaryLight,
+      labelSecondary: AppColors.labelSecondaryLight,
+      labelTertiary: AppColors.labelTertiaryLight,
+      labelQuaternary: AppColors.labelQuaternaryLight,
+      overlayDefault: AppColors.overlayDefaultLight,
+      overlayTransparent: AppColors.overlayTransparentLight,
+    ),
+    'dark': const AppThemeConfig(
+      name: 'Dark',
+      brandPrimary: AppColors.brandPrimaryDark,
+      brandSecondary: AppColors.brandSecondaryDark,
+      brandBlue: AppColors.brandBlueDark,
+      backgroundPrimary: AppColors.backgroundPrimaryDark,
+      backgroundSecondary: AppColors.backgroundSecondaryDark,
+      backgroundTertiary: AppColors.backgroundTertiaryDark,
+      grayBlack: AppColors.grayBlackDark,
+      gray30: AppColors.gray30Dark,
+      labelPrimary: AppColors.labelPrimaryDark,
+      labelSecondary: AppColors.labelSecondaryDark,
+      labelTertiary: AppColors.labelTertiaryDark,
+      labelQuaternary: AppColors.labelQuaternaryDark,
+      overlayDefault: AppColors.overlayDefaultDark,
+      overlayTransparent: AppColors.overlayTransparentDark,
+    ),
+  };
+
+  static Map<String, TextStyle> _buildTextStyles(
+    Map<String, dynamic> typography,
+    Map<String, AppThemeConfig> themeConfigs,
+  ) {
+    final textstyles = typography['textstyles'] as Map<String, dynamic>;
+    final styles = <String, TextStyle>{};
+
+    for (final entry in textstyles.entries) {
+      final styleName = entry.key;
+      final styleDef = entry.value as Map<String, dynamic>;
+
+      Color getColorFromConfig(String palette, String name, bool isDark) {
+        final theme = isDark ? 'dark' : 'light';
+        return isDark
+            ? themeConfigs['dark']!._getColorByName(palette, name)
+            : themeConfigs['light']!._getColorByName(palette, name);
+      }
+
+      Color resolveColor(String colorKey) {
+        final isDark = false;
+        switch (colorKey) {
+          case 'labelPrimary':
+            return themeConfigs['light']!.labelPrimary;
+          case 'labelSecondary':
+            return themeConfigs['light']!.labelSecondary;
+          case 'labelTertiary':
+            return themeConfigs['light']!.labelTertiary;
+          case 'labelQuaternary':
+            return themeConfigs['light']!.labelQuaternary;
+          case 'brandPrimary':
+            return themeConfigs['light']!.brandPrimary;
+          case 'brandSecondary':
+            return themeConfigs['light']!.brandSecondary;
+          case 'backgroundPrimary':
+            return themeConfigs['light']!.backgroundPrimary;
+          case 'backgroundSecondary':
+            return themeConfigs['light']!.backgroundSecondary;
+          default:
+            return AppColors.labelPrimaryLight;
+        }
+      }
+
+      void addStyle(String suffix, Map<String, dynamic> values) {
+        final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
+        final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
+        final lineHeight =
+            double.tryParse(values['lineheight'] as String) ?? 1.4;
+        final letterSpacing =
+            double.tryParse(values['letterspacing'] as String) ?? 0.0;
+
+        final colorKey = styleDef['color'] as String? ?? 'labelPrimary';
+
+        if (suffix.isEmpty) {
+          styles[styleName] = TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.values.firstWhere(
+              (w) => w.index == fontWeight,
+              orElse: () => FontWeight.w400,
+            ),
+            height: lineHeight,
+            letterSpacing: letterSpacing,
+            color: resolveColor(colorKey),
+          );
+        } else {
+          styles['${styleName}_$suffix'] = TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.values.firstWhere(
+              (w) => w.index == fontWeight,
+              orElse: () => FontWeight.w400,
+            ),
+            height: lineHeight,
+            letterSpacing: letterSpacing,
+            color: resolveColor(colorKey),
+          );
+        }
+      }
+
+      if (styleDef.containsKey('desktop')) {
+        addStyle('desktop', styleDef['desktop'] as Map<String, dynamic>);
+        if (styleDef.containsKey('tablet')) {
+          addStyle('tablet', styleDef['tablet'] as Map<String, dynamic>);
+        }
+        if (styleDef.containsKey('mobile')) {
+          addStyle('mobile', styleDef['mobile'] as Map<String, dynamic>);
+        }
+      } else {
+        addStyle('', styleDef);
+      }
     }
 
-    final String content = await rootBundle.loadString(_themePath);
+    return styles;
+  }
+
+  static Map<String, AppThemeConfig> _buildThemeConfigs(
+    Map<String, dynamic> json,
+  ) {
+    return {
+      'light': AppThemeConfig.fromJsonWithMode(json, isDark: false),
+      'dark': AppThemeConfig.fromJsonWithMode(json, isDark: true),
+    };
+  }
+
+  static Future<void> preloadThemeConfigs() async {
+    final colorsJson = await loadColors();
+    _cachedThemeConfigs = _buildThemeConfigs(colorsJson);
+    _cachedWidgetStyles = {};
+
+    try {
+      final typographyJson = await loadTypography();
+      _cachedWidgetStyles!['textStyles'] = _buildTextStyles(
+        typographyJson,
+        _cachedThemeConfigs!,
+      );
+    } catch (_) {}
+
+    try {
+      _cachedStylesJson = await loadStyles();
+      if (_cachedStylesJson != null &&
+          _cachedStylesJson!.containsKey('widgets')) {
+        _cachedWidgetStyles!['widgets'] =
+            _cachedStylesJson!['widgets'] as Map<String, dynamic>;
+      }
+    } catch (_) {}
+  }
+
+  static Future<Map<String, dynamic>> loadColors() async {
+    if (_cachedColorsJson != null) {
+      return _cachedColorsJson!;
+    }
+    final String content = await rootBundle.loadString(_colorsPath);
     final Map<String, dynamic> json = HoconParser.parse(content);
-    _cachedJson = json;
+    _cachedColorsJson = json;
     return json;
+  }
+
+  static Future<Map<String, dynamic>> loadTypography() async {
+    if (_cachedTypographyJson != null) {
+      return _cachedTypographyJson!;
+    }
+    final String content = await rootBundle.loadString(_typographyPath);
+    final Map<String, dynamic> json = HoconParser.parse(content);
+    _cachedTypographyJson = json;
+    return json;
+  }
+
+  static Future<Map<String, dynamic>?> loadStyles() async {
+    if (_cachedStylesJson != null) {
+      return _cachedStylesJson!;
+    }
+    try {
+      final String content = await rootBundle.loadString(_stylesPath);
+      final Map<String, dynamic> json = HoconParser.parse(content);
+      _cachedStylesJson = json;
+      return json;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>> load() async {
+    return loadColors();
   }
 
   static Map<String, dynamic> _getColor(
@@ -145,6 +350,47 @@ class ThemeLoader {
   }
 
   static void clearCache() {
-    _cachedJson = null;
+    _cachedColorsJson = null;
+    _cachedTypographyJson = null;
+    _cachedStylesJson = null;
+    _cachedThemeConfigs = null;
+    _cachedWidgetStyles = null;
+  }
+}
+
+extension on AppThemeConfig {
+  Color _getColorByName(String palette, String name) {
+    switch ('$palette.$name') {
+      case 'brand.primary':
+        return brandPrimary;
+      case 'brand.secondary':
+        return brandSecondary;
+      case 'brand.blue':
+        return brandBlue;
+      case 'background.primary':
+        return backgroundPrimary;
+      case 'background.secondary':
+        return backgroundSecondary;
+      case 'background.tertiary':
+        return backgroundTertiary;
+      case 'gray.black':
+        return grayBlack;
+      case 'gray.gray-30':
+        return gray30;
+      case 'label.primary':
+        return labelPrimary;
+      case 'label.secondary':
+        return labelSecondary;
+      case 'label.tertiary':
+        return labelTertiary;
+      case 'label.quaternary':
+        return labelQuaternary;
+      case 'overlay.default':
+        return overlayDefault;
+      case 'overlay.transparent':
+        return overlayTransparent;
+      default:
+        return labelPrimary;
+    }
   }
 }
