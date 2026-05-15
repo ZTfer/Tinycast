@@ -458,15 +458,12 @@ class ThemeLoader {
     try {
       final stylesJson = await loadStyles();
       _debug('stylesJson keys: ${stylesJson?.keys.toList()}');
-      _debug('has widgets: ${stylesJson?.containsKey('widgets')}');
-      if (stylesJson != null && stylesJson.containsKey('widgets')) {
-        final widgets = stylesJson['widgets'] as Map<String, dynamic>;
-        _debug('widgets keys: ${widgets.keys.toList()}');
 
-        _cachedWidgetStyles!['widgets'] = widgets;
+      if (stylesJson != null) {
+        _cachedWidgetStyles = {'styles': stylesJson};
 
         final widgetTextStyles = _buildWidgetTextStyles(
-          widgets,
+          stylesJson,
           _cachedThemeConfigs!,
         );
         _debug('widgetTextStyles keys: ${widgetTextStyles.keys.toList()}');
@@ -478,68 +475,93 @@ class ThemeLoader {
   }
 
   static Map<String, TextStyle> _buildWidgetTextStyles(
-    Map<String, dynamic> widgets,
+    Map<String, dynamic> stylesJson,
     Map<String, AppThemeConfig> themeConfigs,
   ) {
     final result = <String, TextStyle>{};
 
-    for (final widgetEntry in widgets.entries) {
-      final widgetName = widgetEntry.key;
-      final sections = widgetEntry.value as Map<String, dynamic>;
+    for (final entry in stylesJson.entries) {
+      final topLevelKey = entry.key;
+      final topLevelValue = entry.value;
 
-      for (final sectionEntry in sections.entries) {
-        final sectionName = sectionEntry.key;
-        final values = sectionEntry.value as Map<String, dynamic>;
-
-        _debug('building style: $widgetName.$sectionName');
-        _debug('values: $values');
-
-        final fontSizeStr = values['fontsize']?.toString();
-        final fontWeightStr = values['fontweight']?.toString();
-        final lineHeightStr = values['lineheight']?.toString();
-        final letterSpacingStr = values['letterspacing']?.toString();
-        final colorStr = values['color']?.toString();
-
-        final fontSize = double.tryParse(fontSizeStr ?? '') ?? 14.0;
-        final fontWeight = int.tryParse(fontWeightStr ?? '') ?? 400;
-        final lineHeight = double.tryParse(lineHeightStr ?? '') ?? 1.4;
-        final letterSpacing = double.tryParse(letterSpacingStr ?? '') ?? 0.0;
-
-        _debug(
-          'parsed: fontSize=$fontSize fontWeight=$fontWeight color=$colorStr',
-        );
-
-        Color? color;
-        if (colorStr != null && colorStr.isNotEmpty) {
-          color = Color(
-            int.parse(
-              colorStr.startsWith('#')
-                  ? '0x${colorStr.substring(1)}'
-                  : colorStr,
-            ),
-          );
-        }
-
-        final lightStyle = TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.values.firstWhere(
-            (w) => w.value == fontWeight,
-            orElse: () => FontWeight.w400,
-          ),
-          height: lineHeight,
-          letterSpacing: letterSpacing,
-          color: color,
-        );
-
-        final styleKey = '${widgetName}_$sectionName';
-        result['${styleKey}_light'] = lightStyle;
-        result['${styleKey}_dark'] = lightStyle.copyWith(
-          color: color ?? themeConfigs['dark']!.labelPrimary,
+      if (topLevelValue is Map<String, dynamic>) {
+        _processNode(
+          path: topLevelKey,
+          node: topLevelValue,
+          result: result,
+          themeConfigs: themeConfigs,
         );
       }
     }
 
     return result;
+  }
+
+  static void _processNode({
+    required String path,
+    required Map<String, dynamic> node,
+    required Map<String, TextStyle> result,
+    required Map<String, AppThemeConfig> themeConfigs,
+  }) {
+    final hasStyleValues =
+        node.containsKey('fontsize') || node.containsKey('color');
+
+    if (hasStyleValues) {
+      _debug('building style: $path');
+      _debug('values: $node');
+
+      final fontSizeStr = node['fontsize']?.toString();
+      final fontWeightStr = node['fontweight']?.toString();
+      final lineHeightStr = node['lineheight']?.toString();
+      final letterSpacingStr = node['letterspacing']?.toString();
+      final colorStr = node['color']?.toString();
+
+      final fontSize = double.tryParse(fontSizeStr ?? '') ?? 14.0;
+      final fontWeight = int.tryParse(fontWeightStr ?? '') ?? 400;
+      final lineHeight = double.tryParse(lineHeightStr ?? '') ?? 1.4;
+      final letterSpacing = double.tryParse(letterSpacingStr ?? '') ?? 0.0;
+
+      _debug(
+        'parsed: fontSize=$fontSize fontWeight=$fontWeight color=$colorStr',
+      );
+
+      Color? color;
+      if (colorStr != null && colorStr.isNotEmpty) {
+        color = Color(
+          int.parse(
+            colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+          ),
+        );
+      }
+
+      final lightStyle = TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.values.firstWhere(
+          (w) => w.value == fontWeight,
+          orElse: () => FontWeight.w400,
+        ),
+        height: lineHeight,
+        letterSpacing: letterSpacing,
+        color: color,
+      );
+
+      final styleKey = path.replaceAll('.', '_');
+      result['${styleKey}_light'] = lightStyle;
+      result['${styleKey}_dark'] = lightStyle.copyWith(
+        color: color ?? themeConfigs['dark']!.labelPrimary,
+      );
+    } else {
+      for (final childEntry in node.entries) {
+        if (childEntry.value is Map<String, dynamic>) {
+          _processNode(
+            path: '$path.${childEntry.key}',
+            node: childEntry.value as Map<String, dynamic>,
+            result: result,
+            themeConfigs: themeConfigs,
+          );
+        }
+      }
+    }
   }
 
   static Future<Map<String, dynamic>> loadColors() async {
