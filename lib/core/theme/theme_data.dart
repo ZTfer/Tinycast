@@ -78,15 +78,6 @@ class AppThemeData {
     return styles['${key}_$suffix'] as TextStyle?;
   }
 
-  TextStyle? _resolveWidgetTextStyle(String name, {String? variant}) {
-    if (_isHocon) {
-      final key = variant != null ? '${name}_$variant' : name;
-      final fromConf = _widgetTextStyle(key);
-      if (fromConf != null) return fromConf;
-    }
-    return null;
-  }
-
   Color get backgroundPrimary => _isHocon
       ? _config.backgroundPrimary
       : mode == AppThemeMode.light

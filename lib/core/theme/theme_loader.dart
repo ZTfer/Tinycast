@@ -248,7 +248,7 @@ class HoconParser {
     if (refMatch != null) {
       final refPath = refMatch.group(1)!;
       final result = _lookupPath(root, refPath.split('.'));
-      _debug('  resolve: ${value} -> ${refPath} -> "$result"');
+      _debug('  resolve: $value -> $refPath -> "$result"');
       return result;
     }
     return value;
@@ -266,13 +266,6 @@ class HoconParser {
     }
     return current is String ? current : current.toString();
   }
-
-  static List<_Token> tokenizeForTest(String content) => _tokenize(content);
-  static Map<String, dynamic> parseObjectForTest(List<_Token> tokens) =>
-      _parseObject(tokens);
-  static Map<String, dynamic> resolveReferencesForTest(
-    Map<String, dynamic> map,
-  ) => _resolveReferences(map);
 }
 
 sealed class _Token {}
@@ -520,7 +513,9 @@ class ThemeLoader {
         if (colorStr != null && colorStr.isNotEmpty) {
           color = Color(
             int.parse(
-              colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+              colorStr.startsWith('#')
+                  ? '0x${colorStr.substring(1)}'
+                  : colorStr,
             ),
           );
         }
@@ -536,7 +531,7 @@ class ThemeLoader {
           color: color,
         );
 
-        final styleKey = '$widgetName\_$sectionName';
+        final styleKey = '${widgetName}_$sectionName';
         result['${styleKey}_light'] = lightStyle;
         result['${styleKey}_dark'] = lightStyle.copyWith(
           color: color ?? themeConfigs['dark']!.labelPrimary,
