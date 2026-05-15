@@ -186,3 +186,4 @@ flutter:
     # 主题颜色资源（HOCON 格式，支持注释）
     - assets/themes/colors.conf
     - assets/themes/typography.conf
+    - assets/themes/styles.conf

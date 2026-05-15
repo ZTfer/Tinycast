@@ -5,98 +5,256 @@ import 'app_colors.dart';
 import 'app_theme_config.dart';
 
 /// HOCON 轻量解析器
-/// 支持：# 和 // 单行注释、嵌套对象语法、点号路径
+/// 支持：# 和 // 单行注释、嵌套对象语法、点号路径、include、${} 引用
 class HoconParser {
   static Map<String, dynamic> parse(String content) {
-    final lines = content.split('\n');
-    final buffer = StringBuffer();
+    final tokens = _tokenize(content);
+    final result = _parseObject(tokens);
+    return _resolveReferences(result);
+  }
 
-    for (final line in lines) {
-      final stripped = _stripComment(line);
-      buffer.writeln(_convertHoconToJson(stripped));
+  static List<_Token> _tokenize(String content) {
+    final lines = content.split('\n');
+    final tokens = <_Token>[];
+
+    for (final rawLine in lines) {
+      final line = _stripComment(rawLine).trim();
+      if (line.isEmpty) continue;
+
+      if (line.startsWith('include')) {
+        final match = RegExp(r'include\s+"([^"]+)"').firstMatch(line);
+        if (match != null) {
+          tokens.add(_IncludeToken(match.group(1)!));
+        }
+      } else if (line.contains('{')) {
+        final before = line.substring(0, line.indexOf('{')).trim();
+        if (before.isNotEmpty) {
+          tokens.add(_KeyToken(before));
+        }
+        tokens.add(_OpenBraceToken());
+      } else if (line.contains('}')) {
+        final before = line.substring(0, line.indexOf('}')).trim();
+        if (before.isNotEmpty) {
+          final kv = RegExp(r'^([\w-]+)\s*=\s*(.+)$').firstMatch(before);
+          if (kv != null) {
+            tokens.add(_KeyValueToken(kv.group(1)!, kv.group(2)!.trim()));
+          }
+        }
+        tokens.add(_CloseBraceToken());
+      } else {
+        final kv = RegExp(r'^([\w-]+)\s*=\s*(.+)$').firstMatch(line);
+        if (kv != null) {
+          tokens.add(_KeyValueToken(kv.group(1)!, kv.group(2)!.trim()));
+        }
+      }
     }
 
-    final cleaned = buffer.toString().trim();
-    final String jsonStr = cleaned.startsWith('{') ? cleaned : '{$cleaned}';
-
-    final Map<String, dynamic> result =
-        jsonDecode(jsonStr) as Map<String, dynamic>;
-    return _expandDottedKeys(result);
+    return tokens;
   }
 
   static String _stripComment(String line) {
     bool inString = false;
+    bool inRef = false;
     for (int i = 0; i < line.length; i++) {
       if (line[i] == '"' && (i == 0 || line[i - 1] != '\\')) {
         inString = !inString;
-      } else if (!inString && i + 1 < line.length) {
-        if (line[i] == '/' && line[i + 1] == '/') {
-          return line.substring(0, i);
+      }
+      if (!inString) {
+        if (line[i] == '\$' && i + 1 < line.length && line[i + 1] == '{') {
+          inRef = true;
         }
-        if (line[i] == '#') {
-          return line.substring(0, i);
+        if (inRef && line[i] == '}') {
+          inRef = false;
+        }
+        if (!inRef && i + 1 < line.length) {
+          if (line[i] == '/' && line[i + 1] == '/') {
+            return line.substring(0, i);
+          }
+          if (line[i] == '#') {
+            return line.substring(0, i);
+          }
         }
       }
     }
     return line;
   }
 
-  static String _convertHoconToJson(String line) {
-    return line.replaceAllMapped(RegExp(r'^(\s*)([\w-]+)\s*=\s*'), (match) {
-      final indent = match.group(1);
-      final key = match.group(2);
-      return '$indent"$key":';
-    });
+  static String _stripQuotes(String value) {
+    if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+      return value.substring(1, value.length - 1);
+    }
+    return value;
   }
 
-  static Map<String, dynamic> _expandDottedKeys(Map<String, dynamic> map) {
+  static Map<String, dynamic> _parseObject(List<_Token> tokens) {
+    final result = <String, dynamic>{};
+    var i = 0;
+    final stack = [result];
+    final keys = <String?>[];
+
+    while (i < tokens.length) {
+      final token = tokens[i];
+      if (token is _IncludeToken) {
+        i++;
+        continue;
+      } else if (token is _OpenBraceToken) {
+        if (keys.isNotEmpty) {
+          final parent = stack.last;
+          final key = keys.removeLast();
+          if (key != null) {
+            final child = <String, dynamic>{};
+            parent[key] = child;
+            stack.add(child);
+          }
+        }
+      } else if (token is _CloseBraceToken) {
+        if (stack.length > 1) stack.removeLast();
+      } else if (token is _KeyToken) {
+        keys.add(token.key);
+      } else if (token is _KeyValueToken) {
+        stack.last[token.key] = _stripQuotes(token.value);
+      }
+      i++;
+    }
+
+    return result;
+  }
+
+  static Future<Map<String, dynamic>> _loadWithIncludes(String rootPath) async {
+    final content = await rootBundle.loadString(rootPath);
+    final tokens = HoconParser._tokenize(content);
+
+    Map<String, dynamic> merged = {};
+    final stack = [merged];
+    final keys = <String?>[];
+
+    for (final token in tokens) {
+      if (token is _IncludeToken) {
+        final includePath = token.path;
+        final basePath = rootPath.substring(0, rootPath.lastIndexOf('/'));
+        final fullPath = '$basePath/$includePath';
+        try {
+          final includeContent = await rootBundle.loadString(fullPath);
+          final includeTokens = HoconParser._tokenize(includeContent);
+          final included = HoconParser._parseObject(includeTokens);
+          _deepMerge(merged, included);
+        } catch (_) {
+          // skip include errors
+        }
+      } else if (token is _OpenBraceToken) {
+        if (keys.isNotEmpty) {
+          final parent = stack.last;
+          final key = keys.removeLast();
+          if (key != null) {
+            final child = <String, dynamic>{};
+            parent[key] = child;
+            stack.add(child);
+          }
+        }
+      } else if (token is _CloseBraceToken) {
+        if (stack.length > 1) stack.removeLast();
+      } else if (token is _KeyToken) {
+        keys.add(token.key);
+      } else if (token is _KeyValueToken) {
+        stack.last[token.key] = _stripQuotes(token.value);
+      }
+    }
+
+    return HoconParser._resolveReferences(merged);
+  }
+
+  static void _deepMerge(
+    Map<String, dynamic> target,
+    Map<String, dynamic> source,
+  ) {
+    for (final entry in source.entries) {
+      if (entry.value is Map<String, dynamic> &&
+          target[entry.key] is Map<String, dynamic>) {
+        _deepMerge(
+          target[entry.key] as Map<String, dynamic>,
+          entry.value as Map<String, dynamic>,
+        );
+      } else {
+        target[entry.key] = entry.value;
+      }
+    }
+  }
+
+  static Map<String, dynamic> _resolveReferences(Map<String, dynamic> root) {
+    return _resolveRefsInMap(root, root, null);
+  }
+
+  static dynamic _resolveRefsInMap(
+    Map<String, dynamic> map,
+    Map<String, dynamic> root,
+    String? currentPath,
+  ) {
     final result = <String, dynamic>{};
 
     for (final entry in map.entries) {
-      final key = entry.key;
-      final value = entry.value;
+      final path = currentPath != null
+          ? '$currentPath.${entry.key}'
+          : entry.key;
 
-      if (value is Map) {
-        final expanded = _expandDottedKeys(value as Map<String, dynamic>);
-        result[key] = _merge(result[key], expanded);
-      } else if (key.contains('.')) {
-        final parts = key.split('.');
-        _setNested(result, parts, value);
+      if (entry.value is Map<String, dynamic>) {
+        result[entry.key] = _resolveRefsInMap(
+          entry.value as Map<String, dynamic>,
+          root,
+          path,
+        );
+      } else if (entry.value is String) {
+        result[entry.key] = _resolveRefValue(entry.value as String, root);
       } else {
-        result[key] = value;
+        result[entry.key] = entry.value;
       }
     }
 
     return result;
   }
 
-  static void _setNested(
-    Map<String, dynamic> target,
-    List<String> parts,
-    dynamic value,
-  ) {
-    Map<String, dynamic> current = target;
-    for (int i = 0; i < parts.length - 1; i++) {
-      if (!current.containsKey(parts[i]) ||
-          current[parts[i]] is! Map<String, dynamic>) {
-        current[parts[i]] = <String, dynamic>{};
-      }
-      current = current[parts[i]] as Map<String, dynamic>;
+  static String _resolveRefValue(String value, Map<String, dynamic> root) {
+    final refMatch = RegExp(r'^\$\{([^}]+)\}$').firstMatch(value);
+    if (refMatch != null) {
+      final refPath = refMatch.group(1)!;
+      return _lookupPath(root, refPath.split('.'));
     }
-    current[parts.last] = value;
+    return value;
   }
 
-  static dynamic _merge(dynamic existing, dynamic incoming) {
-    if (existing is Map<String, dynamic> && incoming is Map<String, dynamic>) {
-      final merged = Map<String, dynamic>.from(existing);
-      for (final entry in incoming.entries) {
-        merged[entry.key] = _merge(merged[entry.key], entry.value);
+  static String _lookupPath(Map<String, dynamic> root, List<String> parts) {
+    dynamic current = root;
+    for (final part in parts) {
+      if (current is Map && current.containsKey(part)) {
+        current = current[part];
+      } else {
+        return '';
       }
-      return merged;
     }
-    return incoming;
+    return current is String ? current : current.toString();
   }
 }
+
+sealed class _Token {}
+
+class _IncludeToken extends _Token {
+  final String path;
+  _IncludeToken(this.path);
+}
+
+class _KeyToken extends _Token {
+  final String key;
+  _KeyToken(this.key);
+}
+
+class _KeyValueToken extends _Token {
+  final String key;
+  final String value;
+  _KeyValueToken(this.key, this.value);
+}
+
+class _OpenBraceToken extends _Token {}
+
+class _CloseBraceToken extends _Token {}
 
 class ThemeLoader {
   static const String _colorsPath = 'assets/themes/colors.conf';
@@ -298,8 +456,7 @@ class ThemeLoader {
       return _cachedStylesJson!;
     }
     try {
-      final String content = await rootBundle.loadString(_stylesPath);
-      final Map<String, dynamic> json = HoconParser.parse(content);
+      final json = await HoconParser._loadWithIncludes(_stylesPath);
       _cachedStylesJson = json;
       return json;
     } catch (_) {
