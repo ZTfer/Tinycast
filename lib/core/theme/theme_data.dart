@@ -244,6 +244,16 @@ class AppThemeData {
             ? AppTextStyles.captionLight
             : AppTextStyles.captionDark);
 
+  TextStyle get episodeItemPubDate => _isHocon
+      ? (_widgetStyle('episode_item_pubDate') ??
+            _hardcodedTextStyle(
+              AppTextStyles.captionLight,
+              AppTextStyles.captionDark,
+            ))
+      : (mode == AppThemeMode.light
+            ? AppTextStyles.captionLight
+            : AppTextStyles.captionDark);
+
   TextStyle _hardcodedTextStyle(TextStyle light, TextStyle dark) =>
       mode == AppThemeMode.light ? light : dark;
 

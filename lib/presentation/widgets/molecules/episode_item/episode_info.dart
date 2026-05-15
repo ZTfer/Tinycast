@@ -61,15 +61,7 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 发布时间
-        Text(
-          timeAgo,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Color(0xFF999999),
-            fontWeight: FontWeight.normal,
-            decoration: TextDecoration.none,
-          ),
-        ),
+        Text(timeAgo, style: theme.episodeItemPubDate),
         const SizedBox(height: 4),
         // 节目标题（带 hover 下划线效果，点击打开详情窗口）
         MouseRegion(
