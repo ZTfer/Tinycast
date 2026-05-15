@@ -486,14 +486,13 @@ class ThemeLoader {
   ) {
     final result = <String, TextStyle>{};
 
-    for (final entry in stylesJson.entries) {
-      final topLevelKey = entry.key;
-      final topLevelValue = entry.value;
+    final styleRootKeys = ['widgets', 'page'];
 
-      if (topLevelValue is Map<String, dynamic>) {
+    for (final rootKey in styleRootKeys) {
+      if (stylesJson.containsKey(rootKey)) {
         _processNode(
-          path: topLevelKey,
-          node: topLevelValue,
+          path: rootKey,
+          node: stylesJson[rootKey] as Map<String, dynamic>,
           result: result,
           themeConfigs: themeConfigs,
         );

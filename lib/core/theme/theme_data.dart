@@ -222,7 +222,7 @@ class AppThemeData {
             : AppTextStyles.buttonDark);
 
   TextStyle get episodeItemTitle => _isHocon
-      ? (_widgetStyle('episode_item_title') ??
+      ? (_widgetStyle('widgets_episode_item_title') ??
             _hardcodedTextStyle(
               AppTextStyles.h3DesktopLight,
               AppTextStyles.h3DesktopDark,
@@ -233,7 +233,7 @@ class AppThemeData {
 
   TextStyle get episodeItemDescription => _isHocon
       ? (() {
-          final style = _widgetStyle('episode_item_description');
+          final style = _widgetStyle('widgets_episode_item_description');
           return style ??
               _hardcodedTextStyle(
                 AppTextStyles.captionLight,
@@ -245,7 +245,7 @@ class AppThemeData {
             : AppTextStyles.captionDark);
 
   TextStyle get episodeItemPubDate => _isHocon
-      ? (_widgetStyle('episode_item_pubDate') ??
+      ? (_widgetStyle('widgets_episode_item_pubDate') ??
             _hardcodedTextStyle(
               AppTextStyles.captionLight,
               AppTextStyles.captionDark,
