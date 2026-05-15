@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_show_more_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/dropdown/library_dropdown.dart';
 
@@ -185,6 +186,9 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,12 +201,10 @@ class _LibraryShowInfoState extends State<LibraryShowInfo> {
               onExit: (_) => setState(() => _isHovered = false),
               child: GestureDetector(
                 onTap: widget.onTitleTap,
+                // Podcast 标题文字
                 child: Text(
                   widget.showName,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF000000),
+                  style: theme.libraryShowTitle.copyWith(
                     decoration: _isHovered
                         ? TextDecoration.underline
                         : TextDecoration.none,

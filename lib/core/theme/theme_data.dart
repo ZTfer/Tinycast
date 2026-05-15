@@ -254,6 +254,16 @@ class AppThemeData {
             ? AppTextStyles.captionLight
             : AppTextStyles.captionDark);
 
+  TextStyle get libraryShowTitle => _isHocon
+      ? (_widgetStyle('library_show_info_list_item_title') ??
+            _hardcodedTextStyle(
+              AppTextStyles.h3DesktopLight,
+              AppTextStyles.h3DesktopDark,
+            ))
+      : (mode == AppThemeMode.light
+            ? AppTextStyles.h3DesktopLight
+            : AppTextStyles.h3DesktopDark);
+
   TextStyle _hardcodedTextStyle(TextStyle light, TextStyle dark) =>
       mode == AppThemeMode.light ? light : dark;
 
