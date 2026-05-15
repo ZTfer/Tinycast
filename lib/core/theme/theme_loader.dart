@@ -439,7 +439,7 @@ class ThemeLoader {
         final letterSpacing =
             double.tryParse(values['letterspacing'] as String) ?? 0.0;
         final colorStr = values['color'] as String? ?? '#FF000000';
-        final color = Color(int.parse(colorStr.replaceAll('#', '0x')));
+        final color = Color(int.parse(colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr));
 
         final lightStyle = TextStyle(
           fontSize: fontSize,
