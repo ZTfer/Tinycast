@@ -12,7 +12,8 @@ class HoconParser {
     final buffer = StringBuffer();
 
     for (final line in lines) {
-      buffer.writeln(_stripComment(line));
+      final stripped = _stripComment(line);
+      buffer.writeln(_convertHoconToJson(stripped));
     }
 
     final cleaned = buffer.toString().trim();
@@ -38,6 +39,14 @@ class HoconParser {
       }
     }
     return line;
+  }
+
+  static String _convertHoconToJson(String line) {
+    return line.replaceAllMapped(RegExp(r'^(\s*)([\w-]+)\s*=\s*'), (match) {
+      final indent = match.group(1);
+      final key = match.group(2);
+      return '$indent"$key":';
+    });
   }
 
   static Map<String, dynamic> _expandDottedKeys(Map<String, dynamic> map) {
@@ -181,10 +190,7 @@ class ThemeLoader {
         }
       }
 
-      TextStyle buildStyle(
-        Map<String, dynamic> values,
-        String brightness,
-      ) {
+      TextStyle buildStyle(Map<String, dynamic> values, String brightness) {
         final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
         final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
         final lineHeight =
