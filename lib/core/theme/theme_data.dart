@@ -254,13 +254,15 @@ class AppThemeData {
             ? AppTextStyles.captionLight
             : AppTextStyles.captionDark);
 
-  TextStyle get libraryShowTitle {
-    final style = _widgetStyle('page_library_list_item_title');
-    if (style != null) return style;
-    return mode == AppThemeMode.light
-        ? AppTextStyles.h3DesktopLight
-        : AppTextStyles.h3DesktopDark;
-  }
+  TextStyle get libraryShowTitle => _isHocon
+      ? (_widgetStyle('page_library_list_item_title') ??
+            _hardcodedTextStyle(
+              AppTextStyles.h3DesktopLight,
+              AppTextStyles.h3DesktopDark,
+            ))
+      : (mode == AppThemeMode.light
+            ? AppTextStyles.h3DesktopLight
+            : AppTextStyles.h3DesktopDark);
 
   TextStyle _hardcodedTextStyle(TextStyle light, TextStyle dark) =>
       mode == AppThemeMode.light ? light : dark;
