@@ -72,14 +72,17 @@ class HoconParser {
   }
 
   static bool _isInsideRef(String line, int braceIndex) {
+    bool foundOpenRef = false;
     for (int i = 0; i < braceIndex; i++) {
       if (line.codeUnitAt(i) == 36 &&
           i + 1 < line.length &&
           line.codeUnitAt(i + 1) == 123) {
-        return true;
+        foundOpenRef = true;
+      } else if (line.codeUnitAt(i) == 125 && foundOpenRef) {
+        foundOpenRef = false;
       }
     }
-    return false;
+    return foundOpenRef;
   }
 
   static String _stripComment(String line) {
@@ -513,16 +516,14 @@ class ThemeLoader {
           'parsed: fontSize=$fontSize fontWeight=$fontWeight color=$colorStr',
         );
 
-        if (colorStr == null || colorStr.isEmpty) {
-          _debug('skipping $widgetName.$sectionName: no color');
-          continue;
+        Color? color;
+        if (colorStr != null && colorStr.isNotEmpty) {
+          color = Color(
+            int.parse(
+              colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+            ),
+          );
         }
-
-        final color = Color(
-          int.parse(
-            colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
-          ),
-        );
 
         final lightStyle = TextStyle(
           fontSize: fontSize,
@@ -538,7 +539,7 @@ class ThemeLoader {
         final styleKey = '$widgetName\_$sectionName';
         result['${styleKey}_light'] = lightStyle;
         result['${styleKey}_dark'] = lightStyle.copyWith(
-          color: themeConfigs['dark']!.labelPrimary,
+          color: color ?? themeConfigs['dark']!.labelPrimary,
         );
       }
     }
