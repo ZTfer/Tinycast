@@ -26,7 +26,10 @@ class Body extends ConsumerWidget {
     final navigationState = ref.watch(navigationProvider);
 
     return Container(
-      color: theme.mainContentBackground,
+      decoration: BoxDecoration(
+        color: theme.mainContentBackground,
+        borderRadius: theme.mainContentBorderRadius,
+      ),
       child: Row(
         children: [
           Sidebar(
@@ -38,10 +41,7 @@ class Body extends ConsumerWidget {
           Expanded(
             child: Container(
               padding: theme.mainContentContentPadding,
-              decoration: BoxDecoration(
-                color: theme.mainContentContentBackground,
-                borderRadius: theme.mainContentBorderRadius,
-              ),
+              color: theme.mainContentContentBackground,
               alignment: Alignment.topLeft,
               child: _buildContent(navigationState, ref),
             ),
