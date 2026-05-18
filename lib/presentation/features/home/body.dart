@@ -25,28 +25,28 @@ class Body extends ConsumerWidget {
     );
     final navigationState = ref.watch(navigationProvider);
 
-    return Container(
-      decoration: BoxDecoration(
+    return ClipRRect(
+      borderRadius: theme.mainContentBorderRadius,
+      child: Container(
         color: theme.mainContentBackground,
-        borderRadius: theme.mainContentBorderRadius,
-      ),
-      child: Row(
-        children: [
-          Sidebar(
-            currentPage: navigationState.currentPage,
-            onPageChanged: (page) {
-              ref.read(navigationProvider.notifier).navigateToPage(page);
-            },
-          ),
-          Expanded(
-            child: Container(
-              padding: theme.mainContentContentPadding,
-              color: theme.mainContentContentBackground,
-              alignment: Alignment.topLeft,
-              child: _buildContent(navigationState, ref),
+        child: Row(
+          children: [
+            Sidebar(
+              currentPage: navigationState.currentPage,
+              onPageChanged: (page) {
+                ref.read(navigationProvider.notifier).navigateToPage(page);
+              },
             ),
-          ),
-        ],
+            Expanded(
+              child: Container(
+                padding: theme.mainContentContentPadding,
+                color: theme.mainContentContentBackground,
+                alignment: Alignment.topLeft,
+                child: _buildContent(navigationState, ref),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
