@@ -84,7 +84,7 @@ class AcrylicWindowUtils {
   /// 根据平台获取最佳毛玻璃效果
   static WindowEffect _getFrostedEffect() {
     if (Platform.isWindows) {
-      return WindowEffect.mica;
+      return WindowEffect.acrylic;
     }
     return WindowEffect.sidebar;
   }
