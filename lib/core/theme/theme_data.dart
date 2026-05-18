@@ -332,6 +332,31 @@ class AppThemeData {
     );
   }
 
+  BorderRadius? _layoutBorderRadius(String path) {
+    final style = _layoutStyle(path);
+    if (style == null) return null;
+    if (style['radius'] is Map<String, dynamic>) {
+      final r = style['radius'] as Map<String, dynamic>;
+      return BorderRadius.only(
+        topLeft: Radius.circular(
+          double.tryParse(r['top_left']?.toString() ?? '0') ?? 0,
+        ),
+        topRight: Radius.circular(
+          double.tryParse(r['top_right']?.toString() ?? '0') ?? 0,
+        ),
+        bottomLeft: Radius.circular(
+          double.tryParse(r['bottom_left']?.toString() ?? '0') ?? 0,
+        ),
+        bottomRight: Radius.circular(
+          double.tryParse(r['bottom_right']?.toString() ?? '0') ?? 0,
+        ),
+      );
+    }
+    final val = double.tryParse(style['radius']?.toString() ?? '');
+    if (val != null) return BorderRadius.circular(val);
+    return null;
+  }
+
   EdgeInsets get homeToolbarPadding => _layoutPadding('window_container_home_toolbar') ??
       const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0);
 
@@ -361,4 +386,7 @@ class AppThemeData {
 
   Color get mainContentContentBackground => _layoutBackground('window_container_main_content_content') ??
       const Color(0xFFFFFFFF);
+
+  BorderRadius get mainContentBorderRadius => _layoutBorderRadius('window_container_main_content') ??
+      BorderRadius.zero;
 }
