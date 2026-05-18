@@ -17,7 +17,10 @@ class HomeToolbarButton extends StatefulWidget {
     this.label,
     this.svgPath,
     this.svgSize = 16,
-  });
+  }) : assert(
+         (icon == null) != (svgPath == null),
+         '必须且只能提供 icon 或 svgPath 其中一个',
+       );
 
   const HomeToolbarButton.svg({
     super.key,
