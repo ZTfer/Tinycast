@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/presentation/widgets/organisms/sidebar/sidebar.dart';
 import 'package:tinycast/presentation/features/downloads/downloads.dart';
 import 'package:tinycast/presentation/features/favorite/favorite.dart';
@@ -19,10 +20,13 @@ class Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     final navigationState = ref.watch(navigationProvider);
 
     return Container(
-      color: const Color(0xFFFFFFFF),
+      color: theme.mainContentBackground,
       child: Row(
         children: [
           Sidebar(
@@ -33,7 +37,8 @@ class Body extends ConsumerWidget {
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: theme.mainContentContentPadding,
+              color: theme.mainContentContentBackground,
               alignment: Alignment.topLeft,
               child: _buildContent(navigationState, ref),
             ),
@@ -106,9 +111,7 @@ class Body extends ConsumerWidget {
             ],
           ),
         ),
-        Expanded(
-          child: _buildDetailContent(detail),
-        ),
+        Expanded(child: _buildDetailContent(detail)),
       ],
     );
   }

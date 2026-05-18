@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/presentation/widgets/organisms/home_toolbar/home_toolbar_button.dart';
 import 'package:tinycast/presentation/widgets/organisms/home_toolbar/sleep_dropdown.dart';
 import 'package:tinycast/presentation/features/search/search_page.dart';
@@ -150,16 +151,17 @@ class _HomeToolbarState extends State<HomeToolbar> {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Container 设置背景色和内边距，确保工具栏在视觉上与周围内容区分开
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
+
     return Container(
-      // color: const Color(0xFFFFFFFF), // 白色背景
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      color: theme.homeToolbarBackground,
+      padding: theme.homeToolbarPadding,
       child: Row(
-        mainAxisSize: MainAxisSize.min, // 宽度自适应内容，保持紧凑
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Spacer(), // 占据左侧所有空间
-          // 添加按钮
-          // 用于快速创建新的任务或项目
+          Spacer(),
           HomeToolbarButton(
             icon: const Icon(LucideIcons.search, size: 16),
 
@@ -167,35 +169,15 @@ class _HomeToolbarState extends State<HomeToolbar> {
             key: _searchButtonKey,
           ),
 
-          const SizedBox(width: 8), // 按钮之间的间距
-          // 闹钟/专注按钮
-          // 用于进入定时器功能
+          const SizedBox(width: 8),
           HomeToolbarButton(
             icon: const Icon(
               LucideIcons.alarmClock,
               size: 16,
-            ), // 使用 Lucide 图标库的闹钟图标
-            // label: '闹钟', // 暂时隐藏标签
+            ),
             onPressed: _showDropdown,
             key: _sleepButtonKey,
           ),
-
-          /*
-          // 侧边栏按钮
-          // 用于展开收起窗口，让窗口变成紧凑模式或者展开
-          // 暂时不开发这个功能，先注释掉
-          const SizedBox(width: 8),
-          HomeToolbarButton(
-            icon: const Icon(
-              LucideIcons.panelLeftOpen,
-              size: 16,
-            ), // 使用 Lucide 图标库的侧边栏图标
-            // label: 'Settings', // 暂时隐藏标签
-            onPressed: () {
-              debugPrint('Settings pressed');
-            },
-          ),
-          */
         ],
       ),
     );

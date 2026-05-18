@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'app_theme_config.dart';
@@ -285,4 +285,80 @@ class AppThemeData {
   List<BoxShadow> get shadowSm => AppShadows.sm;
   List<BoxShadow> get shadowMd => AppShadows.md;
   List<BoxShadow> get shadowLg => AppShadows.lg;
+
+  Map<String, dynamic>? _layoutStyle(String path) {
+    if (!_isHocon) return null;
+    final styles = ThemeLoader.cachedWidgetStyles['widgetTextStyles'];
+    if (styles == null) return null;
+
+    final stylesJson = ThemeLoader.cachedWidgetStyles['styles'];
+    if (stylesJson == null) return null;
+
+    final parts = path.split('_');
+    Map<String, dynamic>? current = stylesJson;
+    for (final part in parts) {
+      if (current == null) return null;
+      current = current[part] as Map<String, dynamic>?;
+    }
+    return current;
+  }
+
+  EdgeInsets? _layoutPadding(String path) {
+    final style = _layoutStyle(path);
+    if (style == null) return null;
+    if (style['padding'] is Map<String, dynamic>) {
+      final p = style['padding'] as Map<String, dynamic>;
+      return EdgeInsets.only(
+        top: double.tryParse(p['top']?.toString() ?? '0') ?? 0,
+        bottom: double.tryParse(p['bottom']?.toString() ?? '0') ?? 0,
+        left: double.tryParse(p['left']?.toString() ?? '0') ?? 0,
+        right: double.tryParse(p['right']?.toString() ?? '0') ?? 0,
+      );
+    }
+    final val = double.tryParse(style['padding']?.toString() ?? '');
+    if (val != null) return EdgeInsets.all(val);
+    return null;
+  }
+
+  Color? _layoutBackground(String path) {
+    final style = _layoutStyle(path);
+    if (style == null) return null;
+    final colorStr = style['background']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return null;
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  EdgeInsets get homeToolbarPadding => _layoutPadding('window_container_home_toolbar') ??
+      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0);
+
+  Color get homeToolbarBackground => _layoutBackground('window_container_home_toolbar') ??
+      Colors.transparent;
+
+  EdgeInsets get miniPlayerPadding => _layoutPadding('window_container_mini_player') ??
+      const EdgeInsets.only(top: 8.0);
+
+  Color get miniPlayerBackground => _layoutBackground('window_container_mini_player') ??
+      const Color(0x00FFFFFF);
+
+  EdgeInsets get mainContentPadding => _layoutPadding('window_container_main_content') ??
+      const EdgeInsets.all(12.0);
+
+  Color get mainContentBackground => _layoutBackground('window_container_main_content') ??
+      const Color(0xFFFFFFFF);
+
+  EdgeInsets get mainContentSidebarPadding => _layoutPadding('window_container_main_content_sidebar') ??
+      EdgeInsets.zero;
+
+  Color get mainContentSidebarBackground => _layoutBackground('window_container_main_content_sidebar') ??
+      Colors.transparent;
+
+  EdgeInsets get mainContentContentPadding => _layoutPadding('window_container_main_content_content') ??
+      EdgeInsets.zero;
+
+  Color get mainContentContentBackground => _layoutBackground('window_container_main_content_content') ??
+      const Color(0xFFFFFFFF);
 }
