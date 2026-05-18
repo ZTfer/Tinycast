@@ -245,8 +245,8 @@ Future<void> initSubscribeWindow() async {
     await windowManager.focus();
   });
 
-  await MacosWindowUtils.applyFrostedGlassEffect();
-  await MacosWindowUtils.enableFullSizeContent();
+  await AcrylicWindowUtils.applyFrostedGlassEffect();
+  await AcrylicWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化节目详情窗口
@@ -269,8 +269,8 @@ Future<void> initEpisodeDetailWindow() async {
     await windowManager.focus();
   });
 
-  await MacosWindowUtils.applyFrostedGlassEffect();
-  await MacosWindowUtils.enableFullSizeContent();
+  await AcrylicWindowUtils.applyFrostedGlassEffect();
+  await AcrylicWindowUtils.enableFullSizeContent();
 }
 
 /// 设置窗口应用组件
