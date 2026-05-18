@@ -364,46 +364,62 @@ class AppThemeData {
     return null;
   }
 
-  EdgeInsets get homeToolbarPadding => _layoutPadding('window_container.home_toolbar') ??
+  EdgeInsets get homeToolbarPadding =>
+      _layoutPadding('window_container.home_toolbar') ??
       const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0);
 
-  Color get homeToolbarBackground => _layoutBackground('window_container.home_toolbar') ??
-      Colors.transparent;
+  Color get homeToolbarBackground =>
+      _layoutBackground('window_container.home_toolbar') ?? Colors.transparent;
 
-  EdgeInsets get miniPlayerPadding => _layoutPadding('window_container.mini_player') ??
+  EdgeInsets get miniPlayerPadding =>
+      _layoutPadding('window_container.mini_player') ??
       const EdgeInsets.only(top: 8.0);
 
-  Color get miniPlayerBackground => _layoutBackground('window_container.mini_player') ??
+  Color get miniPlayerBackground =>
+      _layoutBackground('window_container.mini_player') ??
       const Color(0x00FFFFFF);
 
-  EdgeInsets get mainContentPadding => _layoutPadding('window_container.main_content') ??
+  EdgeInsets get mainContentPadding =>
+      _layoutPadding('window_container.main_content') ??
       const EdgeInsets.all(12.0);
 
-  Color get mainContentBackground => _layoutBackground('window_container.main_content') ??
+  Color get mainContentBackground =>
+      _layoutBackground('window_container.main_content') ??
       const Color(0xFFFFFFFF);
 
-  EdgeInsets get mainContentSidebarPadding => _layoutPadding('window_container.main_content.sidebar') ??
+  EdgeInsets get mainContentSidebarPadding =>
+      _layoutPadding('window_container.main_content.sidebar') ??
       EdgeInsets.zero;
 
-  Color get mainContentSidebarBackground => _layoutBackground('window_container.main_content.sidebar') ??
+  Color get mainContentSidebarBackground =>
+      _layoutBackground('window_container.main_content.sidebar') ??
       Colors.transparent;
 
-  EdgeInsets get mainContentContentPadding => _layoutPadding('window_container.main_content.content') ??
+  EdgeInsets get mainContentContentPadding =>
+      _layoutPadding('window_container.main_content.content') ??
       EdgeInsets.zero;
 
-  Color get mainContentContentBackground => _layoutBackground('window_container.main_content.content') ??
+  Color get mainContentContentBackground =>
+      _layoutBackground('window_container.main_content.content') ??
       const Color(0xFFFFFFFF);
 
-  BorderRadius get mainContentBorderRadius => _layoutBorderRadius('window_container.main_content') ??
-      BorderRadius.zero;
+  BorderRadius get mainContentBorderRadius =>
+      _layoutBorderRadius('window_container.main_content') ?? BorderRadius.zero;
 
-  Color? homeToolbarButtonBackground({bool pressed = false, bool hovered = false}) {
+  Color? homeToolbarButtonBackground({
+    bool pressed = false,
+    bool hovered = false,
+  }) {
     if (!_isHocon) return null;
     final style = _layoutStyle('widgets.home_toolbar.home_toolbar_button');
     if (style == null) return null;
     final bg = style['background'] as Map<String, dynamic>?;
     if (bg == null) return null;
-    final key = pressed ? 'pressed' : hovered ? 'hover' : 'default';
+    final key = pressed
+        ? 'pressed'
+        : hovered
+        ? 'hover'
+        : 'default';
     final colorStr = bg[key]?.toString();
     if (colorStr == null || colorStr.isEmpty) return null;
     return Color(
@@ -413,27 +429,33 @@ class AppThemeData {
     );
   }
 
-  Color get homeToolbarButtonDefaultBackground => homeToolbarButtonBackground() ??
-      const Color(0x00F5F5F5);
+  Color get homeToolbarButtonDefaultBackground =>
+      homeToolbarButtonBackground() ?? const Color(0x00F5F5F5);
 
-  Color get homeToolbarButtonHoverBackground => homeToolbarButtonBackground(hovered: true) ??
-      const Color(0xFFF5F5F5);
+  Color get homeToolbarButtonHoverBackground =>
+      homeToolbarButtonBackground(hovered: true) ?? const Color(0xFFF5F5F5);
 
-  Color get homeToolbarButtonPressedBackground => homeToolbarButtonBackground(pressed: true) ??
-      const Color(0xFFE0E0E0);
+  Color get homeToolbarButtonPressedBackground =>
+      homeToolbarButtonBackground(pressed: true) ?? const Color(0xFFE0E0E0);
 
   Color get homeToolbarButtonContentColor {
     if (!_isHocon) return const Color(0xFF000000);
     final style = _layoutStyle('widgets.home_toolbar.home_toolbar_button');
-    if (style == null) return const Color(0xFF000000);
-    final cc = style['content_color'] as Map<String, dynamic>?;
-    if (cc == null) return const Color(0xFF000000);
-    final colorStr = cc['text']?.toString();
-    if (colorStr == null || colorStr.isEmpty) return const Color(0xFF000000);
-    return Color(
-      int.parse(
-        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
-      ),
-    );
+    if (style != null) {
+      final cc = style['content_color'] as Map<String, dynamic>?;
+      if (cc != null) {
+        final colorStr = cc['text']?.toString();
+        if (colorStr != null && colorStr.isNotEmpty) {
+          return Color(
+            int.parse(
+              colorStr.startsWith('#')
+                  ? '0x${colorStr.substring(1)}'
+                  : colorStr,
+            ),
+          );
+        }
+      }
+    }
+    return _config.labelPrimary;
   }
 }
