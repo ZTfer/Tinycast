@@ -44,6 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Trae IDE related
 .trae/log/
 .trae/mcp.json
 
