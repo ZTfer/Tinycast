@@ -288,9 +288,6 @@ class AppThemeData {
 
   Map<String, dynamic>? _layoutStyle(String path) {
     if (!_isHocon) return null;
-    final styles = ThemeLoader.cachedWidgetStyles['widgetTextStyles'];
-    if (styles == null) return null;
-
     final stylesJson = ThemeLoader.cachedWidgetStyles['styles'];
     if (stylesJson == null) return null;
 
@@ -325,11 +322,21 @@ class AppThemeData {
     if (style == null) return null;
     final colorStr = style['background']?.toString();
     if (colorStr == null || colorStr.isEmpty) return null;
-    return Color(
-      int.parse(
-        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
-      ),
-    );
+
+    final int colorInt;
+    if (colorStr.startsWith('#')) {
+      final hex = colorStr.substring(1);
+      if (hex.length == 6) {
+        colorInt = int.parse('0xFF$hex');
+      } else if (hex.length == 8) {
+        colorInt = int.parse('0x$hex');
+      } else {
+        return null;
+      }
+    } else {
+      colorInt = int.parse(colorStr);
+    }
+    return Color(colorInt);
   }
 
   BorderRadius? _layoutBorderRadius(String path) {
