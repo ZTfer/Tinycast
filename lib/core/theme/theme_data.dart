@@ -399,7 +399,7 @@ class AppThemeData {
 
   Color? homeToolbarButtonBackground({bool pressed = false, bool hovered = false}) {
     if (!_isHocon) return null;
-    final style = _layoutStyle('window_container.home_toolbar_button');
+    final style = _layoutStyle('widgets.home_toolbar.home_toolbar_button');
     if (style == null) return null;
     final bg = style['background'] as Map<String, dynamic>?;
     if (bg == null) return null;
@@ -424,7 +424,7 @@ class AppThemeData {
 
   Color get homeToolbarButtonContentColor {
     if (!_isHocon) return const Color(0xFF000000);
-    final style = _layoutStyle('window_container.home_toolbar_button');
+    final style = _layoutStyle('widgets.home_toolbar.home_toolbar_button');
     if (style == null) return const Color(0xFF000000);
     final cc = style['content_color'] as Map<String, dynamic>?;
     if (cc == null) return const Color(0xFF000000);
