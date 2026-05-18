@@ -396,4 +396,44 @@ class AppThemeData {
 
   BorderRadius get mainContentBorderRadius => _layoutBorderRadius('window_container.main_content') ??
       BorderRadius.zero;
+
+  Color? homeToolbarButtonBackground({bool pressed = false, bool hovered = false}) {
+    if (!_isHocon) return null;
+    final style = _layoutStyle('window_container.home_toolbar_button');
+    if (style == null) return null;
+    final bg = style['background'] as Map<String, dynamic>?;
+    if (bg == null) return null;
+    final key = pressed ? 'pressed' : hovered ? 'hover' : 'default';
+    final colorStr = bg[key]?.toString();
+    if (colorStr == null || colorStr.isEmpty) return null;
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  Color get homeToolbarButtonDefaultBackground => homeToolbarButtonBackground() ??
+      const Color(0x00F5F5F5);
+
+  Color get homeToolbarButtonHoverBackground => homeToolbarButtonBackground(hovered: true) ??
+      const Color(0xFFF5F5F5);
+
+  Color get homeToolbarButtonPressedBackground => homeToolbarButtonBackground(pressed: true) ??
+      const Color(0xFFE0E0E0);
+
+  Color get homeToolbarButtonContentColor {
+    if (!_isHocon) return const Color(0xFF000000);
+    final style = _layoutStyle('window_container.home_toolbar_button');
+    if (style == null) return const Color(0xFF000000);
+    final cc = style['content_color'] as Map<String, dynamic>?;
+    if (cc == null) return const Color(0xFF000000);
+    final colorStr = cc['text']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return const Color(0xFF000000);
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
 }
