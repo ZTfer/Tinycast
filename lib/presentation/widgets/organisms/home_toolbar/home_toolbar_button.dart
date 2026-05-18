@@ -19,17 +19,14 @@ class HomeToolbarButton extends StatefulWidget {
     this.svgSize = 16,
   });
 
-  HomeToolbarButton.svg({
+  const HomeToolbarButton.svg({
     super.key,
-    required String svgPath,
+    required this.svgPath,
     double size = 16,
-    required VoidCallback onPressed,
-    String? label,
+    required this.onPressed,
+    this.label,
   }) : icon = null,
-       svgPath = svgPath,
-       svgSize = size,
-       label = label,
-       onPressed = onPressed;
+       svgSize = size;
 
   @override
   State<HomeToolbarButton> createState() => _HomeToolbarButtonState();
