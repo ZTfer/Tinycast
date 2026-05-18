@@ -67,7 +67,7 @@ class AppConfig {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MacosWindowUtils.initialize();
+  await AcrylicWindowUtils.initialize();
 
   // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();

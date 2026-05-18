@@ -1,96 +1,92 @@
-import 'package:macos_window_utils/macos_window_utils.dart';
-import 'package:macos_window_utils/widgets/transparent_macos_sidebar.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-/// macOS 窗口工具类
+import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
+
+/// 跨平台窗口模糊效果工具类
 ///
-/// 封装 macos_window_utils 包的常用功能，提供统一的 macOS 窗口效果管理
-class MacosWindowUtils {
-  /// 初始化 macOS 窗口系统
+/// 封装 flutter_acrylic 包的常用功能，提供统一的窗口效果管理
+/// 支持 macOS、Windows、Linux 三平台
+class AcrylicWindowUtils {
+  /// 初始化窗口系统
   ///
   /// 必须在应用启动时调用，建议在 main() 函数中调用
-  /// [enableWindowDelegate] 是否启用窗口代理，用于监听窗口事件
-  static Future<void> initialize({bool enableWindowDelegate = true}) async {
-    await WindowManipulator.initialize(
-      enableWindowDelegate: enableWindowDelegate,
-    );
+  static Future<void> initialize() async {
+    await Window.initialize();
   }
 
-  /// 应用毛玻璃效果到窗口
+  /// 应用毛玻璃/亚克力效果到窗口
   ///
-  /// 设置窗口的 NSVisualEffectView 材质为 Sidebar 毛玻璃效果
-  /// 这是 macOS 原生的半透明模糊背景效果
+  /// macOS: 使用 sidebar 材质
+  /// Windows: 使用 acrylic 效果
+  /// Linux: 使用 transparent 效果
   static Future<void> applyFrostedGlassEffect() async {
-    await WindowManipulator.setMaterial(NSVisualEffectViewMaterial.sidebar);
+    await Window.setEffect(
+      effect: _getFrostedEffect(),
+      color: Platform.isMacOS ? Colors.transparent : const Color(0x80222222),
+      dark: true,
+    );
   }
 
   /// 应用侧边栏毛玻璃效果
   ///
-  /// 设置窗口材质为背景色，侧边栏使用 TransparentMacOSSidebar 包裹
-  /// 适用于主窗口有侧边栏的场景
+  /// macOS: 使用 windowBackground 材质
+  /// Windows/Linux: 使用 transparent 效果
   static Future<void> applySidebarFrostedEffect() async {
-    await WindowManipulator.setMaterial(
-      NSVisualEffectViewMaterial.windowBackground,
+    await Window.setEffect(
+      effect: Platform.isMacOS
+          ? WindowEffect.windowBackground
+          : WindowEffect.transparent,
+      color: Colors.transparent,
     );
   }
 
   /// 移除窗口毛玻璃效果
-  ///
-  /// 恢复窗口默认背景颜色
   static Future<void> removeFrostedGlassEffect() async {
-    await WindowManipulator.setWindowBackgroundColorToDefaultColor();
+    await Window.setEffect(
+      effect: WindowEffect.disabled,
+    );
   }
 
   /// 设置窗口背景为透明
-  ///
-  /// 使窗口背景完全透明，配合毛玻璃效果使用
   static Future<void> setTransparentBackground() async {
-    await WindowManipulator.setWindowBackgroundColorToClear();
+    await Window.setEffect(
+      effect: WindowEffect.transparent,
+      color: Colors.transparent,
+    );
   }
 
   /// 启用全尺寸内容视图
   ///
-  /// 允许 Flutter 内容绘制到标题栏区域
-  /// 通常与 makeTitlebarTransparent() 配合使用
+  /// 允许内容绘制到标题栏区域
+  /// 仅 macOS 有效
   static Future<void> enableFullSizeContent() async {
-    await WindowManipulator.enableFullSizeContentView();
-    await WindowManipulator.makeTitlebarTransparent();
+    if (Platform.isMacOS) {
+      await Window.enableFullSizeContentView();
+      await Window.makeTitlebarTransparent();
+    }
   }
 
   /// 禁用全尺寸内容视图
-  ///
-  /// 恢复默认的窗口内容视图行为
   static Future<void> disableFullSizeContent() async {
-    await WindowManipulator.disableFullSizeContentView();
-    await WindowManipulator.makeTitlebarOpaque();
+    if (Platform.isMacOS) {
+      await Window.disableFullSizeContentView();
+      await Window.makeTitlebarOpaque();
+    }
   }
 
   /// 配置窗口为透明标题栏样式
-  ///
-  /// 结合毛玻璃效果和透明标题栏，创建现代化的 macOS 窗口外观
   static Future<void> configureTransparentWindow() async {
     await applyFrostedGlassEffect();
     await enableFullSizeContent();
   }
 
-  /// 窗口居中显示
-  static Future<void> centerWindow() async {
-    await WindowManipulator.centerWindow();
-  }
-}
-
-/// macOS 毛玻璃侧边栏组件
-///
-/// 包装侧边栏 Widget 以应用 macOS 原生毛玻璃效果
-/// 当窗口使用 applySidebarFrostedEffect() 时应当使用此组件包裹侧边栏
-class MacosFrostedSidebar extends StatelessWidget {
-  final Widget child;
-
-  const MacosFrostedSidebar({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return TransparentMacOSSidebar(child: child);
+  /// 根据平台获取最佳毛玻璃效果
+  static WindowEffect _getFrostedEffect() {
+    if (Platform.isWindows) {
+      return WindowEffect.mica;
+    }
+    return WindowEffect.sidebar;
   }
 }
 
@@ -98,13 +94,17 @@ class MacosFrostedSidebar extends StatelessWidget {
 ///
 /// 确保内容不会被系统标题栏遮挡
 /// 当启用全尺寸内容视图时应当在顶层使用此组件
-class MacosTitlebarSafeArea extends StatelessWidget {
+/// 仅 macOS 平台有效，其他平台直接返回 child
+class AcrylicTitlebarSafeArea extends StatelessWidget {
   final Widget child;
 
-  const MacosTitlebarSafeArea({super.key, required this.child});
+  const AcrylicTitlebarSafeArea({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return TitlebarSafeArea(child: child);
+    if (Platform.isMacOS) {
+      return TitlebarSafeArea(child: child);
+    }
+    return child;
   }
 }

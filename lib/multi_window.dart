@@ -197,8 +197,8 @@ Future<void> initMainWindow() async {
     await windowManager.focus();
   });
 
-  await MacosWindowUtils.applyFrostedGlassEffect();
-  await MacosWindowUtils.enableFullSizeContent();
+  await AcrylicWindowUtils.applyFrostedGlassEffect();
+  await AcrylicWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化设置窗口
@@ -221,8 +221,8 @@ Future<void> initSettingsWindow() async {
     await windowManager.focus();
   });
 
-  await MacosWindowUtils.applyFrostedGlassEffect();
-  await MacosWindowUtils.enableFullSizeContent();
+  await AcrylicWindowUtils.applyFrostedGlassEffect();
+  await AcrylicWindowUtils.enableFullSizeContent();
 }
 
 /// 初始化订阅窗口
