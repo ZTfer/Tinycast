@@ -291,7 +291,7 @@ class AppThemeData {
     final stylesJson = ThemeLoader.cachedWidgetStyles['styles'];
     if (stylesJson == null) return null;
 
-    final parts = path.split('_');
+    final parts = path.split('.');
     Map<String, dynamic>? current = stylesJson;
     for (final part in parts) {
       if (current == null) return null;
@@ -364,36 +364,36 @@ class AppThemeData {
     return null;
   }
 
-  EdgeInsets get homeToolbarPadding => _layoutPadding('window_container_home_toolbar') ??
+  EdgeInsets get homeToolbarPadding => _layoutPadding('window_container.home_toolbar') ??
       const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0);
 
-  Color get homeToolbarBackground => _layoutBackground('window_container_home_toolbar') ??
+  Color get homeToolbarBackground => _layoutBackground('window_container.home_toolbar') ??
       Colors.transparent;
 
-  EdgeInsets get miniPlayerPadding => _layoutPadding('window_container_mini_player') ??
+  EdgeInsets get miniPlayerPadding => _layoutPadding('window_container.mini_player') ??
       const EdgeInsets.only(top: 8.0);
 
-  Color get miniPlayerBackground => _layoutBackground('window_container_mini_player') ??
+  Color get miniPlayerBackground => _layoutBackground('window_container.mini_player') ??
       const Color(0x00FFFFFF);
 
-  EdgeInsets get mainContentPadding => _layoutPadding('window_container_main_content') ??
+  EdgeInsets get mainContentPadding => _layoutPadding('window_container.main_content') ??
       const EdgeInsets.all(12.0);
 
-  Color get mainContentBackground => _layoutBackground('window_container_main_content') ??
+  Color get mainContentBackground => _layoutBackground('window_container.main_content') ??
       const Color(0xFFFFFFFF);
 
-  EdgeInsets get mainContentSidebarPadding => _layoutPadding('window_container_main_content_sidebar') ??
+  EdgeInsets get mainContentSidebarPadding => _layoutPadding('window_container.main_content.sidebar') ??
       EdgeInsets.zero;
 
-  Color get mainContentSidebarBackground => _layoutBackground('window_container_main_content_sidebar') ??
+  Color get mainContentSidebarBackground => _layoutBackground('window_container.main_content.sidebar') ??
       Colors.transparent;
 
-  EdgeInsets get mainContentContentPadding => _layoutPadding('window_container_main_content_content') ??
+  EdgeInsets get mainContentContentPadding => _layoutPadding('window_container.main_content.content') ??
       EdgeInsets.zero;
 
-  Color get mainContentContentBackground => _layoutBackground('window_container_main_content_content') ??
+  Color get mainContentContentBackground => _layoutBackground('window_container.main_content.content') ??
       const Color(0xFFFFFFFF);
 
-  BorderRadius get mainContentBorderRadius => _layoutBorderRadius('window_container_main_content') ??
+  BorderRadius get mainContentBorderRadius => _layoutBorderRadius('window_container.main_content') ??
       BorderRadius.zero;
 }
