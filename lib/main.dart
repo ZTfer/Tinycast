@@ -153,6 +153,9 @@ class MyApp extends StatelessWidget {
       },
       textStyle: TextStyle(
         fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+        color: const Color(0xFF000000),
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
       ),
       home: const HomePage(),
       builder: (context, child) {
