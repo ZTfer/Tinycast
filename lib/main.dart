@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/multi_window.dart';
-import 'package:tinycast/macos_window_utils.dart';
+import 'package:tinycast/window_utils.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
@@ -67,7 +67,7 @@ class AppConfig {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AcrylicWindowUtils.initialize();
+  await WindowUtils.initialize();
 
   // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();

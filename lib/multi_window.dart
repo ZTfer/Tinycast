@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
@@ -7,7 +8,7 @@ import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/episode_detail/episode_detail.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:tinycast/macos_window_utils.dart';
+import 'package:tinycast/window_utils.dart';
 
 /// 窗口参数类
 ///
@@ -186,19 +187,19 @@ Future<void> initMainWindow() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(400, 800),
+    size: Size(400, 750),
     center: true,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
-    backgroundColor: const Color(0x00000000),
+    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });
 
-  await AcrylicWindowUtils.applyFrostedGlassEffect();
-  await AcrylicWindowUtils.enableFullSizeContent();
+  await WindowUtils.applyFrostedGlassEffect();
+  await WindowUtils.enableFullSizeContent();
 }
 
 /// 初始化设置窗口
@@ -212,7 +213,7 @@ Future<void> initSettingsWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 380),
     center: true,
-    backgroundColor: const Color(0x00000000),
+    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -221,8 +222,8 @@ Future<void> initSettingsWindow() async {
     await windowManager.focus();
   });
 
-  await AcrylicWindowUtils.applyFrostedGlassEffect();
-  await AcrylicWindowUtils.enableFullSizeContent();
+  await WindowUtils.applyFrostedGlassEffect();
+  await WindowUtils.enableFullSizeContent();
 }
 
 /// 初始化订阅窗口
@@ -236,7 +237,7 @@ Future<void> initSubscribeWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(500, 600),
     center: true,
-    backgroundColor: const Color(0x00000000),
+    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -245,8 +246,8 @@ Future<void> initSubscribeWindow() async {
     await windowManager.focus();
   });
 
-  await AcrylicWindowUtils.applyFrostedGlassEffect();
-  await AcrylicWindowUtils.enableFullSizeContent();
+  await WindowUtils.applyFrostedGlassEffect();
+  await WindowUtils.enableFullSizeContent();
 }
 
 /// 初始化节目详情窗口
@@ -260,7 +261,7 @@ Future<void> initEpisodeDetailWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 700),
     center: true,
-    backgroundColor: const Color(0x00000000),
+    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -269,8 +270,8 @@ Future<void> initEpisodeDetailWindow() async {
     await windowManager.focus();
   });
 
-  await AcrylicWindowUtils.applyFrostedGlassEffect();
-  await AcrylicWindowUtils.enableFullSizeContent();
+  await WindowUtils.applyFrostedGlassEffect();
+  await WindowUtils.enableFullSizeContent();
 }
 
 /// 设置窗口应用组件
@@ -304,7 +305,7 @@ class SettingsWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0xFFFFFFFF),
+            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
@@ -343,7 +344,7 @@ class SubscribeWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0x00000000),
+            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
@@ -386,7 +387,7 @@ class EpisodeDetailWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Container(
             padding: const EdgeInsets.all(12.0),
-            color: const Color(0x00000000),
+            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
             child: child ?? const SizedBox(),
           ),
         );
