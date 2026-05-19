@@ -151,14 +151,14 @@ class MyApp extends StatelessWidget {
         );
       },
       textStyle: const TextStyle(
-        fontFamily: 'PingFang SC',
         fontFamilyFallback: [
-          'PingFang SC',
-          'Noto Sans SC',
-          'Roboto',
-          'Heiti SC',
-          'Microsoft YaHei',
-          'sans-serif',
+          'PingFang SC', // macOS
+          'Microsoft YaHei', // Windows
+          'Noto Sans CJK SC', // Linux
+          'Noto Sans SC', // Android
+          'Heiti SC', // macOS 旧版本
+          'Roboto', // 默认西文字体
+          'sans-serif', // 最终回退
         ],
         color: Color(0xFF000000),
         fontSize: 16,
