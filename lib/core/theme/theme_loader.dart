@@ -145,7 +145,14 @@ class HoconParser {
       } else if (token is _KeyToken) {
         keys.add(token.key);
       } else if (token is _KeyValueToken) {
-        stack.last[token.key] = _stripQuotes(token.value);
+        if (token.value == '{') {
+          final newMap = <String, dynamic>{};
+          stack.last[token.key] = newMap;
+          stack.add(newMap);
+          keys.add(token.key);
+        } else {
+          stack.last[token.key] = _stripQuotes(token.value);
+        }
       }
       i++;
     }
@@ -212,6 +219,17 @@ class HoconParser {
   }
 
   static Map<String, dynamic> _resolveReferences(Map<String, dynamic> root) {
+    _debug('=== _resolveReferences START ===');
+    _debug('root keys: ${root.keys.toList()}');
+    if (root.containsKey('widgets')) {
+      final w = root['widgets'] as Map<String, dynamic>;
+      _debug('widgets keys: ${w.keys.toList()}');
+      for (final e in w.entries) {
+        if (e.value is Map<String, dynamic>) {
+          _debug('  ${e.key} keys: ${(e.value as Map).keys.toList()}');
+        }
+      }
+    }
     return _resolveRefsInMap(root, root, null);
   }
 
