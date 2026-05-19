@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
+import 'package:tinycast/core/theme/theme_data.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 class PlayPauseButton extends ConsumerWidget {
@@ -36,6 +38,9 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
@@ -51,7 +56,7 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
               : Duration.zero,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: _getBackgroundColor(),
+            color: _getBackgroundColor(theme),
             borderRadius: BorderRadius.circular(50.0),
           ),
           child: SvgPicture.asset(
@@ -60,8 +65,8 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
                 : 'assets/gravity_icons/play-fill.svg',
             width: 24,
             height: 24,
-            colorFilter: const ColorFilter.mode(
-              Color(0xFF000000),
+            colorFilter: ColorFilter.mode(
+              _getContentColor(theme),
               BlendMode.srcIn,
             ),
           ),
@@ -70,9 +75,13 @@ class _PlayPauseButtonContentState extends State<_PlayPauseButtonContent> {
     );
   }
 
-  Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0xFFE0E0E0);
-    if (_isHovering) return const Color(0xFFF5F5F5);
-    return const Color(0x00F5F5F5);
+  Color _getBackgroundColor(AppThemeData theme) {
+    if (_isPressed) return theme.playPauseButtonPressedBackground;
+    if (_isHovering) return theme.playPauseButtonHoverBackground;
+    return theme.playPauseButtonDefaultBackground;
+  }
+
+  Color _getContentColor(AppThemeData theme) {
+    return theme.playPauseButtonContentColor;
   }
 }

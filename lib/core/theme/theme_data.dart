@@ -597,13 +597,13 @@ class AppThemeData {
 
   // ===== Mini Player: Episode Control Bar =====
 
-  Color? _episodeControlBarButtonBackground({
+  Color? _episodeControlButtonBackground({
     bool pressed = false,
     bool hovered = false,
   }) {
     if (!_isHocon) return null;
     final style = _layoutStyle(
-      'widgets.mini_player.episode_control_bar.button',
+      'widgets.mini_player.episode_control_bar.control_button',
     );
     if (style == null) return null;
     final bg = style['background'] as Map<String, dynamic>?;
@@ -622,21 +622,78 @@ class AppThemeData {
     );
   }
 
-  Color get episodeControlBarButtonDefaultBackground =>
-      _episodeControlBarButtonBackground() ?? const Color(0x00F5F5F5);
+  Color get episodeControlButtonDefaultBackground =>
+      _episodeControlButtonBackground() ?? const Color(0x00F5F5F5);
 
-  Color get episodeControlBarButtonHoverBackground =>
-      _episodeControlBarButtonBackground(hovered: true) ??
-      const Color(0xFFF5F5F5);
+  Color get episodeControlButtonHoverBackground =>
+      _episodeControlButtonBackground(hovered: true) ?? const Color(0xFFF5F5F5);
 
-  Color get episodeControlBarButtonPressedBackground =>
-      _episodeControlBarButtonBackground(pressed: true) ??
-      const Color(0xFFE0E0E0);
+  Color get episodeControlButtonPressedBackground =>
+      _episodeControlButtonBackground(pressed: true) ?? const Color(0xFFE0E0E0);
 
-  Color get episodeControlBarButtonContentColor {
+  Color get episodeControlButtonContentColor {
     if (!_isHocon) return const Color(0xFF000000);
     final style = _layoutStyle(
-      'widgets.mini_player.episode_control_bar.button',
+      'widgets.mini_player.episode_control_bar.control_button',
+    );
+    if (style != null) {
+      final cc = style['content_color'] as Map<String, dynamic>?;
+      if (cc != null) {
+        final colorStr = cc['text']?.toString();
+        if (colorStr != null && colorStr.isNotEmpty) {
+          return Color(
+            int.parse(
+              colorStr.startsWith('#')
+                  ? '0x${colorStr.substring(1)}'
+                  : colorStr,
+            ),
+          );
+        }
+      }
+    }
+    return _config.labelPrimary;
+  }
+
+  // ===== Mini Player: Play/Pause Button =====
+
+  Color? _playPauseButtonBackground({
+    bool pressed = false,
+    bool hovered = false,
+  }) {
+    if (!_isHocon) return null;
+    final style = _layoutStyle(
+      'widgets.mini_player.episode_control_bar.play_pause_button',
+    );
+    if (style == null) return null;
+    final bg = style['background'] as Map<String, dynamic>?;
+    if (bg == null) return null;
+    final key = pressed
+        ? 'pressed'
+        : hovered
+        ? 'hover'
+        : 'default';
+    final colorStr = bg[key]?.toString();
+    if (colorStr == null || colorStr.isEmpty) return null;
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  Color get playPauseButtonDefaultBackground =>
+      _playPauseButtonBackground() ?? const Color(0x00F5F5F5);
+
+  Color get playPauseButtonHoverBackground =>
+      _playPauseButtonBackground(hovered: true) ?? const Color(0xFFF5F5F5);
+
+  Color get playPauseButtonPressedBackground =>
+      _playPauseButtonBackground(pressed: true) ?? const Color(0xFFE0E0E0);
+
+  Color get playPauseButtonContentColor {
+    if (!_isHocon) return const Color(0xFF000000);
+    final style = _layoutStyle(
+      'widgets.mini_player.episode_control_bar.play_pause_button',
     );
     if (style != null) {
       final cc = style['content_color'] as Map<String, dynamic>?;

@@ -83,12 +83,12 @@ class _EpisodeControlButtonState extends State<EpisodeControlButton> {
   }
 
   Color _getBackgroundColor(AppThemeData theme) {
-    if (_isPressed) return theme.episodeControlBarButtonPressedBackground;
-    if (_isHovering) return theme.episodeControlBarButtonHoverBackground;
-    return theme.episodeControlBarButtonDefaultBackground;
+    if (_isPressed) return theme.episodeControlButtonPressedBackground;
+    if (_isHovering) return theme.episodeControlButtonHoverBackground;
+    return theme.episodeControlButtonDefaultBackground;
   }
 
   Color _getContentColor(AppThemeData theme) {
-    return theme.episodeControlBarButtonContentColor;
+    return theme.episodeControlButtonContentColor;
   }
 }
