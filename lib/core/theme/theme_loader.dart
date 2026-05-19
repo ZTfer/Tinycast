@@ -40,9 +40,17 @@ class HoconParser {
       if (hasOpenBrace) {
         final before = line.substring(0, line.indexOf('{')).trim();
         if (before.isNotEmpty) {
-          tokens.add(_KeyToken(before));
+          // Check if this is 'key = {' (value opener) vs 'key {' (scope opener)
+          final kv = RegExp(r'^([\w-]+)\s*=\s*$').firstMatch(before);
+          if (kv != null) {
+            tokens.add(_KeyValueToken(kv.group(1)!, '{'));
+          } else {
+            tokens.add(_KeyToken(before));
+            tokens.add(_OpenBraceToken());
+          }
+        } else {
+          tokens.add(_OpenBraceToken());
         }
-        tokens.add(_OpenBraceToken());
 
         final after = line.substring(line.indexOf('{') + 1).trim();
         if (after.isNotEmpty && !after.startsWith('}')) {
