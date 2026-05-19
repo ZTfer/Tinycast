@@ -429,6 +429,39 @@ class AppThemeData {
     );
   }
 
+  bool get dividerVisible {
+    final style = _layoutStyle('window_container.divider');
+    if (style == null) return true;
+    final show = style['show'];
+    if (show is bool) return show;
+    if (show is String) return show.toLowerCase() == 'true';
+    return true;
+  }
+
+  double get dividerHeight {
+    final style = _layoutStyle('window_container.divider');
+    if (style == null) return 0.5;
+    return double.tryParse(style['height']?.toString() ?? '0.5') ?? 0.5;
+  }
+
+  double get dividerThickness {
+    final style = _layoutStyle('window_container.divider');
+    if (style == null) return 0.5;
+    return double.tryParse(style['thickness']?.toString() ?? '0.5') ?? 0.5;
+  }
+
+  Color get dividerColor {
+    final style = _layoutStyle('window_container.divider');
+    if (style == null) return const Color(0xFFCCCCCC);
+    final colorStr = style['color']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return const Color(0xFFCCCCCC);
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
   Color get homeToolbarButtonDefaultBackground =>
       homeToolbarButtonBackground() ?? const Color(0x00F5F5F5);
 
