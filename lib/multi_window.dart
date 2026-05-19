@@ -6,6 +6,7 @@ import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';
 import 'package:tinycast/presentation/features/subscribe/subscribe.dart';
 import 'package:tinycast/presentation/features/episode_detail/episode_detail.dart';
+import 'package:tinycast/presentation/widgets/common/window_controls.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:tinycast/window_utils.dart';
@@ -303,10 +304,17 @@ class SettingsWindowApp extends StatelessWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: Container(
-            padding: const EdgeInsets.all(12.0),
-            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
-            child: child ?? const SizedBox(),
+          child: Column(
+            children: [
+              if (Platform.isWindows) const WindowControls(title: 'Settings'),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12.0),
+                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  child: child ?? const SizedBox(),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -342,10 +350,17 @@ class SubscribeWindowApp extends StatelessWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: Container(
-            padding: const EdgeInsets.all(12.0),
-            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
-            child: child ?? const SizedBox(),
+          child: Column(
+            children: [
+              if (Platform.isWindows) const WindowControls(title: 'Subscribe'),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12.0),
+                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  child: child ?? const SizedBox(),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -385,10 +400,17 @@ class EpisodeDetailWindowApp extends StatelessWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: Container(
-            padding: const EdgeInsets.all(12.0),
-            color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
-            child: child ?? const SizedBox(),
+          child: Column(
+            children: [
+              if (Platform.isWindows) const WindowControls(title: 'Episode Detail'),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12.0),
+                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  child: child ?? const SizedBox(),
+                ),
+              ),
+            ],
           ),
         );
       },
