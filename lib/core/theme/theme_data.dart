@@ -79,7 +79,7 @@ class AppThemeData {
       fontSize: double.tryParse(style['fontsize']?.toString() ?? '14.0'),
       fontWeight: style['fontweight'] != null
           ? FontWeight.values.firstWhere(
-              (w) => w.toString() == 'FontWeight.${style['fontweight']}',
+              (w) => w.toString() == 'FontWeight.w${style['fontweight']}',
               orElse: () => FontWeight.normal,
             )
           : null,
