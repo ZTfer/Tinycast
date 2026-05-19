@@ -1,0 +1,85 @@
+# ===========================================
+# 1. 统一换行符规范（关键！）
+# ===========================================
+# 所有文本文件强制使用 LF 换行符（Git 标准）
+* text=auto eol=lf
+
+# 显式声明二进制文件（避免 Git 错误转换）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.dll binary
+*.exe binary
+*.dylib binary
+*.so binary
+
+# ===========================================
+# 2. Windows 脚本文件使用 CRLF
+# ===========================================
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ===========================================
+# 3. 源代码和配置文件（确保 UTF-8 + LF）
+# ===========================================
+*.dart text eol=lf charset=utf-8
+*.kt text eol=lf charset=utf-8
+*.swift text eol=lf charset=utf-8
+*.java text eol=lf charset=utf-8
+
+*.yaml text eol=lf charset=utf-8
+*.yml text eol=lf charset=utf-8
+*.json text eol=lf charset=utf-8
+*.xml text eol=lf charset=utf-8
+*.toml text eol=lf charset=utf-8
+*.ini text eol=lf charset=utf-8
+*.conf text eol=lf charset=utf-8
+*.cfg text eol=lf charset=utf-8
+
+*.md text eol=lf charset=utf-8
+*.txt text eol=lf charset=utf-8
+*.rst text eol=lf charset=utf-8
+
+*.html text eol=lf charset=utf-8
+*.css text eol=lf charset=utf-8
+*.scss text eol=lf charset=utf-8
+*.js text eol=lf charset=utf-8
+*.ts text eol=lf charset=utf-8
+*.tsx text eol=lf charset=utf-8
+*.jsx text eol=lf charset=utf-8
+
+# Shell 脚本保持 LF（Unix 标准）
+*.sh text eol=lf charset=utf-8
+*.bash text eol=lf charset=utf-8
+*.zsh text eol=lf charset=utf-8
+*.fish text eol=lf charset=utf-8
+
+# ===========================================
+# 4. 忽略文件（不纳入版本控制）
+# ===========================================
+# IDE 和编辑器
+.vscode/* linguist-generated=true
+.idea/* linguist-generated=true
+
+# 构建输出
+/build/ -text
+/.dart_tool/ -text
+/.pub-cache/ -text
