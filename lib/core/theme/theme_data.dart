@@ -62,6 +62,35 @@ class AppThemeData {
 
   AppThemeConfig get _config => ThemeLoader.cachedThemeConfigs[_brightnessKey]!;
 
+  TextStyle? _parseTextStyle(String path) {
+    if (!_isHocon) return null;
+    final style = _layoutStyle(path);
+    if (style == null) return null;
+    final colorStr = style['color']?.toString();
+    Color? color;
+    if (colorStr != null && colorStr.isNotEmpty) {
+      color = Color(
+        int.parse(
+          colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+        ),
+      );
+    }
+    return TextStyle(
+      fontSize: double.tryParse(style['fontsize']?.toString() ?? '14.0'),
+      fontWeight: style['fontweight'] != null
+          ? FontWeight.values.firstWhere(
+              (w) => w.toString() == 'FontWeight.${style['fontweight']}',
+              orElse: () => FontWeight.normal,
+            )
+          : null,
+      letterSpacing: double.tryParse(
+        style['letterspacing']?.toString() ?? '0.0',
+      ),
+      height: double.tryParse(style['lineheight']?.toString() ?? '1.0'),
+      color: color,
+    );
+  }
+
   TextStyle? _widgetTextStyle(String key) {
     if (!_isHocon) return null;
     final styles = ThemeLoader.cachedWidgetStyles['textStyles'];
@@ -491,4 +520,198 @@ class AppThemeData {
     }
     return _config.labelPrimary;
   }
+
+  // ===== Mini Player: Episode Info =====
+
+  Map<String, dynamic>? _episodeInfoStyle() {
+    if (!_isHocon) return null;
+    return _layoutStyle('widgets.mini_player.episode_info');
+  }
+
+  double get episodeInfoCoverWidth {
+    final style = _episodeInfoStyle();
+    if (style == null) return 54.0;
+    final cover = style['cover'] as Map<String, dynamic>?;
+    if (cover == null) return 54.0;
+    return double.tryParse(cover['width']?.toString() ?? '54.0') ?? 54.0;
+  }
+
+  double get episodeInfoCoverHeight {
+    final style = _episodeInfoStyle();
+    if (style == null) return 54.0;
+    final cover = style['cover'] as Map<String, dynamic>?;
+    if (cover == null) return 54.0;
+    return double.tryParse(cover['height']?.toString() ?? '54.0') ?? 54.0;
+  }
+
+  double get episodeInfoCoverBorderRadius {
+    final style = _episodeInfoStyle();
+    if (style == null) return 8.0;
+    final cover = style['cover'] as Map<String, dynamic>?;
+    if (cover == null) return 8.0;
+    return double.tryParse(cover['borderRadius']?.toString() ?? '8.0') ?? 8.0;
+  }
+
+  BoxFit get episodeInfoCoverFit {
+    final style = _episodeInfoStyle();
+    if (style == null) return BoxFit.cover;
+    final cover = style['cover'] as Map<String, dynamic>?;
+    if (cover == null) return BoxFit.cover;
+    final fitStr = cover['fit']?.toString();
+    if (fitStr == null) return BoxFit.cover;
+    switch (fitStr) {
+      case 'BoxFit.cover':
+        return BoxFit.cover;
+      case 'BoxFit.contain':
+        return BoxFit.contain;
+      case 'BoxFit.fill':
+        return BoxFit.fill;
+      case 'BoxFit.fitHeight':
+        return BoxFit.fitHeight;
+      case 'BoxFit.fitWidth':
+        return BoxFit.fitWidth;
+      case 'BoxFit.scaleDown':
+        return BoxFit.scaleDown;
+      case 'BoxFit.none':
+        return BoxFit.none;
+      default:
+        return BoxFit.cover;
+    }
+  }
+
+  TextStyle get episodeInfoEpisodeTitle =>
+      _parseTextStyle('widgets.mini_player.episode_info.episode_title') ??
+      const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF333333),
+      );
+
+  TextStyle get episodeInfoPodcastTitle =>
+      _parseTextStyle('widgets.mini_player.episode_info.podcast_title') ??
+      const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+        color: Color(0xFF888888),
+      );
+
+  // ===== Mini Player: Episode Control Bar =====
+
+  Color? _episodeControlBarButtonBackground({
+    bool pressed = false,
+    bool hovered = false,
+  }) {
+    if (!_isHocon) return null;
+    final style = _layoutStyle(
+      'widgets.mini_player.episode_control_bar.button',
+    );
+    if (style == null) return null;
+    final bg = style['background'] as Map<String, dynamic>?;
+    if (bg == null) return null;
+    final key = pressed
+        ? 'pressed'
+        : hovered
+        ? 'hover'
+        : 'default';
+    final colorStr = bg[key]?.toString();
+    if (colorStr == null || colorStr.isEmpty) return null;
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  Color get episodeControlBarButtonDefaultBackground =>
+      _episodeControlBarButtonBackground() ?? const Color(0x00F5F5F5);
+
+  Color get episodeControlBarButtonHoverBackground =>
+      _episodeControlBarButtonBackground(hovered: true) ??
+      const Color(0xFFF5F5F5);
+
+  Color get episodeControlBarButtonPressedBackground =>
+      _episodeControlBarButtonBackground(pressed: true) ??
+      const Color(0xFFE0E0E0);
+
+  Color get episodeControlBarButtonContentColor {
+    if (!_isHocon) return const Color(0xFF000000);
+    final style = _layoutStyle(
+      'widgets.mini_player.episode_control_bar.button',
+    );
+    if (style != null) {
+      final cc = style['content_color'] as Map<String, dynamic>?;
+      if (cc != null) {
+        final colorStr = cc['text']?.toString();
+        if (colorStr != null && colorStr.isNotEmpty) {
+          return Color(
+            int.parse(
+              colorStr.startsWith('#')
+                  ? '0x${colorStr.substring(1)}'
+                  : colorStr,
+            ),
+          );
+        }
+      }
+    }
+    return _config.labelPrimary;
+  }
+
+  // ===== Mini Player: Episode Progress Bar =====
+
+  Map<String, dynamic>? _progressBarStyle() {
+    if (!_isHocon) return null;
+    return _layoutStyle('widgets.mini_player.episode_progress_bar');
+  }
+
+  double get episodeProgressTrackHeight {
+    final style = _progressBarStyle();
+    if (style == null) return 3.0;
+    return double.tryParse(style['track_height']?.toString() ?? '3.0') ?? 3.0;
+  }
+
+  double get episodeProgressThumbRadius {
+    final style = _progressBarStyle();
+    if (style == null) return 6.0;
+    return double.tryParse(style['thumb_radius']?.toString() ?? '6.0') ?? 6.0;
+  }
+
+  Color get episodeProgressTrackColor {
+    final style = _progressBarStyle();
+    if (style == null) return const Color(0xFFE0E0E0);
+    final colorStr = style['track_color']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return const Color(0xFFE0E0E0);
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  Color get episodeProgressProgressColor {
+    final style = _progressBarStyle();
+    if (style == null) return const Color(0xFF333333);
+    final colorStr = style['progress_color']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return const Color(0xFF333333);
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  Color get episodeProgressThumbColor {
+    final style = _progressBarStyle();
+    if (style == null) return const Color(0xFF333333);
+    final colorStr = style['thumb_color']?.toString();
+    if (colorStr == null || colorStr.isEmpty) return const Color(0xFF333333);
+    return Color(
+      int.parse(
+        colorStr.startsWith('#') ? '0x${colorStr.substring(1)}' : colorStr,
+      ),
+    );
+  }
+
+  TextStyle get episodeProgressTimeLabelStyle =>
+      _parseTextStyle('widgets.mini_player.episode_progress_bar.time_label') ??
+      const TextStyle(fontSize: 11, color: Color(0xFF999999));
 }

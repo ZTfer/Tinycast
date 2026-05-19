@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 
 /// 音频播放进度条
 ///
@@ -104,9 +105,11 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     final effectiveTimeLabelStyle =
-        widget.timeLabelStyle ??
-        const TextStyle(fontSize: 11, color: Color(0xFF999999));
+        widget.timeLabelStyle ?? theme.episodeProgressTimeLabelStyle;
 
     final displayPosition = _isDragging
         ? _progressToDuration(_dragValue)
@@ -117,13 +120,11 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 进度条轨道区域
           MouseRegion(
             cursor: SystemMouseCursors.click,
             onEnter: (_) => setState(() => _isHovering = true),
             onExit: (_) => setState(() => _isHovering = false),
             child: GestureDetector(
-              // 点击跳转到对应位置
               onTapDown: (details) {
                 final box = _getTrackRenderBox();
                 if (box == null) return;
@@ -131,7 +132,6 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
                 final progress = _calcProgress(localPos, box.size.width);
                 widget.onSeek?.call(_progressToDuration(progress));
               },
-              // 水平拖动手势 — 开始
               onHorizontalDragStart: (details) {
                 final box = _getTrackRenderBox();
                 if (box == null) return;
@@ -141,7 +141,6 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
                   _dragValue = _calcProgress(localPos, box.size.width);
                 });
               },
-              // 水平拖动手势 — 更新
               onHorizontalDragUpdate: (details) {
                 final box = _getTrackRenderBox();
                 if (box == null) return;
@@ -157,15 +156,21 @@ class _EpisodeProgressState extends State<EpisodeProgress> {
               },
               child: SizedBox(
                 key: _trackKey,
-                height: widget.thumbRadius * 2 + 8, // 足够的触摸/点击区域
+                height: theme.episodeProgressThumbRadius * 2 + 8,
                 child: CustomPaint(
                   painter: _ProgressTrackPainter(
                     progress: _progress,
-                    trackColor: widget.trackColor,
-                    progressColor: widget.progressColor,
-                    thumbColor: widget.thumbColor,
-                    trackHeight: widget.trackHeight,
-                    thumbRadius: widget.thumbRadius,
+                    trackColor: widget.trackColor == const Color(0xFFE0E0E0)
+                        ? theme.episodeProgressTrackColor
+                        : widget.trackColor,
+                    progressColor: widget.progressColor == const Color(0xFF333333)
+                        ? theme.episodeProgressProgressColor
+                        : widget.progressColor,
+                    thumbColor: widget.thumbColor == const Color(0xFF333333)
+                        ? theme.episodeProgressThumbColor
+                        : widget.thumbColor,
+                    trackHeight: theme.episodeProgressTrackHeight,
+                    thumbRadius: theme.episodeProgressThumbRadius,
                     showThumb: _isDragging || _isHovering,
                   ),
                   size: Size.infinite,

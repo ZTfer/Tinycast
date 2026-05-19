@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
+import 'package:tinycast/core/theme/theme_data.dart';
 
 /// 播放集控制按钮
 ///
@@ -42,13 +44,14 @@ class EpisodeControlButton extends StatefulWidget {
 }
 
 class _EpisodeControlButtonState extends State<EpisodeControlButton> {
-  // 记录鼠标是否悬停在按钮上
   bool _isHovering = false;
-  // 记录按钮是否正在被按下
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
@@ -62,15 +65,15 @@ class _EpisodeControlButtonState extends State<EpisodeControlButton> {
           duration: _isHovering
               ? const Duration(milliseconds: 200)
               : Duration.zero,
-          padding: const EdgeInsets.all(8.0), // 稍微调大一点点击区域
+          padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(50.0), // 圆形背景通常适合控制按钮
+            color: _getBackgroundColor(theme),
+            borderRadius: BorderRadius.circular(50.0),
           ),
           child: IconTheme(
             data: IconThemeData(
-              color: _getContentColor(),
-              size: 24, // 默认大小，会被外部传入的 icon size 覆盖
+              color: _getContentColor(theme),
+              size: 24,
             ),
             child: widget.icon,
           ),
@@ -79,15 +82,13 @@ class _EpisodeControlButtonState extends State<EpisodeControlButton> {
     );
   }
 
-  /// 获取按钮背景颜色
-  Color _getBackgroundColor() {
-    if (_isPressed) return const Color(0xFFE0E0E0);
-    if (_isHovering) return const Color(0xFFF5F5F5);
-    return const Color(0x00F5F5F5);
+  Color _getBackgroundColor(AppThemeData theme) {
+    if (_isPressed) return theme.episodeControlBarButtonPressedBackground;
+    if (_isHovering) return theme.episodeControlBarButtonHoverBackground;
+    return theme.episodeControlBarButtonDefaultBackground;
   }
 
-  /// 获取内容颜色
-  Color _getContentColor() {
-    return const Color(0xFF000000);
+  Color _getContentColor(AppThemeData theme) {
+    return theme.episodeControlBarButtonContentColor;
   }
 }
