@@ -4,6 +4,30 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
+  static const List<String> fontFamilyFallback = [
+    'PingFang SC',       // macOS 简体中文
+    'PingFang TC',       // macOS 繁体中文
+    'Hiragino Sans',     // macOS 日文
+    'Microsoft YaHei',   // Windows 中文
+    'Microsoft JhengHei',// Windows 繁体
+    'Yu Gothic',         // Windows 日文
+    'Noto Sans CJK SC',  // Linux 中文
+    'Noto Sans CJK TC',  // Linux 繁体
+    'Noto Sans CJK JP',  // Linux 日文
+    'Noto Sans SC',      // Android 中文
+    'Noto Sans TC',      // Android 繁体
+    'Noto Sans JP',      // Android 日文
+    'Noto Sans KR',      // Android/iOS 韩文
+    'Noto Sans Thai',    // 泰语
+    'Noto Sans Arabic',  // 阿拉伯语
+    'Noto Sans Devanagari', // 印地语
+    'Roboto',            // 默认西文字体 (Android/Linux)
+    'SF Pro',            // Apple 西文字体 (iOS/macOS)
+    'Helvetica Neue',    // macOS 旧版本
+    'Segoe UI',          // Windows
+    'sans-serif',        // 系统默认
+  ];
+
   static const TextStyle h1Light = TextStyle(
     fontSize: 34,
     fontWeight: FontWeight.w700,

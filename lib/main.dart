@@ -13,6 +13,7 @@ import 'package:tinycast/core/theme/theme_loader.dart';
 import 'package:tinycast/core/theme/theme_source_flag.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/core/theme/app_text_styles.dart';
 
 /// 打开节目详情窗口
 ///
@@ -150,17 +151,9 @@ class MyApp extends StatelessWidget {
               builder(context),
         );
       },
-      textStyle: const TextStyle(
-        fontFamilyFallback: [
-          'PingFang SC', // macOS
-          'Microsoft YaHei', // Windows
-          'Noto Sans CJK SC', // Linux
-          'Noto Sans SC', // Android
-          'Heiti SC', // macOS 旧版本
-          'Roboto', // 默认西文字体
-          'sans-serif', // 最终回退
-        ],
-        color: Color(0xFF000000),
+      textStyle: TextStyle(
+        fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+        color: const Color(0xFF000000),
         fontSize: 16,
         fontWeight: FontWeight.normal,
         decoration: TextDecoration.none,
