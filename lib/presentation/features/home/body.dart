@@ -27,6 +27,7 @@ class Body extends ConsumerWidget {
 
     return Container(
       padding: theme.mainContentPadding,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: theme.mainContentBackground,
         borderRadius: theme.mainContentBorderRadius,
