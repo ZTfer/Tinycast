@@ -27,11 +27,7 @@ class Body extends ConsumerWidget {
 
     return Container(
       padding: theme.mainContentPadding,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: theme.mainContentBackground,
-        borderRadius: theme.mainContentBorderRadius,
-      ),
+      color: theme.mainContentBackground,
       child: Row(
         children: [
           Sidebar(
@@ -44,6 +40,11 @@ class Body extends ConsumerWidget {
             child: Container(
               padding: theme.mainContentContentPadding,
               alignment: Alignment.topLeft,
+              decoration: BoxDecoration(
+                color: theme.mainContentContentBackground,
+                borderRadius: theme.mainContentBorderRadius,
+              ),
+              clipBehavior: Clip.antiAlias,
               child: _buildContent(navigationState, ref),
             ),
           ),

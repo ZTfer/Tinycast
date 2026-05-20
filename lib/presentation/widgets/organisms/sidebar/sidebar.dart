@@ -20,7 +20,7 @@ class Sidebar extends StatelessWidget {
     return Container(
       width: 56.5,
       decoration: const BoxDecoration(
-        color: Color(0xFFFFFFFF),
+        color: Color(0x00000000),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
       ),
       child: Row(
