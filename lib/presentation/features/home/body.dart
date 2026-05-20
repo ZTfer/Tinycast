@@ -26,6 +26,7 @@ class Body extends ConsumerWidget {
     final navigationState = ref.watch(navigationProvider);
 
     return Container(
+      padding: theme.mainContentPadding,
       decoration: BoxDecoration(
         color: theme.mainContentBackground,
         borderRadius: theme.mainContentBorderRadius,
