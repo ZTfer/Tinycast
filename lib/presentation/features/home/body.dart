@@ -42,7 +42,7 @@ class Body extends ConsumerWidget {
               alignment: Alignment.topLeft,
               decoration: BoxDecoration(
                 color: theme.mainContentContentBackground,
-                borderRadius: theme.mainContentBorderRadius,
+                borderRadius: theme.mainContentContentBorderRadius,
               ),
               clipBehavior: Clip.antiAlias,
               child: _buildContent(navigationState, ref),

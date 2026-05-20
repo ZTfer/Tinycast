@@ -432,6 +432,10 @@ class AppThemeData {
       _layoutBackground('window_container.main_content.content') ??
       const Color(0xFFFFFFFF);
 
+  BorderRadius get mainContentContentBorderRadius =>
+      _layoutBorderRadius('window_container.main_content.content') ??
+      BorderRadius.zero;
+
   BorderRadius get mainContentBorderRadius {
     final result =
         _layoutBorderRadius('window_container.main_content') ??
