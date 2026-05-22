@@ -27,7 +27,10 @@ class Body extends ConsumerWidget {
 
     return Container(
       padding: theme.mainContentPadding,
-      decoration: BoxDecoration(color: theme.mainContentBackground),
+      decoration: BoxDecoration(
+        color: theme.mainContentBackground,
+        borderRadius: theme.mainContentBorderRadius,
+      ),
       child: Row(
         children: [
           Sidebar(
