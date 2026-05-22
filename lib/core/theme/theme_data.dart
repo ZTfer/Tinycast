@@ -424,13 +424,9 @@ class AppThemeData {
       _layoutPadding('window_container.main_content.content') ??
       EdgeInsets.zero;
 
-  Color get mainContentSidebarBackground {
-    final color =
-        _layoutBackground('window_container.main_content.sidebar') ??
-        const Color(0xFFFFFFFF);
-    debugPrint('[ThemeData] mainContentSidebarBackground: $color');
-    return color;
-  }
+  Color get mainContentSidebarBackground =>
+      _layoutBackground('window_container.main_content.sidebar') ??
+      const Color(0xFFFFFFFF);
 
   Color get mainContentContentBackground =>
       _layoutBackground('window_container.main_content.content') ??
