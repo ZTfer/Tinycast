@@ -25,34 +25,39 @@ class Body extends ConsumerWidget {
     );
     final navigationState = ref.watch(navigationProvider);
 
-    return Container(
-      padding: theme.mainContentPadding,
-      decoration: BoxDecoration(
-        color: theme.mainContentBackground,
-        borderRadius: theme.mainContentBorderRadius,
-      ),
-      child: Row(
-        children: [
-          Sidebar(
-            currentPage: navigationState.currentPage,
-            onPageChanged: (page) {
-              ref.read(navigationProvider.notifier).navigateToPage(page);
-            },
-            backgroundColor: theme.mainContentSidebarBackground,
-          ),
-          Expanded(
-            child: Container(
-              padding: theme.mainContentContentPadding,
-              alignment: Alignment.topLeft,
-              decoration: BoxDecoration(
-                color: theme.mainContentContentBackground,
-                borderRadius: theme.mainContentContentBorderRadius,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: _buildContent(navigationState, ref),
+    final borderRadius = theme.mainContentBorderRadius;
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: Container(
+        padding: theme.mainContentPadding,
+        decoration: BoxDecoration(
+          color: theme.mainContentBackground,
+          borderRadius: borderRadius,
+        ),
+        child: Row(
+          children: [
+            Sidebar(
+              currentPage: navigationState.currentPage,
+              onPageChanged: (page) {
+                ref.read(navigationProvider.notifier).navigateToPage(page);
+              },
+              backgroundColor: theme.mainContentSidebarBackground,
             ),
-          ),
-        ],
+            Expanded(
+              child: Container(
+                padding: theme.mainContentContentPadding,
+                alignment: Alignment.topLeft,
+                decoration: BoxDecoration(
+                  color: theme.mainContentContentBackground,
+                  borderRadius: theme.mainContentContentBorderRadius,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _buildContent(navigationState, ref),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
