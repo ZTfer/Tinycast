@@ -27,7 +27,7 @@ class Body extends ConsumerWidget {
 
     return Container(
       padding: theme.mainContentPadding,
-      color: theme.mainContentBackground,
+      decoration: BoxDecoration(color: theme.mainContentBackground),
       child: Row(
         children: [
           Sidebar(
@@ -35,6 +35,7 @@ class Body extends ConsumerWidget {
             onPageChanged: (page) {
               ref.read(navigationProvider.notifier).navigateToPage(page);
             },
+            backgroundColor: theme.mainContentSidebarBackground,
           ),
           Expanded(
             child: Container(

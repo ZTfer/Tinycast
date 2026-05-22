@@ -8,19 +8,21 @@ import 'package:tinycast/core/utils/logger.dart';
 class Sidebar extends StatelessWidget {
   final String currentPage;
   final Function(String) onPageChanged;
+  final Color backgroundColor;
 
   const Sidebar({
     super.key,
     required this.currentPage,
     required this.onPageChanged,
+    this.backgroundColor = const Color(0xFFFFFFFF),
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 56.5,
-      decoration: const BoxDecoration(
-        color: Color(0x00000000),
+      decoration: BoxDecoration(
+        color: backgroundColor,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
       ),
       child: Row(
