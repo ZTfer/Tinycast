@@ -21,10 +21,7 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 56.5,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
-      ),
+      color: backgroundColor,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

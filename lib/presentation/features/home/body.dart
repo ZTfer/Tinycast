@@ -25,38 +25,32 @@ class Body extends ConsumerWidget {
     );
     final navigationState = ref.watch(navigationProvider);
 
-    final borderRadius = theme.mainContentBorderRadius;
-
     return ClipRRect(
-      borderRadius: borderRadius,
+      borderRadius: theme.mainContentBorderRadius,
+      clipBehavior: Clip.antiAlias,
       child: Container(
-        padding: theme.mainContentPadding,
-        decoration: BoxDecoration(
-          color: theme.mainContentBackground,
-          borderRadius: borderRadius,
-        ),
-        child: Row(
-          children: [
-            Sidebar(
-              currentPage: navigationState.currentPage,
-              onPageChanged: (page) {
-                ref.read(navigationProvider.notifier).navigateToPage(page);
-              },
-              backgroundColor: theme.mainContentSidebarBackground,
-            ),
-            Expanded(
-              child: Container(
-                padding: theme.mainContentContentPadding,
-                alignment: Alignment.topLeft,
-                decoration: BoxDecoration(
-                  color: theme.mainContentContentBackground,
-                  borderRadius: theme.mainContentContentBorderRadius,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: _buildContent(navigationState, ref),
+        color: theme.mainContentBackground,
+        child: Padding(
+          padding: theme.mainContentPadding,
+          child: Row(
+            children: [
+              Sidebar(
+                currentPage: navigationState.currentPage,
+                onPageChanged: (page) {
+                  ref.read(navigationProvider.notifier).navigateToPage(page);
+                },
+                backgroundColor: theme.mainContentSidebarBackground,
               ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  padding: theme.mainContentContentPadding,
+                  alignment: Alignment.topLeft,
+                  color: theme.mainContentContentBackground,
+                  child: _buildContent(navigationState, ref),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
