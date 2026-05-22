@@ -7,6 +7,7 @@ class EpisodeMapper {
   static Episode toEntity(model.Episode model) {
     return Episode(
       id: model.id,
+      supabaseId: model.supabaseId,
       podcastId: model.podcastId,
       title: model.title,
       description: model.description,
@@ -21,6 +22,7 @@ class EpisodeMapper {
       isExplicit: model.isExplicit,
       isPlayed: model.isPlayed,
       isDownloaded: model.isDownloaded,
+      isFavorite: false,
       downloadedPath: model.downloadedPath,
       artworkPath: model.artworkPath,
       downloadProgress: model.downloadProgress,
@@ -40,6 +42,8 @@ class EpisodeMapper {
   /// 将 Entity 转换为 Model
   static model.Episode toModel(Episode entity) {
     return model.Episode()
+      ..id = entity.id
+      ..supabaseId = entity.supabaseId
       ..podcastId = entity.podcastId
       ..title = entity.title
       ..description = entity.description

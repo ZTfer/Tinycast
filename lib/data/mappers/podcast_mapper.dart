@@ -7,6 +7,7 @@ class PodcastMapper {
   static Podcast toEntity(model.Podcast model) {
     return Podcast(
       id: model.id,
+      supabaseId: model.supabaseId,
       title: model.title,
       subtitle: model.subtitle,
       author: model.author,
@@ -43,6 +44,8 @@ class PodcastMapper {
   /// 将 Entity 转换为 Model
   static model.Podcast toModel(Podcast entity) {
     return model.Podcast()
+      ..id = entity.id
+      ..supabaseId = entity.supabaseId
       ..title = entity.title
       ..subtitle = entity.subtitle
       ..author = entity.author
@@ -61,6 +64,7 @@ class PodcastMapper {
       ..episodeCount = entity.episodeCount
       ..isSubscribed = entity.isSubscribed
       ..subscribedAt = entity.subscribedAt
+      ..artworkPath = entity.artworkPath
       ..itunesId = entity.itunesId
       ..itunesArtworkUrl = entity.itunesArtworkUrl
       ..itunesPrimaryGenreName = entity.itunesPrimaryGenreName
