@@ -5,6 +5,8 @@ import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/itunes_info_dto.dart';
 import '../database/isar_service.dart';
+import '../mappers/podcast_mapper.dart';
+import '../mappers/episode_mapper.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
 
@@ -115,7 +117,7 @@ class LocalPodcastDataSource {
     try {
       Logger.info('保存播客到数据库: ${podcast.title}');
 
-      final podcastModel = _convertPodcastEntityToModel(podcast);
+      final podcastModel = PodcastMapper.toModel(podcast);
 
       final id = await _isarService.isar.writeTxn(() async {
         final existingPodcast = await _isarService.isar.podcasts
@@ -155,9 +157,7 @@ class LocalPodcastDataSource {
     try {
       Logger.info('保存 ${episodes.length} 个节目到数据库');
 
-      final episodeModels = episodes
-          .map((episode) => _convertEpisodeEntityToModel(episode))
-          .toList();
+      final episodeModels = EpisodeMapper.toModelList(episodes);
 
       final podcastITunesIdMap = <int, String>{};
       final isar = _isarService.isar;
@@ -704,38 +704,6 @@ class LocalPodcastDataSource {
     }
   }
 
-  model.Podcast _convertPodcastEntityToModel(Podcast entity) {
-    return model.Podcast()
-      ..title = entity.title
-      ..subtitle = entity.subtitle
-      ..author = entity.author
-      ..description = entity.description
-      ..artworkUrl = entity.artworkUrl
-      ..rssUrl = entity.rssUrl
-      ..websiteUrl = entity.websiteUrl
-      ..language = entity.language
-      ..copyright = entity.copyright
-      ..categories = entity.categories
-      ..keywords = entity.keywords
-      ..isExplicit = entity.isExplicit
-      ..ownerName = entity.ownerName
-      ..ownerEmail = entity.ownerEmail
-      ..lastUpdated = entity.lastUpdated
-      ..episodeCount = entity.episodeCount
-      ..isSubscribed = entity.isSubscribed
-      ..subscribedAt = entity.subscribedAt
-      ..itunesId = entity.itunesId
-      ..itunesArtworkUrl = entity.itunesArtworkUrl
-      ..itunesPrimaryGenreName = entity.itunesPrimaryGenreName
-      ..itunesGenres = entity.itunesGenres
-      ..itunesGenreIds = entity.itunesGenreIds
-      ..itunesCollectionViewUrl = entity.itunesCollectionViewUrl
-      ..itunesCountry = entity.itunesCountry
-      ..itunesReleaseDate = entity.itunesReleaseDate
-      ..itunesCollectionExplicitness = entity.itunesCollectionExplicitness
-      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
-  }
-
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
     try {
       Logger.info('📋 [PODCAST-DS] 更新 episode isPlayed, episodeId: $episodeId, isPlayed: $isPlayed');
@@ -765,34 +733,5 @@ class LocalPodcastDataSource {
       Logger.error('📋 [PODCAST-DS] 更新 isPlayed 异常', error: e, stackTrace: stackTrace);
       throw AppException.unknown('更新播放状态失败', originalError: e, stackTrace: stackTrace);
     }
-  }
-
-  model.Episode _convertEpisodeEntityToModel(Episode entity) {
-    return model.Episode()
-      ..podcastId = entity.podcastId
-      ..title = entity.title
-      ..description = entity.description
-      ..link = entity.link
-      ..guid = entity.guid
-      ..author = entity.author
-      ..pubDate = entity.pubDate
-      ..audioUrl = entity.audioUrl
-      ..audioType = entity.audioType
-      ..duration = entity.duration
-      ..artworkUrl = entity.artworkUrl
-      ..isExplicit = entity.isExplicit
-      ..isPlayed = entity.isPlayed
-      ..isDownloaded = entity.isDownloaded
-      ..downloadedPath = entity.downloadedPath
-      ..downloadProgress = entity.downloadProgress
-      ..playProgress = entity.playProgress
-      ..lastPlayedAt = entity.lastPlayedAt
-      ..updatedAt = entity.updatedAt
-      ..itunesId = entity.itunesId
-      ..podcastITunesId = entity.podcastITunesId
-      ..itunesArtworkUrl = entity.itunesArtworkUrl
-      ..itunesReleaseDate = entity.itunesReleaseDate
-      ..itunesExplicitness = entity.itunesExplicitness
-      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
   }
 }

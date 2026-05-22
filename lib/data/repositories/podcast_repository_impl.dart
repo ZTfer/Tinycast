@@ -6,8 +6,8 @@ import '../datasources/local_podcast_datasource.dart';
 import '../services/file_storage_service.dart';
 import '../services/itunes_search_service.dart';
 import '../services/podcast_merge_service.dart';
-import '../models/podcast_model.dart' as model;
-import '../models/episode_model.dart' as model;
+import '../mappers/podcast_mapper.dart';
+import '../mappers/episode_mapper.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
 
@@ -116,7 +116,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         _itunesSearchFutures[podcastId] = itunesFuture;
       }
 
-      final podcast = _convertPodcastModelToEntity(podcastModel);
+      final podcast = PodcastMapper.toEntity(podcastModel);
       Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 订阅流程完成，即将返回 podcast');
 
       Logger.info('成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)');
@@ -185,9 +185,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final podcastModels = await _localDataSource.getSubscribedPodcasts();
 
-      final podcasts = podcastModels
-          .map((model) => _convertPodcastModelToEntity(model))
-          .toList();
+      final podcasts = PodcastMapper.toEntityList(podcastModels);
 
       Logger.info('成功获取 ${podcasts.length} 个已订阅播客');
 
@@ -215,9 +213,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         podcastModels,
       );
 
-      final podcasts = primaryPodcasts
-          .map((model) => _convertPodcastModelToEntity(model))
-          .toList();
+      final podcasts = PodcastMapper.toEntityList(primaryPodcasts);
 
       Logger.info(
         '成功获取合并后的 ${podcasts.length} 个播客（原始 ${podcastModels.length} 个）',
@@ -252,7 +248,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         return null;
       }
 
-      final podcast = _convertPodcastModelToEntity(podcastModel);
+      final podcast = PodcastMapper.toEntity(podcastModel);
 
       Logger.info('成功获取播客: ${podcast.title}');
 
@@ -278,9 +274,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         podcastId,
       );
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功获取 ${episodes.length} 个节目');
 
@@ -310,9 +304,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         limit: limit,
       );
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功获取 ${episodes.length} 个最新节目');
 
@@ -336,9 +328,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final episodeModels = await _localDataSource.getUnplayedEpisodes();
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功获取 ${episodes.length} 个未播放节目');
 
@@ -362,9 +352,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final episodeModels = await _localDataSource.getEpisodesByIds(ids);
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功获取 ${episodes.length} 个节目');
 
@@ -388,9 +376,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final episodeModels = await _localDataSource.getDownloadedEpisodes();
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功获取 ${episodes.length} 个已下载节目');
 
@@ -414,9 +400,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final podcastModels = await _localDataSource.searchPodcasts(keyword);
 
-      final podcasts = podcastModels
-          .map((model) => _convertPodcastModelToEntity(model))
-          .toList();
+      final podcasts = PodcastMapper.toEntityList(podcastModels);
 
       Logger.info('成功搜索到 ${podcasts.length} 个播客');
 
@@ -440,9 +424,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       final episodeModels = await _localDataSource.searchEpisodes(keyword);
 
-      final episodes = episodeModels
-          .map((model) => _convertEpisodeModelToEntity(model))
-          .toList();
+      final episodes = EpisodeMapper.toEntityList(episodeModels);
 
       Logger.info('成功搜索到 ${episodes.length} 个节目');
 
@@ -459,42 +441,6 @@ class PodcastRepositoryImpl implements PodcastRepository {
     }
   }
 
-  Podcast _convertPodcastModelToEntity(model.Podcast model) {
-    return Podcast(
-      id: model.id,
-      title: model.title,
-      subtitle: model.subtitle,
-      author: model.author,
-      description: model.description,
-      artworkUrl: model.artworkUrl,
-      rssUrl: model.rssUrl,
-      websiteUrl: model.websiteUrl,
-      language: model.language,
-      copyright: model.copyright,
-      categories: model.categories,
-      keywords: model.keywords,
-      isExplicit: model.isExplicit,
-      ownerName: model.ownerName,
-      ownerEmail: model.ownerEmail,
-      lastUpdated: model.lastUpdated,
-      episodeCount: model.episodeCount,
-      isSubscribed: model.isSubscribed,
-      subscribedAt: model.subscribedAt,
-      artworkPath: model.artworkPath,
-      createdAt: model.createdAt,
-      itunesId: model.itunesId,
-      itunesArtworkUrl: model.itunesArtworkUrl,
-      itunesPrimaryGenreName: model.itunesPrimaryGenreName,
-      itunesGenres: model.itunesGenres,
-      itunesGenreIds: model.itunesGenreIds,
-      itunesCollectionViewUrl: model.itunesCollectionViewUrl,
-      itunesCountry: model.itunesCountry,
-      itunesReleaseDate: model.itunesReleaseDate,
-      itunesCollectionExplicitness: model.itunesCollectionExplicitness,
-      itunesContentAdvisoryRating: model.itunesContentAdvisoryRating,
-    );
-  }
-
   @override
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
     Logger.info(
@@ -506,38 +452,5 @@ class PodcastRepositoryImpl implements PodcastRepository {
   @override
   Future<void>? getITunesSearchFuture(int podcastId) {
     return _itunesSearchFutures[podcastId];
-  }
-
-  Episode _convertEpisodeModelToEntity(model.Episode model) {
-    return Episode(
-      id: model.id,
-      podcastId: model.podcastId,
-      title: model.title,
-      description: model.description,
-      link: model.link,
-      guid: model.guid,
-      author: model.author,
-      pubDate: model.pubDate,
-      audioUrl: model.audioUrl,
-      audioType: model.audioType,
-      duration: model.duration,
-      artworkUrl: model.artworkUrl,
-      isExplicit: model.isExplicit,
-      isPlayed: model.isPlayed,
-      isDownloaded: model.isDownloaded,
-      downloadedPath: model.downloadedPath,
-      artworkPath: model.artworkPath,
-      downloadProgress: model.downloadProgress,
-      playProgress: model.playProgress,
-      lastPlayedAt: model.lastPlayedAt,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-      itunesId: model.itunesId,
-      podcastITunesId: model.podcastITunesId,
-      itunesArtworkUrl: model.itunesArtworkUrl,
-      itunesReleaseDate: model.itunesReleaseDate,
-      itunesExplicitness: model.itunesExplicitness,
-      itunesContentAdvisoryRating: model.itunesContentAdvisoryRating,
-    );
   }
 }
