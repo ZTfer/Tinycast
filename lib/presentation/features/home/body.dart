@@ -27,29 +27,30 @@ class Body extends ConsumerWidget {
 
     return Padding(
       padding: theme.mainContentPadding,
-      child: ClipRRect(
-        borderRadius: theme.mainContentBorderRadius,
-        child: Container(
+      child: Container(
+        decoration: BoxDecoration(
           color: theme.mainContentBackground,
-          child: Row(
-            children: [
-              Sidebar(
-                currentPage: navigationState.currentPage,
-                onPageChanged: (page) {
-                  ref.read(navigationProvider.notifier).navigateToPage(page);
-                },
-                backgroundColor: theme.mainContentSidebarBackground,
+          borderRadius: theme.mainContentBorderRadius,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            Sidebar(
+              currentPage: navigationState.currentPage,
+              onPageChanged: (page) {
+                ref.read(navigationProvider.notifier).navigateToPage(page);
+              },
+              backgroundColor: theme.mainContentSidebarBackground,
+            ),
+            Expanded(
+              child: Container(
+                padding: theme.mainContentContentPadding,
+                alignment: Alignment.topLeft,
+                color: theme.mainContentContentBackground,
+                child: _buildContent(navigationState, ref),
               ),
-              Expanded(
-                child: Container(
-                  padding: theme.mainContentContentPadding,
-                  alignment: Alignment.topLeft,
-                  color: theme.mainContentContentBackground,
-                  child: _buildContent(navigationState, ref),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
