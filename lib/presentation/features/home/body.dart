@@ -25,13 +25,12 @@ class Body extends ConsumerWidget {
     );
     final navigationState = ref.watch(navigationProvider);
 
-    return ClipRRect(
-      borderRadius: theme.mainContentBorderRadius,
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        color: theme.mainContentBackground,
-        child: Padding(
-          padding: theme.mainContentPadding,
+    return Padding(
+      padding: theme.mainContentPadding,
+      child: ClipRRect(
+        borderRadius: theme.mainContentBorderRadius,
+        child: Container(
+          color: theme.mainContentBackground,
           child: Row(
             children: [
               Sidebar(
