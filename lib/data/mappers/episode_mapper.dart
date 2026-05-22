@@ -63,6 +63,7 @@ class EpisodeMapper {
       ..downloadProgress = entity.downloadProgress
       ..playProgress = entity.playProgress
       ..lastPlayedAt = entity.lastPlayedAt
+      ..createdAt = entity.createdAt
       ..updatedAt = entity.updatedAt
       ..itunesId = entity.itunesId
       ..podcastITunesId = entity.podcastITunesId

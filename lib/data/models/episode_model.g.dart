@@ -310,6 +310,7 @@ Episode _episodeDeserialize(
   object.audioType = reader.readString(offsets[2]);
   object.audioUrl = reader.readString(offsets[3]);
   object.author = reader.readStringOrNull(offsets[4]);
+  object.createdAt = reader.readDateTime(offsets[5]);
   object.description = reader.readString(offsets[6]);
   object.downloadProgress = reader.readDouble(offsets[7]);
   object.downloadedPath = reader.readStringOrNull(offsets[8]);
