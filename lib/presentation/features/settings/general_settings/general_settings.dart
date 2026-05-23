@@ -36,7 +36,7 @@ class GeneralSettings extends StatelessWidget {
         ),
         const TableRow(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
                 "自动下载:",
@@ -53,7 +53,7 @@ class GeneralSettings extends StatelessWidget {
         ),
         const TableRow(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
                 "刷新:",

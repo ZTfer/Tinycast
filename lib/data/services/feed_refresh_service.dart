@@ -77,7 +77,7 @@ class FeedRefreshService {
       final lastRefresh = _lastRefreshTimes[podcastId];
       if (!force && lastRefresh != null && now.difference(lastRefresh) < _cooldownDuration) {
         final remaining = _cooldownDuration.inSeconds - now.difference(lastRefresh).inSeconds;
-        Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新冷却中，剩余 ${remaining}秒，跳过');
+        Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新冷却中，剩余 $remaining秒，跳过');
         return FeedRefreshResult(podcastId: podcastId, success: true);
       }
 
