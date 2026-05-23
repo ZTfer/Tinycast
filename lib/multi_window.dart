@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/core/theme/app_theme.dart';
-import 'package:tinycast/core/theme/theme_data.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';

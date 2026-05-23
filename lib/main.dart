@@ -70,6 +70,14 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowUtils.initialize();
 
+  // 先加载主题配置，确保窗口初始化时可以使用配置中的尺寸
+  if (!ThemeSource.useHardcoded) {
+    await ThemeLoader.preloadThemeConfigs();
+    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
+  } else {
+    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
+  }
+
   // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();
 
@@ -115,13 +123,6 @@ Future<void> _initializeApp(AppConfig config) async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
-
-  if (!ThemeSource.useHardcoded) {
-    await ThemeLoader.preloadThemeConfigs();
-    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
-  } else {
-    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
-  }
 
   // 初始化 Supabase（如果配置了有效凭据）
   if (!config.isPlaceholder) {
