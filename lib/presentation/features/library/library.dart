@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
@@ -209,21 +210,29 @@ class _LibraryState extends ConsumerState<Library> {
       '🕒 [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}',
     );
 
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      color: const Color(0xFF000000),
-      child: FutureBuilder<Map<int, bool>>(
-        key: ValueKey(podcasts.length),
-        future: _computeDownloadStatus(podcasts),
-        builder: (context, snapshot) {
-          Logger.info(
-            '🕒 [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}',
-          );
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildContent(state, podcasts, snapshot.data ?? {}),
-          );
-        },
+    return Localizations(
+      locale: const Locale('zh', 'CN'),
+      delegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      child: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: const Color(0xFF000000),
+        child: FutureBuilder<Map<int, bool>>(
+          key: ValueKey(podcasts.length),
+          future: _computeDownloadStatus(podcasts),
+          builder: (context, snapshot) {
+            Logger.info(
+              ' [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}',
+            );
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildContent(state, podcasts, snapshot.data ?? {}),
+            );
+          },
+        ),
       ),
     );
   }
