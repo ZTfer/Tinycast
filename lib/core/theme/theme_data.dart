@@ -416,20 +416,16 @@ class AppThemeData {
       const Color(0x00FFFFFF);
 
   EdgeInsets get bodyPadding =>
-      _layoutPadding('window_container.body') ??
-      const EdgeInsets.all(12.0);
+      _layoutPadding('window_container.body') ?? const EdgeInsets.all(12.0);
 
   Color get bodyBackground =>
-      _layoutBackground('window_container.body') ??
-      const Color(0xFFFFFFFF);
+      _layoutBackground('window_container.body') ?? const Color(0xFFFFFFFF);
 
   EdgeInsets get bodySidebarPadding =>
-      _layoutPadding('window_container.body.sidebar') ??
-      EdgeInsets.zero;
+      _layoutPadding('window_container.body.sidebar') ?? EdgeInsets.zero;
 
   EdgeInsets get bodyContentPadding =>
-      _layoutPadding('window_container.body.content') ??
-      EdgeInsets.zero;
+      _layoutPadding('window_container.body.content') ?? EdgeInsets.zero;
 
   Color get bodySidebarBackground =>
       _layoutBackground('window_container.body.sidebar') ??
@@ -440,13 +436,11 @@ class AppThemeData {
       const Color(0xFFFFFFFF);
 
   BorderRadius get bodyContentBorderRadius =>
-      _layoutBorderRadius('window_container.body.content') ??
-      BorderRadius.zero;
+      _layoutBorderRadius('window_container.body.content') ?? BorderRadius.zero;
 
   BorderRadius get bodyBorderRadius {
     final result =
-        _layoutBorderRadius('window_container.body') ??
-        BorderRadius.zero;
+        _layoutBorderRadius('window_container.body') ?? BorderRadius.zero;
     debugPrint(
       '[ThemeData] bodyBorderRadius: $result, path=window_container.body',
     );
@@ -789,4 +783,24 @@ class AppThemeData {
   TextStyle get episodeProgressTimeLabelStyle =>
       _parseTextStyle('widgets.mini_player.episode_progress_bar.time_label') ??
       const TextStyle(fontSize: 11, color: Color(0xFF999999));
+
+  // ===== Multi Window =====
+
+  Size get mainWindowSize {
+    if (!_isHocon) return const Size(400, 750);
+    final style = _layoutStyle('multi_window.main_window');
+    if (style == null) return const Size(400, 750);
+    final width = double.tryParse(style['width']?.toString() ?? '400') ?? 400;
+    final height = double.tryParse(style['height']?.toString() ?? '750') ?? 750;
+    return Size(width, height);
+  }
+
+  Size get settingsWindowSize {
+    if (!_isHocon) return const Size(600, 380);
+    final style = _layoutStyle('multi_window.settings_window');
+    if (style == null) return const Size(600, 380);
+    final width = double.tryParse(style['width']?.toString() ?? '600') ?? 600;
+    final height = double.tryParse(style['height']?.toString() ?? '380') ?? 380;
+    return Size(width, height);
+  }
 }

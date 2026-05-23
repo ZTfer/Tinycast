@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
+import 'package:tinycast/core/theme/theme_data.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/settings/settings.dart';
@@ -187,12 +189,15 @@ WindowArguments parseArguments(String arguments) {
 Future<void> initMainWindow() async {
   await windowManager.ensureInitialized();
 
+  final theme = AppTheme.light;
   WindowOptions windowOptions = WindowOptions(
-    size: Size(400, 750),
+    size: theme.mainWindowSize,
     center: true,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
-    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+    backgroundColor: Platform.isWindows
+        ? windowBackgroundColor
+        : const Color(0x00000000),
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
@@ -211,10 +216,13 @@ Future<void> initMainWindow() async {
 Future<void> initSettingsWindow() async {
   await windowManager.ensureInitialized();
 
+  final theme = AppTheme.light;
   WindowOptions windowOptions = WindowOptions(
-    size: Size(600, 380),
+    size: theme.settingsWindowSize,
     center: true,
-    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+    backgroundColor: Platform.isWindows
+        ? windowBackgroundColor
+        : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -238,7 +246,9 @@ Future<void> initSubscribeWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(500, 600),
     center: true,
-    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+    backgroundColor: Platform.isWindows
+        ? windowBackgroundColor
+        : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -262,7 +272,9 @@ Future<void> initEpisodeDetailWindow() async {
   WindowOptions windowOptions = WindowOptions(
     size: Size(600, 700),
     center: true,
-    backgroundColor: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+    backgroundColor: Platform.isWindows
+        ? windowBackgroundColor
+        : const Color(0x00000000),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
@@ -310,7 +322,9 @@ class SettingsWindowApp extends StatelessWidget {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
-                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  color: Platform.isWindows
+                      ? windowBackgroundColor
+                      : const Color(0x00000000),
                   child: child ?? const SizedBox(),
                 ),
               ),
@@ -356,7 +370,9 @@ class SubscribeWindowApp extends StatelessWidget {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
-                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  color: Platform.isWindows
+                      ? windowBackgroundColor
+                      : const Color(0x00000000),
                   child: child ?? const SizedBox(),
                 ),
               ),
@@ -402,11 +418,14 @@ class EpisodeDetailWindowApp extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Column(
             children: [
-              if (Platform.isWindows) const WindowControls(title: 'Episode Detail'),
+              if (Platform.isWindows)
+                const WindowControls(title: 'Episode Detail'),
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
-                  color: Platform.isWindows ? windowBackgroundColor : const Color(0x00000000),
+                  color: Platform.isWindows
+                      ? windowBackgroundColor
+                      : const Color(0x00000000),
                   child: child ?? const SizedBox(),
                 ),
               ),
