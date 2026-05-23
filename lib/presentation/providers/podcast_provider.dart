@@ -153,7 +153,6 @@ class PodcastNotifier extends Notifier<PodcastState> {
       Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
     } catch (e, stackTrace) {
       Logger.error('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 失败: $e, 耗时 ${stopwatch.elapsedMilliseconds}ms', error: e, stackTrace: stackTrace);
-      stopwatch.stop();
       // 失败时保留现有数据
       state = state.copyWith(
         status: PodcastStatus.error,
