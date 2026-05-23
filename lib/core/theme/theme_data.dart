@@ -283,6 +283,13 @@ class AppThemeData {
             ? AppTextStyles.captionLight
             : AppTextStyles.captionDark);
 
+  int get episodeItemTitleMaxLines {
+    if (!_isHocon) return 1;
+    final style = _layoutStyle('widgets.episode_item.title');
+    if (style == null) return 1;
+    return int.tryParse(style['maxLines']?.toString() ?? '1') ?? 1;
+  }
+
   TextStyle get libraryShowTitle => _isHocon
       ? (_widgetStyle('page_library_list_item_title') ??
             _hardcodedTextStyle(

@@ -77,7 +77,7 @@ class _EpisodeInfoState extends ConsumerState<EpisodeInfo> {
                     : TextDecoration.none,
                 decorationColor: theme.labelPrimary,
               ),
-              maxLines: 1,
+              maxLines: theme.episodeItemTitleMaxLines,
               overflow: TextOverflow.ellipsis,
             ),
           ),
