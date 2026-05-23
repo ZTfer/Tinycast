@@ -204,6 +204,10 @@ class RssParserService {
           final rawGuid = _getElementText(item, 'guid');
           final guid = (rawGuid != null && rawGuid.isNotEmpty) ? rawGuid : null;
           
+          if (i < 3) {
+            Logger.info('🔍 [RSS] 剧集 $i guid检查: rawGuid="$rawGuid", guid="$guid"');
+          }
+          
           if (guid == null) {
             guidMissingCount++;
             Logger.warning('⚠️ [RSS] 节目索引 $i 缺少 GUID，将使用 audioUrl 作为备选标识');
