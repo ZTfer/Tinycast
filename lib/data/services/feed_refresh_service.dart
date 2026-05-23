@@ -122,12 +122,32 @@ class FeedRefreshService {
       final existingGuids = await _localDataSource.getExistingEpisodeGuids(podcastId);
       Logger.info('🔄 [REFRESH] 本地已存在 ${existingGuids.length} 个剧集 GUID');
 
-      final newEpisodes = remoteEpisodes.where((ep) {
+      // 统计新剧集和已存在剧集的详细信息
+      final newEpisodes = <Episode>[];
+      int skippedForExistingGuid = 0;
+      int skippedForMissingGuid = 0;
+      
+      for (final ep in remoteEpisodes) {
         final guid = ep.guid;
-        return guid != null && guid.isNotEmpty && !existingGuids.contains(guid);
-      }).toList();
+        if (guid == null || guid.isEmpty) {
+          skippedForMissingGuid++;
+          Logger.warning('⚠️ [REFRESH] 剧集 "${ep.title}" GUID 为空，跳过');
+          continue;
+        }
+        if (existingGuids.contains(guid)) {
+          skippedForExistingGuid++;
+          continue;
+        }
+        newEpisodes.add(ep);
+      }
 
-      Logger.info('🔄 [REFRESH] 发现 ${newEpisodes.length} 个新剧集');
+      Logger.info(
+        '🔄 [REFRESH] 增量更新统计: '
+        '远程 ${remoteEpisodes.length} 个, '
+        '本地已存在 $skippedForExistingGuid 个, '
+        'GUID 为空 $skippedForMissingGuid 个, '
+        '新剧集 ${newEpisodes.length} 个',
+      );
 
       if (newEpisodes.isNotEmpty) {
         final episodeModels = newEpisodes.map((ep) {

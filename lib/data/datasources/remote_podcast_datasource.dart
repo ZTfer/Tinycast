@@ -52,19 +52,27 @@ class RemotePodcastDataSource {
       };
     } on AppException catch (e) {
       final msg = e.message.toLowerCase();
-      if (msg.contains('html') && !msg.contains('captcha')) {
-        Logger.warning('RSS URL 返回了 HTML 内容，尝试从页面提取真实 RSS 链接: $rssUrl');
+      // 更精确地检测 HTML 相关错误（排除 captcha 挑战）
+      final isHtmlError = (msg.contains('html') && !msg.contains('captcha')) ||
+                          msg.contains('html 页面') ||
+                          msg.contains('网页');
+      if (isHtmlError) {
+        Logger.warning('📄 [REMOTE] RSS URL 返回了 HTML 内容，尝试从页面提取真实 RSS 链接: $rssUrl');
         return await _tryExtractRssFromHtmlPage(rssUrl);
       }
-      Logger.error('获取播客数据失败: ${e.message}');
+      Logger.error('❌ [REMOTE] 获取播客数据失败: ${e.message}');
       rethrow;
     } catch (e, stackTrace) {
       final errorMsg = e.toString().toLowerCase();
-      if (errorMsg.contains('xmlexception') || errorMsg.contains('xmltagexception')) {
-        Logger.warning('XML 解析失败，内容可能是 HTML，尝试从页面提取: $rssUrl');
+      // 检测 XML 解析失败，内容可能是 HTML
+      final isXmlParseError = errorMsg.contains('xmlexception') || 
+                              errorMsg.contains('xmltagexception') ||
+                              errorMsg.contains('xml');
+      if (isXmlParseError) {
+        Logger.warning('📄 [REMOTE] XML 解析失败，内容可能是 HTML，尝试从页面提取: $rssUrl');
         return await _tryExtractRssFromHtmlPage(rssUrl);
       }
-      Logger.error('获取播客数据失败', error: e, stackTrace: stackTrace);
+      Logger.error('❌ [REMOTE] 获取播客数据失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '获取播客数据失败',
         originalError: e,
