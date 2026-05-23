@@ -117,12 +117,6 @@ class FeedRefreshService {
       final rssResult = await _remoteDataSource.getPodcastFromRss(podcastEntity.rssUrl);
       final remoteEpisodes = rssResult['episodes'] as List<Episode>;
       Logger.info('🔄 [REFRESH] 远程 RSS 获取成功，共 ${remoteEpisodes.length} 个剧集');
-      
-      // 打印前3个远程剧集的 GUID 用于诊断
-      for (var i = 0; i < 3 && i < remoteEpisodes.length; i++) {
-        final ep = remoteEpisodes[i];
-        Logger.info('🔍 [REFRESH] 远程剧集 $i: title="${ep.title.substring(0, ep.title.length.clamp(0, 30))}", guid="${ep.guid}"');
-      }
 
       Logger.info('🔄 [REFRESH] 正在查询本地已存在的 GUID...');
       final existingGuids = await _localDataSource.getExistingEpisodeGuids(podcastId);

@@ -815,12 +815,6 @@ class LocalPodcastDataSource {
         }
       }
 
-      // 打印前3个本地 GUID 用于诊断
-      final firstFewGuids = guids.take(3).toList();
-      for (var i = 0; i < firstFewGuids.length; i++) {
-        Logger.info('🔍 [LOCAL] 本地已存在 GUID $i: "${firstFewGuids[i].substring(0, firstFewGuids[i].length.clamp(0, 60))}"');
-      }
-
       Logger.info('成功获取 ${guids.length} 个已存在的节目 GUID');
 
       return guids;
