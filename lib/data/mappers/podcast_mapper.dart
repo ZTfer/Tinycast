@@ -38,6 +38,8 @@ class PodcastMapper {
       itunesReleaseDate: model.itunesReleaseDate,
       itunesCollectionExplicitness: model.itunesCollectionExplicitness,
       itunesContentAdvisoryRating: model.itunesContentAdvisoryRating,
+      lastFetchedAt: model.lastFetchedAt,
+      refreshFailedCount: model.refreshFailedCount,
     );
   }
 
@@ -74,7 +76,9 @@ class PodcastMapper {
       ..itunesCountry = entity.itunesCountry
       ..itunesReleaseDate = entity.itunesReleaseDate
       ..itunesCollectionExplicitness = entity.itunesCollectionExplicitness
-      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
+      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating
+      ..lastFetchedAt = entity.lastFetchedAt
+      ..refreshFailedCount = entity.refreshFailedCount;
   }
 
   /// 批量将 Model 列表转换为 Entity 列表

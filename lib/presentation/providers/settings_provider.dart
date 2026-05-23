@@ -131,6 +131,38 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     }
   }
 
+  Future<void> updateFeedRefreshInterval(FeedRefreshInterval value) async {
+    try {
+      await _service.setFeedRefreshInterval(value);
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update feedRefreshInterval', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> updateRefreshOnCellular(bool value) async {
+    try {
+      await _service.setRefreshOnCellular(value);
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update refreshOnCellular', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> updateNotifyOnNewEpisodes(bool value) async {
+    try {
+      await _service.setNotifyOnNewEpisodes(value);
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update notifyOnNewEpisodes', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> updateBackgroundRefreshEnabled(bool value) async {
+    try {
+      await _service.setBackgroundRefreshEnabled(value);
+    } catch (e, stackTrace) {
+      Logger.error('[SETTINGS-PROVIDER] Failed to update backgroundRefreshEnabled', error: e, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> clearSleepTimer() async {
     try {
       await _service.setSleepTimer(SleepTimerOption.off);

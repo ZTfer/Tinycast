@@ -6,6 +6,7 @@ import '../datasources/local_podcast_datasource.dart';
 import '../services/file_storage_service.dart';
 import '../services/itunes_search_service.dart';
 import '../services/podcast_merge_service.dart';
+import '../services/feed_refresh_service.dart';
 import '../mappers/podcast_mapper.dart';
 import '../mappers/episode_mapper.dart';
 import '../../core/utils/app_exception.dart';
@@ -15,6 +16,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
   final RemotePodcastDataSource _remoteDataSource;
   final LocalPodcastDataSource _localDataSource;
   final FileStorageService _fileStorageService;
+  final FeedRefreshService _feedRefreshService;
 
   final Map<int, Future<void>> _itunesSearchFutures = {};
 
@@ -23,13 +25,15 @@ class PodcastRepositoryImpl implements PodcastRepository {
     LocalPodcastDataSource? localDataSource,
     FileStorageService? fileStorageService,
     ITunesSearchService? itunesSearchService,
+    FeedRefreshService? feedRefreshService,
   }) : _remoteDataSource = remoteDataSource ??
             RemotePodcastDataSource(
               localDataSource: localDataSource ?? LocalPodcastDataSource(),
               itunesSearchService: itunesSearchService,
             ),
        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
-       _fileStorageService = fileStorageService ?? FileStorageService.instance;
+       _fileStorageService = fileStorageService ?? FileStorageService.instance,
+       _feedRefreshService = feedRefreshService ?? FeedRefreshService.instance;
 
   @override
   Future<Podcast> subscribe(String rssUrl) async {
@@ -452,5 +456,68 @@ class PodcastRepositoryImpl implements PodcastRepository {
   @override
   Future<void>? getITunesSearchFuture(int podcastId) {
     return _itunesSearchFutures[podcastId];
+  }
+
+  @override
+  Future<FeedRefreshResult> refreshPodcastFeed(int podcastId) async {
+    try {
+      Logger.info('开始刷新播客 feed: $podcastId');
+
+      final result = await _feedRefreshService.refreshSingleFeed(podcastId);
+
+      if (result.success) {
+        Logger.info('播客 $podcastId feed 刷新成功, 新剧集: ${result.newEpisodesCount}');
+      } else {
+        Logger.warning('播客 $podcastId feed 刷新失败: ${result.error}');
+      }
+
+      return result;
+    } catch (e, stackTrace) {
+      Logger.error(
+        '刷新播客 feed 异常: $podcastId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return FeedRefreshResult(
+        podcastId: podcastId,
+        error: e.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<BatchRefreshResult> refreshAllFeeds({bool force = false}) async {
+    try {
+      Logger.info('开始刷新所有订阅播客 feed (force: $force)');
+
+      final podcasts = await getSubscribedPodcasts();
+
+      if (podcasts.isEmpty) {
+        Logger.info('没有订阅的播客，跳过刷新');
+        return BatchRefreshResult(results: []);
+      }
+
+      Logger.info('找到 ${podcasts.length} 个已订阅播客，开始批量刷新');
+
+      final result = await _feedRefreshService.refreshAllFeeds(podcasts);
+
+      Logger.info(
+        '所有 feed 刷新完成: 新剧集 ${result.totalNewEpisodes}, '
+        '成功 ${result.successCount}, 失败 ${result.failureCount}',
+      );
+
+      return result;
+    } catch (e, stackTrace) {
+      Logger.error(
+        '批量刷新 feed 异常',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.unknown(
+        '批量刷新 feed 失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

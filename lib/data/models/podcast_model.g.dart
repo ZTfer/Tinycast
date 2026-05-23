@@ -123,40 +123,50 @@ const PodcastSchema = CollectionSchema(
       name: r'language',
       type: IsarType.string,
     ),
-    r'lastUpdated': PropertySchema(
+    r'lastFetchedAt': PropertySchema(
       id: 22,
+      name: r'lastFetchedAt',
+      type: IsarType.dateTime,
+    ),
+    r'lastUpdated': PropertySchema(
+      id: 23,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'ownerEmail': PropertySchema(
-      id: 23,
+      id: 24,
       name: r'ownerEmail',
       type: IsarType.string,
     ),
     r'ownerName': PropertySchema(
-      id: 24,
+      id: 25,
       name: r'ownerName',
       type: IsarType.string,
     ),
-    r'rssUrl': PropertySchema(id: 25, name: r'rssUrl', type: IsarType.string),
-    r'subscribedAt': PropertySchema(
+    r'refreshFailedCount': PropertySchema(
       id: 26,
+      name: r'refreshFailedCount',
+      type: IsarType.long,
+    ),
+    r'rssUrl': PropertySchema(id: 27, name: r'rssUrl', type: IsarType.string),
+    r'subscribedAt': PropertySchema(
+      id: 28,
       name: r'subscribedAt',
       type: IsarType.dateTime,
     ),
     r'subtitle': PropertySchema(
-      id: 27,
+      id: 29,
       name: r'subtitle',
       type: IsarType.string,
     ),
     r'supabaseId': PropertySchema(
-      id: 28,
+      id: 30,
       name: r'supabaseId',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 29, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 31, name: r'title', type: IsarType.string),
     r'websiteUrl': PropertySchema(
-      id: 30,
+      id: 32,
       name: r'websiteUrl',
       type: IsarType.string,
     ),
@@ -397,15 +407,17 @@ void _podcastSerialize(
   writer.writeDateTime(offsets[19], object.itunesReleaseDate);
   writer.writeStringList(offsets[20], object.keywords);
   writer.writeString(offsets[21], object.language);
-  writer.writeDateTime(offsets[22], object.lastUpdated);
-  writer.writeString(offsets[23], object.ownerEmail);
-  writer.writeString(offsets[24], object.ownerName);
-  writer.writeString(offsets[25], object.rssUrl);
-  writer.writeDateTime(offsets[26], object.subscribedAt);
-  writer.writeString(offsets[27], object.subtitle);
-  writer.writeString(offsets[28], object.supabaseId);
-  writer.writeString(offsets[29], object.title);
-  writer.writeString(offsets[30], object.websiteUrl);
+  writer.writeDateTime(offsets[22], object.lastFetchedAt);
+  writer.writeDateTime(offsets[23], object.lastUpdated);
+  writer.writeString(offsets[24], object.ownerEmail);
+  writer.writeString(offsets[25], object.ownerName);
+  writer.writeLong(offsets[26], object.refreshFailedCount);
+  writer.writeString(offsets[27], object.rssUrl);
+  writer.writeDateTime(offsets[28], object.subscribedAt);
+  writer.writeString(offsets[29], object.subtitle);
+  writer.writeString(offsets[30], object.supabaseId);
+  writer.writeString(offsets[31], object.title);
+  writer.writeString(offsets[32], object.websiteUrl);
 }
 
 Podcast _podcastDeserialize(
@@ -437,15 +449,17 @@ Podcast _podcastDeserialize(
   object.itunesReleaseDate = reader.readDateTimeOrNull(offsets[19]);
   object.keywords = reader.readStringList(offsets[20]);
   object.language = reader.readStringOrNull(offsets[21]);
-  object.lastUpdated = reader.readDateTime(offsets[22]);
-  object.ownerEmail = reader.readStringOrNull(offsets[23]);
-  object.ownerName = reader.readStringOrNull(offsets[24]);
-  object.rssUrl = reader.readString(offsets[25]);
-  object.subscribedAt = reader.readDateTimeOrNull(offsets[26]);
-  object.subtitle = reader.readStringOrNull(offsets[27]);
-  object.supabaseId = reader.readStringOrNull(offsets[28]);
-  object.title = reader.readString(offsets[29]);
-  object.websiteUrl = reader.readStringOrNull(offsets[30]);
+  object.lastFetchedAt = reader.readDateTimeOrNull(offsets[22]);
+  object.lastUpdated = reader.readDateTime(offsets[23]);
+  object.ownerEmail = reader.readStringOrNull(offsets[24]);
+  object.ownerName = reader.readStringOrNull(offsets[25]);
+  object.refreshFailedCount = reader.readLong(offsets[26]);
+  object.rssUrl = reader.readString(offsets[27]);
+  object.subscribedAt = reader.readDateTimeOrNull(offsets[28]);
+  object.subtitle = reader.readStringOrNull(offsets[29]);
+  object.supabaseId = reader.readStringOrNull(offsets[30]);
+  object.title = reader.readString(offsets[31]);
+  object.websiteUrl = reader.readStringOrNull(offsets[32]);
   return object;
 }
 
@@ -501,22 +515,26 @@ P _podcastDeserializeProp<P>(
     case 21:
       return (reader.readStringOrNull(offset)) as P;
     case 22:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 23:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 24:
       return (reader.readStringOrNull(offset)) as P;
     case 25:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 26:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 27:
-      return (reader.readStringOrNull(offset)) as P;
-    case 28:
-      return (reader.readStringOrNull(offset)) as P;
-    case 29:
       return (reader.readString(offset)) as P;
+    case 28:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 29:
+      return (reader.readStringOrNull(offset)) as P;
     case 30:
+      return (reader.readStringOrNull(offset)) as P;
+    case 31:
+      return (reader.readString(offset)) as P;
+    case 32:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -4110,6 +4128,80 @@ extension PodcastQueryFilter
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> lastFetchedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lastFetchedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  lastFetchedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lastFetchedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> lastFetchedAtEqualTo(
+    DateTime? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lastFetchedAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  lastFetchedAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lastFetchedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> lastFetchedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lastFetchedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition> lastFetchedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'lastFetchedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterFilterCondition> lastUpdatedEqualTo(
     DateTime value,
   ) {
@@ -4489,6 +4581,61 @@ extension PodcastQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'ownerName', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  refreshFailedCountEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'refreshFailedCount', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  refreshFailedCountGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'refreshFailedCount',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  refreshFailedCountLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'refreshFailedCount',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterFilterCondition>
+  refreshFailedCountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'refreshFailedCount',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
@@ -5577,6 +5724,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByLastFetchedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFetchedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByLastFetchedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFetchedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
@@ -5610,6 +5769,18 @@ extension PodcastQuerySortBy on QueryBuilder<Podcast, Podcast, QSortBy> {
   QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByOwnerNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByRefreshFailedCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshFailedCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> sortByRefreshFailedCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshFailedCount', Sort.desc);
     });
   }
 
@@ -5922,6 +6093,18 @@ extension PodcastQuerySortThenBy
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByLastFetchedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFetchedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByLastFetchedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFetchedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
@@ -5955,6 +6138,18 @@ extension PodcastQuerySortThenBy
   QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByOwnerNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByRefreshFailedCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshFailedCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterSortBy> thenByRefreshFailedCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshFailedCount', Sort.desc);
     });
   }
 
@@ -6207,6 +6402,12 @@ extension PodcastQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctByLastFetchedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastFetchedAt');
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QDistinct> distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastUpdated');
@@ -6226,6 +6427,12 @@ extension PodcastQueryWhereDistinct
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ownerName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QDistinct> distinctByRefreshFailedCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'refreshFailedCount');
     });
   }
 
@@ -6423,6 +6630,12 @@ extension PodcastQueryProperty
     });
   }
 
+  QueryBuilder<Podcast, DateTime?, QQueryOperations> lastFetchedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastFetchedAt');
+    });
+  }
+
   QueryBuilder<Podcast, DateTime, QQueryOperations> lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdated');
@@ -6438,6 +6651,12 @@ extension PodcastQueryProperty
   QueryBuilder<Podcast, String?, QQueryOperations> ownerNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ownerName');
+    });
+  }
+
+  QueryBuilder<Podcast, int, QQueryOperations> refreshFailedCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'refreshFailedCount');
     });
   }
 

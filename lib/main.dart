@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
@@ -14,6 +15,7 @@ import 'package:tinycast/core/theme/theme_source_flag.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/core/theme/app_text_styles.dart';
+import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
 
 /// 打开节目详情窗口
 ///
@@ -66,6 +68,25 @@ class AppConfig {
   }
 }
 
+class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        FeedRefreshScheduler.instance.handleAppPaused();
+        break;
+      case AppLifecycleState.resumed:
+        FeedRefreshScheduler.instance.handleAppResumed();
+        break;
+      case AppLifecycleState.detached:
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+}
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowUtils.initialize();
@@ -88,6 +109,8 @@ void main(List<String> args) async {
     case 'main':
       await initMainWindow();
       await _initializeApp(config);
+      WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver());
+      unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
       break;
     case 'settings':
@@ -115,6 +138,8 @@ void main(List<String> args) async {
     default:
       await initMainWindow();
       await _initializeApp(config);
+      WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver());
+      unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
   }
 }

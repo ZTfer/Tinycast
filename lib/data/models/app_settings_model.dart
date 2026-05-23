@@ -12,6 +12,13 @@ class AppSettingsModel {
   @Enumerated(EnumType.ordinal)
   AutoDownloadPolicyEnum autoDownloadPolicy = AutoDownloadPolicyEnum.latest3;
 
+  @Enumerated(EnumType.ordinal)
+  FeedRefreshIntervalEnum feedRefreshInterval = FeedRefreshIntervalEnum.every6h;
+
+  bool refreshOnCellular = false;
+  bool notifyOnNewEpisodes = true;
+  bool backgroundRefreshEnabled = true;
+
   double playbackSpeed = 1.0;
   double volume = 0.3;
   int skipForwardTime = 30;
@@ -59,4 +66,13 @@ enum SleepTimerEnum {
       default: return null;
     }
   }
+}
+
+enum FeedRefreshIntervalEnum {
+  manual,
+  hourly,
+  every3h,
+  every6h,
+  every12h,
+  daily;
 }

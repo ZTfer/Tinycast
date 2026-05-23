@@ -1,3 +1,29 @@
+enum FeedRefreshInterval {
+  manual,
+  hourly,
+  every3h,
+  every6h,
+  every12h,
+  daily;
+
+  Duration get toDuration {
+    switch (this) {
+      case FeedRefreshInterval.manual:
+        return Duration.zero;
+      case FeedRefreshInterval.hourly:
+        return const Duration(hours: 1);
+      case FeedRefreshInterval.every3h:
+        return const Duration(hours: 3);
+      case FeedRefreshInterval.every6h:
+        return const Duration(hours: 6);
+      case FeedRefreshInterval.every12h:
+        return const Duration(hours: 12);
+      case FeedRefreshInterval.daily:
+        return const Duration(days: 1);
+    }
+  }
+}
+
 enum AutoDownloadPolicy {
   off,
   latest1,
@@ -44,6 +70,10 @@ class AppSettings {
   final bool downloadOnFavorite;
   final bool removePlayedDownloads;
   final AutoDownloadPolicy autoDownloadPolicy;
+  final FeedRefreshInterval feedRefreshInterval;
+  final bool refreshOnCellular;
+  final bool notifyOnNewEpisodes;
+  final bool backgroundRefreshEnabled;
   final double playbackSpeed;
   final double volume;
   final int skipForwardTime;
@@ -56,6 +86,10 @@ class AppSettings {
     this.downloadOnFavorite = false,
     this.removePlayedDownloads = false,
     this.autoDownloadPolicy = AutoDownloadPolicy.latest3,
+    this.feedRefreshInterval = FeedRefreshInterval.every6h,
+    this.refreshOnCellular = false,
+    this.notifyOnNewEpisodes = true,
+    this.backgroundRefreshEnabled = true,
     this.playbackSpeed = defaultPlaybackSpeed,
     this.volume = defaultVolume,
     this.skipForwardTime = defaultSkipForwardTime,
@@ -65,10 +99,16 @@ class AppSettings {
     this.sleepTimerEndTimeMillis,
   });
 
+  Duration get refreshIntervalDuration => feedRefreshInterval.toDuration;
+
   AppSettings copyWith({
     bool? downloadOnFavorite,
     bool? removePlayedDownloads,
     AutoDownloadPolicy? autoDownloadPolicy,
+    FeedRefreshInterval? feedRefreshInterval,
+    bool? refreshOnCellular,
+    bool? notifyOnNewEpisodes,
+    bool? backgroundRefreshEnabled,
     double? playbackSpeed,
     double? volume,
     int? skipForwardTime,
@@ -81,6 +121,10 @@ class AppSettings {
       downloadOnFavorite: downloadOnFavorite ?? this.downloadOnFavorite,
       removePlayedDownloads: removePlayedDownloads ?? this.removePlayedDownloads,
       autoDownloadPolicy: autoDownloadPolicy ?? this.autoDownloadPolicy,
+      feedRefreshInterval: feedRefreshInterval ?? this.feedRefreshInterval,
+      refreshOnCellular: refreshOnCellular ?? this.refreshOnCellular,
+      notifyOnNewEpisodes: notifyOnNewEpisodes ?? this.notifyOnNewEpisodes,
+      backgroundRefreshEnabled: backgroundRefreshEnabled ?? this.backgroundRefreshEnabled,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       volume: volume ?? this.volume,
       skipForwardTime: skipForwardTime ?? this.skipForwardTime,
@@ -96,6 +140,10 @@ class AppSettings {
       'downloadOnFavorite': downloadOnFavorite,
       'removePlayedDownloads': removePlayedDownloads,
       'autoDownloadPolicy': autoDownloadPolicy.name,
+      'feedRefreshInterval': feedRefreshInterval.name,
+      'refreshOnCellular': refreshOnCellular,
+      'notifyOnNewEpisodes': notifyOnNewEpisodes,
+      'backgroundRefreshEnabled': backgroundRefreshEnabled,
       'playbackSpeed': playbackSpeed,
       'volume': volume,
       'skipForwardTime': skipForwardTime,
@@ -111,6 +159,10 @@ class AppSettings {
       downloadOnFavorite: json['downloadOnFavorite'] as bool? ?? false,
       removePlayedDownloads: json['removePlayedDownloads'] as bool? ?? false,
       autoDownloadPolicy: _parseAutoDownloadPolicy(json['autoDownloadPolicy']),
+      feedRefreshInterval: _parseFeedRefreshInterval(json['feedRefreshInterval']),
+      refreshOnCellular: json['refreshOnCellular'] as bool? ?? false,
+      notifyOnNewEpisodes: json['notifyOnNewEpisodes'] as bool? ?? true,
+      backgroundRefreshEnabled: json['backgroundRefreshEnabled'] as bool? ?? true,
       playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? defaultPlaybackSpeed,
       volume: (json['volume'] as num?)?.toDouble() ?? defaultVolume,
       skipForwardTime: json['skipForwardTime'] as int? ?? defaultSkipForwardTime,
@@ -128,6 +180,19 @@ class AppSettings {
       return AutoDownloadPolicy.values.byName(value);
     }
     return AutoDownloadPolicy.latest3;
+  }
+
+  static FeedRefreshInterval _parseFeedRefreshInterval(dynamic value) {
+    if (value == null) return FeedRefreshInterval.every6h;
+    if (value is FeedRefreshInterval) return value;
+    if (value is String) {
+      try {
+        return FeedRefreshInterval.values.byName(value);
+      } catch (_) {
+        return FeedRefreshInterval.every6h;
+      }
+    }
+    return FeedRefreshInterval.every6h;
   }
 
   static SleepTimerOption _parseSleepTimer(dynamic value) {

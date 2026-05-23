@@ -47,6 +47,10 @@ class Podcast {
 
   DateTime? subscribedAt;
 
+  DateTime? lastFetchedAt;
+
+  int refreshFailedCount = 0;
+
   String? artworkPath;
 
   final DateTime createdAt = DateTime.now();

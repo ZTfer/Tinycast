@@ -1,5 +1,6 @@
 import '../entities/podcast.dart';
 import '../entities/episode.dart';
+import '../../data/services/feed_refresh_service.dart';
 import 'dart:async';
 
 abstract class PodcastRepository {
@@ -33,4 +34,8 @@ abstract class PodcastRepository {
   Future<void> updateIsPlayed(int episodeId, bool isPlayed);
 
   Future<void>? getITunesSearchFuture(int podcastId);
+
+  Future<FeedRefreshResult> refreshPodcastFeed(int podcastId);
+
+  Future<BatchRefreshResult> refreshAllFeeds({bool force = false});
 }
