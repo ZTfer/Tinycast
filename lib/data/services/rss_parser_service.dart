@@ -416,11 +416,6 @@ class RssParserService {
       return true;
     }
     
-    // 如果 Content-Type 是 XML 类型，直接认为是 XML 内容
-    if (contentType.contains('application/xml') || contentType.contains('text/xml') || contentType.contains('application/rss+xml') || contentType.contains('application/atom+xml')) {
-      return false;
-    }
-    
     final trimmed = content.trimLeft();
     
     // 如果以 XML 声明开头，认为是 XML 内容

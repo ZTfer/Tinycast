@@ -86,6 +86,7 @@ class RemotePodcastDataSource {
       final response = await _dio.get(
         url,
         options: dio.Options(
+          responseType: dio.ResponseType.plain,
           headers: {
             'Accept': 'text/html, application/xhtml+xml, application/xml, */*',
             'User-Agent': 'TinyCast/${AppConstants.appVersion}',
@@ -97,7 +98,7 @@ class RemotePodcastDataSource {
         throw AppException.network('无法访问该页面，状态码: ${response.statusCode}');
       }
 
-      final htmlContent = response.data as String;
+      final htmlContent = _getHtmlContent(response);
       if (htmlContent.isEmpty) throw AppException.validation('页面内容为空');
 
       final rssUrl = _extractRssLinkFromHtml(htmlContent, url);
@@ -115,6 +116,13 @@ class RemotePodcastDataSource {
 
   String? _extractRssLinkFromHtml(String htmlContent, String baseUrl) {
     return HtmlRssExtractor.extractRssLink(htmlContent, baseUrl);
+  }
+
+  String _getHtmlContent(dio.Response response) {
+    final data = response.data;
+    if (data is String) return data;
+    if (data == null) return '';
+    return data.toString();
   }
 
   Future<void>? getITunesSearchFuture() {
