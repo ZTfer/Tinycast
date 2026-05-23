@@ -48,6 +48,7 @@ class RssParserService {
         final response = await _dio.get(
           rssUrl,
           options: dio.Options(
+            responseType: dio.ResponseType.plain,
             headers: {
               'Accept': 'application/rss+xml, application/xml, text/xml, */*',
               'User-Agent': 'TinyCast/${AppConstants.appVersion}',
@@ -63,7 +64,7 @@ class RssParserService {
         }
 
         final contentType = response.headers.value('content-type')?.toLowerCase() ?? '';
-        final xmlContent = response.data as String;
+        final xmlContent = _getXmlContent(response);
         if (xmlContent.isEmpty) {
           throw AppException.validation('RSS 内容为空');
         }
@@ -120,6 +121,14 @@ class RssParserService {
 
     throw lastException ??
         AppException.network('RSS 解析失败，已重试 $_maxRetryCount 次');
+  }
+
+  /// 从 Dio 响应中提取 XML 内容字符串
+  String _getXmlContent(dio.Response response) {
+    final data = response.data;
+    if (data is String) return data;
+    if (data == null) return '';
+    return data.toString();
   }
 
   /// 从 RSS 内容提取播客元数据
@@ -196,8 +205,8 @@ class RssParserService {
               description: _getElementText(item, 'description') ??
                   _getITunesElementText(item, 'summary') ??
                   '',
-              link: _getElementText(item, 'link'),
-              guid: _getElementText(item, 'guid'),
+              link: _getElementText(item, 'link') ?? '',
+              guid: _getElementText(item, 'guid') ?? '',
               author: _getElementText(item, 'author') ??
                   _getITunesElementText(item, 'author') ??
                   _getDublinCoreElementText(item, 'creator'),

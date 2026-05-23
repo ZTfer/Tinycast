@@ -488,28 +488,28 @@ class PodcastRepositoryImpl implements PodcastRepository {
   @override
   Future<BatchRefreshResult> refreshAllFeeds({bool force = false}) async {
     try {
-      Logger.info('开始刷新所有订阅播客 feed (force: $force)');
+      Logger.info('🔄 [REFRESH] 开始刷新所有订阅播客 feed (force: $force)');
 
       final podcasts = await getSubscribedPodcasts();
 
       if (podcasts.isEmpty) {
-        Logger.info('没有订阅的播客，跳过刷新');
+        Logger.info('🔄 [REFRESH] 没有订阅的播客，跳过刷新');
         return BatchRefreshResult(results: []);
       }
 
-      Logger.info('找到 ${podcasts.length} 个已订阅播客，开始批量刷新');
+      Logger.info('🔄 [REFRESH] 找到 ${podcasts.length} 个已订阅播客，开始批量刷新');
 
-      final result = await _feedRefreshService.refreshAllFeeds(podcasts);
+      final result = await _feedRefreshService.refreshAllFeeds(podcasts, force: force);
 
       Logger.info(
-        '所有 feed 刷新完成: 新剧集 ${result.totalNewEpisodes}, '
+        '🔄 [REFRESH] 所有 feed 刷新完成: 新剧集 ${result.totalNewEpisodes}, '
         '成功 ${result.successCount}, 失败 ${result.failureCount}',
       );
 
       return result;
     } catch (e, stackTrace) {
       Logger.error(
-        '批量刷新 feed 异常',
+        '🔄 [REFRESH] 批量刷新 feed 异常',
         error: e,
         stackTrace: stackTrace,
       );

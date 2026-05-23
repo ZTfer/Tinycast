@@ -140,21 +140,28 @@ class PodcastNotifier extends Notifier<PodcastState> {
 
   Future<void> loadSubscribedPodcasts() async {
     final stopwatch = Stopwatch()..start();
-    Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 开始, 设置 status=loading');
-    state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
+    final existingPodcasts = state.podcasts;
+    Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 开始, 现有数据 ${existingPodcasts?.length ?? 0} 个');
+    
+    // 立即设置 loading 状态并保留现有数据，防止 UI 显示空页面
+    state = state.copyWith(status: PodcastStatus.loading, podcasts: existingPodcasts);
+    
     try {
       final podcasts = await _getSubscribedPodcastsUseCase();
       Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 数据库查询完成, 获取 ${podcasts.length} 个播客, 耗时 ${stopwatch.elapsedMilliseconds}ms');
       state = state.copyWith(status: PodcastStatus.success, podcasts: podcasts);
       Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+    } catch (e, stackTrace) {
+      Logger.error('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 失败: $e, 耗时 ${stopwatch.elapsedMilliseconds}ms', error: e, stackTrace: stackTrace);
       stopwatch.stop();
-    } catch (e) {
-      Logger.info('🕒 [LIBRARY-PROVIDER] loadSubscribedPodcasts 失败: $e, 耗时 ${stopwatch.elapsedMilliseconds}ms');
-      stopwatch.stop();
+      // 失败时保留现有数据
       state = state.copyWith(
         status: PodcastStatus.error,
         errorMessage: e.toString(),
+        podcasts: existingPodcasts,
       );
+    } finally {
+      stopwatch.stop();
     }
   }
 

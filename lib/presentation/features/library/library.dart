@@ -205,9 +205,10 @@ class _LibraryState extends ConsumerState<Library> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
-    final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
+    final podcastsRaw = ref.watch(subscribedPodcastsProvider);
+    final podcasts = podcastsRaw ?? [];
     Logger.info(
-      '🕒 [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}',
+      ' [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}, podcastsRawIsNull=${podcastsRaw == null}',
     );
 
     return Localizations(
@@ -229,7 +230,12 @@ class _LibraryState extends ConsumerState<Library> {
             );
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _buildContent(state, podcasts, snapshot.data ?? {}),
+              child: _buildContent(
+                state,
+                podcasts,
+                podcastsRaw,
+                snapshot.data ?? {},
+              ),
             );
           },
         ),
@@ -250,16 +256,30 @@ class _LibraryState extends ConsumerState<Library> {
   Widget _buildContent(
     PodcastState state,
     List<Podcast> podcasts,
+    List<Podcast>? podcastsRaw,
     Map<int, bool> hasDownloadMap,
   ) {
-    if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
+    // 判断是否真的没有任何数据（从未加载过或确实没有订阅）
+    final hasNoData =
+        podcastsRaw == null && state.status == PodcastStatus.initial;
+    final isLoadingWithNoData =
+        state.status == PodcastStatus.loading &&
+        (podcastsRaw == null || podcastsRaw.isEmpty);
+    final isErrorWithNoData =
+        state.status == PodcastStatus.error &&
+        (podcastsRaw == null || podcastsRaw.isEmpty);
+    final isEmptyList = podcastsRaw != null && podcasts.isEmpty;
+
+    // 首次加载或加载中没有数据时显示加载指示器
+    if (isLoadingWithNoData || hasNoData) {
       return const SizedBox(
         height: 400,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (state.status == PodcastStatus.error && podcasts.isEmpty) {
+    // 错误且没有数据时显示错误页面
+    if (isErrorWithNoData) {
       return SizedBox(
         height: 400,
         child: Center(
@@ -287,7 +307,8 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
-    if (podcasts.isEmpty) {
+    // 有数据但列表为空时显示空页面
+    if (isEmptyList) {
       return LibraryEmptyPage(
         onRssSubscribe: () =>
             AppRouter.navigateTo(context, AppRoutes.subscribe),
@@ -295,6 +316,7 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
+    // 有数据时显示列表
     return ListView.builder(
       itemCount: podcasts.length,
       itemBuilder: (context, index) {

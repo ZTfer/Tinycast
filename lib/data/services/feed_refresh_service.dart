@@ -71,12 +71,13 @@ class FeedRefreshService {
   }) : _remoteDataSource = remoteDataSource ?? RemotePodcastDataSource(),
        _localDataSource = localDataSource ?? LocalPodcastDataSource();
 
-  Future<FeedRefreshResult> refreshSingleFeed(int podcastId) async {
+  Future<FeedRefreshResult> refreshSingleFeed(int podcastId, {bool force = false}) async {
     try {
       final now = DateTime.now();
       final lastRefresh = _lastRefreshTimes[podcastId];
-      if (lastRefresh != null && now.difference(lastRefresh) < _cooldownDuration) {
-        Logger.info('播客 $podcastId 刷新冷却中，跳过');
+      if (!force && lastRefresh != null && now.difference(lastRefresh) < _cooldownDuration) {
+        final remaining = _cooldownDuration.inSeconds - now.difference(lastRefresh).inSeconds;
+        Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新冷却中，剩余 ${remaining}秒，跳过');
         return FeedRefreshResult(podcastId: podcastId, success: true);
       }
 
@@ -84,16 +85,18 @@ class FeedRefreshService {
 
       final podcastModel = await _localDataSource.getPodcastById(podcastId);
       if (podcastModel == null || podcastModel.rssUrl.isEmpty) {
-        Logger.warning('播客 $podcastId 不存在或无 RSS URL');
+        Logger.warning('🔄 [REFRESH] 播客 $podcastId 不存在或无 RSS URL');
         return FeedRefreshResult(
           podcastId: podcastId,
           error: '播客不存在或无 RSS URL',
         );
       }
 
+      Logger.info('🔄 [REFRESH] 开始刷新播客: ${podcastModel.title}, RSS: ${podcastModel.rssUrl}');
+
       if (podcastModel.refreshFailedCount >= _degradationThreshold) {
         Logger.warning(
-          '播客 $podcastId 刷新失败次数达 ${podcastModel.refreshFailedCount}，'
+          '🔄 [REFRESH] 播客 $podcastId 刷新失败次数达 ${podcastModel.refreshFailedCount}，'
           '进入退化模式，延长刷新间隔',
         );
         final lastFetched = podcastModel.lastFetchedAt;
@@ -102,7 +105,7 @@ class FeedRefreshService {
             minutes: _cooldownDuration.inMinutes * _degradationMultiplier,
           );
           if (now.difference(lastFetched) < extendedInterval) {
-            Logger.info('播客 $podcastId 退化模式中，跳过刷新');
+            Logger.info('🔄 [REFRESH] 播客 $podcastId 退化模式中，跳过刷新');
             return FeedRefreshResult(podcastId: podcastId, success: true);
           }
         }
@@ -110,15 +113,21 @@ class FeedRefreshService {
 
       final podcastEntity = PodcastMapper.toEntity(podcastModel);
 
+      Logger.info('🔄 [REFRESH] 正在获取远程 RSS 数据: ${podcastEntity.rssUrl}');
       final rssResult = await _remoteDataSource.getPodcastFromRss(podcastEntity.rssUrl);
       final remoteEpisodes = rssResult['episodes'] as List<Episode>;
+      Logger.info('🔄 [REFRESH] 远程 RSS 获取成功，共 ${remoteEpisodes.length} 个剧集');
 
+      Logger.info('🔄 [REFRESH] 正在查询本地已存在的 GUID...');
       final existingGuids = await _localDataSource.getExistingEpisodeGuids(podcastId);
+      Logger.info('🔄 [REFRESH] 本地已存在 ${existingGuids.length} 个剧集 GUID');
 
       final newEpisodes = remoteEpisodes.where((ep) {
         final guid = ep.guid;
         return guid != null && guid.isNotEmpty && !existingGuids.contains(guid);
       }).toList();
+
+      Logger.info('🔄 [REFRESH] 发现 ${newEpisodes.length} 个新剧集');
 
       if (newEpisodes.isNotEmpty) {
         final episodeModels = newEpisodes.map((ep) {
@@ -132,7 +141,7 @@ class FeedRefreshService {
         final updatedCount = podcastEntity.episodeCount + newEpisodes.length;
         await _localDataSource.updatePodcastEpisodeCount(podcastId, updatedCount);
 
-        Logger.info('播客 $podcastId 新增 ${newEpisodes.length} 个剧集，总数更新为 $updatedCount');
+        Logger.info('🔄 [REFRESH] 播客 $podcastId 新增 ${newEpisodes.length} 个剧集，总数更新为 $updatedCount');
       }
 
       await _localDataSource.updateLastFetchedAt(podcastId, now);
@@ -141,7 +150,7 @@ class FeedRefreshService {
         await _localDataSource.updateRefreshFailedCount(podcastId, 0);
       }
 
-      Logger.info('播客 $podcastId 刷新成功');
+      Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新成功');
 
       return FeedRefreshResult(
         podcastId: podcastId,
@@ -150,7 +159,7 @@ class FeedRefreshService {
       );
     } catch (e, stackTrace) {
       Logger.error(
-        '播客 $podcastId 刷新失败',
+        '🔄 [REFRESH] 播客 $podcastId 刷新失败',
         error: e,
         stackTrace: stackTrace,
       );
@@ -161,7 +170,7 @@ class FeedRefreshService {
         await _localDataSource.updateRefreshFailedCount(podcastId, newFailedCount);
         await _localDataSource.updateLastFetchedAt(podcastId, DateTime.now());
         Logger.info(
-          '播客 $podcastId 刷新失败次数更新为 $newFailedCount',
+          '🔄 [REFRESH] 播客 $podcastId 刷新失败次数更新为 $newFailedCount',
         );
       }
 
@@ -172,12 +181,12 @@ class FeedRefreshService {
     }
   }
 
-  Future<BatchRefreshResult> refreshAllFeeds(List<Podcast> podcasts) async {
+  Future<BatchRefreshResult> refreshAllFeeds(List<Podcast> podcasts, {bool force = false}) async {
     if (podcasts.isEmpty) {
       return BatchRefreshResult(results: []);
     }
 
-    Logger.info('开始批量刷新 ${podcasts.length} 个播客');
+    Logger.info('🔄 [REFRESH] 开始批量刷新 ${podcasts.length} 个播客 (force: $force)');
 
     final results = <FeedRefreshResult>[];
     
@@ -186,7 +195,7 @@ class FeedRefreshService {
           ? i + _maxConcurrentRefreshes 
           : podcasts.length;
       final chunk = podcasts.sublist(i, end);
-      final futures = chunk.map((podcast) => refreshSingleFeed(podcast.id));
+      final futures = chunk.map((podcast) => refreshSingleFeed(podcast.id, force: force));
       final chunkResults = await Future.wait<FeedRefreshResult>(futures);
       results.addAll(chunkResults);
     }

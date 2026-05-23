@@ -130,7 +130,7 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
   }
 
   void _refreshUI() {
-    ref.invalidate(podcastProvider);
+    ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
   }
 
   void reset() {
