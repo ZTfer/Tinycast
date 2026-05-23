@@ -69,6 +69,12 @@ class AppConfig {
 }
 
 class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
+  static final FeedRefreshLifecycleObserver _instance =
+      FeedRefreshLifecycleObserver._();
+  static FeedRefreshLifecycleObserver get instance => _instance;
+
+  FeedRefreshLifecycleObserver._();
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -80,10 +86,17 @@ class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
         FeedRefreshScheduler.instance.handleAppResumed();
         break;
       case AppLifecycleState.detached:
+        FeedRefreshScheduler.instance.stop();
+        WidgetsBinding.instance.removeObserver(this);
         break;
       case AppLifecycleState.hidden:
         break;
     }
+  }
+
+  void dispose() {
+    FeedRefreshScheduler.instance.stop();
+    WidgetsBinding.instance.removeObserver(this);
   }
 }
 
@@ -109,7 +122,9 @@ void main(List<String> args) async {
     case 'main':
       await initMainWindow();
       await _initializeApp(config);
-      WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver());
+      WidgetsBinding.instance.addObserver(
+        FeedRefreshLifecycleObserver.instance,
+      );
       unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
       break;
@@ -138,7 +153,9 @@ void main(List<String> args) async {
     default:
       await initMainWindow();
       await _initializeApp(config);
-      WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver());
+      WidgetsBinding.instance.addObserver(
+        FeedRefreshLifecycleObserver.instance,
+      );
       unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
   }
@@ -161,8 +178,19 @@ Future<void> _initializeApp(AppConfig config) async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void dispose() {
+    FeedRefreshLifecycleObserver.instance.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
