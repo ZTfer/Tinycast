@@ -415,40 +415,40 @@ class AppThemeData {
       _layoutBackground('window_container.mini_player') ??
       const Color(0x00FFFFFF);
 
-  EdgeInsets get mainContentPadding =>
-      _layoutPadding('window_container.main_content') ??
+  EdgeInsets get bodyPadding =>
+      _layoutPadding('window_container.body') ??
       const EdgeInsets.all(12.0);
 
-  Color get mainContentBackground =>
-      _layoutBackground('window_container.main_content') ??
+  Color get bodyBackground =>
+      _layoutBackground('window_container.body') ??
       const Color(0xFFFFFFFF);
 
-  EdgeInsets get mainContentSidebarPadding =>
-      _layoutPadding('window_container.main_content.sidebar') ??
+  EdgeInsets get bodySidebarPadding =>
+      _layoutPadding('window_container.body.sidebar') ??
       EdgeInsets.zero;
 
-  EdgeInsets get mainContentContentPadding =>
-      _layoutPadding('window_container.main_content.content') ??
+  EdgeInsets get bodyContentPadding =>
+      _layoutPadding('window_container.body.content') ??
       EdgeInsets.zero;
 
-  Color get mainContentSidebarBackground =>
-      _layoutBackground('window_container.main_content.sidebar') ??
+  Color get bodySidebarBackground =>
+      _layoutBackground('window_container.body.sidebar') ??
       const Color(0xFFFFFFFF);
 
-  Color get mainContentContentBackground =>
-      _layoutBackground('window_container.main_content.content') ??
+  Color get bodyContentBackground =>
+      _layoutBackground('window_container.body.content') ??
       const Color(0xFFFFFFFF);
 
-  BorderRadius get mainContentContentBorderRadius =>
-      _layoutBorderRadius('window_container.main_content.content') ??
+  BorderRadius get bodyContentBorderRadius =>
+      _layoutBorderRadius('window_container.body.content') ??
       BorderRadius.zero;
 
-  BorderRadius get mainContentBorderRadius {
+  BorderRadius get bodyBorderRadius {
     final result =
-        _layoutBorderRadius('window_container.main_content') ??
+        _layoutBorderRadius('window_container.body') ??
         BorderRadius.zero;
     debugPrint(
-      '[ThemeData] mainContentBorderRadius: $result, path=window_container.main_content',
+      '[ThemeData] bodyBorderRadius: $result, path=window_container.body',
     );
     return result;
   }

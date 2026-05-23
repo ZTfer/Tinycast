@@ -26,11 +26,11 @@ class Body extends ConsumerWidget {
     final navigationState = ref.watch(navigationProvider);
 
     return Padding(
-      padding: theme.mainContentPadding,
+      padding: theme.bodyPadding,
       child: Container(
         decoration: BoxDecoration(
-          color: theme.mainContentBackground,
-          borderRadius: theme.mainContentBorderRadius,
+          color: theme.bodyBackground,
+          borderRadius: theme.bodyBorderRadius,
         ),
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -40,13 +40,13 @@ class Body extends ConsumerWidget {
               onPageChanged: (page) {
                 ref.read(navigationProvider.notifier).navigateToPage(page);
               },
-              backgroundColor: theme.mainContentSidebarBackground,
+              backgroundColor: theme.bodySidebarBackground,
             ),
             Expanded(
               child: Container(
-                padding: theme.mainContentContentPadding,
+                padding: theme.bodyContentPadding,
                 alignment: Alignment.topLeft,
-                color: theme.mainContentContentBackground,
+                color: theme.bodyContentBackground,
                 child: _buildContent(navigationState, ref),
               ),
             ),
