@@ -254,7 +254,7 @@ class RssParserService {
       if (guidMissingCount > 0) {
         Logger.warning('⚠️ [RSS] 共 ${itemsList.length} 个节目中，$guidMissingCount 个缺少 GUID');
       }
-      Logger.info('✅ [RSS] 成功提取 ${episodes.length} 个节目（含 ${guidMissingCount} 个自动生成 GUID）');
+      Logger.info('✅ [RSS] 成功提取 ${episodes.length} 个节目（含 $guidMissingCount 个自动生成 GUID）');
       return episodes;
     } catch (e, stackTrace) {
       Logger.error('❌ [RSS] 提取节目列表失败', error: e, stackTrace: stackTrace);
