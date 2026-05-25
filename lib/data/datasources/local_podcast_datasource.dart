@@ -844,28 +844,33 @@ class LocalPodcastDataSource {
         return 0;
       }
 
-      int insertedCount = 0;
+      // 在事务外先获取所有需要的 podcastITunesId
+      final podcastITunesIdMap = <int, String?>{};
+      for (final episode in newEpisodes) {
+        if (!podcastITunesIdMap.containsKey(episode.podcastId)) {
+          final podcast = await _isarService.isar.podcasts.get(episode.podcastId);
+          podcastITunesIdMap[episode.podcastId] = podcast?.itunesId;
+        }
+      }
 
-      await _isarService.isar.writeTxn(() async {
-        for (final episode in newEpisodes) {
-          if (episode.podcastITunesId == null ||
-              episode.podcastITunesId!.isEmpty) {
-            final podcast = _isarService.isar.podcasts.getSync(episode.podcastId);
-            if (podcast != null &&
-                podcast.itunesId != null &&
-                podcast.itunesId!.isNotEmpty) {
-              episode.podcastITunesId = podcast.itunesId!;
-            }
+      // 填充 podcastITunesId
+      for (final episode in newEpisodes) {
+        if (episode.podcastITunesId == null || episode.podcastITunesId!.isEmpty) {
+          final itunesId = podcastITunesIdMap[episode.podcastId];
+          if (itunesId != null && itunesId.isNotEmpty) {
+            episode.podcastITunesId = itunesId;
           }
         }
+      }
 
+      // 在事务中只执行插入操作
+      await _isarService.isar.writeTxn(() async {
         await _isarService.isar.episodes.putAll(newEpisodes);
-        insertedCount = newEpisodes.length;
       });
 
-      Logger.info('成功批量插入 $insertedCount 个新节目');
+      Logger.info('成功批量插入 ${newEpisodes.length} 个新节目');
 
-      return insertedCount;
+      return newEpisodes.length;
     } on IsarError catch (e, stackTrace) {
       Logger.error('批量插入新节目失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(
