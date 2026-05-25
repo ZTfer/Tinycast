@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/features/library/library_episode_item/library_episode_item.dart';
@@ -47,6 +48,9 @@ class LibraryListItem extends StatelessWidget {
   /// 是否正在加载剧集数据
   final bool isLoading;
 
+  /// 是否显示刷新失败警告
+  final bool showRefreshWarning;
+
   const LibraryListItem({
     super.key,
     required this.podcast,
@@ -61,6 +65,7 @@ class LibraryListItem extends StatelessWidget {
     this.onUnfollow,
     this.onTitleTap,
     this.isLoading = false,
+    this.showRefreshWarning = false,
   });
 
   @override
@@ -82,16 +87,24 @@ class LibraryListItem extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      LibraryShowInfo(
-                        showName: podcast.title,
-                        timeAgo: _formatTimeAgo(podcast.lastUpdated),
-                        onTitleTap: onTitleTap,
-                        onViewDetails: onViewDetails,
-                        rssUrl: rssUrl,
-                        onCopyLinkSuccess: onCopyLinkSuccess,
-                        hasDownloadedEpisodes: hasDownloadedEpisodes,
-                        onRemoveDownloads: onRemoveDownloads,
-                        onUnfollow: onUnfollow,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: LibraryShowInfo(
+                              showName: podcast.title,
+                              timeAgo: _formatTimeAgo(podcast.lastUpdated),
+                              onTitleTap: onTitleTap,
+                              onViewDetails: onViewDetails,
+                              rssUrl: rssUrl,
+                              onCopyLinkSuccess: onCopyLinkSuccess,
+                              hasDownloadedEpisodes: hasDownloadedEpisodes,
+                              onRemoveDownloads: onRemoveDownloads,
+                              onUnfollow: onUnfollow,
+                            ),
+                          ),
+                          if (showRefreshWarning) _buildWarningIcon(),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Column(spacing: 1, children: _buildEpisodeItems()),
@@ -105,6 +118,17 @@ class LibraryListItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildWarningIcon() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: Icon(
+        LucideIcons.alertCircle,
+        size: 16,
+        color: const Color(0xFFFFA500),
+      ),
     );
   }
 

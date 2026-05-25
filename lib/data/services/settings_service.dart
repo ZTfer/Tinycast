@@ -25,6 +25,10 @@ class SettingsService {
       downloadOnFavorite: model.downloadOnFavorite,
       removePlayedDownloads: model.removePlayedDownloads,
       autoDownloadPolicy: _mapAutoDownloadPolicy(model.autoDownloadPolicy),
+      feedRefreshInterval: _mapFeedRefreshInterval(model.feedRefreshInterval),
+      refreshOnCellular: model.refreshOnCellular,
+      notifyOnNewEpisodes: model.notifyOnNewEpisodes,
+      backgroundRefreshEnabled: model.backgroundRefreshEnabled,
       playbackSpeed: model.playbackSpeed,
       volume: model.volume,
       skipForwardTime: model.skipForwardTime,
@@ -43,6 +47,10 @@ class SettingsService {
         downloadOnFavorite: model.downloadOnFavorite,
         removePlayedDownloads: model.removePlayedDownloads,
         autoDownloadPolicy: _mapAutoDownloadPolicy(model.autoDownloadPolicy),
+        feedRefreshInterval: _mapFeedRefreshInterval(model.feedRefreshInterval),
+        refreshOnCellular: model.refreshOnCellular,
+        notifyOnNewEpisodes: model.notifyOnNewEpisodes,
+        backgroundRefreshEnabled: model.backgroundRefreshEnabled,
         playbackSpeed: model.playbackSpeed,
         volume: model.volume,
         skipForwardTime: model.skipForwardTime,
@@ -154,6 +162,11 @@ class SettingsService {
         ..removePlayedDownloads = prefs.getBool('remove_played_downloads') ?? false
         ..autoDownloadPolicy = _parseAutoDownloadPolicy(
             prefs.getString('auto_download_policy'))
+        ..feedRefreshInterval = _parseFeedRefreshInterval(
+            prefs.getString('feed_refresh_interval'))
+        ..refreshOnCellular = prefs.getBool('refresh_on_cellular') ?? false
+        ..notifyOnNewEpisodes = prefs.getBool('notify_on_new_episodes') ?? true
+        ..backgroundRefreshEnabled = prefs.getBool('background_refresh_enabled') ?? true
         ..playbackSpeed = prefs.getDouble('playback_speed') ?? AppSettings.defaultPlaybackSpeed
         ..volume = prefs.getDouble('volume') ?? AppSettings.defaultVolume
         ..skipForwardTime = prefs.getInt('skip_forward_time') ?? AppSettings.defaultSkipForwardTime
@@ -205,5 +218,50 @@ class SettingsService {
     } catch (_) {
       return SleepTimerEnum.off;
     }
+  }
+
+  FeedRefreshIntervalEnum _mapFeedRefreshIntervalToIsar(FeedRefreshInterval interval) {
+    return FeedRefreshIntervalEnum.values.byName(interval.name);
+  }
+
+  FeedRefreshInterval _mapFeedRefreshInterval(FeedRefreshIntervalEnum interval) {
+    return FeedRefreshInterval.values.byName(interval.name);
+  }
+
+  FeedRefreshIntervalEnum _parseFeedRefreshInterval(String? raw) {
+    if (raw == null) return FeedRefreshIntervalEnum.every6h;
+    try {
+      return FeedRefreshIntervalEnum.values.byName(raw);
+    } catch (_) {
+      return FeedRefreshIntervalEnum.every6h;
+    }
+  }
+
+  Future<void> setFeedRefreshInterval(FeedRefreshInterval value) async {
+    final model = await _getOrCreateModel();
+    model.feedRefreshInterval = _mapFeedRefreshIntervalToIsar(value);
+    await _saveModel(model);
+    Logger.info('⚙️ [SETTINGS-SERVICE] feedRefreshInterval set to: ${value.name}');
+  }
+
+  Future<void> setRefreshOnCellular(bool value) async {
+    final model = await _getOrCreateModel();
+    model.refreshOnCellular = value;
+    await _saveModel(model);
+    Logger.info('⚙️ [SETTINGS-SERVICE] refreshOnCellular set to: $value');
+  }
+
+  Future<void> setNotifyOnNewEpisodes(bool value) async {
+    final model = await _getOrCreateModel();
+    model.notifyOnNewEpisodes = value;
+    await _saveModel(model);
+    Logger.info('⚙️ [SETTINGS-SERVICE] notifyOnNewEpisodes set to: $value');
+  }
+
+  Future<void> setBackgroundRefreshEnabled(bool value) async {
+    final model = await _getOrCreateModel();
+    model.backgroundRefreshEnabled = value;
+    await _saveModel(model);
+    Logger.info('⚙️ [SETTINGS-SERVICE] backgroundRefreshEnabled set to: $value');
   }
 }

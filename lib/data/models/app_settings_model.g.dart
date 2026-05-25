@@ -23,48 +23,69 @@ const AppSettingsModelSchema = CollectionSchema(
       type: IsarType.byte,
       enumMap: _AppSettingsModelautoDownloadPolicyEnumValueMap,
     ),
-    r'continuousPlay': PropertySchema(
+    r'backgroundRefreshEnabled': PropertySchema(
       id: 1,
+      name: r'backgroundRefreshEnabled',
+      type: IsarType.bool,
+    ),
+    r'continuousPlay': PropertySchema(
+      id: 2,
       name: r'continuousPlay',
       type: IsarType.bool,
     ),
     r'downloadOnFavorite': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'downloadOnFavorite',
       type: IsarType.bool,
     ),
+    r'feedRefreshInterval': PropertySchema(
+      id: 4,
+      name: r'feedRefreshInterval',
+      type: IsarType.byte,
+      enumMap: _AppSettingsModelfeedRefreshIntervalEnumValueMap,
+    ),
+    r'notifyOnNewEpisodes': PropertySchema(
+      id: 5,
+      name: r'notifyOnNewEpisodes',
+      type: IsarType.bool,
+    ),
     r'playbackSpeed': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'playbackSpeed',
       type: IsarType.double,
     ),
+    r'refreshOnCellular': PropertySchema(
+      id: 7,
+      name: r'refreshOnCellular',
+      type: IsarType.bool,
+    ),
     r'removePlayedDownloads': PropertySchema(
-      id: 4,
+      id: 8,
       name: r'removePlayedDownloads',
       type: IsarType.bool,
     ),
     r'skipBackwardTime': PropertySchema(
-      id: 5,
+      id: 9,
       name: r'skipBackwardTime',
       type: IsarType.long,
     ),
     r'skipForwardTime': PropertySchema(
-      id: 6,
+      id: 10,
       name: r'skipForwardTime',
       type: IsarType.long,
     ),
     r'sleepTimer': PropertySchema(
-      id: 7,
+      id: 11,
       name: r'sleepTimer',
       type: IsarType.byte,
       enumMap: _AppSettingsModelsleepTimerEnumValueMap,
     ),
     r'sleepTimerEndTimeMillis': PropertySchema(
-      id: 8,
+      id: 12,
       name: r'sleepTimerEndTimeMillis',
       type: IsarType.long,
     ),
-    r'volume': PropertySchema(id: 9, name: r'volume', type: IsarType.double),
+    r'volume': PropertySchema(id: 13, name: r'volume', type: IsarType.double),
   },
 
   estimateSize: _appSettingsModelEstimateSize,
@@ -98,15 +119,19 @@ void _appSettingsModelSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeByte(offsets[0], object.autoDownloadPolicy.index);
-  writer.writeBool(offsets[1], object.continuousPlay);
-  writer.writeBool(offsets[2], object.downloadOnFavorite);
-  writer.writeDouble(offsets[3], object.playbackSpeed);
-  writer.writeBool(offsets[4], object.removePlayedDownloads);
-  writer.writeLong(offsets[5], object.skipBackwardTime);
-  writer.writeLong(offsets[6], object.skipForwardTime);
-  writer.writeByte(offsets[7], object.sleepTimer.index);
-  writer.writeLong(offsets[8], object.sleepTimerEndTimeMillis);
-  writer.writeDouble(offsets[9], object.volume);
+  writer.writeBool(offsets[1], object.backgroundRefreshEnabled);
+  writer.writeBool(offsets[2], object.continuousPlay);
+  writer.writeBool(offsets[3], object.downloadOnFavorite);
+  writer.writeByte(offsets[4], object.feedRefreshInterval.index);
+  writer.writeBool(offsets[5], object.notifyOnNewEpisodes);
+  writer.writeDouble(offsets[6], object.playbackSpeed);
+  writer.writeBool(offsets[7], object.refreshOnCellular);
+  writer.writeBool(offsets[8], object.removePlayedDownloads);
+  writer.writeLong(offsets[9], object.skipBackwardTime);
+  writer.writeLong(offsets[10], object.skipForwardTime);
+  writer.writeByte(offsets[11], object.sleepTimer.index);
+  writer.writeLong(offsets[12], object.sleepTimerEndTimeMillis);
+  writer.writeDouble(offsets[13], object.volume);
 }
 
 AppSettingsModel _appSettingsModelDeserialize(
@@ -121,20 +146,28 @@ AppSettingsModel _appSettingsModelDeserialize(
         offsets[0],
       )] ??
       AutoDownloadPolicyEnum.off;
-  object.continuousPlay = reader.readBool(offsets[1]);
-  object.downloadOnFavorite = reader.readBool(offsets[2]);
+  object.backgroundRefreshEnabled = reader.readBool(offsets[1]);
+  object.continuousPlay = reader.readBool(offsets[2]);
+  object.downloadOnFavorite = reader.readBool(offsets[3]);
+  object.feedRefreshInterval =
+      _AppSettingsModelfeedRefreshIntervalValueEnumMap[reader.readByteOrNull(
+        offsets[4],
+      )] ??
+      FeedRefreshIntervalEnum.manual;
   object.id = id;
-  object.playbackSpeed = reader.readDouble(offsets[3]);
-  object.removePlayedDownloads = reader.readBool(offsets[4]);
-  object.skipBackwardTime = reader.readLong(offsets[5]);
-  object.skipForwardTime = reader.readLong(offsets[6]);
+  object.notifyOnNewEpisodes = reader.readBool(offsets[5]);
+  object.playbackSpeed = reader.readDouble(offsets[6]);
+  object.refreshOnCellular = reader.readBool(offsets[7]);
+  object.removePlayedDownloads = reader.readBool(offsets[8]);
+  object.skipBackwardTime = reader.readLong(offsets[9]);
+  object.skipForwardTime = reader.readLong(offsets[10]);
   object.sleepTimer =
       _AppSettingsModelsleepTimerValueEnumMap[reader.readByteOrNull(
-        offsets[7],
+        offsets[11],
       )] ??
       SleepTimerEnum.off;
-  object.sleepTimerEndTimeMillis = reader.readLongOrNull(offsets[8]);
-  object.volume = reader.readDouble(offsets[9]);
+  object.sleepTimerEndTimeMillis = reader.readLongOrNull(offsets[12]);
+  object.volume = reader.readDouble(offsets[13]);
   return object;
 }
 
@@ -155,22 +188,33 @@ P _appSettingsModelDeserializeProp<P>(
     case 2:
       return (reader.readBool(offset)) as P;
     case 3:
-      return (reader.readDouble(offset)) as P;
-    case 4:
       return (reader.readBool(offset)) as P;
+    case 4:
+      return (_AppSettingsModelfeedRefreshIntervalValueEnumMap[reader
+                  .readByteOrNull(offset)] ??
+              FeedRefreshIntervalEnum.manual)
+          as P;
     case 5:
-      return (reader.readLong(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 7:
+      return (reader.readBool(offset)) as P;
+    case 8:
+      return (reader.readBool(offset)) as P;
+    case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
+      return (reader.readLong(offset)) as P;
+    case 11:
       return (_AppSettingsModelsleepTimerValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               SleepTimerEnum.off)
           as P;
-    case 8:
+    case 12:
       return (reader.readLongOrNull(offset)) as P;
-    case 9:
+    case 13:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -202,6 +246,22 @@ const _AppSettingsModelautoDownloadPolicyValueEnumMap = {
   8: AutoDownloadPolicyEnum.past14d,
   9: AutoDownloadPolicyEnum.past30d,
   10: AutoDownloadPolicyEnum.all,
+};
+const _AppSettingsModelfeedRefreshIntervalEnumValueMap = {
+  'manual': 0,
+  'hourly': 1,
+  'every3h': 2,
+  'every6h': 3,
+  'every12h': 4,
+  'daily': 5,
+};
+const _AppSettingsModelfeedRefreshIntervalValueEnumMap = {
+  0: FeedRefreshIntervalEnum.manual,
+  1: FeedRefreshIntervalEnum.hourly,
+  2: FeedRefreshIntervalEnum.every3h,
+  3: FeedRefreshIntervalEnum.every6h,
+  4: FeedRefreshIntervalEnum.every12h,
+  5: FeedRefreshIntervalEnum.daily,
 };
 const _AppSettingsModelsleepTimerEnumValueMap = {
   'off': 0,
@@ -383,6 +443,18 @@ extension AppSettingsModelQueryFilter
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  backgroundRefreshEnabledEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'backgroundRefreshEnabled',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
   continuousPlayEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -396,6 +468,67 @@ extension AppSettingsModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'downloadOnFavorite', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  feedRefreshIntervalEqualTo(FeedRefreshIntervalEnum value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'feedRefreshInterval', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  feedRefreshIntervalGreaterThan(
+    FeedRefreshIntervalEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'feedRefreshInterval',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  feedRefreshIntervalLessThan(
+    FeedRefreshIntervalEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'feedRefreshInterval',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  feedRefreshIntervalBetween(
+    FeedRefreshIntervalEnum lower,
+    FeedRefreshIntervalEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'feedRefreshInterval',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
@@ -451,6 +584,15 @@ extension AppSettingsModelQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  notifyOnNewEpisodesEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'notifyOnNewEpisodes', value: value),
       );
     });
   }
@@ -526,6 +668,15 @@ extension AppSettingsModelQueryFilter
 
           epsilon: epsilon,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterFilterCondition>
+  refreshOnCellularEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'refreshOnCellular', value: value),
       );
     });
   }
@@ -882,6 +1033,20 @@ extension AppSettingsModelQuerySortBy
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByBackgroundRefreshEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'backgroundRefreshEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByBackgroundRefreshEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'backgroundRefreshEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
   sortByContinuousPlay() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'continuousPlay', Sort.asc);
@@ -910,6 +1075,34 @@ extension AppSettingsModelQuerySortBy
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByFeedRefreshInterval() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'feedRefreshInterval', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByFeedRefreshIntervalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'feedRefreshInterval', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByNotifyOnNewEpisodes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notifyOnNewEpisodes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByNotifyOnNewEpisodesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notifyOnNewEpisodes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
   sortByPlaybackSpeed() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playbackSpeed', Sort.asc);
@@ -920,6 +1113,20 @@ extension AppSettingsModelQuerySortBy
   sortByPlaybackSpeedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playbackSpeed', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByRefreshOnCellular() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshOnCellular', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  sortByRefreshOnCellularDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshOnCellular', Sort.desc);
     });
   }
 
@@ -1025,6 +1232,20 @@ extension AppSettingsModelQuerySortThenBy
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByBackgroundRefreshEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'backgroundRefreshEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByBackgroundRefreshEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'backgroundRefreshEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
   thenByContinuousPlay() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'continuousPlay', Sort.asc);
@@ -1052,6 +1273,20 @@ extension AppSettingsModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByFeedRefreshInterval() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'feedRefreshInterval', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByFeedRefreshIntervalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'feedRefreshInterval', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1066,6 +1301,20 @@ extension AppSettingsModelQuerySortThenBy
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByNotifyOnNewEpisodes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notifyOnNewEpisodes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByNotifyOnNewEpisodesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'notifyOnNewEpisodes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
   thenByPlaybackSpeed() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playbackSpeed', Sort.asc);
@@ -1076,6 +1325,20 @@ extension AppSettingsModelQuerySortThenBy
   thenByPlaybackSpeedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playbackSpeed', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByRefreshOnCellular() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshOnCellular', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QAfterSortBy>
+  thenByRefreshOnCellularDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'refreshOnCellular', Sort.desc);
     });
   }
 
@@ -1174,6 +1437,13 @@ extension AppSettingsModelQueryWhereDistinct
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
+  distinctByBackgroundRefreshEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'backgroundRefreshEnabled');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
   distinctByContinuousPlay() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'continuousPlay');
@@ -1188,9 +1458,30 @@ extension AppSettingsModelQueryWhereDistinct
   }
 
   QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
+  distinctByFeedRefreshInterval() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'feedRefreshInterval');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
+  distinctByNotifyOnNewEpisodes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'notifyOnNewEpisodes');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
   distinctByPlaybackSpeed() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'playbackSpeed');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, AppSettingsModel, QDistinct>
+  distinctByRefreshOnCellular() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'refreshOnCellular');
     });
   }
 
@@ -1253,6 +1544,13 @@ extension AppSettingsModelQueryProperty
   }
 
   QueryBuilder<AppSettingsModel, bool, QQueryOperations>
+  backgroundRefreshEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'backgroundRefreshEnabled');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, bool, QQueryOperations>
   continuousPlayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'continuousPlay');
@@ -1266,10 +1564,31 @@ extension AppSettingsModelQueryProperty
     });
   }
 
+  QueryBuilder<AppSettingsModel, FeedRefreshIntervalEnum, QQueryOperations>
+  feedRefreshIntervalProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'feedRefreshInterval');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, bool, QQueryOperations>
+  notifyOnNewEpisodesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'notifyOnNewEpisodes');
+    });
+  }
+
   QueryBuilder<AppSettingsModel, double, QQueryOperations>
   playbackSpeedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'playbackSpeed');
+    });
+  }
+
+  QueryBuilder<AppSettingsModel, bool, QQueryOperations>
+  refreshOnCellularProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'refreshOnCellular');
     });
   }
 

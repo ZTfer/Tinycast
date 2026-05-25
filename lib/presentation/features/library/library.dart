@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
@@ -17,6 +18,7 @@ import 'package:tinycast/presentation/providers/play_history_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
+import 'package:tinycast/presentation/providers/feed_refresh_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -51,7 +53,9 @@ class _LibraryState extends ConsumerState<Library> {
     Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 被调用');
     try {
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
-      Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      Logger.info(
+        '🕒 [LIBRARY-UI] _loadPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms',
+      );
       stopwatch.stop();
     } catch (e) {
       Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 异常: $e');
@@ -104,7 +108,9 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
-    Logger.info('🚫 [LIBRARY-UNFOLLOW] 开始取消关注 podcast: ${podcast.title} (id: ${podcast.id})');
+    Logger.info(
+      '🚫 [LIBRARY-UNFOLLOW] 开始取消关注 podcast: ${podcast.title} (id: ${podcast.id})',
+    );
     try {
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 1/5: 清理播放历史记录...');
       final playHistoryRepo = PlayHistoryRepository();
@@ -113,7 +119,10 @@ class _LibraryState extends ConsumerState<Library> {
 
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 2/5: 清理队列记录...');
       final queueRepo = QueueRepositoryImpl();
-      await queueRepo.removeFromQueueByPodcast(podcast.id, podcastITunesId: podcast.itunesId);
+      await queueRepo.removeFromQueueByPodcast(
+        podcast.id,
+        podcastITunesId: podcast.itunesId,
+      );
       Logger.info('✅ [LIBRARY-UNFOLLOW] 队列记录清理完成');
 
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 3/5: 取消关注播客（删除文件和数据库）...');
@@ -124,7 +133,9 @@ class _LibraryState extends ConsumerState<Library> {
 
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 4/5: 清理内存状态...');
       ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
-      ref.read(completedHistoriesProvider.notifier).removeByPodcastId(podcast.id);
+      ref
+          .read(completedHistoriesProvider.notifier)
+          .removeByPodcastId(podcast.id);
       ref.invalidate(queueNotifierProvider);
       ref.invalidate(completedHistoriesProvider);
       ref.invalidate(favoriteEpisodesNotifierProvider);
@@ -141,7 +152,11 @@ class _LibraryState extends ConsumerState<Library> {
       ToastUtils.showSuccessToast(context, message: '已取消关注');
       Logger.info('✅ [LIBRARY-UNFOLLOW] 取消关注流程全部完成');
     } catch (e, stackTrace) {
-      Logger.error('❌ [LIBRARY-UNFOLLOW] 取消关注失败', error: e, stackTrace: stackTrace);
+      Logger.error(
+        '❌ [LIBRARY-UNFOLLOW] 取消关注失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (!mounted) return;
       ToastUtils.showErrorToast(context, message: '取消关注失败: $e');
     }
@@ -155,22 +170,76 @@ class _LibraryState extends ConsumerState<Library> {
     ToastUtils.showSuccessToast(context, message: '已移除所有下载');
   }
 
+  Future<void> _onRefresh() async {
+    try {
+      await ref.read(feedRefreshProvider.notifier).refreshAll();
+
+      if (!mounted) return;
+
+      final state = ref.read(feedRefreshProvider);
+      if (state.status == FeedRefreshStatus.success) {
+        final totalNew = state.totalNewEpisodes;
+        final success = state.successCount;
+        final failure = state.failureCount;
+
+        String message;
+        if (totalNew > 0) {
+          message = '发现 $totalNew 集新内容（成功 $success，失败 $failure）';
+        } else {
+          message = '没有新内容（成功 $success，失败 $failure）';
+        }
+
+        ToastUtils.showSuccessToast(context, message: message);
+      } else if (state.status == FeedRefreshStatus.error) {
+        ToastUtils.showErrorToast(
+          context,
+          message: state.errorMessage ?? '刷新失败',
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtils.showErrorToast(context, message: '刷新失败: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
-    final podcasts = ref.watch(subscribedPodcastsProvider) ?? [];
-    Logger.info('🕒 [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}');
+    final podcastsRaw = ref.watch(subscribedPodcastsProvider);
+    final podcasts = podcastsRaw ?? [];
+    Logger.info(
+      ' [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}, podcastsRawIsNull=${podcastsRaw == null}',
+    );
 
-    return FutureBuilder<Map<int, bool>>(
-      key: ValueKey(podcasts.length),
-      future: _computeDownloadStatus(podcasts),
-      builder: (context, snapshot) {
-        Logger.info('🕒 [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}');
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildContent(state, podcasts, snapshot.data ?? {}),
-        );
-      },
+    return Localizations(
+      locale: const Locale('zh', 'CN'),
+      delegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      child: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: const Color(0xFF000000),
+        child: FutureBuilder<Map<int, bool>>(
+          key: ValueKey(podcasts.length),
+          future: _computeDownloadStatus(podcasts),
+          builder: (context, snapshot) {
+            Logger.info(
+              ' [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}',
+            );
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildContent(
+                state,
+                podcasts,
+                podcastsRaw,
+                snapshot.data ?? {},
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -187,16 +256,30 @@ class _LibraryState extends ConsumerState<Library> {
   Widget _buildContent(
     PodcastState state,
     List<Podcast> podcasts,
+    List<Podcast>? podcastsRaw,
     Map<int, bool> hasDownloadMap,
   ) {
-    if (state.status == PodcastStatus.loading && podcasts.isEmpty) {
+    // 判断是否真的没有任何数据（从未加载过或确实没有订阅）
+    final hasNoData =
+        podcastsRaw == null && state.status == PodcastStatus.initial;
+    final isLoadingWithNoData =
+        state.status == PodcastStatus.loading &&
+        (podcastsRaw == null || podcastsRaw.isEmpty);
+    final isErrorWithNoData =
+        state.status == PodcastStatus.error &&
+        (podcastsRaw == null || podcastsRaw.isEmpty);
+    final isEmptyList = podcastsRaw != null && podcasts.isEmpty;
+
+    // 首次加载或加载中没有数据时显示加载指示器
+    if (isLoadingWithNoData || hasNoData) {
       return const SizedBox(
         height: 400,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (state.status == PodcastStatus.error && podcasts.isEmpty) {
+    // 错误且没有数据时显示错误页面
+    if (isErrorWithNoData) {
       return SizedBox(
         height: 400,
         child: Center(
@@ -224,7 +307,8 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
-    if (podcasts.isEmpty) {
+    // 有数据但列表为空时显示空页面
+    if (isEmptyList) {
       return LibraryEmptyPage(
         onRssSubscribe: () =>
             AppRouter.navigateTo(context, AppRoutes.subscribe),
@@ -232,6 +316,7 @@ class _LibraryState extends ConsumerState<Library> {
       );
     }
 
+    // 有数据时显示列表
     return ListView.builder(
       itemCount: podcasts.length,
       itemBuilder: (context, index) {

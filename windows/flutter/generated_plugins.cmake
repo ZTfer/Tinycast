@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  connectivity_plus
   desktop_multi_window
   flutter_acrylic
   flutter_secure_storage_windows

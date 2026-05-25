@@ -31,6 +31,8 @@ class Podcast {
   final DateTime? itunesReleaseDate;
   final String? itunesCollectionExplicitness;
   final String? itunesContentAdvisoryRating;
+  final DateTime? lastFetchedAt;
+  final int refreshFailedCount;
 
   Podcast({
     required this.id,
@@ -65,5 +67,7 @@ class Podcast {
     this.itunesReleaseDate,
     this.itunesCollectionExplicitness,
     this.itunesContentAdvisoryRating,
+    this.lastFetchedAt,
+    this.refreshFailedCount = 0,
   });
 }

@@ -3,6 +3,7 @@ import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/presentation/features/settings/general_settings/download_settings/download_settings.dart';
 import 'package:tinycast/presentation/features/settings/general_settings/auto_download_settings/auto_download_settings.dart';
+import 'package:tinycast/presentation/features/settings/general_settings/feed_refresh_settings/feed_refresh_settings.dart';
 
 class GeneralSettings extends StatelessWidget {
   const GeneralSettings({super.key});
@@ -48,6 +49,23 @@ class GeneralSettings extends StatelessWidget {
               ),
             ),
             AutoDownloadSettings(),
+          ],
+        ),
+        const TableRow(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 8.0, top: 8.0),
+              child: Text(
+                "刷新:",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: Color(0xD9000000),
+                  fontSize: 14,
+                  height: 16 / 14,
+                ),
+              ),
+            ),
+            FeedRefreshSettings(),
           ],
         ),
         TableRow(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
@@ -14,6 +15,7 @@ import 'package:tinycast/core/theme/theme_source_flag.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/core/theme/app_text_styles.dart';
+import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
 
 /// 打开节目详情窗口
 ///
@@ -66,9 +68,49 @@ class AppConfig {
   }
 }
 
+class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
+  static final FeedRefreshLifecycleObserver _instance =
+      FeedRefreshLifecycleObserver._();
+  static FeedRefreshLifecycleObserver get instance => _instance;
+
+  FeedRefreshLifecycleObserver._();
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        FeedRefreshScheduler.instance.handleAppPaused();
+        break;
+      case AppLifecycleState.resumed:
+        FeedRefreshScheduler.instance.handleAppResumed();
+        break;
+      case AppLifecycleState.detached:
+        FeedRefreshScheduler.instance.stop();
+        WidgetsBinding.instance.removeObserver(this);
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+
+  void dispose() {
+    FeedRefreshScheduler.instance.stop();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+}
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowUtils.initialize();
+
+  // 先加载主题配置，确保窗口初始化时可以使用配置中的尺寸
+  if (!ThemeSource.useHardcoded) {
+    await ThemeLoader.preloadThemeConfigs();
+    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
+  } else {
+    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
+  }
 
   // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();
@@ -80,6 +122,10 @@ void main(List<String> args) async {
     case 'main':
       await initMainWindow();
       await _initializeApp(config);
+      WidgetsBinding.instance.addObserver(
+        FeedRefreshLifecycleObserver.instance,
+      );
+      unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
       break;
     case 'settings':
@@ -107,6 +153,10 @@ void main(List<String> args) async {
     default:
       await initMainWindow();
       await _initializeApp(config);
+      WidgetsBinding.instance.addObserver(
+        FeedRefreshLifecycleObserver.instance,
+      );
+      unawaited(FeedRefreshScheduler.instance.start());
       runApp(const ProviderScope(child: MyApp()));
   }
 }
@@ -115,13 +165,6 @@ Future<void> _initializeApp(AppConfig config) async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
   await Logger.initFileLogging();
-
-  if (!ThemeSource.useHardcoded) {
-    await ThemeLoader.preloadThemeConfigs();
-    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
-  } else {
-    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
-  }
 
   // 初始化 Supabase（如果配置了有效凭据）
   if (!config.isPlaceholder) {
@@ -135,8 +178,19 @@ Future<void> _initializeApp(AppConfig config) async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void dispose() {
+    FeedRefreshLifecycleObserver.instance.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +207,9 @@ class MyApp extends StatelessWidget {
       },
       textStyle: TextStyle(
         fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+        color: const Color(0xFF000000),
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
       ),
       home: const HomePage(),
       builder: (context, child) {

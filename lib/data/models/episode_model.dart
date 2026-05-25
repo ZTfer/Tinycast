@@ -48,7 +48,7 @@ class Episode {
 
   DateTime? lastPlayedAt;
 
-  final DateTime createdAt = DateTime.now();
+  late DateTime createdAt;
 
   late DateTime updatedAt;
 

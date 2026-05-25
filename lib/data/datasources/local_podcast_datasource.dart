@@ -5,6 +5,8 @@ import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/itunes_info_dto.dart';
 import '../database/isar_service.dart';
+import '../mappers/podcast_mapper.dart';
+import '../mappers/episode_mapper.dart';
 import '../models/podcast_model.dart' as model;
 import '../models/episode_model.dart' as model;
 
@@ -115,7 +117,7 @@ class LocalPodcastDataSource {
     try {
       Logger.info('保存播客到数据库: ${podcast.title}');
 
-      final podcastModel = _convertPodcastEntityToModel(podcast);
+      final podcastModel = PodcastMapper.toModel(podcast);
 
       final id = await _isarService.isar.writeTxn(() async {
         final existingPodcast = await _isarService.isar.podcasts
@@ -155,9 +157,7 @@ class LocalPodcastDataSource {
     try {
       Logger.info('保存 ${episodes.length} 个节目到数据库');
 
-      final episodeModels = episodes
-          .map((episode) => _convertEpisodeEntityToModel(episode))
-          .toList();
+      final episodeModels = EpisodeMapper.toModelList(episodes);
 
       final podcastITunesIdMap = <int, String>{};
       final isar = _isarService.isar;
@@ -704,38 +704,6 @@ class LocalPodcastDataSource {
     }
   }
 
-  model.Podcast _convertPodcastEntityToModel(Podcast entity) {
-    return model.Podcast()
-      ..title = entity.title
-      ..subtitle = entity.subtitle
-      ..author = entity.author
-      ..description = entity.description
-      ..artworkUrl = entity.artworkUrl
-      ..rssUrl = entity.rssUrl
-      ..websiteUrl = entity.websiteUrl
-      ..language = entity.language
-      ..copyright = entity.copyright
-      ..categories = entity.categories
-      ..keywords = entity.keywords
-      ..isExplicit = entity.isExplicit
-      ..ownerName = entity.ownerName
-      ..ownerEmail = entity.ownerEmail
-      ..lastUpdated = entity.lastUpdated
-      ..episodeCount = entity.episodeCount
-      ..isSubscribed = entity.isSubscribed
-      ..subscribedAt = entity.subscribedAt
-      ..itunesId = entity.itunesId
-      ..itunesArtworkUrl = entity.itunesArtworkUrl
-      ..itunesPrimaryGenreName = entity.itunesPrimaryGenreName
-      ..itunesGenres = entity.itunesGenres
-      ..itunesGenreIds = entity.itunesGenreIds
-      ..itunesCollectionViewUrl = entity.itunesCollectionViewUrl
-      ..itunesCountry = entity.itunesCountry
-      ..itunesReleaseDate = entity.itunesReleaseDate
-      ..itunesCollectionExplicitness = entity.itunesCollectionExplicitness
-      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
-  }
-
   Future<void> updateIsPlayed(int episodeId, bool isPlayed) async {
     try {
       Logger.info('📋 [PODCAST-DS] 更新 episode isPlayed, episodeId: $episodeId, isPlayed: $isPlayed');
@@ -767,32 +735,156 @@ class LocalPodcastDataSource {
     }
   }
 
-  model.Episode _convertEpisodeEntityToModel(Episode entity) {
-    return model.Episode()
-      ..podcastId = entity.podcastId
-      ..title = entity.title
-      ..description = entity.description
-      ..link = entity.link
-      ..guid = entity.guid
-      ..author = entity.author
-      ..pubDate = entity.pubDate
-      ..audioUrl = entity.audioUrl
-      ..audioType = entity.audioType
-      ..duration = entity.duration
-      ..artworkUrl = entity.artworkUrl
-      ..isExplicit = entity.isExplicit
-      ..isPlayed = entity.isPlayed
-      ..isDownloaded = entity.isDownloaded
-      ..downloadedPath = entity.downloadedPath
-      ..downloadProgress = entity.downloadProgress
-      ..playProgress = entity.playProgress
-      ..lastPlayedAt = entity.lastPlayedAt
-      ..updatedAt = entity.updatedAt
-      ..itunesId = entity.itunesId
-      ..podcastITunesId = entity.podcastITunesId
-      ..itunesArtworkUrl = entity.itunesArtworkUrl
-      ..itunesReleaseDate = entity.itunesReleaseDate
-      ..itunesExplicitness = entity.itunesExplicitness
-      ..itunesContentAdvisoryRating = entity.itunesContentAdvisoryRating;
+  Future<void> updateLastFetchedAt(int podcastId, DateTime lastFetchedAt) async {
+    try {
+      Logger.info('更新播客最后获取时间: $podcastId, $lastFetchedAt');
+
+      await _isarService.isar.writeTxn(() async {
+        final podcast = await _isarService.isar.podcasts.get(podcastId);
+        if (podcast != null) {
+          podcast.lastFetchedAt = lastFetchedAt;
+          await _isarService.isar.podcasts.put(podcast);
+        } else {
+          Logger.warning('未找到 ID 为 $podcastId 的播客，无法更新最后获取时间');
+        }
+      });
+
+      Logger.info('成功更新播客最后获取时间: $podcastId');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('更新最后获取时间失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '更新最后获取时间失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('更新最后获取时间失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '更新最后获取时间失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> updateRefreshFailedCount(int podcastId, int count) async {
+    try {
+      Logger.info('更新播客刷新失败次数: $podcastId, $count');
+
+      await _isarService.isar.writeTxn(() async {
+        final podcast = await _isarService.isar.podcasts.get(podcastId);
+        if (podcast != null) {
+          podcast.refreshFailedCount = count;
+          await _isarService.isar.podcasts.put(podcast);
+        } else {
+          Logger.warning('未找到 ID 为 $podcastId 的播客，无法更新刷新失败次数');
+        }
+      });
+
+      Logger.info('成功更新播客刷新失败次数: $podcastId');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('更新刷新失败次数失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '更新刷新失败次数失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('更新刷新失败次数失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '更新刷新失败次数失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<Set<String>> getExistingEpisodeGuids(int podcastId) async {
+    try {
+      Logger.info('获取播客已存在的节目 GUID 列表: $podcastId');
+
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .podcastIdEqualTo(podcastId)
+          .findAll();
+
+      final guids = <String>{};
+      for (final episode in episodes) {
+        if (episode.guid != null && episode.guid!.isNotEmpty) {
+          guids.add(episode.guid!);
+        }
+      }
+
+      Logger.info('成功获取 ${guids.length} 个已存在的节目 GUID');
+
+      return guids;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('获取节目 GUID 列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '获取节目 GUID 列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('获取节目 GUID 列表失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '获取节目 GUID 列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<int> bulkInsertNewEpisodes(List<model.Episode> newEpisodes) async {
+    try {
+      Logger.info('批量插入新节目，数量: ${newEpisodes.length}');
+
+      if (newEpisodes.isEmpty) {
+        Logger.info('没有新节目需要插入');
+        return 0;
+      }
+
+      // 在事务外先获取所有需要的 podcastITunesId
+      final podcastITunesIdMap = <int, String?>{};
+      for (final episode in newEpisodes) {
+        if (!podcastITunesIdMap.containsKey(episode.podcastId)) {
+          final podcast = await _isarService.isar.podcasts.get(episode.podcastId);
+          podcastITunesIdMap[episode.podcastId] = podcast?.itunesId;
+        }
+      }
+
+      // 填充 podcastITunesId
+      for (final episode in newEpisodes) {
+        if (episode.podcastITunesId == null || episode.podcastITunesId!.isEmpty) {
+          final itunesId = podcastITunesIdMap[episode.podcastId];
+          if (itunesId != null && itunesId.isNotEmpty) {
+            episode.podcastITunesId = itunesId;
+          }
+        }
+      }
+
+      // 在事务中只执行插入操作
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.episodes.putAll(newEpisodes);
+      });
+
+      Logger.info('成功批量插入 ${newEpisodes.length} 个新节目');
+
+      return newEpisodes.length;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('批量插入新节目失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '批量插入新节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('批量插入新节目异常', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '批量插入新节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }
