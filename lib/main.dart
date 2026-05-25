@@ -260,6 +260,13 @@ class _MyAppMobileState extends State<MyAppMobile> {
         fontWeight: FontWeight.normal,
       ),
       home: const MobileHome(),
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+        return PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        );
+      },
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
