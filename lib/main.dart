@@ -247,34 +247,25 @@ class _MyAppMobileState extends State<MyAppMobile> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    return WidgetsApp(
       title: 'TinyCast Mobile',
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.blue,
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-          ),
-          bodyMedium: TextStyle(
-            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-          ),
-        ),
+      color: const Color(0x00000000),
+      textStyle: TextStyle(
+        fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+        color: brightness == Brightness.dark
+            ? const Color(0xFFFFFFFF)
+            : const Color(0xFF000000),
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-          ),
-          bodyMedium: TextStyle(
-            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-          ),
-        ),
-      ),
-      themeMode: ThemeMode.system,
       home: const MobileHome(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: child ?? const SizedBox(),
+        );
+      },
     );
   }
 }
