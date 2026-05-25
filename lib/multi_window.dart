@@ -186,6 +186,10 @@ WindowArguments parseArguments(String arguments) {
 /// 配置并显示应用的主窗口，使用隐藏标题栏样式
 /// 窗口大小为 400x800，居中显示
 Future<void> initMainWindow() async {
+  if (Platform.isIOS || Platform.isAndroid) {
+    return;
+  }
+
   await windowManager.ensureInitialized();
 
   final theme = AppTheme.light;
@@ -213,6 +217,10 @@ Future<void> initMainWindow() async {
 /// 窗口大小为 600x380，居中显示
 /// 该窗口用于显示应用的设置界面
 Future<void> initSettingsWindow() async {
+  if (Platform.isIOS || Platform.isAndroid) {
+    return;
+  }
+
   await windowManager.ensureInitialized();
 
   final theme = AppTheme.light;
@@ -240,6 +248,10 @@ Future<void> initSettingsWindow() async {
 /// 窗口大小为 500x600，居中显示
 /// 该窗口用于显示应用的订阅界面
 Future<void> initSubscribeWindow() async {
+  if (Platform.isIOS || Platform.isAndroid) {
+    return;
+  }
+
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
@@ -266,6 +278,10 @@ Future<void> initSubscribeWindow() async {
 /// 窗口大小为 600x700，居中显示
 /// 该窗口用于显示节目的详细信息
 Future<void> initEpisodeDetailWindow() async {
+  if (Platform.isIOS || Platform.isAndroid) {
+    return;
+  }
+
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(

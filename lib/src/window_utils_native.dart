@@ -4,10 +4,12 @@ import 'package:flutter_acrylic/flutter_acrylic.dart';
 
 class WindowUtils {
   static Future<void> initialize() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     await Window.initialize();
   }
 
   static Future<void> applyFrostedGlassEffect() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     if (Platform.isMacOS) {
       await _applyMacOSEffect();
     } else if (Platform.isWindows) {
@@ -47,6 +49,7 @@ class WindowUtils {
   }
 
   static Future<void> applySidebarFrostedEffect() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     if (Platform.isMacOS) {
       await Window.setEffect(
         effect: WindowEffect.windowBackground,
@@ -61,12 +64,14 @@ class WindowUtils {
   }
 
   static Future<void> removeFrostedGlassEffect() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     await Window.setEffect(
       effect: WindowEffect.disabled,
     );
   }
 
   static Future<void> setTransparentBackground() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     if (Platform.isMacOS) {
       await Window.setEffect(
         effect: WindowEffect.transparent,
@@ -81,6 +86,7 @@ class WindowUtils {
   }
 
   static Future<void> enableFullSizeContent() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     if (Platform.isMacOS) {
       await Window.enableFullSizeContentView();
       await Window.makeTitlebarTransparent();
@@ -88,6 +94,7 @@ class WindowUtils {
   }
 
   static Future<void> disableFullSizeContent() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     if (Platform.isMacOS) {
       await Window.disableFullSizeContentView();
       await Window.makeTitlebarOpaque();
@@ -95,6 +102,7 @@ class WindowUtils {
   }
 
   static Future<void> configureTransparentWindow() async {
+    if (Platform.isIOS || Platform.isAndroid) return;
     await applyFrostedGlassEffect();
     await enableFullSizeContent();
   }
@@ -107,6 +115,7 @@ class TitlebarSafeAreaWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isIOS || Platform.isAndroid) return child;
     if (Platform.isMacOS) {
       return TitlebarSafeArea(child: child);
     }

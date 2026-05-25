@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
+import 'package:tinycast/presentation/features/home/mobile_home.dart';
 import 'package:tinycast/multi_window.dart';
 import 'package:tinycast/window_utils.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -101,10 +103,18 @@ class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
 }
 
 void main(List<String> args) async {
+  if (Platform.isIOS || Platform.isAndroid) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await _initializeApp(AppConfig.fromEnvironment());
+    WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver.instance);
+    unawaited(FeedRefreshScheduler.instance.start());
+    runApp(const ProviderScope(child: MyAppMobile()));
+    return;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   await WindowUtils.initialize();
 
-  // 先加载主题配置，确保窗口初始化时可以使用配置中的尺寸
   if (!ThemeSource.useHardcoded) {
     await ThemeLoader.preloadThemeConfigs();
     Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
@@ -112,7 +122,6 @@ void main(List<String> args) async {
     Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
   }
 
-  // 从编译时参数读取 Supabase 配置
   final config = AppConfig.fromEnvironment();
 
   final windowController = await WindowController.fromCurrentEngine();
@@ -218,6 +227,54 @@ class _MyAppState extends State<MyApp> {
           child: child ?? const SizedBox(),
         );
       },
+    );
+  }
+}
+
+class MyAppMobile extends StatefulWidget {
+  const MyAppMobile({super.key});
+
+  @override
+  State<MyAppMobile> createState() => _MyAppMobileState();
+}
+
+class _MyAppMobileState extends State<MyAppMobile> {
+  @override
+  void dispose() {
+    FeedRefreshLifecycleObserver.instance.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'TinyCast Mobile',
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.blue,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(
+            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+          ),
+          bodyMedium: TextStyle(
+            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+          ),
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(
+            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+          ),
+          bodyMedium: TextStyle(
+            fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+          ),
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const MobileHome(),
     );
   }
 }
