@@ -12,7 +12,7 @@ class Navbar extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
+        // padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0),
         decoration: BoxDecoration(
           // color: const Color(0xFFFFFFFF),
           // borderRadius: BorderRadius.circular(24.0),
