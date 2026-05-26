@@ -11,8 +11,8 @@ class TabBarItem extends StatelessWidget {
   /// 按钮显示的图标
   final IconData icon;
 
-  /// 按钮显示的文字标签
-  final String label;
+  /// 按钮显示的文字标签（选填）
+  final String? label;
 
   /// 按钮的当前状态
   final TabBarItemState state;
@@ -23,7 +23,7 @@ class TabBarItem extends StatelessWidget {
   const TabBarItem({
     super.key,
     required this.icon,
-    required this.label,
+    this.label,
     required this.state,
     required this.onPressed,
   });
@@ -33,20 +33,22 @@ class TabBarItem extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
         decoration: BoxDecoration(
           color: _getBackgroundColor(),
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(24.0),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: _getContentColor(), size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(color: _getContentColor(), fontSize: 12),
-            ),
+            Icon(icon, color: _getContentColor(), size: 18),
+            if (label != null) ...[
+              const SizedBox(height: 0),
+              Text(
+                label!,
+                style: TextStyle(color: _getContentColor(), fontSize: 8),
+              ),
+            ],
           ],
         ),
       ),
