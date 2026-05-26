@@ -120,7 +120,7 @@ class Body extends ConsumerWidget {
           ),
         ),
         Expanded(child: _buildDetailContent(detail)),
-      ),
+      ],
     );
   }
 
