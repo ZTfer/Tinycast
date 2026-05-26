@@ -62,6 +62,10 @@ class Body extends ConsumerWidget {
   }
 
   Widget _buildContent(String currentPage, WidgetRef ref) {
+    final navigationState = ref.watch(navigationProvider);
+    if (navigationState.hasDetail) {
+      return _buildDetailPage(navigationState, ref);
+    }
     return _buildMainPage(currentPage);
   }
 
