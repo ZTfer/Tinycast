@@ -10,10 +10,10 @@ class Navbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(24.0),
+        // color: const Color(0xFFFFFFFF),
+        // borderRadius: BorderRadius.circular(24.0),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
