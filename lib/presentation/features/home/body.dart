@@ -16,10 +16,7 @@ import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 
 class Body extends ConsumerWidget {
-  final String? currentPage;
-  final Function(String)? onPageChanged;
-
-  const Body({super.key, this.currentPage, this.onPageChanged});
+  const Body({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,10 +24,6 @@ class Body extends ConsumerWidget {
       MediaQuery.platformBrightnessOf(context),
     );
     final navigationState = ref.watch(navigationProvider);
-    final effectiveCurrentPage = currentPage ?? navigationState.currentPage;
-    final effectiveOnPageChanged =
-        onPageChanged ??
-        (page) => ref.read(navigationProvider.notifier).navigateToPage(page);
 
     return Padding(
       padding: theme.bodyPadding,
@@ -43,8 +36,10 @@ class Body extends ConsumerWidget {
         child: Row(
           children: [
             Sidebar(
-              currentPage: effectiveCurrentPage,
-              onPageChanged: effectiveOnPageChanged,
+              currentPage: navigationState.currentPage,
+              onPageChanged: (page) {
+                ref.read(navigationProvider.notifier).navigateToPage(page);
+              },
               backgroundColor: theme.bodySidebarBackground,
             ),
             Expanded(
@@ -52,7 +47,7 @@ class Body extends ConsumerWidget {
                 padding: theme.bodyContentPadding,
                 alignment: Alignment.topLeft,
                 color: theme.bodyContentBackground,
-                child: _buildContent(effectiveCurrentPage, ref),
+                child: _buildContent(navigationState, ref),
               ),
             ),
           ],
@@ -61,12 +56,12 @@ class Body extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(String currentPage, WidgetRef ref) {
-    final navigationState = ref.watch(navigationProvider);
-    if (navigationState.hasDetail) {
-      return _buildDetailPage(navigationState, ref);
+  Widget _buildContent(NavigationState state, WidgetRef ref) {
+    if (state.hasDetail) {
+      return _buildDetailPage(state, ref);
     }
-    return _buildMainPage(currentPage);
+
+    return _buildMainPage(state.currentPage);
   }
 
   Widget _buildMainPage(String currentPage) {
@@ -125,7 +120,7 @@ class Body extends ConsumerWidget {
           ),
         ),
         Expanded(child: _buildDetailContent(detail)),
-      ],
+      ),
     );
   }
 
