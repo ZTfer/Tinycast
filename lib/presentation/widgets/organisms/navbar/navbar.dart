@@ -9,18 +9,21 @@ class Navbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        // color: const Color(0xFFFFFFFF),
-        // borderRadius: BorderRadius.circular(24.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          NavbarLargeTitle(title: title),
-          NavbarButton(),
-        ],
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
+        decoration: BoxDecoration(
+          // color: const Color(0xFFFFFFFF),
+          // borderRadius: BorderRadius.circular(24.0),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            NavbarLargeTitle(title: title),
+            NavbarButton(),
+          ],
+        ),
       ),
     );
   }
