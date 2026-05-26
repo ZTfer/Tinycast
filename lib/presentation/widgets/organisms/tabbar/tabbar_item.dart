@@ -73,7 +73,7 @@ class _TabBarItemState extends State<TabBarItem> {
     if (widget.state == TabBarItemState.active) {
       return const Color(0xFFEEEEEE);
     }
-    return Colors.transparent;
+    return const Color(0x00000000);
   }
 
   /// 根据按钮状态获取图标颜色
