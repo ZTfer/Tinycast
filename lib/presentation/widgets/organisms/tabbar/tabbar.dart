@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -22,37 +23,35 @@ class TabBar extends StatelessWidget {
       color: backgroundColor,
       child: SafeArea(
         top: false,
-        child: Container(
-          height: 60.0,
-          child: Column(
-            children: [
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildTabButton(
-                      icon: LucideIcons.listMusic,
-                      label: 'Queue',
-                      route: AppRoutes.queue,
-                      state: currentPage == AppRoutes.queue
-                          ? TabBarItemState.active
-                          : TabBarItemState.defaultState,
-                      onPressed: () => onPageChanged(AppRoutes.queue),
-                    ),
-                    _buildTabButton(
-                      icon: LucideIcons.layoutGrid,
-                      label: 'Library',
-                      route: AppRoutes.library,
-                      state: currentPage == AppRoutes.library
-                          ? TabBarItemState.active
-                          : TabBarItemState.defaultState,
-                      onPressed: () => onPageChanged(AppRoutes.library),
-                    ),
-                  ],
+        minimum: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildTabButton(
+                  icon: LucideIcons.listMusic,
+                  label: 'Queue',
+                  route: AppRoutes.queue,
+                  state: currentPage == AppRoutes.queue
+                      ? TabBarItemState.active
+                      : TabBarItemState.defaultState,
+                  onPressed: () => onPageChanged(AppRoutes.queue),
                 ),
-              ),
-            ],
-          ),
+                _buildTabButton(
+                  icon: LucideIcons.layoutGrid,
+                  label: 'Library',
+                  route: AppRoutes.library,
+                  state: currentPage == AppRoutes.library
+                      ? TabBarItemState.active
+                      : TabBarItemState.defaultState,
+                  onPressed: () => onPageChanged(AppRoutes.library),
+                ),
+              ],
+            ),
+            // Divider(height: 0.5, thickness: 0.5, color: Colors.grey.shade300),
+          ],
         ),
       ),
     );
