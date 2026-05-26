@@ -6,11 +6,9 @@ class MobileHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        Expanded(child: MobileBody()),
-      ],
+    return Container(
+      backgroundColor: const Color(0xFFF5F5F5),
+      child: MobileBody(),
     );
   }
 }
