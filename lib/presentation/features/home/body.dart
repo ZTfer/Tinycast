@@ -16,7 +16,10 @@ import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 
 class Body extends ConsumerWidget {
-  const Body({super.key});
+  final String? currentPage;
+  final Function(String)? onPageChanged;
+
+  const Body({super.key, this.currentPage, this.onPageChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,6 +27,10 @@ class Body extends ConsumerWidget {
       MediaQuery.platformBrightnessOf(context),
     );
     final navigationState = ref.watch(navigationProvider);
+    final effectiveCurrentPage = currentPage ?? navigationState.currentPage;
+    final effectiveOnPageChanged =
+        onPageChanged ??
+        (page) => ref.read(navigationProvider.notifier).navigateToPage(page);
 
     return Padding(
       padding: theme.bodyPadding,
@@ -36,10 +43,8 @@ class Body extends ConsumerWidget {
         child: Row(
           children: [
             Sidebar(
-              currentPage: navigationState.currentPage,
-              onPageChanged: (page) {
-                ref.read(navigationProvider.notifier).navigateToPage(page);
-              },
+              currentPage: effectiveCurrentPage,
+              onPageChanged: effectiveOnPageChanged,
               backgroundColor: theme.bodySidebarBackground,
             ),
             Expanded(
@@ -47,7 +52,7 @@ class Body extends ConsumerWidget {
                 padding: theme.bodyContentPadding,
                 alignment: Alignment.topLeft,
                 color: theme.bodyContentBackground,
-                child: _buildContent(navigationState, ref),
+                child: _buildContent(effectiveCurrentPage, ref),
               ),
             ),
           ],
@@ -56,12 +61,8 @@ class Body extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(NavigationState state, WidgetRef ref) {
-    if (state.hasDetail) {
-      return _buildDetailPage(state, ref);
-    }
-
-    return _buildMainPage(state.currentPage);
+  Widget _buildContent(String currentPage, WidgetRef ref) {
+    return _buildMainPage(currentPage);
   }
 
   Widget _buildMainPage(String currentPage) {
