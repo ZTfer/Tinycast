@@ -22,7 +22,6 @@ class TabBar extends StatelessWidget {
     return Container(
       height: 60.0 + bottomPadding,
       color: backgroundColor,
-      padding: EdgeInsets.only(bottom: bottomPadding),
       child: Column(
         children: [
           Expanded(
