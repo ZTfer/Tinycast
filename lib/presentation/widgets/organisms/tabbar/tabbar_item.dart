@@ -34,6 +34,10 @@ class TabBarItem extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -55,5 +59,13 @@ class TabBarItem extends StatelessWidget {
       return const Color(0xFF000000);
     }
     return const Color(0xD9000000);
+  }
+
+  /// 根据按钮状态获取背景色
+  Color _getBackgroundColor() {
+    if (state == TabBarItemState.active) {
+      return const Color(0xFFEEEEEE);
+    }
+    return const Color(0x00000000);
   }
 }
