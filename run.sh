@@ -56,6 +56,9 @@ esac
 
 echo "📡 Supabase URL: ${SUPABASE_URL:0:20}..."
 
+# 移除已处理的平台参数，避免传递给 flutter run
+shift
+
 flutter run -d "$FLUTTER_DEVICE" \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
