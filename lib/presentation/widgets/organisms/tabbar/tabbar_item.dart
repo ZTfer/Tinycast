@@ -42,13 +42,11 @@ class TabBarItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: _getContentColor(), size: 18),
-            if (label != null) ...[
-              const SizedBox(height: 0),
+            if (label != null)
               Text(
                 label!,
                 style: TextStyle(color: _getContentColor(), fontSize: 8),
               ),
-            ],
           ],
         ),
       ),
