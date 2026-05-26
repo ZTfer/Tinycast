@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tinycast/presentation/widgets/organisms/tabbar/tabbar.dart' as custom_tabbar;
+import 'package:tinycast/presentation/widgets/organisms/navbar/navbar.dart';
+import 'package:tinycast/presentation/widgets/organisms/tabbar/tabbar.dart'
+    as custom_tabbar;
 import 'package:tinycast/presentation/features/downloads/downloads.dart';
 import 'package:tinycast/presentation/features/favorite/favorite.dart';
 import 'package:tinycast/presentation/features/history/history.dart';
@@ -23,9 +25,11 @@ class MobileBody extends ConsumerWidget {
 
     return Column(
       children: [
-        Expanded(
-          child: _buildContent(navigationState, ref),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Navbar(title: _getPageTitle(navigationState.currentPage)),
         ),
+        Expanded(child: _buildContent(navigationState, ref)),
         custom_tabbar.TabBar(
           currentPage: navigationState.currentPage,
           onPageChanged: (page) {
@@ -34,6 +38,29 @@ class MobileBody extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  String _getPageTitle(String currentPage) {
+    switch (currentPage) {
+      case AppRoutes.queue:
+        return 'Queue';
+      case AppRoutes.library:
+        return 'Library';
+      case AppRoutes.favorite:
+        return 'Favorite';
+      case AppRoutes.history:
+        return 'History';
+      case AppRoutes.downloads:
+        return 'Downloads';
+      case AppRoutes.subscribe:
+        return 'Subscribe';
+      case AppRoutes.settings:
+        return 'Settings';
+      case AppRoutes.testPage:
+        return 'Test Page';
+      default:
+        return 'Tinycast';
+    }
   }
 
   Widget _buildContent(NavigationState state, WidgetRef ref) {

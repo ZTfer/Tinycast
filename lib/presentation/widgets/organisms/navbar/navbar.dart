@@ -3,7 +3,9 @@ import 'navbar_button.dart';
 import 'navbar_large_title.dart';
 
 class Navbar extends StatelessWidget {
-  const Navbar({super.key});
+  final String title;
+
+  const Navbar({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,10 @@ class Navbar extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [NavbarLargeTitle(), NavbarButton()],
+        children: [
+          NavbarLargeTitle(title: title),
+          NavbarButton(),
+        ],
       ),
     );
   }

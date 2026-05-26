@@ -1,12 +1,14 @@
 import 'package:flutter/widgets.dart';
 
 class NavbarLargeTitle extends StatelessWidget {
-  const NavbarLargeTitle({super.key});
+  final String title;
+
+  const NavbarLargeTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      'Tinycast',
+      title,
       style: const TextStyle(
         fontSize: 24.0,
         fontWeight: FontWeight.bold,
