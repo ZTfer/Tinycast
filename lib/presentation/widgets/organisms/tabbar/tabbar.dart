@@ -18,9 +18,11 @@ class TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      height: 60.0,
+      height: 60.0 + bottomPadding,
       color: backgroundColor,
+      padding: EdgeInsets.only(bottom: bottomPadding),
       child: Column(
         children: [
           Expanded(
