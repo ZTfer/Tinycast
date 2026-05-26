@@ -1,7 +1,7 @@
-- [ ] TabBar 组件正确接收 currentPage 和 onPageChanged 参数
-- [ ] Queue 按钮点击后显示 Queue 页面，按钮处于 active 状态
-- [ ] Library 按钮点击后显示 Library 页面，按钮处于 active 状态
-- [ ] 初始状态默认显示 Queue 页面
-- [ ] 日志正确记录按钮点击和路由切换信息
-- [ ] TabBar 背景色和分隔线样式与 Sidebar 一致
-- [ ] 代码符合 Flutter 规范，无编译错误
+- [x] TabBar 组件正确接收 currentPage 和 onPageChanged 参数
+- [x] Queue 按钮点击后显示 Queue 页面，按钮处于 active 状态
+- [x] Library 按钮点击后显示 Library 页面，按钮处于 active 状态
+- [x] 初始状态默认显示 Queue 页面（取决于调用方传入的 currentPage 初始值）
+- [x] 日志正确记录按钮点击和路由切换信息
+- [x] TabBar 背景色和分隔线样式与 Sidebar 一致
+- [x] 代码符合 Flutter 规范，无编译错误
