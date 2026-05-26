@@ -24,34 +24,36 @@ class TabBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         minimum: EdgeInsets.zero,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildTabButton(
-                  icon: LucideIcons.listMusic,
-                  label: 'Queue',
-                  route: AppRoutes.queue,
-                  state: currentPage == AppRoutes.queue
-                      ? TabBarItemState.active
-                      : TabBarItemState.defaultState,
-                  onPressed: () => onPageChanged(AppRoutes.queue),
-                ),
-                _buildTabButton(
-                  icon: LucideIcons.layoutGrid,
-                  label: 'Library',
-                  route: AppRoutes.library,
-                  state: currentPage == AppRoutes.library
-                      ? TabBarItemState.active
-                      : TabBarItemState.defaultState,
-                  onPressed: () => onPageChanged(AppRoutes.library),
-                ),
-              ],
-            ),
-            // Divider(height: 0.5, thickness: 0.5, color: Colors.grey.shade300),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildTabButton(
+                    icon: LucideIcons.listMusic,
+                    label: 'Queue',
+                    route: AppRoutes.queue,
+                    state: currentPage == AppRoutes.queue
+                        ? TabBarItemState.active
+                        : TabBarItemState.defaultState,
+                    onPressed: () => onPageChanged(AppRoutes.queue),
+                  ),
+                  _buildTabButton(
+                    icon: LucideIcons.layoutGrid,
+                    label: 'Library',
+                    route: AppRoutes.library,
+                    state: currentPage == AppRoutes.library
+                        ? TabBarItemState.active
+                        : TabBarItemState.defaultState,
+                    onPressed: () => onPageChanged(AppRoutes.library),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
