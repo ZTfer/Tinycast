@@ -40,9 +40,11 @@ class _TabBarItemState extends State<TabBarItem> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onPressed();
+      },
       onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -53,11 +55,11 @@ class _TabBarItemState extends State<TabBarItem> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(widget.icon, color: _getIconColor(), size: 24),
+            Icon(widget.icon, color: _getContentColor(), size: 24),
             const SizedBox(height: 4),
             Text(
               widget.label,
-              style: TextStyle(color: _getTextColor(), fontSize: 12),
+              style: TextStyle(color: _getContentColor(), fontSize: 12),
             ),
           ],
         ),
@@ -76,16 +78,8 @@ class _TabBarItemState extends State<TabBarItem> {
     return const Color(0x00000000);
   }
 
-  /// 根据按钮状态获取图标颜色
-  Color _getIconColor() {
-    if (widget.state == TabBarItemState.active) {
-      return const Color(0xFF000000);
-    }
-    return const Color(0xD9000000);
-  }
-
-  /// 根据按钮状态获取文字颜色
-  Color _getTextColor() {
+  /// 根据按钮状态获取内容颜色（图标和文字）
+  Color _getContentColor() {
     if (widget.state == TabBarItemState.active) {
       return const Color(0xFF000000);
     }
