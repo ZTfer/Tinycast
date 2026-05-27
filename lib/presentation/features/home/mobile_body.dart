@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/organisms/navbar/navbar.dart';
 import 'package:tinycast/presentation/widgets/organisms/tabbar/tabbar.dart'
     as custom_tabbar;
@@ -27,7 +28,10 @@ class MobileBody extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Navbar(title: _getPageTitle(navigationState.currentPage)),
+          child: Navbar(
+            title: _getPageTitle(navigationState.currentPage),
+            actionIcon: _getActionIcon(navigationState.currentPage),
+          ),
         ),
         Expanded(child: _buildContent(navigationState, ref)),
         custom_tabbar.TabBar(
@@ -60,6 +64,16 @@ class MobileBody extends ConsumerWidget {
         return 'Test Page';
       default:
         return 'Tinycast';
+    }
+  }
+
+  IconData? _getActionIcon(String currentPage) {
+    switch (currentPage) {
+      case AppRoutes.library:
+        return LucideIcons.plus;
+      case AppRoutes.queue:
+      default:
+        return null;
     }
   }
 

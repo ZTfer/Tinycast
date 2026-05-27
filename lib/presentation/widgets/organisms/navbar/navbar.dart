@@ -4,8 +4,15 @@ import 'navbar_large_title.dart';
 
 class Navbar extends StatelessWidget {
   final String title;
+  final IconData? actionIcon;
+  final VoidCallback? onActionTap;
 
-  const Navbar({super.key, required this.title});
+  const Navbar({
+    super.key,
+    required this.title,
+    this.actionIcon,
+    this.onActionTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,7 @@ class Navbar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             NavbarLargeTitle(title: title),
-            NavbarButton(),
+            NavbarButton(icon: actionIcon, onPressed: onActionTap),
           ],
         ),
       ),
