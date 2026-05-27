@@ -4,7 +4,7 @@
 需要实现 iOS 26 风格的 Segmented Control 组件，用于在多个视图间进行切换。该组件需支持灵活的按钮配置（文字、Lucide 图标、SVG 图标），以适配项目中不同的使用场景。
 
 ## What Changes
-- 新增 `SegmentedControlButton` 组件，支持文字和图标（可选，图标在前文字在后）
+- 新增 `SegmentedControlButton` 组件，使用纯 `package:flutter/widgets.dart` 实现，不使用 Material Design 组件
 - 新增 `SegmentedControl` 组件，接收按钮配置列表，渲染完整的 Segmented Control 容器
 - 支持选中状态切换，通过回调通知选中索引
 - 遵循 iOS 26 设计规范：圆角胶囊容器（100px）、内部按钮选中态白色圆角背景、未选中态透明背景
