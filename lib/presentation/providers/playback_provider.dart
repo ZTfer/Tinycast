@@ -18,6 +18,7 @@ import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/providers/sync_provider.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/core/services/play_progress_service.dart';
+import 'package:tinycast/core/utils/app_window_context.dart';
 
 class PlayerState {
   final Episode? currentEpisode;
@@ -76,6 +77,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   int _lastSavedPositionMs = 0;
   DateTime? _lastSaveTime;
   int? _currentEpisodeId;
+  int _restoreGeneration = 0;
+  bool _userInitiatedPlayback = false;
 
   @override
   PlayerState build() {
@@ -83,7 +86,9 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     _initProgressAutoSave();
     _initSleepTimerCheck();
 
-    _restoreLastPlaybackState();
+    if (AppWindowContext.isMainWindow) {
+      _restoreLastPlaybackState();
+    }
     _restoreSettingsFromPrefs();
 
     ref.onDispose(() {
@@ -431,6 +436,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> _restoreLastPlaybackState() async {
+    final restoreGeneration = ++_restoreGeneration;
     try {
       final latestHistory = await _playHistoryRepository
           .getLatestPlayingHistory();
@@ -439,6 +445,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         debugPrint('No previous playback history found');
         return;
       }
+
+      if (_isRestoreCancelled(restoreGeneration)) return;
 
       debugPrint('Restoring last playback: ${latestHistory.title}');
 
@@ -449,6 +457,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         debugPrint('Episode not found in database (may be deleted)');
         return;
       }
+
+      if (_isRestoreCancelled(restoreGeneration)) return;
 
       final domainEpisode = Episode(
         id: episode.id,
@@ -533,10 +543,12 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
         debugPrint('Initializing AudioPlayerService with restored episode...');
         try {
+          if (_isRestoreCancelled(restoreGeneration)) return;
           await _audioPlayerService.loadEpisode(
             domainEpisode,
             startPosition: startPosition,
           );
+          if (_isRestoreCancelled(restoreGeneration)) return;
 
           debugPrint(
             'Playback state restored successfully - all controls should work',
@@ -544,6 +556,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         } catch (e, stackTrace) {
           debugPrint('Failed to load audio for restored episode: $e');
           debugPrint('Stack trace: $stackTrace');
+          if (_isRestoreCancelled(restoreGeneration)) return;
           // 加载音频失败时，清除状态但保留 UI 显示
           _currentEpisodeId = null;
           _lastSavedPositionMs = 0;
@@ -555,6 +568,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     } catch (e, stackTrace) {
       debugPrint('Error restoring playback state: $e');
       debugPrint('Stack trace: $stackTrace');
+      if (_isRestoreCancelled(restoreGeneration)) return;
       // 恢复失败时，清除状态
       _currentEpisodeId = null;
       _lastSavedPositionMs = 0;
@@ -562,9 +576,16 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     }
   }
 
+  bool _isRestoreCancelled(int restoreGeneration) {
+    return _userInitiatedPlayback || restoreGeneration != _restoreGeneration;
+  }
+
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
     debugPrint('🎵 [PLAYBACK] playEpisode called: ${episode.title} (id: ${episode.id})');
     debugPrint('🎵 [PLAYBACK] _currentEpisodeId: $_currentEpisodeId, episode.id: ${episode.id}');
+
+    _userInitiatedPlayback = true;
+    _restoreGeneration++;
     
     if (_currentEpisodeId != null && _currentEpisodeId != episode.id) {
       debugPrint('🎵 [PLAYBACK] Different episode, saving current progress...');
@@ -591,11 +612,17 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   Future<void> pause() async {
     await _audioPlayerService.pause();
+    await _saveCurrentProgress();
     _requestSync();
   }
 
   Future<void> togglePlayPause() async {
+    final wasPlaying = state.isPlaying;
     await _audioPlayerService.togglePlayPause();
+    if (wasPlaying) {
+      await _saveCurrentProgress();
+      _requestSync();
+    }
   }
 
   Future<void> seekForward({

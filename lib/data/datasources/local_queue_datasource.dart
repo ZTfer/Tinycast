@@ -113,28 +113,31 @@ class LocalQueueDataSource {
         await removeFromQueue(existing.id);
       }
 
-      final allItems = await _isarService.isar.queues.where().findAll();
-
-      for (final item in allItems) {
-        item.position += 1;
-      }
-
-      final queueItem = Queue()
-        ..episodeId = episode.id
-        ..episodeGuid = episode.guid
-        ..episodeITunesId = episode.itunesId
-        ..podcastId = episode.podcastId
-        ..podcastITunesId = episode.podcastITunesId
-        ..position = 0;
+      late final Queue queueItem;
+      late final int updatedCount;
 
       await _isarService.isar.writeTxn(() async {
+        final allItems = await _isarService.isar.queues.where().findAll();
+        for (final item in allItems) {
+          item.position += 1;
+        }
+
+        queueItem = Queue()
+          ..episodeId = episode.id
+          ..episodeGuid = episode.guid
+          ..episodeITunesId = episode.itunesId
+          ..podcastId = episode.podcastId
+          ..podcastITunesId = episode.podcastITunesId
+          ..position = 0;
+
         if (allItems.isNotEmpty) {
           await _isarService.isar.queues.putAll(allItems);
         }
         await _isarService.isar.queues.put(queueItem);
+        updatedCount = allItems.length;
       });
 
-      Logger.info('📋 [QUEUE-DS] 插播成功, episodeId: ${episode.id}, position: 0, id: ${queueItem.id}, 更新了 ${allItems.length} 条后续记录');
+      Logger.info('📋 [QUEUE-DS] 插播成功, episodeId: ${episode.id}, position: 0, id: ${queueItem.id}, 更新了 $updatedCount 条后续记录');
     } on IsarError catch (e, stackTrace) {
       Logger.error('📋 [QUEUE-DS] 插播到队列失败', error: e, stackTrace: stackTrace);
       throw AppException.storage('插播到队列失败', originalError: e, stackTrace: stackTrace);

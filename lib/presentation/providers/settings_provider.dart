@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/services/settings_service.dart';
 import '../../../domain/entities/app_settings.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/services/feed_refresh_scheduler.dart';
+import '../../../core/utils/app_window_context.dart';
 
 enum SettingsStatus { initial, loading, success, error }
 
@@ -40,7 +42,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
 
   @override
   Future<AppSettings> build() async {
-    _service.migrateFromSharedPreferences();
+    await _service.migrateFromSharedPreferences();
 
     _subscription = _service.watchSettings().listen(
       (settings) {
@@ -56,6 +58,12 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     });
 
     return _service.loadSettings();
+  }
+
+  Future<void> _restartFeedRefreshScheduler() async {
+    if (!AppWindowContext.isMainWindow) return;
+    FeedRefreshScheduler.instance.stop();
+    await FeedRefreshScheduler.instance.start();
   }
 
   Future<void> updateDownloadOnFavorite(bool value) async {
@@ -134,6 +142,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   Future<void> updateFeedRefreshInterval(FeedRefreshInterval value) async {
     try {
       await _service.setFeedRefreshInterval(value);
+      await _restartFeedRefreshScheduler();
     } catch (e, stackTrace) {
       Logger.error('[SETTINGS-PROVIDER] Failed to update feedRefreshInterval', error: e, stackTrace: stackTrace);
     }
@@ -158,6 +167,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   Future<void> updateBackgroundRefreshEnabled(bool value) async {
     try {
       await _service.setBackgroundRefreshEnabled(value);
+      await _restartFeedRefreshScheduler();
     } catch (e, stackTrace) {
       Logger.error('[SETTINGS-PROVIDER] Failed to update backgroundRefreshEnabled', error: e, stackTrace: stackTrace);
     }

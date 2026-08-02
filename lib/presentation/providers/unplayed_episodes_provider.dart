@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/episode.dart';
 import '../../domain/usecases/get_unplayed_episodes_usecase.dart';
 import '../../data/repositories/play_history_repository.dart';
+import '../../core/services/feed_refresh_scheduler.dart';
 import 'podcast_provider.dart';
 
 enum UnplayedEpisodesStatus { initial, loading, success, error }
@@ -42,6 +43,10 @@ final getUnplayedEpisodesUseCaseProvider = Provider<GetUnplayedEpisodesUseCase>(
 class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
   @override
   UnplayedEpisodesState build() {
+    final subscription = FeedRefreshScheduler.instance.onRefreshCompleted.listen(
+      (_) => loadUnplayedEpisodes(),
+    );
+    ref.onDispose(subscription.cancel);
     Future.microtask(() => loadUnplayedEpisodes());
     return UnplayedEpisodesState();
   }

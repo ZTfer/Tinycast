@@ -40,6 +40,8 @@ class FeedRefreshState {
 }
 
 class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
+  int _refreshRequestId = 0;
+
   @override
   FeedRefreshState build() => FeedRefreshState();
 
@@ -47,6 +49,12 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
       ref.read(podcastRepositoryProvider);
 
   Future<void> refreshAll({bool force = false}) async {
+    if (state.isRefreshing) {
+      Logger.info('🔄 [FEED-REFRESH] refreshAll 已在进行中，跳过重复请求');
+      return;
+    }
+
+    final requestId = ++_refreshRequestId;
     final stopwatch = Stopwatch()..start();
     Logger.info('🔄 [FEED-REFRESH] refreshAll 开始, force: $force');
 
@@ -57,6 +65,7 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
 
     try {
       final result = await _repository.refreshAllFeeds(force: force);
+      if (requestId != _refreshRequestId) return;
 
       state = state.copyWith(
         status: FeedRefreshStatus.success,
@@ -73,6 +82,7 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
 
       _refreshUI();
     } catch (e) {
+      if (requestId != _refreshRequestId) return;
       Logger.error('🔄 [FEED-REFRESH] refreshAll 失败: $e');
       state = state.copyWith(
         status: FeedRefreshStatus.error,
@@ -82,6 +92,12 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
   }
 
   Future<void> refreshSingle(int podcastId) async {
+    if (state.isRefreshing) {
+      Logger.info('🔄 [FEED-REFRESH] refreshSingle 已在进行中，跳过重复请求');
+      return;
+    }
+
+    final requestId = ++_refreshRequestId;
     final stopwatch = Stopwatch()..start();
     Logger.info('🔄 [FEED-REFRESH] refreshSingle 开始, podcastId: $podcastId');
 
@@ -92,6 +108,7 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
 
     try {
       final result = await _repository.refreshPodcastFeed(podcastId);
+      if (requestId != _refreshRequestId) return;
 
       if (result.success) {
         state = state.copyWith(
@@ -120,6 +137,7 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
         );
       }
     } catch (e) {
+      if (requestId != _refreshRequestId) return;
       Logger.error('🔄 [FEED-REFRESH] refreshSingle 异常, podcastId: $podcastId, 错误: $e');
       state = state.copyWith(
         status: FeedRefreshStatus.error,

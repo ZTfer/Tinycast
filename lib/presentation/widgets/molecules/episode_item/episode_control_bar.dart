@@ -179,17 +179,14 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
     );
     if (!mounted) return;
     try {
-      final isFav = await ref
-          .read(favoriteProvider.notifier)
-          .checkIsFavorite(widget.episode);
-      final successMessage = isFav ? '已取消收藏' : '已收藏';
-      await ref
+      final isNowFavorite = await ref
           .read(favoriteProvider.notifier)
           .toggleFavorite(widget.episode);
+      final successMessage = isNowFavorite ? '已收藏' : '已取消收藏';
       ref.read(favoriteEpisodesNotifierProvider.notifier).refresh();
       _hideDropdown();
 
-      if (!isFav) {
+      if (isNowFavorite) {
         final settings = ref.read(settingsProvider);
         if (settings.value?.downloadOnFavorite == true) {
           final downloadedEpisodes = ref.read(downloadedEpisodesProvider);

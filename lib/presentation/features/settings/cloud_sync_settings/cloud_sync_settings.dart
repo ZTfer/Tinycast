@@ -35,6 +35,7 @@ class CloudSyncSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isConfigured = ref.watch(supabaseConfiguredProvider);
     final authState = ref.watch(authStateProvider);
 
     return Row(
@@ -58,19 +59,26 @@ class CloudSyncSettings extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 12,
               children: [
-                authState.when(
-                  data: (user) {
-                    if (user != null) {
-                      return LoginSuccessPage(
-                        user: user,
-                        onSignOut: () => _handleSignOut(context),
-                      );
-                    }
-                    return _buildLoginSection(context);
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => const Text('加载失败'),
-                ),
+                if (!isConfigured)
+                  const Text(
+                    '未配置 Supabase。请通过 --dart-define=SUPABASE_URL 与 '
+                    '--dart-define=SUPABASE_ANON_KEY 注入凭据后重启应用。',
+                  )
+                else
+                  authState.when(
+                    data: (user) {
+                      if (user != null) {
+                        return LoginSuccessPage(
+                          user: user,
+                          onSignOut: () => _handleSignOut(context),
+                        );
+                      }
+                      return _buildLoginSection(context);
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, _) => Text('加载失败: $error'),
+                  ),
               ],
             ),
           ),

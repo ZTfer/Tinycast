@@ -5,6 +5,7 @@ import 'package:tinycast/core/services/sync_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
@@ -134,12 +135,15 @@ class SyncNotifier extends Notifier<SyncState> {
         status: SyncStatus.error,
         errorMessage: e.toString(),
       );
+    } finally {
+      syncService.onProgressChanged = null;
     }
   }
 
   void _invalidateRelatedProviders() {
     ref.invalidate(queueNotifierProvider);
     ref.invalidate(favoriteProvider);
+    ref.invalidate(favoriteEpisodesNotifierProvider);
     ref.invalidate(unplayedEpisodesNotifierProvider);
     ref.invalidate(subscribedPodcastsProvider);
     ref.invalidate(latestPlayingHistoryProvider);

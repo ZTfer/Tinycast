@@ -69,12 +69,16 @@ class SettingsService {
   }
 
   Future<AppSettingsModel> _getOrCreateModel() async {
-    var model = await _isar.appSettingsModels.where().findFirst();
-    if (model == null) {
-      model = AppSettingsModel();
-      await _saveModel(model);
-    }
-    return model;
+    final existing = await _isar.appSettingsModels.where().findFirst();
+    if (existing != null) return existing;
+
+    return _isar.writeTxn(() async {
+      final raced = await _isar.appSettingsModels.where().findFirst();
+      if (raced != null) return raced;
+      final created = AppSettingsModel();
+      await _isar.appSettingsModels.put(created);
+      return created;
+    });
   }
 
   Future<void> setDownloadOnFavorite(bool value) async {

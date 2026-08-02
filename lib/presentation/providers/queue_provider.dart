@@ -76,6 +76,8 @@ class QueueState {
 }
 
 class QueueNotifier extends Notifier<QueueState> {
+  int _loadRequestId = 0;
+
   @override
   QueueState build() {
     Future.microtask(() => loadQueue());
@@ -100,11 +102,16 @@ class QueueNotifier extends Notifier<QueueState> {
       ref.read(clearQueueUseCaseProvider);
 
   Future<void> loadQueue() async {
+    final requestId = ++_loadRequestId;
     Logger.info('📋 [QUEUE-PROVIDER] ====== loadQueue 开始 ======');
     state = state.copyWith(status: QueueStatus.loading, errorMessage: null);
 
     try {
       final episodes = await _getQueueUseCase();
+      if (requestId != _loadRequestId) {
+        Logger.info('📋 [QUEUE-PROVIDER] loadQueue 结果已过期，丢弃');
+        return;
+      }
       Logger.info(
         '📋 [QUEUE-PROVIDER] loadQueue 成功, 收到 ${episodes.length} 条队列记录',
       );
@@ -116,6 +123,7 @@ class QueueNotifier extends Notifier<QueueState> {
         '📋 [QUEUE-PROVIDER] ====== loadQueue 完成, 当前队列数: ${state.queueEpisodes.length} ======',
       );
     } catch (e, stackTrace) {
+      if (requestId != _loadRequestId) return;
       Logger.error(
         '📋 [QUEUE-PROVIDER] loadQueue 失败',
         error: e,

@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/core/services/play_progress_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 enum PlaybackState { stopped, playing, paused, buffering }
@@ -36,6 +37,7 @@ class AudioPlayerService {
 
   final AudioPlayer _player = AudioPlayer();
   AudioHandler? _audioHandler;
+  final List<StreamSubscription> _subscriptions = [];
 
   final IsarService _isarService = IsarService.instance;
 
@@ -97,8 +99,13 @@ class AudioPlayerService {
 
   Future<void> init() async {
     try {
+      if (_audioHandler != null) {
+        Logger.info('AudioPlayerService already initialized');
+        return;
+      }
+
       _audioHandler = await AudioService.init(
-        builder: () => _AudioPlayerHandler(_player),
+        builder: () => _AudioPlayerHandler(_player, _savePlayProgress),
         config: const AudioServiceConfig(
           androidNotificationChannelId: 'com.tinycast.app.audio',
           androidNotificationChannelName: 'Tinycast Audio Playback',
@@ -107,9 +114,9 @@ class AudioPlayerService {
         ),
       );
 
-      _player.playbackEventStream.listen(_onPlaybackEvent);
-      _player.playerStateStream.listen(_onPlayerStateChange);
-      _player.positionStream.listen((_) => _updateProgress());
+      _subscriptions.add(_player.playbackEventStream.listen(_onPlaybackEvent));
+      _subscriptions.add(_player.playerStateStream.listen(_onPlayerStateChange));
+      _subscriptions.add(_player.positionStream.listen((_) => _updateProgress()));
 
       // 设置默认音量为 30%
       await _player.setVolume(0.3);
@@ -460,27 +467,32 @@ class AudioPlayerService {
   }
 
   Future<void> _savePlayProgress() async {
-    if (_currentEpisode == null) return;
+    final episode = _currentEpisode;
+    if (episode == null) return;
 
-    final duration = _player.duration?.inSeconds ?? 0;
-    if (duration == 0) return;
+    final durationMs = _player.duration?.inMilliseconds ?? 0;
+    if (durationMs == 0) return;
 
-    final position = _player.position.inSeconds;
-    final progress = position / duration;
+    final positionMs = _player.position.inMilliseconds;
+    final progress = positionMs / durationMs;
 
     try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(
-          _currentEpisode!.id,
-        );
+      await PlayProgressService.instance.updatePlayProgress(
+        episodeId: episode.id,
+        positionMs: positionMs,
+        progressRatio: progress,
+        episodeGuid: episode.guid,
+        episodeITunesId: episode.itunesId,
+      );
 
-        if (episode != null) {
-          episode.playProgress = progress;
-          episode.isPlayed = progress >= 0.95;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
+      if (progress >= 0.95) {
+        await PlayProgressService.instance.markEpisodeAsPlayed(
+          episodeId: episode.id,
+          episodeGuid: episode.guid,
+          episodeITunesId: episode.itunesId,
+          podcastITunesId: episode.podcastITunesId,
+        );
+      }
 
       Logger.info(
         'Play progress saved: ${(progress * 100).toStringAsFixed(1)}%',
@@ -548,12 +560,17 @@ class AudioPlayerService {
   Future<void> dispose() async {
     try {
       await _savePlayProgress();
+      for (final subscription in _subscriptions) {
+        await subscription.cancel();
+      }
+      _subscriptions.clear();
       await _player.dispose();
       await _playbackStateController.close();
       await _progressController.close();
       await _speedController.close();
       await _volumeController.close();
       await _currentEpisodeController.close();
+      await _episodeCompletedController.close();
 
       Logger.info('AudioPlayerService disposed');
     } catch (e, stackTrace) {
@@ -568,8 +585,9 @@ class AudioPlayerService {
 
 class _AudioPlayerHandler extends BaseAudioHandler {
   final AudioPlayer _player;
+  final Future<void> Function() _onPauseOrSeek;
 
-  _AudioPlayerHandler(this._player) {
+  _AudioPlayerHandler(this._player, this._onPauseOrSeek) {
     _player.playbackEventStream.listen(_broadcastState);
   }
 
@@ -577,10 +595,16 @@ class _AudioPlayerHandler extends BaseAudioHandler {
   Future<void> play() => _player.play();
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    await _player.pause();
+    await _onPauseOrSeek();
+  }
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) async {
+    await _player.seek(position);
+    await _onPauseOrSeek();
+  }
 
   @override
   Future<void> setSpeed(double speed) => _player.setSpeed(speed);

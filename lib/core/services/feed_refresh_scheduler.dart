@@ -29,6 +29,11 @@ class FeedRefreshScheduler {
 
   Timer? _timer;
   bool _isRunning = false;
+  final StreamController<void> _refreshCompletedController =
+      StreamController<void>.broadcast();
+
+  /// Emits after a background/scheduled refresh finishes (success or empty).
+  Stream<void> get onRefreshCompleted => _refreshCompletedController.stream;
 
   FeedRefreshScheduler({
     FeedRefreshService? feedRefreshService,
@@ -128,6 +133,10 @@ class FeedRefreshScheduler {
         '失败 ${result.failureCount}, '
         '新剧集 ${result.totalNewEpisodes}',
       );
+
+      if (!_refreshCompletedController.isClosed) {
+        _refreshCompletedController.add(null);
+      }
     } catch (e, stackTrace) {
       Logger.error(
         '$_logTag 刷新执行异常',

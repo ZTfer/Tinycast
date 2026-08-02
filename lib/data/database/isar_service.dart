@@ -47,7 +47,7 @@ class IsarService {
         [PodcastSchema, EpisodeSchema, SearchHistoryModelSchema, FavoriteSchema, PlayHistorySchema, QueueSchema, AppSettingsModelSchema],
         directory: dir.path,
         name: _databaseName,
-        inspector: true,
+        inspector: !const bool.fromEnvironment('dart.vm.product'),
       );
 
       _isInitialized = true;

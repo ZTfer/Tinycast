@@ -31,18 +31,6 @@ class LocalPodcastDataSource {
         );
       }
 
-      final unsubscribedWithRss = allPodcasts
-          .where((p) => !p.isSubscribed && p.rssUrl.isNotEmpty)
-          .toList();
-
-      if (unsubscribedWithRss.isNotEmpty) {
-        Logger.info(
-          '🕒 [DATASOURCE] 发现 ${unsubscribedWithRss.length} 个有 RSS URL 但 isSubscribed=false 的播客，自动修复',
-        );
-        await _repairSubscriptionFlag(unsubscribedWithRss);
-        Logger.info('🕒 [DATASOURCE] 修复完成，内存中播客对象状态已更新');
-      }
-
       Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始过滤 isSubscribed');
       final podcasts = allPodcasts.where((p) => p.isSubscribed).toList();
       Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 过滤完成, 已订阅 ${podcasts.length} 个');
@@ -65,21 +53,6 @@ class LocalPodcastDataSource {
         originalError: e,
         stackTrace: stackTrace,
       );
-    }
-  }
-
-  Future<void> _repairSubscriptionFlag(List<model.Podcast> podcasts) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        for (final p in podcasts) {
-          p.isSubscribed = true;
-          p.subscribedAt ??= p.createdAt;
-          await _isarService.isar.podcasts.put(p);
-        }
-      });
-      Logger.info('🕒 [DATASOURCE] 已修复 ${podcasts.length} 个播客的订阅状态');
-    } catch (e, stackTrace) {
-      Logger.error('🕒 [DATASOURCE] 修复订阅状态失败', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -678,12 +651,12 @@ class LocalPodcastDataSource {
     try {
       Logger.info('根据 IDs 获取节目，数量: ${ids.length}');
 
-      final allEpisodes = await _isarService.isar.episodes
-          .where()
-          .sortByPubDateDesc()
-          .findAll();
+      if (ids.isEmpty) return [];
 
-      final episodes = allEpisodes.where((e) => ids.contains(e.id)).toList();
+      final episodes = (await _isarService.isar.episodes.getAll(ids))
+          .whereType<model.Episode>()
+          .toList()
+        ..sort((a, b) => b.pubDate.compareTo(a.pubDate));
 
       Logger.info('成功获取 ${episodes.length} 个节目');
       return episodes;
@@ -708,20 +681,15 @@ class LocalPodcastDataSource {
     try {
       Logger.info('📋 [PODCAST-DS] 更新 episode isPlayed, episodeId: $episodeId, isPlayed: $isPlayed');
 
-      final episode = await _isarService.isar.episodes
-          .where()
-          .idEqualTo(episodeId)
-          .findFirst();
-
-      if (episode == null) {
-        Logger.warning('📋 [PODCAST-DS] 未找到 episode: $episodeId');
-        return;
-      }
-
-      episode.isPlayed = isPlayed;
-      episode.updatedAt = DateTime.now();
-
       await _isarService.isar.writeTxn(() async {
+        final episode = await _isarService.isar.episodes.get(episodeId);
+        if (episode == null) {
+          Logger.warning('📋 [PODCAST-DS] 未找到 episode: $episodeId');
+          return;
+        }
+
+        episode.isPlayed = isPlayed;
+        episode.updatedAt = DateTime.now();
         await _isarService.isar.episodes.put(episode);
       });
 

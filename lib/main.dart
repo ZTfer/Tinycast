@@ -18,6 +18,7 @@ import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/core/theme/app_text_styles.dart';
 import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
+import 'package:tinycast/core/utils/app_window_context.dart';
 
 /// 打开节目详情窗口
 ///
@@ -129,6 +130,7 @@ void main(List<String> args) async {
 
   switch (arguments.type) {
     case 'main':
+      AppWindowContext.isMainWindow = true;
       await initMainWindow();
       await _initializeApp(config);
       WidgetsBinding.instance.addObserver(
@@ -138,16 +140,19 @@ void main(List<String> args) async {
       runApp(const ProviderScope(child: MyApp()));
       break;
     case 'settings':
+      AppWindowContext.isMainWindow = false;
       await initSettingsWindow();
       await _initializeApp(config);
       runApp(const ProviderScope(child: SettingsWindowApp()));
       break;
     case 'subscribe':
+      AppWindowContext.isMainWindow = false;
       await initSubscribeWindow();
       await _initializeApp(config);
       runApp(const ProviderScope(child: SubscribeWindowApp()));
       break;
     case 'episode_detail':
+      AppWindowContext.isMainWindow = false;
       await initEpisodeDetailWindow();
       await _initializeApp(config);
       runApp(
@@ -160,6 +165,7 @@ void main(List<String> args) async {
       );
       break;
     default:
+      AppWindowContext.isMainWindow = true;
       await initMainWindow();
       await _initializeApp(config);
       WidgetsBinding.instance.addObserver(

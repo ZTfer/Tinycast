@@ -42,25 +42,10 @@ class CacheCleanupService {
     try {
       Logger.info('开始清理音频缓存');
 
-      final audioDir = await _fileStorageService.getAudioDirectory();
-      if (!await audioDir.exists()) {
-        Logger.info('音频目录不存在，无需清理');
-        return;
-      }
-
-      final files = audioDir.listSync();
-      int deletedCount = 0;
-
-      for (var file in files) {
-        if (file is File) {
-          await file.delete();
-          deletedCount++;
-        }
-      }
-
-      // 批量更新数据库中所有 episode 的下载状态
+      // Update DB first so playback never thinks files exist after a failed cleanup.
+      late final List<model.Episode> downloadedEpisodes;
       await _isarService.isar.writeTxn(() async {
-        final downloadedEpisodes = await _isarService.isar.episodes
+        downloadedEpisodes = await _isarService.isar.episodes
             .filter()
             .isDownloadedEqualTo(true)
             .findAll();
@@ -73,17 +58,36 @@ class CacheCleanupService {
         }
 
         await _isarService.isar.episodes.putAll(downloadedEpisodes);
-
-        // 发送事件通知 UI 刷新（使用 idle 状态表示缓存清理后的空闲状态）
-        for (final episode in downloadedEpisodes) {
-          AudioDownloadService.instance.sendGlobalEvent(
-            episodeId: episode.id.toString(),
-            status: DownloadStatus.idle,
-          );
-        }
-
-        Logger.info('音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新');
       });
+
+      for (final episode in downloadedEpisodes) {
+        AudioDownloadService.instance.sendGlobalEvent(
+          episodeId: episode.id.toString(),
+          status: DownloadStatus.idle,
+        );
+      }
+
+      final audioDir = await _fileStorageService.getAudioDirectory();
+      int deletedCount = 0;
+      if (await audioDir.exists()) {
+        final files = audioDir.listSync();
+        for (var file in files) {
+          if (file is File) {
+            try {
+              await file.delete();
+              deletedCount++;
+            } catch (e) {
+              Logger.warning('删除音频缓存文件失败: ${file.path}, $e');
+            }
+          }
+        }
+      } else {
+        Logger.info('音频目录不存在，仅完成数据库状态清理');
+      }
+
+      Logger.info(
+        '音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新',
+      );
     } catch (e, stackTrace) {
       Logger.error('清理音频缓存失败', error: e, stackTrace: stackTrace);
       throw AppException.storage(

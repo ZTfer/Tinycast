@@ -42,7 +42,10 @@ class FavoriteState {
 
 class FavoriteNotifier extends Notifier<FavoriteState> {
   @override
-  FavoriteState build() => FavoriteState();
+  FavoriteState build() {
+    Future.microtask(loadFavorites);
+    return FavoriteState();
+  }
 
   FavoriteRepository get _repository =>
       ref.read(favoriteRepositoryProvider);
@@ -69,39 +72,37 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
     }
   }
 
-  /// 切换收藏状态（核心方法）
-  Future<void> toggleFavorite(Episode episode) async {
-    final currentlyFavorite = state.isEpisodeFavorite(episode.id);
+  /// 切换收藏状态。以数据库为准，返回切换后是否仍为收藏。
+  Future<bool> toggleFavorite(Episode episode) async {
+    final currentlyFavorite = await _repository.isFavorite(episode);
     Logger.info('⭐ [FAVORITE-PROVIDER] ====== toggleFavorite 开始 ======');
     Logger.info('⭐ [FAVORITE-PROVIDER] episodeId: ${episode.id}, 当前状态: ${currentlyFavorite ? "已收藏" : "未收藏"}');
 
     if (currentlyFavorite) {
-      // 取消收藏
       Logger.info('⭐ [FAVORITE-PROVIDER] 执行取消收藏操作...');
       try {
         await _repository.removeFavorite(episode);
         final newIds = Set<int>.from(state.favoriteEpisodeIds)..remove(episode.id);
         state = state.copyWith(favoriteEpisodeIds: newIds);
         Logger.info('⭐ [FAVORITE-PROVIDER] 取消收藏成功! episodeId: ${episode.id}, 剩余收藏数: ${state.favoriteEpisodeIds.length}');
+        return false;
       } catch (e, stackTrace) {
         Logger.error('⭐ [FAVORITE-PROVIDER] 取消收藏失败!', error: e, stackTrace: stackTrace);
         rethrow;
       }
     } else {
-      // 添加收藏
       Logger.info('⭐ [FAVORITE-PROVIDER] 执行添加收藏操作...');
       try {
         await _repository.addFavorite(episode);
         final newIds = Set<int>.from(state.favoriteEpisodeIds)..add(episode.id);
         state = state.copyWith(favoriteEpisodeIds: newIds);
         Logger.info('⭐ [FAVORITE-PROVIDER] 添加收藏成功! episodeId: ${episode.id}, 总收藏数: ${state.favoriteEpisodeIds.length}');
+        return true;
       } catch (e, stackTrace) {
         Logger.error('⭐ [FAVORITE-PROVIDER] 添加收藏失败!', error: e, stackTrace: stackTrace);
         rethrow;
       }
     }
-
-    Logger.info('⭐ [FAVORITE-PROVIDER] ====== toggleFavorite 结束, 最终收藏数: ${state.favoriteEpisodeIds.length} ======');
   }
 
   /// 检查单个 episode 是否收藏（不修改状态）

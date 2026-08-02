@@ -513,6 +513,12 @@ class AudioDownloadService {
       final destinationFile = File('${audioDir.path}/$fileName');
       if (await destinationFile.exists()) {
         Logger.info('✅ 文件已存在, 标记完成: $idStr');
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: episodeId,
+          isDownloaded: true,
+          downloadedPath: 'audio/$fileName',
+          downloadProgress: 1.0,
+        );
         _notifyStatusChange(idStr, DownloadStatus.completed);
         return;
       }
@@ -686,35 +692,37 @@ class AudioDownloadService {
       return;
     }
 
-    // 先收集要删除的文件路径
-    final pathsToDelete = downloadedEpisodes
-        .map((e) => e.downloadedPath)
-        .whereType<String>()
-        .toList();
-
-    // 先删除文件
-    int deletedCount = 0;
-    if (pathsToDelete.isNotEmpty) {
-      deletedCount = await _fileStorageService.deleteFilesSafely(
-        pathsToDelete,
-        context: 'podcast: $podcastId',
-      );
-      Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个文件');
-    }
-
-    // 文件删除成功后，更新数据库状态
-    if (deletedCount > 0) {
-      for (final episode in downloadedEpisodes) {
-        await _isarService.updateEpisodeDownloadStatus(
-          episodeId: episode.id,
-          isDownloaded: false,
-          downloadedPath: null,
-          downloadProgress: 0.0,
+    int clearedCount = 0;
+    for (final episode in downloadedEpisodes) {
+      final path = episode.downloadedPath;
+      if (path != null && path.isNotEmpty) {
+        await _fileStorageService.deleteFileSafely(
+          path,
+          context: 'podcast: $podcastId episode: ${episode.id}',
         );
+        try {
+          final fullPath = await _fileStorageService.getFullFilePath(path);
+          if (await File(fullPath).exists()) {
+            Logger.warning(
+              '跳过 DB 清理，文件仍存在: episodeId=${episode.id}, path=$path',
+            );
+            continue;
+          }
+        } catch (e) {
+          Logger.warning('检查下载文件是否仍存在失败: $path, $e');
+        }
       }
+
+      await _isarService.updateEpisodeDownloadStatus(
+        episodeId: episode.id,
+        isDownloaded: false,
+        downloadedPath: null,
+        downloadProgress: 0.0,
+      );
+      clearedCount++;
     }
 
-    Logger.info('已移除播客 $podcastId 的 ${downloadedEpisodes.length} 个下载');
+    Logger.info('已移除播客 $podcastId 的 $clearedCount/${downloadedEpisodes.length} 个下载');
   }
 
   Future<List<int>> getEpisodeIdsByPodcast(int podcastId) async {

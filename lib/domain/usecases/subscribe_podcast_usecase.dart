@@ -22,12 +22,13 @@ class SubscribePodcastUseCase {
       throw ArgumentError('RSS URL cannot be empty');
     }
 
-    if (!_isValidUrl(rssUrl)) {
+    final normalizedUrl = _normalizeUrl(rssUrl);
+    if (!_isValidUrl(normalizedUrl)) {
       throw ArgumentError('Invalid RSS URL format');
     }
 
     try {
-      final podcast = await _repository.subscribe(rssUrl);
+      final podcast = await _repository.subscribe(normalizedUrl);
       final itunesFuture = _repository.getITunesSearchFuture(podcast.id);
 
       return SubscribePodcastResult(
@@ -37,6 +38,14 @@ class SubscribePodcastUseCase {
     } catch (e) {
       throw Exception('Failed to subscribe to podcast: $e');
     }
+  }
+
+  String _normalizeUrl(String url) {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+      return trimmedUrl;
+    }
+    return 'https://$trimmedUrl';
   }
 
   bool _isValidUrl(String url) {

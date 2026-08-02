@@ -11,6 +11,7 @@ import '../../domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import '../../data/repositories/podcast_repository_impl.dart';
 import '../../data/services/itunes_search_service.dart';
 import '../../core/utils/logger.dart';
+import '../../core/services/feed_refresh_scheduler.dart';
 
 enum PodcastStatus { initial, loading, success, error }
 
@@ -96,7 +97,13 @@ final getLatestEpisodesByPodcastIdUseCaseProvider =
 
 class PodcastNotifier extends Notifier<PodcastState> {
   @override
-  PodcastState build() => PodcastState();
+  PodcastState build() {
+    final subscription = FeedRefreshScheduler.instance.onRefreshCompleted.listen(
+      (_) => loadSubscribedPodcasts(),
+    );
+    ref.onDispose(subscription.cancel);
+    return PodcastState();
+  }
 
   SubscribePodcastUseCase get _subscribePodcastUseCase =>
       ref.read(subscribePodcastUseCaseProvider);

@@ -7,33 +7,23 @@ import 'package:flutter/foundation.dart';
 class PlayHistoryRepository {
   PlayHistory? _findHistoryByEpisode(Isar isar, int episodeId, String? episodeGuid, String? episodeITunesId) {
     if (episodeITunesId != null && episodeITunesId.isNotEmpty) {
-      final histories = isar.playHistorys
+      final byItunesId = isar.playHistorys
           .filter()
-          .episodeITunesIdIsNotNull()
+          .episodeITunesIdEqualTo(episodeITunesId)
           .and()
-          .episodeITunesIdIsNotEmpty()
-          .findAllSync();
-
-      for (final history in histories) {
-        if (history.episodeITunesId == episodeITunesId) {
-          return history;
-        }
-      }
+          .isDeletedEqualTo(false)
+          .findFirstSync();
+      if (byItunesId != null) return byItunesId;
     }
 
     if (episodeGuid != null && episodeGuid.isNotEmpty) {
-      final histories = isar.playHistorys
+      final byGuid = isar.playHistorys
           .filter()
-          .episodeGuidIsNotNull()
+          .episodeGuidEqualTo(episodeGuid)
           .and()
-          .episodeGuidIsNotEmpty()
-          .findAllSync();
-
-      for (final history in histories) {
-        if (history.episodeGuid == episodeGuid) {
-          return history;
-        }
-      }
+          .isDeletedEqualTo(false)
+          .findFirstSync();
+      if (byGuid != null) return byGuid;
     }
 
     return isar.playHistorys
