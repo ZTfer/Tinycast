@@ -6,10 +6,7 @@ class SubscribePodcastResult {
   final Podcast podcast;
   final Future<void>? itunesSearchFuture;
 
-  SubscribePodcastResult({
-    required this.podcast,
-    this.itunesSearchFuture,
-  });
+  SubscribePodcastResult({required this.podcast, this.itunesSearchFuture});
 }
 
 class SubscribePodcastUseCase {
@@ -42,7 +39,9 @@ class SubscribePodcastUseCase {
 
   String _normalizeUrl(String url) {
     final trimmedUrl = url.trim();
-    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    final lowerCasedUrl = trimmedUrl.toLowerCase();
+    if (lowerCasedUrl.startsWith('http://') ||
+        lowerCasedUrl.startsWith('https://')) {
       return trimmedUrl;
     }
     return 'https://$trimmedUrl';

@@ -39,6 +39,10 @@ class AudioPlayerService {
   AudioHandler? _audioHandler;
   final List<StreamSubscription> _subscriptions = [];
 
+  // 加载序号守卫：每次加载递增，被更新的加载流程会使旧流程中止，
+  // 避免恢复播放与用户主动播放并发操作同一个播放器
+  int _loadGeneration = 0;
+
   final IsarService _isarService = IsarService.instance;
 
   domain.Episode? _currentEpisode;
@@ -115,8 +119,12 @@ class AudioPlayerService {
       );
 
       _subscriptions.add(_player.playbackEventStream.listen(_onPlaybackEvent));
-      _subscriptions.add(_player.playerStateStream.listen(_onPlayerStateChange));
-      _subscriptions.add(_player.positionStream.listen((_) => _updateProgress()));
+      _subscriptions.add(
+        _player.playerStateStream.listen(_onPlayerStateChange),
+      );
+      _subscriptions.add(
+        _player.positionStream.listen((_) => _updateProgress()),
+      );
 
       // 设置默认音量为 30%
       await _player.setVolume(0.3);
@@ -195,6 +203,7 @@ class AudioPlayerService {
     bool autoPlay = true,
     bool updateLastPlayedAt = true,
   }) async {
+    final generation = ++_loadGeneration;
     try {
       Logger.info('🎧 [AUDIO] _loadEpisodeAudio called: ${episode.title}');
       Logger.info('🎧 [AUDIO] downloadedPath: ${episode.downloadedPath}');
@@ -209,18 +218,26 @@ class AudioPlayerService {
         Logger.warning('🎧 [AUDIO] Failed to stop player before loading: $e');
       }
 
+      if (_isLoadSuperseded(generation, episode)) return;
+
       String? localAudioPath;
       if (episode.downloadedPath != null) {
-        Logger.info('🎧 [AUDIO] downloadedPath is not null, searching for local file...');
+        Logger.info(
+          '🎧 [AUDIO] downloadedPath is not null, searching for local file...',
+        );
         localAudioPath = await _findLocalAudioPath(episode.downloadedPath!);
         if (localAudioPath != null) {
           Logger.info('🎧 [AUDIO] Found local file: $localAudioPath');
         } else {
-          Logger.warning('🎧 [AUDIO] Local file not found, will use remote URL');
+          Logger.warning(
+            '🎧 [AUDIO] Local file not found, will use remote URL',
+          );
         }
       } else {
         Logger.info('🎧 [AUDIO] downloadedPath is null, using remote URL');
       }
+
+      if (_isLoadSuperseded(generation, episode)) return;
 
       final audioPath = localAudioPath ?? episode.audioUrl;
       final action = autoPlay ? 'Playing' : 'Loading';
@@ -236,7 +253,9 @@ class AudioPlayerService {
           try {
             await _player.setFilePath(localAudioPath);
           } catch (e) {
-            Logger.warning('🎧 [AUDIO] setFilePath failed, falling back to remote: $e');
+            Logger.warning(
+              '🎧 [AUDIO] setFilePath failed, falling back to remote: $e',
+            );
             await _player.setUrl(episode.audioUrl);
           }
         } else {
@@ -247,9 +266,13 @@ class AudioPlayerService {
           await _player.setUrl(episode.audioUrl);
         }
       } else {
-        Logger.error('🎧 [AUDIO] No valid audio path available for episode: ${episode.title}');
+        Logger.error(
+          '🎧 [AUDIO] No valid audio path available for episode: ${episode.title}',
+        );
         throw Exception('No valid audio path');
       }
+
+      if (_isLoadSuperseded(generation, episode)) return;
 
       _currentEpisode = episode;
       if (!_currentEpisodeController.isClosed) {
@@ -262,11 +285,14 @@ class AudioPlayerService {
         final playProgress = episode.playProgress;
         if (playProgress > 0 && playProgress < 1.0) {
           final savedPosition = Duration(
-            milliseconds: (playProgress * (episode.duration ?? 0) * 1000).round(),
+            milliseconds: (playProgress * (episode.duration ?? 0) * 1000)
+                .round(),
           );
           await _player.seek(savedPosition);
         }
       }
+
+      if (_isLoadSuperseded(generation, episode)) return;
 
       if (autoPlay) {
         await _player.play();
@@ -278,8 +304,15 @@ class AudioPlayerService {
 
       await _updateMediaItem(episode);
 
-      Logger.info('🎧 [AUDIO] ${autoPlay ? "Started playing" : "Loaded"} episode: ${episode.title}');
+      Logger.info(
+        '🎧 [AUDIO] ${autoPlay ? "Started playing" : "Loaded"} episode: ${episode.title}',
+      );
     } catch (e, stackTrace) {
+      // 已被更新的加载流程取代时，不重置播放器，交由新流程接管
+      if (_loadGeneration != generation) {
+        Logger.info('🎧 [AUDIO] Load superseded after error: ${episode.title}');
+        rethrow;
+      }
       Logger.error(
         '🎧 [AUDIO] Failed to ${autoPlay ? "play" : "load"} episode: ${episode.title}',
         error: e,
@@ -293,10 +326,19 @@ class AudioPlayerService {
           _currentEpisodeController.add(null);
         }
       } catch (resetError) {
-        Logger.warning('🎧 [AUDIO] Failed to reset player after error: $resetError');
+        Logger.warning(
+          '🎧 [AUDIO] Failed to reset player after error: $resetError',
+        );
       }
       rethrow;
     }
+  }
+
+  /// 判断当前加载流程是否已被更新的加载取代；若是则记录日志并中止
+  bool _isLoadSuperseded(int generation, domain.Episode episode) {
+    if (_loadGeneration == generation) return false;
+    Logger.info('🎧 [AUDIO] Load superseded, aborting: ${episode.title}');
+    return true;
   }
 
   Future<void> playEpisode(
@@ -533,7 +575,9 @@ class AudioPlayerService {
       Logger.warning('Failed to check documents directory: $e');
     }
 
-    Logger.warning('Local audio file not found in any directory: $relativePath');
+    Logger.warning(
+      'Local audio file not found in any directory: $relativePath',
+    );
     return null;
   }
 

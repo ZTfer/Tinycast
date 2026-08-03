@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import '../../core/services/sync_delete_recorder.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_exception.dart';
 import '../../domain/entities/episode.dart';
@@ -30,21 +31,22 @@ class LocalFavoriteDataSource {
       if (fav != null) return fav;
     }
 
-    return isar.favorites
-        .where()
-        .episodeIdEqualTo(episode.id)
-        .findFirst();
+    return isar.favorites.where().episodeIdEqualTo(episode.id).findFirst();
   }
 
   /// 添加收藏
   Future<void> addFavorite(Episode episode) async {
     try {
-      Logger.info('⭐ [FAVORITE-DS] 开始添加收藏, episodeId: ${episode.id}, guid: ${episode.guid}, itunesId: ${episode.itunesId}');
+      Logger.info(
+        '⭐ [FAVORITE-DS] 开始添加收藏, episodeId: ${episode.id}, guid: ${episode.guid}, itunesId: ${episode.itunesId}',
+      );
 
       final existing = await _findFavoriteByEpisode(episode);
 
       if (existing != null) {
-        Logger.warning('⭐ [FAVORITE-DS] episodeId: ${episode.id} 已存在于收藏中, 跳过添加');
+        Logger.warning(
+          '⭐ [FAVORITE-DS] episodeId: ${episode.id} 已存在于收藏中, 跳过添加',
+        );
         return;
       }
 
@@ -57,13 +59,23 @@ class LocalFavoriteDataSource {
         await _isarService.isar.favorites.put(favorite);
       });
 
-      Logger.info('⭐ [FAVORITE-DS] 收藏添加成功, episodeId: ${episode.id}, favoriteId: ${favorite.id}');
+      Logger.info(
+        '⭐ [FAVORITE-DS] 收藏添加成功, episodeId: ${episode.id}, favoriteId: ${favorite.id}',
+      );
     } on IsarError catch (e, stackTrace) {
       Logger.error('⭐ [FAVORITE-DS] 添加收藏失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('添加收藏失败', originalError: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '添加收藏失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     } catch (e, stackTrace) {
       Logger.error('⭐ [FAVORITE-DS] 添加收藏异常', error: e, stackTrace: stackTrace);
-      throw AppException.unknown('添加收藏失败', originalError: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '添加收藏失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -83,13 +95,25 @@ class LocalFavoriteDataSource {
         await _isarService.isar.favorites.delete(existing.id);
       });
 
+      await SyncDeleteRecorder.instance.recordFavoriteRemoval(
+        existing.episodeId,
+      );
+
       Logger.info('⭐ [FAVORITE-DS] 收藏移除成功, episodeId: ${episode.id}');
     } on IsarError catch (e, stackTrace) {
       Logger.error('⭐ [FAVORITE-DS] 移除收藏失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('移除收藏失败', originalError: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '移除收藏失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     } catch (e, stackTrace) {
       Logger.error('⭐ [FAVORITE-DS] 移除收藏异常', error: e, stackTrace: stackTrace);
-      throw AppException.unknown('移除收藏失败', originalError: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '移除收藏失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -101,14 +125,32 @@ class LocalFavoriteDataSource {
       final existing = await _findFavoriteByEpisode(episode);
       final isFav = existing != null;
 
-      Logger.debug('⭐ [FAVORITE-DS] 收藏状态查询结果, episodeId: ${episode.id}, isFavorite: $isFav');
+      Logger.debug(
+        '⭐ [FAVORITE-DS] 收藏状态查询结果, episodeId: ${episode.id}, isFavorite: $isFav',
+      );
       return isFav;
     } on IsarError catch (e, stackTrace) {
-      Logger.error('⭐ [FAVORITE-DS] 检查收藏状态失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('检查收藏状态失败', originalError: e, stackTrace: stackTrace);
+      Logger.error(
+        '⭐ [FAVORITE-DS] 检查收藏状态失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.storage(
+        '检查收藏状态失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     } catch (e, stackTrace) {
-      Logger.error('⭐ [FAVORITE-DS] 检查收藏状态异常', error: e, stackTrace: stackTrace);
-      throw AppException.unknown('检查收藏状态失败', originalError: e, stackTrace: stackTrace);
+      Logger.error(
+        '⭐ [FAVORITE-DS] 检查收藏状态异常',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.unknown(
+        '检查收藏状态失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -120,14 +162,32 @@ class LocalFavoriteDataSource {
       final favorites = await _isarService.isar.favorites.where().findAll();
       final episodeIds = favorites.map((f) => f.episodeId).toList();
 
-      Logger.info('⭐ [FAVORITE-DS] 共获取 ${episodeIds.length} 条收藏记录, episodeIds: $episodeIds');
+      Logger.info(
+        '⭐ [FAVORITE-DS] 共获取 ${episodeIds.length} 条收藏记录, episodeIds: $episodeIds',
+      );
       return episodeIds;
     } on IsarError catch (e, stackTrace) {
-      Logger.error('⭐ [FAVORITE-DS] 获取收藏列表失败', error: e, stackTrace: stackTrace);
-      throw AppException.storage('获取收藏列表失败', originalError: e, stackTrace: stackTrace);
+      Logger.error(
+        '⭐ [FAVORITE-DS] 获取收藏列表失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.storage(
+        '获取收藏列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     } catch (e, stackTrace) {
-      Logger.error('⭐ [FAVORITE-DS] 获取收藏列表异常', error: e, stackTrace: stackTrace);
-      throw AppException.unknown('获取收藏列表失败', originalError: e, stackTrace: stackTrace);
+      Logger.error(
+        '⭐ [FAVORITE-DS] 获取收藏列表异常',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AppException.unknown(
+        '获取收藏列表失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

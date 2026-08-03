@@ -9,6 +9,7 @@ import '../services/podcast_merge_service.dart';
 import '../services/feed_refresh_service.dart';
 import '../mappers/podcast_mapper.dart';
 import '../mappers/episode_mapper.dart';
+import '../../core/services/sync_delete_recorder.dart';
 import '../../core/utils/app_exception.dart';
 import '../../core/utils/logger.dart';
 
@@ -26,11 +27,12 @@ class PodcastRepositoryImpl implements PodcastRepository {
     FileStorageService? fileStorageService,
     ITunesSearchService? itunesSearchService,
     FeedRefreshService? feedRefreshService,
-  }) : _remoteDataSource = remoteDataSource ??
-            RemotePodcastDataSource(
-              localDataSource: localDataSource ?? LocalPodcastDataSource(),
-              itunesSearchService: itunesSearchService,
-            ),
+  }) : _remoteDataSource =
+           remoteDataSource ??
+           RemotePodcastDataSource(
+             localDataSource: localDataSource ?? LocalPodcastDataSource(),
+             itunesSearchService: itunesSearchService,
+           ),
        _localDataSource = localDataSource ?? LocalPodcastDataSource(),
        _fileStorageService = fileStorageService ?? FileStorageService.instance,
        _feedRefreshService = feedRefreshService ?? FeedRefreshService.instance;
@@ -42,13 +44,17 @@ class PodcastRepositoryImpl implements PodcastRepository {
       Logger.info('🕒 [TIMING] [0ms] 开始订阅播客: $rssUrl');
 
       final isSubscribed = await _localDataSource.isPodcastSubscribed(rssUrl);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] isPodcastSubscribed 完成, isSubscribed=$isSubscribed');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] isPodcastSubscribed 完成, isSubscribed=$isSubscribed',
+      );
       if (isSubscribed) {
         throw AppException.validation('该播客已订阅');
       }
 
       final result = await _remoteDataSource.getPodcastFromRss(rssUrl);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastFromRss 完成（网络请求）');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastFromRss 完成（网络请求）',
+      );
       final podcastEntity = result['podcast'] as Podcast;
       final episodes = result['episodes'] as List<Episode>;
       Logger.info('🕒 [TIMING] 解析到 ${episodes.length} 个剧集');
@@ -58,7 +64,9 @@ class PodcastRepositoryImpl implements PodcastRepository {
       );
 
       final podcastId = await _localDataSource.savePodcast(podcastEntity);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] savePodcast 完成, podcastId=$podcastId');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] savePodcast 完成, podcastId=$podcastId',
+      );
 
       final episodesWithPodcastId = episodes.map((episode) {
         return Episode(
@@ -91,22 +99,32 @@ class PodcastRepositoryImpl implements PodcastRepository {
           podcastITunesId: episode.podcastITunesId,
         );
       }).toList();
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] episodesWithPodcastId map 完成');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] episodesWithPodcastId map 完成',
+      );
 
       await _localDataSource.saveEpisodes(episodesWithPodcastId);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] saveEpisodes 完成, 保存了 ${episodesWithPodcastId.length} 个剧集');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] saveEpisodes 完成, 保存了 ${episodesWithPodcastId.length} 个剧集',
+      );
 
       await _localDataSource.updatePodcastSubscription(podcastId, true);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastSubscription 完成');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastSubscription 完成',
+      );
 
       await _localDataSource.updatePodcastEpisodeCount(
         podcastId,
         episodes.length,
       );
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastEpisodeCount 完成');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastEpisodeCount 完成',
+      );
 
       final podcastModel = await _localDataSource.getPodcastById(podcastId);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastById 完成');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastById 完成',
+      );
       if (podcastModel == null) {
         throw AppException.unknown('保存播客后无法获取数据');
       }
@@ -121,9 +139,13 @@ class PodcastRepositoryImpl implements PodcastRepository {
       }
 
       final podcast = PodcastMapper.toEntity(podcastModel);
-      Logger.info('🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 订阅流程完成，即将返回 podcast');
+      Logger.info(
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] 订阅流程完成，即将返回 podcast',
+      );
 
-      Logger.info('成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)');
+      Logger.info(
+        '成功订阅播客: ${podcast.title} (总耗时: ${stopwatch.elapsedMilliseconds}ms)',
+      );
 
       return podcast;
     } on AppException {
@@ -149,6 +171,10 @@ class PodcastRepositoryImpl implements PodcastRepository {
       if (podcast == null) {
         throw AppException.validation('播客不存在');
       }
+
+      // 在删除本地记录前记录同步墓碑，使退订与相关队列删除能传播到云端
+      await SyncDeleteRecorder.instance.recordUnsubscribe(podcast.supabaseId);
+      await SyncDeleteRecorder.instance.recordQueueRemovalsByPodcast(podcastId);
 
       final episodes = await _localDataSource.getEpisodesByPodcastId(podcastId);
 
@@ -227,11 +253,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
     } on AppException {
       rethrow;
     } catch (e, stackTrace) {
-      Logger.error(
-        '获取合并后的已订阅播客列表失败',
-        error: e,
-        stackTrace: stackTrace,
-      );
+      Logger.error('获取合并后的已订阅播客列表失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '获取合并后的已订阅播客列表失败',
         originalError: e,
@@ -478,10 +500,7 @@ class PodcastRepositoryImpl implements PodcastRepository {
         error: e,
         stackTrace: stackTrace,
       );
-      return FeedRefreshResult(
-        podcastId: podcastId,
-        error: e.toString(),
-      );
+      return FeedRefreshResult(podcastId: podcastId, error: e.toString());
     }
   }
 
@@ -499,7 +518,10 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       Logger.info('🔄 [REFRESH] 找到 ${podcasts.length} 个已订阅播客，开始批量刷新');
 
-      final result = await _feedRefreshService.refreshAllFeeds(podcasts, force: force);
+      final result = await _feedRefreshService.refreshAllFeeds(
+        podcasts,
+        force: force,
+      );
 
       Logger.info(
         '🔄 [REFRESH] 所有 feed 刷新完成: 新剧集 ${result.totalNewEpisodes}, '
