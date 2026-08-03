@@ -1,0 +1,203 @@
+{
+  "summary": {
+    "projectName": "tinycast",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 25,
+    "overview": "本次为 session-limited 快速评审：仓库具备声明层验证资产（测试文件、需求用例映射文档、run.sh 启动脚本），但变更最密集的主题链与最高风险的同步删除传播路径缺少可执行回归信号；仓库内没有机械质量门，既有 .agents/rules 约定与 docs/ 领域文档不在 Qoder 路由面上；7 天窗口的会话证据不足以判定重复工作。",
+    "strengths": [
+      "test/docs/ 提供需求→用例→测试文件的显式追溯，配合 34 个跟踪测试文件与 mock 隔离构成声明层验证基础。",
+      "run.sh 与 .env.example 构成项目自有启动路径，密钥经 dart-define 编译期注入，敏感配置扫描 15/15 无发现。",
+      "同步核心路径内建恢复语义：先拉后推防误删、_safeStep 步骤级失败包容、部分失败不推进同步水位线。"
+    ],
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Rules",
+        "MCP"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Project"
+          ],
+          "count": 2
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ]
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 56,
+        "summary": "test/docs 提供需求到用例的人工追溯，但三份项目规则与八份领域文档均无 agent 可路由的入口。",
+        "findingRefs": [
+          "project-rules-outside-qoder-routing",
+          "domain-docs-have-no-agent-entrypoint"
+        ]
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 62,
+        "summary": "run.sh 与 .env.example 构成项目自有启动路径，敏感配置扫描无发现；缺 SDK 锁定与自检命令，启动路线未实测。",
+        "findingRefs": []
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 52,
+        "summary": "存在真实的单元/widget 测试与 mock 隔离，但 churn 最高的主题链无测试且失败静默，同步回归网复制生产逻辑且集成用例全部跳过。",
+        "findingRefs": [
+          "theme-chain-no-executable-check",
+          "sync-regression-net-copies-production-logic"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 45,
+        "summary": "仓库内无 CI、合并门或机械验收点，交付边界停留在本地自觉；同步代码内建恢复语义是唯一可见的恢复资产。",
+        "findingRefs": [
+          "no-mechanical-quality-or-acceptance-gate"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 35,
+        "summary": "有界评审已完成；窗口内 3 个会话全部未入候选（insufficient-episodes），重复与清洁判定保留在证据边界内，本窗口无可发出的经验沉淀发现。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "theme-chain-no-executable-check",
+      "title": "变更最频繁的主题链没有可执行验证，解析失败被静默吞掉",
+      "severity": "Medium",
+      "reason": "事实：90 天窗口内 lib/core/theme/theme_data.dart（31 次提交、1362 行变更）、theme_loader.dart（21/1273）、assets/themes/styles.conf（36/501）、typography.conf（11/745）是全仓库变更最密集的链路；test/ 内没有针对 lib/core/theme 的测试（仅测试辅助包装命中 theme 字样）；theme_loader.dart 第 488、626 行为空 catch，include 失败仅 debugPrint，loadStyles 出错返回 null 静默回落，而 main.dart 启动路径会预加载主题。推断：该链路任何回归只能肉眼发现，agent 修改主题后无法自证正确。所有者：lib/core/theme/、assets/themes/ 与缺失的 test/core/theme/。证据来源：项目仓库（Qoder provider 评审）。不确定性：widget 测试可能间接触碰部分样式，未全量排除；运行时 HOCON 模式使用程度未量化。",
+      "expectedOutput": [
+        "主题解析与 include 链有针对性测试，回归时 flutter test 变红；解析失败不再静默。"
+      ],
+      "expectedArtifact": "单元测试",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为 lib/core/theme/theme_loader.dart 的配置解析与 include 链补最小单元测试（新建 test/core/theme/），并让解析失败产生可见信号而不是静默回落。\n\n## Validation\n\n- 运行 flutter test test/core/theme 通过\n- 用一个故意损坏的 styles.conf 片段确认失败能被测试或日志发现",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "sync-regression-net-copies-production-logic",
+      "title": "同步回归网复制生产映射逻辑且集成用例全部跳过，删除传播路径失去保护",
+      "severity": "Medium",
+      "reason": "事实：lib/core/services/sync_service.dart 是 90 天 churn 最高单文件（13 次提交、1715 行变更），承载先拉后推、tombstone 删除传播与 _safeStep 失败包容；test/core/services/sync_service_test.dart 第 214 行起在测试内重新定义 podcastToCloudMap 等映射而非调用生产实现；sync_service_test.dart 与 sync_provider_test.dart 共 8 个用例以 skip（需要完整环境/Supabase 环境）跳过；test/docs/cloud_sync_test_requirements.md 第 6 节自承私有方法无法直接测试。推断：修改生产映射后测试仍绿，最高风险变更面的回归网部分失效。所有者：lib/core/services/sync_service.dart 与 test/core/services、test/core/providers。证据来源：项目仓库。不确定性：test/data/datasources/remote_sync_datasource_test.dart（672 行）未深读，datasource 层可能部分兜底。",
+      "expectedOutput": [
+        "同步映射与删除传播的回归测试绑定生产实现，测试内不再维护逻辑副本；skip 用例有显式处置。"
+      ],
+      "expectedArtifact": "测试改造",
+      "aiFixPrompt": "/better-harness fix this issue\n\n让同步回归网绑定生产代码路径：把 podcastToCloudMap 等映射提取为可被测试直接调用的实现（或经 datasource 接缝覆盖），删除测试内的逻辑副本；对 8 个 skip 的集成用例给出可执行环境或显式取舍记录。\n\n## Validation\n\n- 运行 flutter test test/core/services test/core/providers 通过\n- 临时修改一处生产映射字段，确认对应测试变红",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "no-mechanical-quality-or-acceptance-gate",
+      "title": "仓库内没有任何机械质量门或交付验收关卡，验证全靠执行者自觉",
+      "severity": "Low",
+      "reason": "事实：仓库无 .github/ 等 CI 配置；analysis_options.yaml 为未定制的 flutter_lints 模板；无任何 hook 或任务运行器配置；README 仅 5 行且未写构建/测试命令；生成的 plugin registrant 文件入库且无 freshness 校验。推断：lint 与 test 是否运行没有任何强制点，agent 交付物在仓库内无必经关卡。所有者：仓库根（CI 配置面、README、analysis_options.yaml）。证据来源：项目仓库。不确定性：CI 可能托管在仓库外系统，本地不可见（未验证）；个人项目形态下无强制门可能是有意取舍。",
+      "expectedOutput": [
+        "交付前必跑检查在仓库内有显式、可执行的声明，或有无强制门取舍的显式记录。"
+      ],
+      "expectedArtifact": "验收路线声明",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为仓库声明最小交付验收路线：在根级入口（README 或 AGENTS.md）写明 flutter analyze 与 flutter test 是交付前必跑命令；如接受托管 CI，再补最小流水线；若有意保持无强制门，把该取舍写入同一入口。\n\n## Validation\n\n- 按声明执行 flutter analyze 与 flutter test，确认在当前环境可运行\n- 入口文档能被冷启动读者直接找到",
+      "dimensionRefs": [
+        "reliable-delivery"
+      ]
+    },
+    {
+      "id": "project-rules-outside-qoder-routing",
+      "title": "三份项目规则放在 .agents/rules/，不在 Qoder 已索引的规则面上",
+      "severity": "Low",
+      "reason": "事实：Qoder 资产基线报告本项目 rules=0，且无 .qoder/rules、无 AGENTS.md；.agents/rules/ 实存三份与项目栈直接相关的约定（Flutter/Dart 规范、跨平台兼容、存储策略），其中两份带 trigger: always_on 标记。推断：Qoder 会话无法经规则面获得这些约定，代码风格一致性失去配置支撑。所有者：.agents/rules/ 与缺失的根级路由文件。证据来源：Qoder 资产基线与项目文件，仅就 Qoder 路由面断言。不确定性：Qoder 运行时是否实际读取 .agents/rules/ 无文档证据亦无反证；这些规则是否被其他工具消费未核对。",
+      "expectedOutput": [
+        "项目约定经根级入口对 agent 可见，不再只存在于未被索引的位置。"
+      ],
+      "expectedArtifact": "AGENTS.md",
+      "aiFixPrompt": "/better-harness fix this issue\n\n把项目规则接入已证实可路由的面：在仓库根创建最小 AGENTS.md，引用 .agents/rules/ 三份文件的关键约束并保持其为 canonical 内容源（或迁移到你确认的 Qoder 规则位置）。\n\n## Validation\n\n- 新开一个 Qoder 会话，确认 agent 能经根入口复述存储策略与导航/状态管理约定",
+      "dimensionRefs": [
+        "task-understanding"
+      ]
+    },
+    {
+      "id": "domain-docs-have-no-agent-entrypoint",
+      "title": "八份领域文档与调试手册没有任何 agent 入口指引",
+      "severity": "Low",
+      "reason": "事实：docs/ 含 database.md（501 行）、supabase_setup.md、PLATFORM_PERMISSIONS.md、两份下载调试手册与主题架构文档共八份；README 仅 5 行且 Getting Started 为空；无 AGENTS.md，已检查的规则与技能面均未引用这些文档。推断：冷启动 agent 每次任务都要重新发现这些资料，调试与配置知识无法经路由复用。所有者：仓库根入口与 docs/。证据来源：项目仓库。不确定性：文档可能供人阅读或会话中手动引用；未逐份核对时效性。",
+      "expectedOutput": [
+        "根级入口给出 docs/ 各文档的用途路由，调试与配置手册可按场景直达。"
+      ],
+      "expectedArtifact": "文档索引",
+      "aiFixPrompt": "/better-harness fix this issue\n\n在根级入口（与规则路由同一份 AGENTS.md 或 README）建立 docs/ 索引：列出数据库、Supabase 配置、平台权限、下载调试手册与主题架构文档的适用场景。\n\n## Validation\n\n- 以冷启动视角确认从根入口两跳内可达任一 docs/ 文档",
+      "dimensionRefs": [
+        "task-understanding"
+      ]
+    }
+  ]
+}
