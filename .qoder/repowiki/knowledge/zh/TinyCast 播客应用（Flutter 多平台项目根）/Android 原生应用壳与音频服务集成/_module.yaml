@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: android_platform
+title: Android 原生应用壳与音频服务集成
+scope:
+    - android/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/services

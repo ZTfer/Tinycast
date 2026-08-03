@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: core
+title: 应用核心基础设施（路由、主题、状态与工具）
+scope:
+    - lib/core/
+source_files: []
+depends_on: []
+related_to:
+    - path: app_entry
+    - path: assets
+    - path: docs

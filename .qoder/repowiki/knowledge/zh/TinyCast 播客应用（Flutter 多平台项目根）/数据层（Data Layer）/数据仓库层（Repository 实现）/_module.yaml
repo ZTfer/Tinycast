@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: data/repositories
+title: 数据仓库层（Repository 实现）
+scope:
+    - lib/data/repositories/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/datasources
+    - path: domain
+    - path: presentation/providers

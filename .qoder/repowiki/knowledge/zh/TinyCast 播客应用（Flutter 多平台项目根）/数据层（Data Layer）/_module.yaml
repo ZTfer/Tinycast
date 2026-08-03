@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: data
+title: 数据层（Data Layer）
+scope:
+    - lib/data/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: presentation/features/search
+title: 搜索功能（本地内容搜索与播客订阅搜索）
+scope:
+    - lib/presentation/features/search/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/services

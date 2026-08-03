@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: presentation/features/favorite
+title: 收藏页面（Favorite）
+scope:
+    - lib/presentation/features/favorite/
+source_files: []
+depends_on: []
+related_to: []
