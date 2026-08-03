@@ -128,11 +128,11 @@ TinyCast 云同步功能基于 Supabase 实现本地 Isar 数据库与云端的�
 
 | 用例 ID | 描述 | 输入 | 预期结果 |
 |---------|------|------|----------|
-| SS-004 | _podcastToCloudMap 正确转换 | Podcast 对象 | 包含 title/author/description/itunes_id 等字段 |
-| SS-005 | _episodeToCloudMap 正确转换 | Episode 对象 | 包含 title/guid/audio_url/pub_date 等字段 |
-| SS-006 | _playHistoryToCloudMap 正确转换 | PlayHistory 对象 | 包含 episode_id/is_played/last_played_position_ms 等字段 |
-| SS-007 | _favoriteToCloudMap 正确转换 | Favorite 对象 | 包含 episode_id/episode_guid 等字段 |
-| SS-008 | _queueItemToCloudMap 正确转换 | Queue 对象 | 包含 episode_id/position/added_at 等字段 |
+| SS-004 | podcastToCloudMap 正确转换 | Podcast 对象 | 包含 title/author/description/itunes_id 等字段 |
+| SS-005 | episodeToCloudMap 正确转换 | Episode 对象 | 包含 title/guid/audio_url/pub_date 等字段 |
+| SS-006 | playHistoryToCloudMap 正确转换 | PlayHistory 对象 | 包含 is_played/last_played_position_ms/play_progress 等字段 |
+| SS-007 | favoriteToCloudMap 正确转换 | Favorite 对象 | 包含 episode_guid/episode_itunes_id 等字段 |
+| SS-008 | queueItemToCloudMap 正确转换 | Queue 对象 | 包含 position/added_at 等字段 |
 
 #### 4.2.3 时间戳管理
 
@@ -208,5 +208,33 @@ dart run build_runner build --delete-conflicting-outputs
 
 1. **Supabase 链式 API 难以 Mock**：SupabaseClient 的查询构建器采用链式调用（`_client.from().upsert().select()`），mockito 无法有效模拟。因此使用 FakeRemoteSyncDataSource 替代。
 2. **Isar 单例难以替换**：IsarService 采用全局单例模式，无法在单元测试中注入 Mock。涉及 Isar 的测试标记为集成测试。
-3. **私有方法无法直接测试**：SyncService 的转换方法（`_podcastToCloudMap` 等）为库私有，通过独立测试函数验证逻辑正确性。
+3. ~~**私有方法无法直接测试**~~ **已解决**：SyncService 的转换方法已提取为 `lib/core/services/sync_mappers.dart` 中的公开顶层函数（`podcastToCloudMap` 等），测试直接调用生产代码路径，不再使用测试内副本。
 4. **SyncNotifier 内部创建 SyncService**：SyncNotifier 在 `syncNow()` 中直接创建 SyncService 实例，无法注入 Mock。状态转换测试依赖完整环境。
+
+## 7. 集成测试执行环境
+
+以下 8 个集成用例当前标记为 `skip`，其阻塞根因与可执行环境如下：
+
+### SyncService 集成测试（4 个 skip）
+
+| 用例 ID | 阻塞根因 | 可执行环境 |
+|---------|----------|------------|
+| SS-001 | `canSync` 依赖 `SupabaseService().isInitialized` 全局单例 | 配置真实 Supabase 项目（未认证状态） |
+| SS-002 | `sync()` 调用 `_ensureUserProfile()`（SupabaseService.client）及 `_pullAndMergeCloudChanges`/`_pushLocalChanges`（IsarService.instance） | 配置真实 Supabase + 初始化 Isar |
+| SS-003 | 同 SS-002 | 同上 |
+| SS-012 | 同 SS-002 | 同上 |
+
+### SyncNotifier 集成测试（4 个 skip）
+
+| 用例 ID | 阻塞根因 | 可执行环境 |
+|---------|----------|------------|
+| SP-004 | `SyncNotifier.build()` 监听 `authStateProvider`，需 ProviderContainer | Riverpod ProviderContainer + Auth 环境 |
+| SP-005 | `syncNow()` 硬编码创建 `SyncService()`，无法注入 Mock | 重构 SyncNotifier 为可注入 SyncService，或使用完整环境 |
+| SP-007 | 同 SP-005 | 同上 |
+| Auth 触发 | 需 `authStateProvider` 状态变化 + SyncNotifier 完整环境 | Riverpod + Auth + Supabase/Isar 完整环境 |
+
+### 解除 skip 的路径
+
+1. **SyncService 集成测试**：待 `SupabaseService` 和 `IsarService` 重构为可注入依赖（如通过构造函数参数或 Provider 注入）后，可使用 Mock 在单元测试中覆盖 SS-001 ~ SS-012。
+2. **SyncNotifier 集成测试**：待 `SyncNotifier` 重构为通过构造函数或 Provider 接收 `SyncService` 实例后，可使用 Mock 在单元测试中覆盖 SP-004 ~ SP-008。
+3. **真实集成测试环境**：配置真实 Supabase 项目 + 初始化 Isar 数据库后，可运行 `flutter test --tags integration` 执行这些用例（需补充 `integration` tag）。

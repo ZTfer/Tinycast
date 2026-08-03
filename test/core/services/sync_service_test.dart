@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tinycast/core/services/sync_mappers.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 import 'package:tinycast/data/datasources/remote_sync_datasource.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
@@ -211,104 +212,9 @@ void main() {
         return queue;
       }
 
-      Map<String, dynamic> podcastToCloudMap(Podcast p) {
-        final map = <String, dynamic>{
-          'title': p.title,
-          'author': p.author,
-          'description': p.description,
-          'is_explicit': p.isExplicit,
-          'language': p.language,
-          'last_updated': p.lastUpdated.toIso8601String(),
-          'owner_email': p.ownerEmail,
-          'owner_name': p.ownerName,
-          'subtitle': p.subtitle,
-          'website_url': p.websiteUrl,
-          'updated_at': DateTime.now().toIso8601String(),
-        };
-
-        if (p.itunesId != null) map['itunes_id'] = p.itunesId;
-        if (p.itunesArtworkUrl != null) map['itunes_artwork_url'] = p.itunesArtworkUrl;
-        if (p.itunesCollectionExplicitness != null) map['itunes_collection_explicitness'] = p.itunesCollectionExplicitness;
-        if (p.itunesCollectionViewUrl != null) map['itunes_collection_view_url'] = p.itunesCollectionViewUrl;
-        if (p.itunesContentAdvisoryRating != null) map['itunes_content_advisory_rating'] = p.itunesContentAdvisoryRating;
-        if (p.itunesCountry != null) map['itunes_country'] = p.itunesCountry;
-        if (p.itunesGenreIds != null) map['itunes_genre_ids'] = p.itunesGenreIds;
-        if (p.itunesGenres != null) map['itunes_genres'] = p.itunesGenres;
-        if (p.itunesPrimaryGenreName != null) map['itunes_primary_genre_name'] = p.itunesPrimaryGenreName;
-        if (p.itunesReleaseDate != null) map['itunes_release_date'] = p.itunesReleaseDate!.toIso8601String();
-        if (p.keywords != null) map['keywords'] = p.keywords;
-        if (p.rssUrl.isNotEmpty) map['rss_urls'] = [p.rssUrl];
-        if (p.supabaseId != null) map['id'] = int.tryParse(p.supabaseId!);
-
-        return map;
-      }
-
-      Map<String, dynamic> episodeToCloudMap(Episode e) {
-        final map = <String, dynamic>{
-          'title': e.title,
-          'description': e.description,
-          'audio_url': e.audioUrl,
-          'is_explicit': e.isExplicit,
-          'updated_at': DateTime.now().toIso8601String(),
-        };
-
-        if (e.guid != null) map['guid'] = e.guid;
-        if (e.artworkUrl != null) map['artwork_url'] = e.artworkUrl;
-        if (e.duration != null) map['duration'] = e.duration;
-        if (e.itunesArtworkUrl != null) map['itunes_artwork_url'] = e.itunesArtworkUrl;
-        if (e.itunesContentAdvisoryRating != null) map['itunes_content_advisory_rating'] = e.itunesContentAdvisoryRating;
-        if (e.itunesExplicitness != null) map['itunes_explicitness'] = e.itunesExplicitness;
-        if (e.itunesId != null) map['itunes_id'] = e.itunesId;
-        if (e.itunesReleaseDate != null) map['itunes_release_date'] = e.itunesReleaseDate!.toIso8601String();
-        if (e.link != null) map['link'] = e.link;
-        if (e.podcastITunesId != null) map['podcast_itunes_id'] = e.podcastITunesId;
-        map['pub_date'] = e.pubDate.toIso8601String();
-        if (e.supabaseId != null) map['id'] = int.tryParse(e.supabaseId!);
-
-        return map;
-      }
-
-      Map<String, dynamic> playHistoryToCloudMap(PlayHistory h) {
-        final map = <String, dynamic>{
-          'artwork_url': h.artworkUrl,
-          'description': h.description,
-          'episode_guid': h.episodeGuid,
-          'episode_itunes_id': h.episodeITunesId,
-          'is_deleted': h.isDeleted,
-          'is_played': h.isPlayed,
-          'last_played_position_ms': h.lastPlayedPositionMs,
-          'last_update_time': h.lastUpdateTime.toIso8601String(),
-          'played_duration': h.playedDuration,
-          'podcast_guid': h.podcastGuid,
-          'podcast_itunes_id': h.podcastITunesId,
-          'status': h.status.name,
-          'title': h.title,
-        };
-
-        return map;
-      }
-
-      Map<String, dynamic> favoriteToCloudMap(Favorite f) {
-        final map = <String, dynamic>{
-          'episode_guid': f.episodeGuid,
-          'episode_itunes_id': f.episodeITunesId,
-        };
-
-        return map;
-      }
-
-      Map<String, dynamic> queueItemToCloudMap(Queue q) {
-        final map = <String, dynamic>{
-          'episode_guid': q.episodeGuid,
-          'episode_itunes_id': q.episodeITunesId,
-          'podcast_guid': q.podcastGuid,
-          'podcast_itunes_id': q.podcastITunesId,
-          'position': q.position,
-          'added_at': q.addedAt.toIso8601String(),
-        };
-
-        return map;
-      }
+      // Mapping functions (podcastToCloudMap, episodeToCloudMap, etc.)
+      // are imported from lib/core/services/sync_mappers.dart so tests
+      // verify the production code path, not a duplicated copy.
 
       test('SS-004: podcastToCloudMap 应该正确转换 Podcast', () {
         final podcast = createTestPodcast();
@@ -410,6 +316,7 @@ void main() {
         expect(map['is_deleted'], isFalse);
         expect(map['is_played'], isTrue);
         expect(map['last_played_position_ms'], equals(1800000));
+        expect(map['play_progress'], equals(0.5));
         expect(map['last_update_time'], isNotNull);
         expect(map['played_duration'], equals(3600));
         expect(map['podcast_guid'], isNull);
@@ -545,21 +452,28 @@ void main() {
     });
 
     group('集成测试（需要 Supabase + Isar）', () {
+      // SS-001 ~ SS-012 阻塞根因：
+      // SyncService.sync() 内部直接依赖 SupabaseService().client 和
+      // IsarService.instance.isar 两个全局单例，单元测试无法注入 Mock。
+      // 可执行环境：配置真实 Supabase 项目 + 初始化 Isar 后运行集成测试。
+      // 取舍：保持 skip，待 SupabaseService/IsarService 重构为可注入依赖后转为单元测试。
+
       test('SS-001: sync() 用户未认证时应该跳过同步', () {
-        // 需要 SupabaseService 未初始化的环境
-      }, skip: '需要 Supabase 环境');
+        // 阻塞: canSync 依赖 SupabaseService().isInitialized 全局单例
+      }, skip: '集成测试: canSync 依赖 SupabaseService 全局单例, 需真实未认证环境');
 
       test('SS-002: sync() 应该先拉取后推送', () {
-        // 需要完整的 Supabase + Isar 环境
-      }, skip: '需要完整环境');
+        // 阻塞: sync() 调用 _ensureUserProfile()（SupabaseService.client）
+        //       及 _pullAndMergeCloudChanges/_pushLocalChanges（IsarService.instance）
+      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
 
       test('SS-003: 同步完成后应该保存时间戳', () {
-        // 需要完整的 Supabase + Isar 环境
-      }, skip: '需要完整环境');
+        // 阻塞: 同 SS-002, 需完整 sync() 执行路径
+      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
 
       test('SS-012: 同步过程中应该触发进度回调', () {
-        // 需要完整的 Supabase + Isar 环境
-      }, skip: '需要完整环境');
+        // 阻塞: 同 SS-002, 需完整 sync() 执行路径
+      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
     });
   });
 }

@@ -169,20 +169,27 @@ void main() {
   });
 
   group('集成测试（需要 Supabase + Isar + Riverpod）', () {
+    // SP-004 ~ Auth 阻塞根因：
+    // SyncNotifier.build() 监听 authStateProvider, 且 syncNow() 内部
+    // 硬编码创建 SyncService()（无法注入 Mock），需完整 Riverpod +
+    // Supabase + Isar 环境才能执行。
+    // 可执行环境：配置真实 Supabase + Isar + Riverpod ProviderContainer 后运行集成测试。
+    // 取舍：保持 skip，待 SyncNotifier 重构为可注入 SyncService 后转为单元测试。
+
     test('SP-004: SyncNotifier 初始状态应该是 idle', () {
-      // 需要 Riverpod ProviderContainer 和完整的 SyncService 环境
-    }, skip: '需要完整环境');
+      // 阻塞: SyncNotifier.build() 监听 authStateProvider, 需 ProviderContainer
+    }, skip: '集成测试: SyncNotifier.build() 监听 authStateProvider, 需 Riverpod + Auth 环境');
 
     test('SP-005: syncNow() 应该将状态改为 syncing 然后回到 idle', () {
-      // 需要完整的 Supabase + Isar + Riverpod 环境
-    }, skip: '需要完整环境');
+      // 阻塞: syncNow() 硬编码创建 SyncService(), 无法注入 Mock
+    }, skip: '集成测试: SyncNotifier.syncNow() 硬编码创建 SyncService, 无法注入 Mock');
 
     test('SP-007: syncing 状态时 syncNow() 不应该重复执行', () {
-      // 需要完整的 Supabase + Isar + Riverpod 环境
-    }, skip: '需要完整环境');
+      // 阻塞: 同 SP-005, syncNow() 内部创建 SyncService()
+    }, skip: '集成测试: SyncNotifier.syncNow() 硬编码创建 SyncService, 无法注入 Mock');
 
     test('Auth 状态变化应该触发同步启停', () {
-      // 需要完整的 Supabase Auth 环境
-    }, skip: '需要完整环境');
+      // 阻塞: 需 authStateProvider 状态变化 + SyncNotifier 完整环境
+    }, skip: '集成测试: 需 authStateProvider + SyncNotifier + Supabase/Isar 完整环境');
   });
 }
