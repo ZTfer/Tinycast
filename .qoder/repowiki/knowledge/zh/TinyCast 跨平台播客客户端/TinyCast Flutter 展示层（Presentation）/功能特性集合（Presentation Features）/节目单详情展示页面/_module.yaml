@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: presentation/features/episode_detail
+title: 节目单详情展示页面
+scope:
+    - lib/presentation/features/episode_detail/
+source_files: []
+depends_on: []
+related_to: []

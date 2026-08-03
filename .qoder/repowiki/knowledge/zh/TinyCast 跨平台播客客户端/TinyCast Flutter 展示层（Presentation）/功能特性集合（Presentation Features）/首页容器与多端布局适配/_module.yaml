@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: presentation/features/home
+title: 首页容器与多端布局适配
+scope:
+    - lib/presentation/features/home/
+source_files: []
+depends_on: []
+related_to:
+    - path: app_entry

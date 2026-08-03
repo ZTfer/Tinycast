@@ -1,0 +1,14 @@
+schema_version: 1
+module_path: data/services
+title: 数据层业务服务（下载、播放、缓存、搜索与设置）
+scope:
+    - lib/data/services/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/datasources
+    - path: data/repositories
+    - path: presentation/features/library
+    - path: presentation/features/search
+    - path: presentation/providers
+    - path: test

@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: presentation/providers
+title: Riverpod 展示层状态管理 Provider
+scope:
+    - lib/presentation/providers/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/repositories
+    - path: data/services
+    - path: presentation/features/subscribe
+    - path: test

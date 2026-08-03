@@ -1,0 +1,16 @@
+schema_version: 1
+module_path: ""
+title: TinyCast 跨平台播客客户端
+scope:
+    - README.md
+    - .gitignore
+    - pubspec.yaml
+    - analysis_options.yaml
+    - devtools_options.yaml
+    - run.sh
+    - .env.example
+    - .gitattributes
+    - pubspec.lock
+source_files: []
+depends_on: []
+related_to: []

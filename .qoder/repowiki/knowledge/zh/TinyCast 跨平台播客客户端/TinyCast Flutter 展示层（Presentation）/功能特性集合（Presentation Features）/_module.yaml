@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: presentation/features
+title: 功能特性集合（Presentation Features）
+scope:
+    - lib/presentation/features/
+source_files: []
+depends_on: []
+related_to: []
