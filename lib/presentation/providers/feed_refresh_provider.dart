@@ -5,6 +5,12 @@ import '../providers/podcast_provider.dart';
 
 enum FeedRefreshStatus { idle, loading, success, error }
 
+class _NotProvided {
+  const _NotProvided();
+}
+
+const _notProvided = _NotProvided();
+
 class FeedRefreshState {
   final FeedRefreshStatus status;
   final int totalNewEpisodes;
@@ -27,14 +33,16 @@ class FeedRefreshState {
     int? totalNewEpisodes,
     int? successCount,
     int? failureCount,
-    String? errorMessage,
+    Object? errorMessage = _notProvided,
   }) {
     return FeedRefreshState(
       status: status ?? this.status,
       totalNewEpisodes: totalNewEpisodes ?? this.totalNewEpisodes,
       successCount: successCount ?? this.successCount,
       failureCount: failureCount ?? this.failureCount,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _notProvided)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }

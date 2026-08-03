@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/toast_utils.dart';
-import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
 import 'package:tinycast/data/repositories/queue_repository_impl.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
@@ -111,7 +111,7 @@ class _ShowInfoWithDownloadStatusState
     Logger.info('🚫 [UNFOLLOW] 开始取消关注 podcast: ${podcast.title} (id: ${podcast.id})');
     try {
       Logger.info('🚫 [UNFOLLOW] 步骤 1/7: 清理播放历史记录...');
-      final playHistoryRepo = PlayHistoryRepository();
+      final playHistoryRepo = PlayHistoryRepositoryImpl();
       await playHistoryRepo.removeByPodcastId(podcast.id);
       Logger.info('✅ [UNFOLLOW] 播放历史记录清理完成');
 

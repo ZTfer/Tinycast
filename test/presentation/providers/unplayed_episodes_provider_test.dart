@@ -3,22 +3,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/usecases/get_unplayed_episodes_usecase.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 
 import 'unplayed_episodes_provider_test.mocks.dart';
 
-@GenerateMocks([GetUnplayedEpisodesUseCase])
+@GenerateMocks([GetUnplayedEpisodesUseCase, PlayHistoryRepository])
 void main() {
   group('UnplayedEpisodesNotifier', () {
     late ProviderContainer container;
     late MockGetUnplayedEpisodesUseCase mockUseCase;
+    late MockPlayHistoryRepository mockPlayHistoryRepository;
 
     setUp(() {
       mockUseCase = MockGetUnplayedEpisodesUseCase();
+      mockPlayHistoryRepository = MockPlayHistoryRepository();
+      when(mockPlayHistoryRepository.getPlayedEpisodeIds())
+          .thenAnswer((_) async => <int>{});
       container = ProviderContainer(
         overrides: [
           getUnplayedEpisodesUseCaseProvider.overrideWithValue(mockUseCase),
+          playHistoryRepositoryForUnplayedProvider
+              .overrideWithValue(mockPlayHistoryRepository),
         ],
       );
     });
@@ -26,6 +33,12 @@ void main() {
     tearDown(() {
       container.dispose();
     });
+
+    /// 等待 build() 中的自动加载 microtask 完成，并清除其产生的交互记录
+    Future<void> flushAutoLoad() async {
+      await Future<void>.delayed(Duration.zero);
+      clearInteractions(mockUseCase);
+    }
 
     Episode createTestEpisode({
       required int id,
@@ -58,6 +71,7 @@ void main() {
         expect(container.read(unplayedEpisodesNotifierProvider).status,
             equals(UnplayedEpisodesStatus.initial));
 
+        await flushAutoLoad();
         await notifier.loadUnplayedEpisodes();
 
         final state = container.read(unplayedEpisodesNotifierProvider);
@@ -127,6 +141,7 @@ void main() {
         when(mockUseCase.call()).thenAnswer((_) async => episodes);
 
         final notifier = container.read(unplayedEpisodesNotifierProvider.notifier);
+        await flushAutoLoad();
         await notifier.refresh();
 
         final state = container.read(unplayedEpisodesNotifierProvider);
@@ -152,6 +167,8 @@ void main() {
         });
 
         final notifier = container.read(unplayedEpisodesNotifierProvider.notifier);
+        await flushAutoLoad();
+        callCount = 0;
 
         await notifier.refresh();
         expect(container.read(unplayedEpisodesNotifierProvider).episodes.length,

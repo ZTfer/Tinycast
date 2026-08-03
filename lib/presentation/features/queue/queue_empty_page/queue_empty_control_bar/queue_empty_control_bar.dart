@@ -15,16 +15,12 @@ class QueueEmptyControlBar extends StatelessWidget {
         QueueEmptyButton(
           icon: Icon(LucideIcons.rss, size: 16),
           label: 'RSS 订阅',
-          onPressed: () {
-            debugPrint('RSS 订阅 pressed');
-          },
+          onPressed: () {},
         ),
         QueueEmptyButton(
           icon: Icon(LucideIcons.import, size: 16),
           label: '导入节目',
-          onPressed: () {
-            debugPrint('导入节目 pressed');
-          },
+          onPressed: () {},
         ),
       ],
     );

@@ -70,14 +70,16 @@ class _LibraryEmptyButtonState extends State<LibraryEmptyButton> {
                   widget.icon!,
                   const SizedBox(width: 6),
                 ],
-                Text(
-                  widget.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _getContentColor(),
-                    fontSize: widget.fontSize,
-                    fontWeight: FontWeight.normal,
-                    height: 1.5,
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _getContentColor(),
+                      fontSize: widget.fontSize,
+                      fontWeight: FontWeight.normal,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ],

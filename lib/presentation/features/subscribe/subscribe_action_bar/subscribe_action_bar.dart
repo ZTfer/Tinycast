@@ -28,7 +28,6 @@ class SubscribeActionBar extends ConsumerWidget {
         SecondaryButton(
           label: '取消',
           onPressed: () {
-            debugPrint('Follow pressed');
             ref.read(podcastSearchProvider.notifier).reset();
           },
         ),
@@ -36,7 +35,6 @@ class SubscribeActionBar extends ConsumerWidget {
         PrimaryButton(
           label: '搜索',
           onPressed: isLoading ? () {} : () {
-            debugPrint('Subscribe pressed');
             onSearch?.call();
           },
         ),

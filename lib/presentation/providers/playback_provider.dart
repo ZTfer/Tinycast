@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tinycast/data/database/isar_service.dart';
-import 'package:tinycast/data/models/episode_model.dart' as episode_model;
-import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/domain/repositories/play_history_repository.dart';
 import 'package:tinycast/domain/entities/app_settings.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
 import 'package:tinycast/data/services/audio_player_service.dart';
 import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -71,7 +69,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
   AudioPlayerService get _audioPlayerService => AudioPlayerService.instance;
   PlayProgressService get _playProgressService => PlayProgressService.instance;
-  PlayHistoryRepository get _playHistoryRepository => PlayHistoryRepository();
+  PlayHistoryRepository get _playHistoryRepository =>
+      ref.read(playHistoryRepositoryProvider);
   Timer? _progressSaveTimer;
   Timer? _sleepTimerCheck;
   int _lastSavedPositionMs = 0;
@@ -79,6 +78,14 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   int? _currentEpisodeId;
   int _restoreGeneration = 0;
   bool _userInitiatedPlayback = false;
+  // 状态快照：Riverpod 3 禁止在 onDispose 生命周期内访问 state，
+  // dispose 时的进度保存只能依赖此快照
+  PlayerState _playerState = PlayerState();
+
+  void _updateState(PlayerState newState) {
+    _playerState = newState;
+    state = newState;
+  }
 
   @override
   PlayerState build() {
@@ -133,7 +140,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       );
 
       if (DateTime.now().isAfter(endTime)) {
-        debugPrint('⏰ [SleepTimer] Timer expired, pausing playback');
+        Logger.info('⏰ [SleepTimer] Timer expired, pausing playback');
         await pause();
         await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
         await SettingsService.instance.setSleepTimerEndTimeMillis(null);
@@ -172,30 +179,30 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         final isPlaying =
             playbackState == PlaybackState.playing ||
             playbackState == PlaybackState.buffering;
-        state = state.copyWith(isPlaying: isPlaying);
+        _updateState(_playerState.copyWith(isPlaying: isPlaying));
       },
     );
 
     _progressSubscription = _audioPlayerService.progressStream.listen((
       progress,
     ) {
-      state = state.copyWith(
+      _updateState(_playerState.copyWith(
         currentPosition: progress.position,
         duration: progress.duration,
-      );
+      ));
     });
 
     _speedSubscription = _audioPlayerService.speedStream.listen((speed) {
-      state = state.copyWith(speed: speed);
+      _updateState(_playerState.copyWith(speed: speed));
     });
 
     _volumeSubscription = _audioPlayerService.volumeStream.listen((volume) {
-      state = state.copyWith(volume: volume);
+      _updateState(_playerState.copyWith(volume: volume));
     });
 
     _currentEpisodeSubscription = _audioPlayerService.currentEpisodeStream
         .listen((episode) {
-          state = state.copyWith(currentEpisode: episode);
+          _updateState(_playerState.copyWith(currentEpisode: episode));
         });
 
     _episodeCompletedSubscription = _audioPlayerService.episodeCompletedStream
@@ -218,15 +225,15 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     final queueEpisode = queueState.queueEpisodes.where((e) => e.id == episodeId).firstOrNull;
     
     if (queueEpisode != null) {
-      debugPrint('🎯 [Playback] Episode $episodeId completed, removing from queue...');
+      Logger.info('🎯 [Playback] Episode $episodeId completed, removing from queue...');
       try {
         await ref.read(queueNotifierProvider.notifier)
             .removeFromQueueByEpisodeId(queueEpisode);
       } catch (e, stackTrace) {
-        debugPrint('❌ [Playback] Failed to remove episode $episodeId from queue: $e\n$stackTrace');
+        Logger.error('❌ [Playback] Failed to remove episode $episodeId from queue', error: e, stackTrace: stackTrace);
       }
     } else {
-      debugPrint('⚠️ [Playback] Episode $episodeId not in queue (already removed or not queued), skipping queue removal');
+      Logger.warning('⚠️ [Playback] Episode $episodeId not in queue (already removed or not queued), skipping queue removal');
     }
 
     // 2. 标记当前音频为已播放
@@ -236,10 +243,10 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     await _handleAutoDeleteDownload(episodeId);
 
     // 4. 刷新未播放剧集列表（必须等待刷新完成，否则后续会获取到旧的列表）
-    debugPrint('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
+    Logger.info('🎯 [Playback] Episode $episodeId completed, refreshing unplayed episodes...');
     try {
       await ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
-      debugPrint('✅ [Playback] Unplayed episodes list refreshed');
+      Logger.info('✅ [Playback] Unplayed episodes list refreshed');
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to refresh unplayed episodes',
@@ -252,7 +259,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
     final settingsAsync = ref.read(settingsProvider);
     final settings = settingsAsync.value;
     if (settings != null && settings.sleepTimer == SleepTimerOption.episodeEnd) {
-      debugPrint('⏰ [SleepTimer] Episode ended, pausing playback');
+      Logger.info('⏰ [SleepTimer] Episode ended, pausing playback');
       await pause();
       await SettingsService.instance.setSleepTimer(SleepTimerOption.off);
       await SettingsService.instance.setSleepTimerEndTimeMillis(null);
@@ -278,7 +285,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         podcastITunesId: currentEpisode?.podcastITunesId,
       );
 
-      debugPrint('✅ [Playback] Marked episode $episodeId as played (cache synced)');
+      Logger.info('✅ [Playback] Marked episode $episodeId as played (cache synced)');
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to mark episode as played',
@@ -298,15 +305,17 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         return;
       }
 
-      final isar = IsarService.instance.isar;
-      final episode = await isar.episodes.get(episodeId);
+      final episodes = await ref
+          .read(podcastRepositoryProvider)
+          .getEpisodesByIds([episodeId]);
+      final episode = episodes.isEmpty ? null : episodes.first;
       if (episode == null || !episode.isDownloaded || episode.downloadedPath == null) {
         return;
       }
 
-      debugPrint('🗑️ [Playback] Auto-deleting downloaded episode: $episodeId');
+      Logger.info('🗑️ [Playback] Auto-deleting downloaded episode: $episodeId');
       await AudioDownloadService.instance.deleteDownloadedEpisode(episodeId.toString());
-      debugPrint('✅ [Playback] Auto-deleted episode: $episodeId');
+      Logger.info('✅ [Playback] Auto-deleted episode: $episodeId');
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to auto-delete episode',
@@ -323,7 +332,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       final continuousPlay = settingsAsync.value?.continuousPlay ?? true;
 
       if (!continuousPlay) {
-        debugPrint('⏸️ [Playback] Continuous play disabled, staying at completed episode');
+        Logger.info('⏸️ [Playback] Continuous play disabled, staying at completed episode');
         return;
       }
 
@@ -331,7 +340,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       final queueState = ref.read(queueNotifierProvider);
       if (queueState.queueEpisodes.isNotEmpty) {
         final nextFromQueue = queueState.queueEpisodes.first;
-        debugPrint('🎯 [Playback] Next from queue: ${nextFromQueue.title} (id: ${nextFromQueue.id})');
+        Logger.info('🎯 [Playback] Next from queue: ${nextFromQueue.title} (id: ${nextFromQueue.id})');
         await playEpisode(nextFromQueue);
         return;
       }
@@ -343,11 +352,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           : null;
 
       if (nextEpisode == null) {
-        debugPrint('🎯 [Playback] No more episodes in queue or unplayed list');
+        Logger.info('🎯 [Playback] No more episodes in queue or unplayed list');
         return;
       }
 
-      debugPrint('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
+      Logger.info('🔄 [Playback] Continuous play enabled, auto-playing next: ${nextEpisode.title}');
       await playEpisode(nextEpisode);
     } catch (e, stackTrace) {
       Logger.error(
@@ -386,11 +395,11 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> _saveCurrentProgress() async {
-    final currentEpisode = state.currentEpisode;
+    final currentEpisode = _playerState.currentEpisode;
     if (currentEpisode == null) return;
 
-    final positionMs = state.currentPosition.inMilliseconds;
-    final durationMs = state.duration.inMilliseconds;
+    final positionMs = _playerState.currentPosition.inMilliseconds;
+    final durationMs = _playerState.duration.inMilliseconds;
 
     try {
       final progressRatio = durationMs > 0 ? positionMs / durationMs : 0.0;
@@ -405,8 +414,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
       _lastSavedPositionMs = positionMs;
       _lastSaveTime = DateTime.now();
-    } catch (e) {
-      debugPrint('Error saving play progress: $e');
+    } catch (e, stackTrace) {
+      Logger.error('Error saving play progress', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -425,8 +434,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       _currentEpisodeId = episode.id;
       _lastSavedPositionMs = positionMs;
       _lastSaveTime = DateTime.now();
-    } catch (e) {
-      debugPrint('Error creating play history: $e');
+    } catch (e, stackTrace) {
+      Logger.error('Error creating play history', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -442,53 +451,29 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           .getLatestPlayingHistory();
 
       if (latestHistory == null) {
-        debugPrint('No previous playback history found');
+        Logger.info('No previous playback history found');
         return;
       }
 
       if (_isRestoreCancelled(restoreGeneration)) return;
 
-      debugPrint('Restoring last playback: ${latestHistory.title}');
+      Logger.info('Restoring last playback: ${latestHistory.title}');
 
-      final isar = IsarService.instance.isar;
-      final episode = await isar.episodes.get(latestHistory.episodeId);
+      final episodes = await ref
+          .read(podcastRepositoryProvider)
+          .getEpisodesByIds([latestHistory.episodeId]);
+      final episode = episodes.isEmpty ? null : episodes.first;
 
       if (episode == null) {
-        debugPrint('Episode not found in database (may be deleted)');
+        Logger.warning('Episode not found in database (may be deleted)');
         return;
       }
 
       if (_isRestoreCancelled(restoreGeneration)) return;
 
-      final domainEpisode = Episode(
-        id: episode.id,
-        podcastId: episode.podcastId,
-        title: episode.title,
-        description: episode.description,
-        link: episode.link,
-        guid: episode.guid,
-        author: episode.author,
-        pubDate: episode.pubDate,
-        audioUrl: episode.audioUrl,
-        audioType: episode.audioType,
-        duration: episode.duration,
-        artworkUrl: episode.artworkUrl,
-        isExplicit: episode.isExplicit,
+      final domainEpisode = episode.copyWith(
         isPlayed: latestHistory.isPlayed,
-        isDownloaded: episode.isDownloaded,
-        isFavorite: false,
-        downloadedPath: episode.downloadedPath,
-        downloadProgress: episode.downloadProgress,
         playProgress: latestHistory.playProgress,
-        lastPlayedAt: episode.lastPlayedAt,
-        createdAt: episode.createdAt,
-        updatedAt: episode.updatedAt,
-        itunesId: episode.itunesId,
-        podcastITunesId: episode.podcastITunesId,
-        itunesArtworkUrl: episode.itunesArtworkUrl,
-        itunesReleaseDate: episode.itunesReleaseDate,
-        itunesExplicitness: episode.itunesExplicitness,
-        itunesContentAdvisoryRating: episode.itunesContentAdvisoryRating,
       );
 
       _currentEpisodeId = domainEpisode.id;
@@ -496,23 +481,14 @@ class PlaybackNotifier extends Notifier<PlayerState> {
       _lastSaveTime = DateTime.now();
 
       // 同步 PlayHistory 的播放状态到 Episode 缓存
-      try {
-        final isar = IsarService.instance.isar;
-        await isar.writeTxn(() async {
-          final ep = await isar.episodes.get(episode.id);
-          if (ep != null && (ep.isPlayed != latestHistory.isPlayed || ep.playProgress != latestHistory.playProgress)) {
-            ep.isPlayed = latestHistory.isPlayed;
-            ep.playProgress = latestHistory.playProgress;
-            ep.updatedAt = DateTime.now();
-            await isar.episodes.put(ep);
-            debugPrint('🔄 [Playback] Synced Episode cache from PlayHistory: isPlayed=${latestHistory.isPlayed}, playProgress=${latestHistory.playProgress}');
-          }
-        });
-      } catch (e) {
-        debugPrint('⚠️ [Playback] Failed to sync Episode cache from PlayHistory: $e');
-      }
+      await _playProgressService.syncEpisodePlaybackState(
+        episode.id,
+        isPlayed: latestHistory.isPlayed,
+        playProgress: latestHistory.playProgress,
+      );
+      Logger.info('🔄 [Playback] Synced Episode cache from PlayHistory: isPlayed=${latestHistory.isPlayed}, playProgress=${latestHistory.playProgress}');
 
-      state = state.copyWith(currentEpisode: domainEpisode);
+      _updateState(_playerState.copyWith(currentEpisode: domainEpisode));
 
       // 检查本地文件是否存在
       bool fileExists = false;
@@ -529,8 +505,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
             final fallbackFile = File(fallbackPath);
             fileExists = await fallbackFile.exists();
           }
-        } catch (e) {
-          debugPrint('Failed to check file existence: $e');
+        } catch (e, stackTrace) {
+          Logger.error('Failed to check file existence', error: e, stackTrace: stackTrace);
           fileExists = false;
         }
       }
@@ -541,7 +517,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           milliseconds: latestHistory.lastPlayedPositionMs,
         );
 
-        debugPrint('Initializing AudioPlayerService with restored episode...');
+        Logger.info('Initializing AudioPlayerService with restored episode...');
         try {
           if (_isRestoreCancelled(restoreGeneration)) return;
           await _audioPlayerService.loadEpisode(
@@ -550,29 +526,35 @@ class PlaybackNotifier extends Notifier<PlayerState> {
           );
           if (_isRestoreCancelled(restoreGeneration)) return;
 
-          debugPrint(
+          Logger.info(
             'Playback state restored successfully - all controls should work',
           );
         } catch (e, stackTrace) {
-          debugPrint('Failed to load audio for restored episode: $e');
-          debugPrint('Stack trace: $stackTrace');
+          Logger.error('Failed to load audio for restored episode',
+              error: e, stackTrace: stackTrace);
           if (_isRestoreCancelled(restoreGeneration)) return;
           // 加载音频失败时，清除状态但保留 UI 显示
           _currentEpisodeId = null;
           _lastSavedPositionMs = 0;
-          state = state.copyWith(currentEpisode: null);
+          _updateState(PlayerState(
+            speed: _playerState.speed,
+            volume: _playerState.volume,
+          ));
         }
       } else {
-        debugPrint('Local file not found and no remote URL, skipping audio load');
+        Logger.info('Local file not found and no remote URL, skipping audio load');
       }
     } catch (e, stackTrace) {
-      debugPrint('Error restoring playback state: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('Error restoring playback state',
+          error: e, stackTrace: stackTrace);
       if (_isRestoreCancelled(restoreGeneration)) return;
       // 恢复失败时，清除状态
       _currentEpisodeId = null;
       _lastSavedPositionMs = 0;
-      state = state.copyWith(currentEpisode: null);
+      _updateState(PlayerState(
+        speed: _playerState.speed,
+        volume: _playerState.volume,
+      ));
     }
   }
 
@@ -581,29 +563,29 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   }
 
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
-    debugPrint('🎵 [PLAYBACK] playEpisode called: ${episode.title} (id: ${episode.id})');
-    debugPrint('🎵 [PLAYBACK] _currentEpisodeId: $_currentEpisodeId, episode.id: ${episode.id}');
+    Logger.info('🎵 [PLAYBACK] playEpisode called: ${episode.title} (id: ${episode.id})');
+    Logger.info('🎵 [PLAYBACK] _currentEpisodeId: $_currentEpisodeId, episode.id: ${episode.id}');
 
     _userInitiatedPlayback = true;
     _restoreGeneration++;
     
     if (_currentEpisodeId != null && _currentEpisodeId != episode.id) {
-      debugPrint('🎵 [PLAYBACK] Different episode, saving current progress...');
+      Logger.info('🎵 [PLAYBACK] Different episode, saving current progress...');
       await _saveCurrentProgress();
     }
 
-    debugPrint('🎵 [PLAYBACK] Creating play history...');
+    Logger.info('🎵 [PLAYBACK] Creating play history...');
     await _createOrUpdatePlayHistory(episode);
 
     _currentEpisodeId = episode.id;
-    debugPrint('🎵 [PLAYBACK] _currentEpisodeId updated to: $_currentEpisodeId');
+    Logger.info('🎵 [PLAYBACK] _currentEpisodeId updated to: $_currentEpisodeId');
 
-    debugPrint('🎵 [PLAYBACK] Calling AudioPlayerService.playEpisode...');
+    Logger.info('🎵 [PLAYBACK] Calling AudioPlayerService.playEpisode...');
     await _audioPlayerService.playEpisode(
       episode,
       startPosition: startPosition,
     );
-    debugPrint('🎵 [PLAYBACK] AudioPlayerService.playEpisode completed');
+    Logger.info('🎵 [PLAYBACK] AudioPlayerService.playEpisode completed');
   }
 
   Future<void> play() async {
@@ -700,7 +682,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
 
     if (!isCompleted) return;
 
-    debugPrint('🎯 [Playback] $reason, marking as completed');
+    Logger.info('🎯 [Playback] $reason, marking as completed');
 
     try {
       await _playProgressService.markEpisodeAsPlayed(
@@ -711,7 +693,7 @@ class PlaybackNotifier extends Notifier<PlayerState> {
         podcastITunesId: currentEpisode.podcastITunesId,
       );
 
-      debugPrint('🔄 [Playback] Auto-refreshing History list...');
+      Logger.info('🔄 [Playback] Auto-refreshing History list...');
       ref.read(completedHistoriesProvider.notifier).refresh();
       _requestSync();
     } catch (e, stackTrace) {
@@ -737,29 +719,29 @@ final playbackProvider = NotifierProvider<PlaybackNotifier, PlayerState>(
 );
 
 final currentEpisodeProvider = Provider<Episode?>((ref) {
-  return ref.watch(playbackProvider).currentEpisode;
+  return ref.watch(playbackProvider.select((s) => s.currentEpisode));
 });
 
 final isPlayingProvider = Provider<bool>((ref) {
-  return ref.watch(playbackProvider).isPlaying;
+  return ref.watch(playbackProvider.select((s) => s.isPlaying));
 });
 
 final currentPositionProvider = Provider<Duration>((ref) {
-  return ref.watch(playbackProvider).currentPosition;
+  return ref.watch(playbackProvider.select((s) => s.currentPosition));
 });
 
 final durationProvider = Provider<Duration>((ref) {
-  return ref.watch(playbackProvider).duration;
+  return ref.watch(playbackProvider.select((s) => s.duration));
 });
 
 final speedProvider = Provider<double>((ref) {
-  return ref.watch(playbackProvider).speed;
+  return ref.watch(playbackProvider.select((s) => s.speed));
 });
 
 final volumeProvider = Provider<double>((ref) {
-  return ref.watch(playbackProvider).volume;
+  return ref.watch(playbackProvider.select((s) => s.volume));
 });
 
 final progressRatioProvider = Provider<double>((ref) {
-  return ref.watch(playbackProvider).progressRatio;
+  return ref.watch(playbackProvider.select((s) => s.progressRatio));
 });

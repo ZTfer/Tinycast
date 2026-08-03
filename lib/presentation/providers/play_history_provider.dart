@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tinycast/data/models/play_history_model.dart';
-import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/domain/entities/play_history.dart';
+import 'package:tinycast/domain/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 final playHistoryRepositoryProvider = Provider<PlayHistoryRepository>((ref) {
-  return PlayHistoryRepository();
+  return PlayHistoryRepositoryImpl();
 });
 
 class PlayHistoryNotifier extends Notifier<List<PlayHistory>> {
@@ -15,9 +16,17 @@ class PlayHistoryNotifier extends Notifier<List<PlayHistory>> {
   }
 
   Future<void> _loadCompletedHistories() async {
-    final repository = ref.read(playHistoryRepositoryProvider);
-    final histories = await repository.getCompletedHistories();
-    state = histories;
+    try {
+      final repository = ref.read(playHistoryRepositoryProvider);
+      final histories = await repository.getCompletedHistories();
+      state = histories;
+    } catch (e, stackTrace) {
+      Logger.error(
+        '[HISTORY] 加载已完成播放历史失败',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> refresh() async {
@@ -28,10 +37,11 @@ class PlayHistoryNotifier extends Notifier<List<PlayHistory>> {
     final index = state.indexWhere((h) => h.episodeId == episodeId);
     if (index != -1) {
       final updated = List<PlayHistory>.from(state);
-      updated[index] = updated[index]
-        ..isPlayed = true
-        ..status = PlayHistoryStatus.completed
-        ..lastUpdateTime = DateTime.now();
+      updated[index] = updated[index].copyWith(
+        isPlayed: true,
+        status: PlayHistoryStatus.completed,
+        lastUpdateTime: DateTime.now(),
+      );
       state = updated;
     }
   }

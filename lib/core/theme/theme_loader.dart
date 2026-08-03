@@ -1,10 +1,11 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import '../utils/logger.dart';
 import 'app_colors.dart';
 import 'app_theme_config.dart';
 
 void _debug(String msg) {
-  debugPrint('[ThemeLoader] $msg');
+  Logger.debug('[ThemeLoader] $msg');
 }
 
 /// HOCON 轻量解析器

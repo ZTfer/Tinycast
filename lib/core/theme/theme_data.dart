@@ -438,14 +438,8 @@ class AppThemeData {
   BorderRadius get bodyContentBorderRadius =>
       _layoutBorderRadius('window_container.body.content') ?? BorderRadius.zero;
 
-  BorderRadius get bodyBorderRadius {
-    final result =
-        _layoutBorderRadius('window_container.body') ?? BorderRadius.zero;
-    debugPrint(
-      '[ThemeData] bodyBorderRadius: $result, path=window_container.body',
-    );
-    return result;
-  }
+  BorderRadius get bodyBorderRadius =>
+      _layoutBorderRadius('window_container.body') ?? BorderRadius.zero;
 
   Color? homeToolbarButtonBackground({
     bool pressed = false,

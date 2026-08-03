@@ -3,23 +3,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tinycast/domain/entities/episode.dart';
-import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart';
+import 'package:tinycast/domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 import 'podcast_provider_test.mocks.dart';
 
 // 使用 mockito 生成 Mock 类
-@GenerateMocks([GetEpisodesByPodcastIdUseCase])
+@GenerateMocks([GetLatestEpisodesByPodcastIdUseCase])
 void main() {
   group('latestEpisodesProvider', () {
     late ProviderContainer container;
-    late MockGetEpisodesByPodcastIdUseCase mockUseCase;
+    late MockGetLatestEpisodesByPodcastIdUseCase mockUseCase;
 
     setUp(() {
-      mockUseCase = MockGetEpisodesByPodcastIdUseCase();
+      mockUseCase = MockGetLatestEpisodesByPodcastIdUseCase();
       container = ProviderContainer(
         overrides: [
-          getEpisodesByPodcastIdUseCaseProvider.overrideWithValue(mockUseCase),
+          getLatestEpisodesByPodcastIdUseCaseProvider.overrideWithValue(mockUseCase),
         ],
       );
     });
@@ -57,7 +57,8 @@ void main() {
         createTestEpisode(id: 5, podcastId: podcastId, title: 'Episode 5'),
       ];
 
-      when(mockUseCase.call(podcastId)).thenAnswer((_) async => episodes);
+      when(mockUseCase.call(podcastId, limit: 3))
+          .thenAnswer((_) async => episodes.take(3).toList());
 
       // Act
       final result = await container.read(
@@ -70,7 +71,7 @@ void main() {
       expect(result[1].title, equals('Episode 2'));
       expect(result[2].title, equals('Episode 3'));
 
-      verify(mockUseCase.call(podcastId)).called(1);
+      verify(mockUseCase.call(podcastId, limit: 3)).called(1);
     });
 
     test('当剧集少于3集时，应该返回所有剧集', () async {
@@ -81,7 +82,7 @@ void main() {
         createTestEpisode(id: 2, podcastId: podcastId, title: 'Episode 2'),
       ];
 
-      when(mockUseCase.call(podcastId)).thenAnswer((_) async => episodes);
+      when(mockUseCase.call(podcastId, limit: 3)).thenAnswer((_) async => episodes);
 
       // Act
       final result = await container.read(
@@ -93,13 +94,13 @@ void main() {
       expect(result[0].title, equals('Episode 1'));
       expect(result[1].title, equals('Episode 2'));
 
-      verify(mockUseCase.call(podcastId)).called(1);
+      verify(mockUseCase.call(podcastId, limit: 3)).called(1);
     });
 
     test('当没有剧集时，应该返回空列表', () async {
       // Arrange
       final podcastId = 3;
-      when(mockUseCase.call(podcastId)).thenAnswer((_) async => []);
+      when(mockUseCase.call(podcastId, limit: 3)).thenAnswer((_) async => []);
 
       // Act
       final result = await container.read(
@@ -110,7 +111,7 @@ void main() {
       expect(result.length, equals(0));
       expect(result, isEmpty);
 
-      verify(mockUseCase.call(podcastId)).called(1);
+      verify(mockUseCase.call(podcastId, limit: 3)).called(1);
     });
 
     test('应该正确处理加载状态', () async {
@@ -120,7 +121,7 @@ void main() {
         createTestEpisode(id: 1, podcastId: podcastId, title: 'Episode 1'),
       ];
 
-      when(mockUseCase.call(podcastId)).thenAnswer((_) async {
+      when(mockUseCase.call(podcastId, limit: 3)).thenAnswer((_) async {
         await Future.delayed(const Duration(milliseconds: 100));
         return episodes;
       });
@@ -156,8 +157,8 @@ void main() {
         createTestEpisode(id: 5, podcastId: podcastId2, title: 'Podcast2-Ep3'),
       ];
 
-      when(mockUseCase.call(podcastId1)).thenAnswer((_) async => episodes1);
-      when(mockUseCase.call(podcastId2)).thenAnswer((_) async => episodes2);
+      when(mockUseCase.call(podcastId1, limit: 3)).thenAnswer((_) async => episodes1);
+      when(mockUseCase.call(podcastId2, limit: 3)).thenAnswer((_) async => episodes2);
 
       // Act
       final result1 = await container.read(
@@ -176,8 +177,8 @@ void main() {
       expect(result2[0].podcastId, equals(podcastId2));
       expect(result2[0].title, equals('Podcast2-Ep1'));
 
-      verify(mockUseCase.call(podcastId1)).called(1);
-      verify(mockUseCase.call(podcastId2)).called(1);
+      verify(mockUseCase.call(podcastId1, limit: 3)).called(1);
+      verify(mockUseCase.call(podcastId2, limit: 3)).called(1);
     });
 
     test('应该正确处理错误状态', () async {
@@ -185,7 +186,7 @@ void main() {
       final podcastId = 6;
       final errorMessage = 'Network error';
 
-      when(mockUseCase.call(podcastId)).thenThrow(Exception(errorMessage));
+      when(mockUseCase.call(podcastId, limit: 3)).thenThrow(Exception(errorMessage));
 
       // Act - 读取 provider，这会触发异步操作
       final asyncValue = container.read(latestEpisodesProvider(podcastId));

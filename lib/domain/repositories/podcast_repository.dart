@@ -1,6 +1,6 @@
 import '../entities/podcast.dart';
 import '../entities/episode.dart';
-import '../../data/services/feed_refresh_service.dart';
+import '../entities/feed_refresh_result.dart';
 import 'dart:async';
 
 abstract class PodcastRepository {

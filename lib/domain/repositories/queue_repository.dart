@@ -1,8 +1,8 @@
-import '../../data/models/queue_model.dart';
+import '../entities/queue_item.dart';
 import '../entities/episode.dart';
 
 abstract class QueueRepository {
-  Future<List<Queue>> getAll();
+  Future<List<QueueItem>> getAll();
   Future<void> addToQueue(Episode episode);
   Future<void> insertToQueueFront(Episode episode);
   Future<void> removeFromQueue(int id);

@@ -6,6 +6,12 @@ import 'favorite_provider.dart';
 
 enum FavoriteEpisodesStatus { initial, loading, success, error }
 
+class _NotProvided {
+  const _NotProvided();
+}
+
+const _notProvided = _NotProvided();
+
 class FavoriteEpisodesState {
   final FavoriteEpisodesStatus status;
   final List<Episode> episodes;
@@ -20,12 +26,14 @@ class FavoriteEpisodesState {
   FavoriteEpisodesState copyWith({
     FavoriteEpisodesStatus? status,
     List<Episode>? episodes,
-    String? errorMessage,
+    Object? errorMessage = _notProvided,
   }) {
     return FavoriteEpisodesState(
       status: status ?? this.status,
       episodes: episodes ?? this.episodes,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _notProvided)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }

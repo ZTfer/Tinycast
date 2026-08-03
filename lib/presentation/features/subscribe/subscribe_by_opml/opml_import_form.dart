@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// 虚线边框绘制器
 ///
@@ -269,9 +270,8 @@ class _OpmlImportFormState extends State<OpmlImportForm> {
         /// 触发文件选择回调
         widget.onFileSelected?.call(file);
       }
-    } catch (e) {
-      /// 打印错误信息
-      debugPrint('文件选择失败: $e');
+    } catch (e, stackTrace) {
+      Logger.error('文件选择失败', error: e, stackTrace: stackTrace);
     }
   }
 }

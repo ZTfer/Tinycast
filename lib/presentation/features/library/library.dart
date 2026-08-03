@@ -5,7 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
-import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
 import 'package:tinycast/data/repositories/queue_repository_impl.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
@@ -113,7 +113,7 @@ class _LibraryState extends ConsumerState<Library> {
     );
     try {
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 1/5: 清理播放历史记录...');
-      final playHistoryRepo = PlayHistoryRepository();
+      final playHistoryRepo = PlayHistoryRepositoryImpl();
       await playHistoryRepo.removeByPodcastId(podcast.id);
       Logger.info('✅ [LIBRARY-UNFOLLOW] 播放历史记录清理完成');
 

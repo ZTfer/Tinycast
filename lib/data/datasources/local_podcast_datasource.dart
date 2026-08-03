@@ -237,6 +237,37 @@ class LocalPodcastDataSource {
     }
   }
 
+  /// 在单个写事务中删除播客及其全部节目，保证退订的原子性
+  Future<void> deletePodcastWithEpisodes(int id) async {
+    try {
+      Logger.info('事务删除播客及其节目: $id');
+
+      await _isarService.isar.writeTxn(() async {
+        await _isarService.isar.episodes
+            .filter()
+            .podcastIdEqualTo(id)
+            .deleteAll();
+        await _isarService.isar.podcasts.delete(id);
+      });
+
+      Logger.info('成功事务删除播客及其节目: $id');
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('事务删除播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '事务删除播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('事务删除播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '事务删除播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<bool> isPodcastSubscribed(String rssUrl) async {
     try {
       Logger.info('检查播客是否已订阅: $rssUrl');

@@ -8,7 +8,7 @@ import 'dart:async' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:tinycast/domain/entities/episode.dart' as _i6;
 import 'package:tinycast/domain/entities/podcast.dart' as _i4;
-import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart'
+import 'package:tinycast/domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart'
     as _i5;
 import 'package:tinycast/domain/usecases/get_subscribed_podcasts_usecase.dart'
     as _i2;
@@ -46,19 +46,19 @@ class MockGetSubscribedPodcastsUseCase extends _i1.Mock
           as _i3.Future<List<_i4.Podcast>>);
 }
 
-/// A class which mocks [GetEpisodesByPodcastIdUseCase].
+/// A class which mocks [GetLatestEpisodesByPodcastIdUseCase].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetEpisodesByPodcastIdUseCase extends _i1.Mock
-    implements _i5.GetEpisodesByPodcastIdUseCase {
-  MockGetEpisodesByPodcastIdUseCase() {
+class MockGetLatestEpisodesByPodcastIdUseCase extends _i1.Mock
+    implements _i5.GetLatestEpisodesByPodcastIdUseCase {
+  MockGetLatestEpisodesByPodcastIdUseCase() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<List<_i6.Episode>> call(int? podcastId) =>
+  _i3.Future<List<_i6.Episode>> call(int? podcastId, {int? limit = 3}) =>
       (super.noSuchMethod(
-            Invocation.method(#call, [podcastId]),
+            Invocation.method(#call, [podcastId], {#limit: limit}),
             returnValue: _i3.Future<List<_i6.Episode>>.value(<_i6.Episode>[]),
           )
           as _i3.Future<List<_i6.Episode>>);

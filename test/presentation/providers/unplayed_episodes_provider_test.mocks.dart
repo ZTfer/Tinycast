@@ -7,6 +7,9 @@ import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:tinycast/domain/entities/episode.dart' as _i4;
+import 'package:tinycast/domain/entities/play_history.dart' as _i6;
+import 'package:tinycast/domain/repositories/play_history_repository.dart'
+    as _i5;
 import 'package:tinycast/domain/usecases/get_unplayed_episodes_usecase.dart'
     as _i2;
 
@@ -41,4 +44,235 @@ class MockGetUnplayedEpisodesUseCase extends _i1.Mock
             returnValue: _i3.Future<List<_i4.Episode>>.value(<_i4.Episode>[]),
           )
           as _i3.Future<List<_i4.Episode>>);
+}
+
+/// A class which mocks [PlayHistoryRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPlayHistoryRepository extends _i1.Mock
+    implements _i5.PlayHistoryRepository {
+  MockPlayHistoryRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<List<_i6.PlayHistory>> getCompletedHistories() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCompletedHistories, []),
+            returnValue: _i3.Future<List<_i6.PlayHistory>>.value(
+              <_i6.PlayHistory>[],
+            ),
+          )
+          as _i3.Future<List<_i6.PlayHistory>>);
+
+  @override
+  _i3.Future<_i6.PlayHistory?> getLatestPlayingHistory() =>
+      (super.noSuchMethod(
+            Invocation.method(#getLatestPlayingHistory, []),
+            returnValue: _i3.Future<_i6.PlayHistory?>.value(),
+          )
+          as _i3.Future<_i6.PlayHistory?>);
+
+  @override
+  _i3.Future<_i6.PlayHistory?> getByEpisodeId(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getByEpisodeId,
+              [episodeId],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<_i6.PlayHistory?>.value(),
+          )
+          as _i3.Future<_i6.PlayHistory?>);
+
+  @override
+  _i3.Future<void> saveOrUpdate(_i6.PlayHistory? history) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveOrUpdate, [history]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updateProgress(
+    int? episodeId,
+    int? positionMs,
+    int? duration, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateProgress,
+              [episodeId, positionMs, duration],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updatePlayProgress(
+    int? episodeId,
+    int? positionMs,
+    double? progressRatio, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updatePlayProgress,
+              [episodeId, positionMs, progressRatio],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<double?> getPlayProgress(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getPlayProgress,
+              [episodeId],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<double?>.value(),
+          )
+          as _i3.Future<double?>);
+
+  @override
+  _i3.Future<bool> isEpisodePlayed(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #isEpisodePlayed,
+              [episodeId],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<bool>.value(false),
+          )
+          as _i3.Future<bool>);
+
+  @override
+  _i3.Future<void> markAsPlayedWithProgress(
+    int? episodeId,
+    double? progressRatio, {
+    String? episodeGuid,
+    String? episodeITunesId,
+    String? podcastGuid,
+    String? podcastITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #markAsPlayedWithProgress,
+              [episodeId, progressRatio],
+              {
+                #episodeGuid: episodeGuid,
+                #episodeITunesId: episodeITunesId,
+                #podcastGuid: podcastGuid,
+                #podcastITunesId: podcastITunesId,
+              },
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<Set<int>> getPlayedEpisodeIds() =>
+      (super.noSuchMethod(
+            Invocation.method(#getPlayedEpisodeIds, []),
+            returnValue: _i3.Future<Set<int>>.value(<int>{}),
+          )
+          as _i3.Future<Set<int>>);
+
+  @override
+  _i3.Future<void> markAsCompleted(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #markAsCompleted,
+              [episodeId],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updateOrCreatePlayHistoryAsCompleted(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+    String? podcastGuid,
+    String? podcastITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updateOrCreatePlayHistoryAsCompleted,
+              [episodeId],
+              {
+                #episodeGuid: episodeGuid,
+                #episodeITunesId: episodeITunesId,
+                #podcastGuid: podcastGuid,
+                #podcastITunesId: podcastITunesId,
+              },
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> softDelete(
+    int? episodeId, {
+    String? episodeGuid,
+    String? episodeITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #softDelete,
+              [episodeId],
+              {#episodeGuid: episodeGuid, #episodeITunesId: episodeITunesId},
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> removeByPodcastId(
+    int? podcastId, {
+    String? podcastGuid,
+    String? podcastITunesId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #removeByPodcastId,
+              [podcastId],
+              {#podcastGuid: podcastGuid, #podcastITunesId: podcastITunesId},
+            ),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: ""
-title: TinyCast Flutter 播客客户端根工程
+title: TinyCast Flutter 播客客户端（根工程）
 scope:
     - README.md
     - .gitignore

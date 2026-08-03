@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
 import '../../domain/repositories/podcast_repository.dart';
@@ -136,6 +138,12 @@ class PodcastRepositoryImpl implements PodcastRepository {
       final itunesFuture = _remoteDataSource.getITunesSearchFuture();
       if (itunesFuture != null) {
         _itunesSearchFutures[podcastId] = itunesFuture;
+        // Future 完成后从 Map 中移除，避免长时间运行导致内存泄漏
+        unawaited(
+          itunesFuture
+              .whenComplete(() => _itunesSearchFutures.remove(podcastId))
+              .catchError((_) {}),
+        );
       }
 
       final podcast = PodcastMapper.toEntity(podcastModel);
@@ -191,9 +199,8 @@ class PodcastRepositoryImpl implements PodcastRepository {
         Logger.info('成功删除 $deletedCount/${pathsToDelete.length} 个节目文件');
       }
 
-      await _localDataSource.deleteEpisodesByPodcastId(podcastId);
-
-      await _localDataSource.deletePodcast(podcastId);
+      // 在单个事务中删除播客及其全部节目，保证退订的原子性
+      await _localDataSource.deletePodcastWithEpisodes(podcastId);
 
       Logger.info('成功取消订阅播客: ${podcast.title}');
     } on AppException {

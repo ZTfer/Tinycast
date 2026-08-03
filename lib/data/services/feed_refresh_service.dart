@@ -1,52 +1,13 @@
 import '../../core/utils/logger.dart';
 import '../../domain/entities/podcast.dart';
 import '../../domain/entities/episode.dart';
+import '../../domain/entities/feed_refresh_result.dart';
+export '../../domain/entities/feed_refresh_result.dart'
+    show FeedRefreshResult, BatchRefreshResult;
 import '../datasources/remote_podcast_datasource.dart';
 import '../datasources/local_podcast_datasource.dart';
 import '../mappers/podcast_mapper.dart';
 import '../mappers/episode_mapper.dart';
-
-class FeedRefreshResult {
-  final int podcastId;
-  final int newEpisodesCount;
-  final bool success;
-  final String? error;
-
-  FeedRefreshResult({
-    required this.podcastId,
-    this.newEpisodesCount = 0,
-    this.success = false,
-    this.error,
-  });
-
-  @override
-  String toString() {
-    if (success) {
-      return 'FeedRefreshResult{podcastId: $podcastId, newEpisodes: $newEpisodesCount}';
-    } else {
-      return 'FeedRefreshResult{podcastId: $podcastId, error: $error}';
-    }
-  }
-}
-
-class BatchRefreshResult {
-  final int totalNewEpisodes;
-  final int successCount;
-  final int failureCount;
-  final List<FeedRefreshResult> results;
-
-  BatchRefreshResult({
-    this.totalNewEpisodes = 0,
-    this.successCount = 0,
-    this.failureCount = 0,
-    required this.results,
-  });
-
-  @override
-  String toString() {
-    return 'BatchRefreshResult{totalNew: $totalNewEpisodes, success: $successCount, failures: $failureCount}';
-  }
-}
 
 class FeedRefreshService {
   static const _cooldownDuration = Duration(minutes: 5);

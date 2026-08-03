@@ -5,32 +5,41 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart';
+import 'package:tinycast/domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
 import 'package:tinycast/domain/usecases/get_subscribed_podcasts_usecase.dart';
 import 'package:tinycast/presentation/features/library/library.dart';
 import 'package:tinycast/presentation/features/library/library_episode_item/library_episode_item.dart';
 import 'package:tinycast/presentation/features/library/library_episode_item/library_episode_item_skeleton.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/playback_provider.dart';
 
 import 'library_test.mocks.dart';
 
-@GenerateMocks([GetSubscribedPodcastsUseCase, GetEpisodesByPodcastIdUseCase])
+/// 测试用 PlaybackNotifier：不启动定时器、不访问数据库，
+/// 生成无副作用的 PlayerState
+class TestPlaybackNotifier extends PlaybackNotifier {
+  @override
+  PlayerState build() => PlayerState();
+}
+
+@GenerateMocks([GetSubscribedPodcastsUseCase, GetLatestEpisodesByPodcastIdUseCase])
 void main() {
   group('Library Widget Tests', () {
     late ProviderContainer container;
     late MockGetSubscribedPodcastsUseCase mockGetSubscribedPodcastsUseCase;
-    late MockGetEpisodesByPodcastIdUseCase mockGetEpisodesUseCase;
+    late MockGetLatestEpisodesByPodcastIdUseCase mockGetLatestEpisodesUseCase;
 
     setUp(() {
       mockGetSubscribedPodcastsUseCase = MockGetSubscribedPodcastsUseCase();
-      mockGetEpisodesUseCase = MockGetEpisodesByPodcastIdUseCase();
+      mockGetLatestEpisodesUseCase = MockGetLatestEpisodesByPodcastIdUseCase();
       container = ProviderContainer(
         overrides: [
           getSubscribedPodcastsUseCaseProvider
               .overrideWithValue(mockGetSubscribedPodcastsUseCase),
-          getEpisodesByPodcastIdUseCaseProvider
-              .overrideWithValue(mockGetEpisodesUseCase),
+          getLatestEpisodesByPodcastIdUseCaseProvider
+              .overrideWithValue(mockGetLatestEpisodesUseCase),
+          playbackProvider.overrideWith(TestPlaybackNotifier.new),
         ],
       );
     });
@@ -86,13 +95,18 @@ void main() {
 
         // Act
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: LibraryListItem(
-                  podcast: podcast,
-                  episodes: episodes,
-                  showDivider: false,
+          ProviderScope(
+            overrides: [
+              playbackProvider.overrideWith(TestPlaybackNotifier.new),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: LibraryListItem(
+                    podcast: podcast,
+                    episodes: episodes,
+                    showDivider: false,
+                  ),
                 ),
               ),
             ),
@@ -168,13 +182,18 @@ void main() {
 
         // Act
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: LibraryListItem(
-                  podcast: podcast,
-                  episodes: episodes,
-                  showDivider: false,
+          ProviderScope(
+            overrides: [
+              playbackProvider.overrideWith(TestPlaybackNotifier.new),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: LibraryListItem(
+                    podcast: podcast,
+                    episodes: episodes,
+                    showDivider: false,
+                  ),
                 ),
               ),
             ),
@@ -384,7 +403,7 @@ void main() {
 
         when(mockGetSubscribedPodcastsUseCase.call())
             .thenAnswer((_) async => podcasts);
-        when(mockGetEpisodesUseCase.call(1))
+        when(mockGetLatestEpisodesUseCase.call(1, limit: 3))
             .thenAnswer((_) async => episodes);
 
         // Act
@@ -431,6 +450,9 @@ void main() {
 
         // Assert - 应该显示加载指示器
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+        // 等待 mock 的延迟 Future 完成，避免遗留 pending timer
+        await tester.pump(const Duration(seconds: 1));
       });
 
       testWidgets('没有订阅播客时应该显示空状态页面', (WidgetTester tester) async {
@@ -488,7 +510,7 @@ void main() {
 
         when(mockGetSubscribedPodcastsUseCase.call())
             .thenAnswer((_) async => [podcast]);
-        when(mockGetEpisodesUseCase.call(1)).thenAnswer((_) async {
+        when(mockGetLatestEpisodesUseCase.call(1, limit: 3)).thenAnswer((_) async {
           await Future.delayed(const Duration(seconds: 1));
           return [];
         });
@@ -510,6 +532,9 @@ void main() {
 
         // Assert - 应该显示骨架屏
         expect(find.byType(LibraryEpisodeItemSkeleton), findsWidgets);
+
+        // 等待 mock 的延迟 Future 完成，避免遗留 pending timer
+        await tester.pump(const Duration(seconds: 1));
       });
 
       testWidgets('加载剧集失败时应该不影响播客显示', (WidgetTester tester) async {
@@ -518,7 +543,7 @@ void main() {
 
         when(mockGetSubscribedPodcastsUseCase.call())
             .thenAnswer((_) async => [podcast]);
-        when(mockGetEpisodesUseCase.call(1))
+        when(mockGetLatestEpisodesUseCase.call(1, limit: 3))
             .thenThrow(Exception('Failed to load episodes'));
 
         // Act

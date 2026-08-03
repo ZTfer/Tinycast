@@ -1,8 +1,9 @@
 import 'package:isar_community/isar.dart';
+import '../../domain/entities/play_history.dart' show PlayHistoryStatus;
+
+export '../../domain/entities/play_history.dart' show PlayHistoryStatus;
 
 part 'play_history_model.g.dart';
-
-enum PlayHistoryStatus { playing, completed, skipped }
 
 @collection
 class PlayHistory {

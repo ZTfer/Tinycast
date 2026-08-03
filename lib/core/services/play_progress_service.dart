@@ -1,8 +1,9 @@
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/episode_model.dart' as model;
-import 'package:tinycast/data/models/play_history_model.dart';
-import 'package:tinycast/data/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/play_history.dart';
+import 'package:tinycast/domain/repositories/play_history_repository.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 class PlayProgressService {
@@ -11,7 +12,7 @@ class PlayProgressService {
   static final PlayProgressService _instance = PlayProgressService._();
   static PlayProgressService get instance => _instance;
 
-  final PlayHistoryRepository _playHistoryRepository = PlayHistoryRepository();
+  final PlayHistoryRepository _playHistoryRepository = PlayHistoryRepositoryImpl();
   final IsarService _isarService = IsarService.instance;
 
   Future<void> updatePlayProgress({
@@ -75,22 +76,24 @@ class PlayProgressService {
     required double progressRatio,
   }) async {
     try {
-      final history = PlayHistory()
-        ..episodeId = episode.id
-        ..episodeGuid = episode.guid
-        ..episodeITunesId = episode.itunesId
-        ..podcastId = episode.podcastId
-        ..podcastITunesId = episode.podcastITunesId
-        ..title = episode.title
-        ..description = episode.description
-        ..artworkUrl = episode.artworkUrl
-        ..lastPlayedPositionMs = positionMs
-        ..playProgress = progressRatio
-        ..isPlayed = false
-        ..playedDuration = 0
-        ..status = PlayHistoryStatus.playing
-        ..lastUpdateTime = DateTime.now()
-        ..isDeleted = false;
+      final history = PlayHistory(
+        episodeId: episode.id,
+        episodeGuid: episode.guid,
+        episodeITunesId: episode.itunesId,
+        podcastId: episode.podcastId,
+        podcastITunesId: episode.podcastITunesId,
+        title: episode.title,
+        description: episode.description,
+        artworkUrl: episode.artworkUrl,
+        lastPlayedPositionMs: positionMs,
+        playProgress: progressRatio,
+        isPlayed: false,
+        playedDuration: 0,
+        status: PlayHistoryStatus.playing,
+        lastUpdateTime: DateTime.now(),
+        createdAt: DateTime.now(),
+        isDeleted: false,
+      );
 
       await _playHistoryRepository.saveOrUpdate(history);
     } catch (e, stackTrace) {
@@ -100,6 +103,33 @@ class PlayProgressService {
         stackTrace: stackTrace,
       );
       rethrow;
+    }
+  }
+
+  /// 将播放状态（isPlayed / playProgress）同步到 Episode 缓存
+  Future<void> syncEpisodePlaybackState(
+    int episodeId, {
+    required bool isPlayed,
+    required double playProgress,
+  }) async {
+    try {
+      await _isarService.isar.writeTxn(() async {
+        final episode = await _isarService.isar.episodes.get(episodeId);
+        if (episode != null &&
+            (episode.isPlayed != isPlayed ||
+                episode.playProgress != playProgress)) {
+          episode.isPlayed = isPlayed;
+          episode.playProgress = playProgress;
+          episode.updatedAt = DateTime.now();
+          await _isarService.isar.episodes.put(episode);
+        }
+      });
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to sync episode playback state for episode $episodeId',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

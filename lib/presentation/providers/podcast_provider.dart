@@ -15,6 +15,12 @@ import '../../core/services/feed_refresh_scheduler.dart';
 
 enum PodcastStatus { initial, loading, success, error }
 
+class _NotProvided {
+  const _NotProvided();
+}
+
+const _notProvided = _NotProvided();
+
 class PodcastState {
   final PodcastStatus status;
   final Podcast? podcast;
@@ -35,14 +41,16 @@ class PodcastState {
     Podcast? podcast,
     List<Podcast>? podcasts,
     List<Episode>? episodes,
-    String? errorMessage,
+    Object? errorMessage = _notProvided,
   }) {
     return PodcastState(
       status: status ?? this.status,
       podcast: podcast ?? this.podcast,
       podcasts: podcasts ?? this.podcasts,
       episodes: episodes ?? this.episodes,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _notProvided)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }
@@ -212,8 +220,10 @@ final podcastStateProvider = Provider<PodcastState>((ref) {
 
 final subscribedPodcastsProvider = Provider<List<Podcast>?>((ref) {
   final state = ref.watch(podcastProvider);
-  if (state.podcasts == null || state.podcasts!.isEmpty) return null;
-  
+  // 仅在从未加载过时返回 null；加载完成但无订阅时返回空列表（供空状态页展示）
+  if (state.podcasts == null) return null;
+  if (state.podcasts!.isEmpty) return [];
+
   // 按订阅时间（createdAt）倒序排列，最新的在前面
   final sortedPodcasts = [...state.podcasts!];
   sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -221,17 +231,20 @@ final subscribedPodcastsProvider = Provider<List<Podcast>?>((ref) {
 });
 
 /// 缓存的已订阅播客列表 - 避免每次重建都重新查询
-final cachedSubscribedPodcastsProvider = FutureProvider<List<Podcast>>((ref) async {
-  final useCase = ref.watch(getSubscribedPodcastsUseCaseProvider);
-  final podcasts = await useCase();
-  
-  // 按订阅时间倒序排列
-  final sortedPodcasts = [...podcasts];
-  sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-  
-  Logger.info('📦 [PROVIDER] Cached subscribed podcasts: ${sortedPodcasts.length} items');
-  return sortedPodcasts;
-});
+final cachedSubscribedPodcastsProvider = FutureProvider<List<Podcast>>(
+  (ref) async {
+    final useCase = ref.watch(getSubscribedPodcastsUseCaseProvider);
+    final podcasts = await useCase();
+
+    // 按订阅时间倒序排列
+    final sortedPodcasts = [...podcasts];
+    sortedPodcasts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    Logger.info('📦 [PROVIDER] Cached subscribed podcasts: ${sortedPodcasts.length} items');
+    return sortedPodcasts;
+  },
+  retry: (error, stackTrace) => null,
+);
 
 final currentPodcastProvider = Provider<Podcast?>((ref) {
   final state = ref.watch(podcastProvider);
@@ -245,19 +258,19 @@ final episodesProvider = Provider<List<Episode>?>((ref) {
 
 /// 为每个播客提供最新3集剧集的 Provider
 /// 使用 FutureProvider.family 来支持基于 podcastId 的参数化查询
-final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>((
-  ref,
-  podcastId,
-) async {
-  final useCase = ref.watch(getLatestEpisodesByPodcastIdUseCaseProvider);
-  return await useCase(podcastId, limit: 3);
-});
+final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>(
+  (ref, podcastId) async {
+    final useCase = ref.watch(getLatestEpisodesByPodcastIdUseCaseProvider);
+    return await useCase(podcastId, limit: 3);
+  },
+  retry: (error, stackTrace) => null,
+);
 
 /// 根据 ID 查询单个播客的 Provider
-final podcastByIdProvider = FutureProvider.family<Podcast?, int>((
-  ref,
-  id,
-) async {
-  final useCase = ref.watch(getPodcastByIdUseCaseProvider);
-  return await useCase.call(id);
-});
+final podcastByIdProvider = FutureProvider.family<Podcast?, int>(
+  (ref, id) async {
+    final useCase = ref.watch(getPodcastByIdUseCaseProvider);
+    return await useCase.call(id);
+  },
+  retry: (error, stackTrace) => null,
+);

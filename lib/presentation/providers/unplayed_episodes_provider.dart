@@ -1,11 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/episode.dart';
 import '../../domain/usecases/get_unplayed_episodes_usecase.dart';
-import '../../data/repositories/play_history_repository.dart';
+import '../../domain/repositories/play_history_repository.dart';
+import '../../data/repositories/play_history_repository_impl.dart';
 import '../../core/services/feed_refresh_scheduler.dart';
 import 'podcast_provider.dart';
 
 enum UnplayedEpisodesStatus { initial, loading, success, error }
+
+class _NotProvided {
+  const _NotProvided();
+}
+
+const _notProvided = _NotProvided();
 
 class UnplayedEpisodesState {
   final UnplayedEpisodesStatus status;
@@ -21,18 +28,20 @@ class UnplayedEpisodesState {
   UnplayedEpisodesState copyWith({
     UnplayedEpisodesStatus? status,
     List<Episode>? episodes,
-    String? errorMessage,
+    Object? errorMessage = _notProvided,
   }) {
     return UnplayedEpisodesState(
       status: status ?? this.status,
       episodes: episodes ?? this.episodes,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _notProvided)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }
 
 final playHistoryRepositoryForUnplayedProvider = Provider<PlayHistoryRepository>((ref) {
-  return PlayHistoryRepository();
+  return PlayHistoryRepositoryImpl();
 });
 
 final getUnplayedEpisodesUseCaseProvider = Provider<GetUnplayedEpisodesUseCase>((ref) {
@@ -62,9 +71,11 @@ class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
     try {
       // 从 Episode 表获取未播放列表（Episode.isPlayed 为缓存字段）
       final episodes = await _getUnplayedEpisodesUseCase();
+      if (!ref.mounted) return;
 
       // 交叉验证：从 PlayHistory（唯一数据源）获取已播放的 episode ID
       final playedEpisodeIds = await _playHistoryRepository.getPlayedEpisodeIds();
+      if (!ref.mounted) return;
 
       // 过滤掉 PlayHistory 中标记为已播放但 Episode 缓存未同步的条目
       final filteredEpisodes = episodes
@@ -73,6 +84,7 @@ class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
 
       state = state.copyWith(status: UnplayedEpisodesStatus.success, episodes: filteredEpisodes);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         status: UnplayedEpisodesStatus.error,
         errorMessage: e.toString(),

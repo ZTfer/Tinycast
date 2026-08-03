@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: trae
 nodes_managed: true
-exported_at: "2026-08-03T10:52:11Z"
+exported_at: "2026-08-03T11:23:34Z"
 modules:
     "":
-        dir_name: TinyCast Flutter 播客客户端根工程
-        title: TinyCast Flutter 播客客户端根工程
+        dir_name: TinyCast Flutter 播客客户端（根工程）
+        title: TinyCast Flutter 播客客户端（根工程）
         scope:
             - README.md
             - .gitignore

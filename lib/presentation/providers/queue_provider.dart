@@ -51,6 +51,12 @@ final clearQueueUseCaseProvider = Provider<ClearQueueUseCase>((ref) {
 
 enum QueueStatus { initial, loading, success, error }
 
+class _NotProvided {
+  const _NotProvided();
+}
+
+const _notProvided = _NotProvided();
+
 class QueueState {
   final QueueStatus status;
   final List<Episode> queueEpisodes;
@@ -65,12 +71,14 @@ class QueueState {
   QueueState copyWith({
     QueueStatus? status,
     List<Episode>? queueEpisodes,
-    String? errorMessage,
+    Object? errorMessage = _notProvided,
   }) {
     return QueueState(
       status: status ?? this.status,
       queueEpisodes: queueEpisodes ?? this.queueEpisodes,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: identical(errorMessage, _notProvided)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }

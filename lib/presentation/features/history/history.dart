@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/history/history_empty_page/history_empty_page.dart';
 import 'package:tinycast/presentation/providers/play_history_provider.dart';
-import 'package:tinycast/data/models/play_history_model.dart';
+import 'package:tinycast/domain/entities/play_history.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/data/models/episode_model.dart' as episode_model;
 
@@ -15,16 +16,12 @@ class History extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint('🔍 [History] ====== BUILD METHOD CALLED ======');
     final histories = ref.watch(completedHistoriesProvider);
-    debugPrint('🔍 [History] 📊 Current state length: ${histories.length}');
 
     if (histories.isEmpty) {
-      debugPrint('🔍 [History] 📭 Showing empty page (no completed records)');
       return const HistoryEmptyPage();
     }
 
-    debugPrint('🔍 [History] 📝 Building list with ${histories.length} items');
     return ListView.builder(
       itemCount: histories.length,
       itemBuilder: (context, index) {
@@ -74,7 +71,7 @@ class _HistoryItem extends ConsumerWidget {
       final episodeModel = await isar.episodes.get(history.episodeId);
 
       if (episodeModel == null) {
-        debugPrint(
+        Logger.warning(
           '⚠️ [History] Episode ${history.episodeId} not found in database, using cached data',
         );
         return null;
@@ -105,8 +102,9 @@ class _HistoryItem extends ConsumerWidget {
         itunesExplicitness: episodeModel.itunesExplicitness,
         itunesContentAdvisoryRating: episodeModel.itunesContentAdvisoryRating,
       );
-    } catch (e) {
-      debugPrint('❌ [History] Error loading episode: $e');
+    } catch (e, stackTrace) {
+      Logger.error('❌ [History] Error loading episode',
+          error: e, stackTrace: stackTrace);
       return null;
     }
   }
@@ -137,7 +135,7 @@ class _HistoryItem extends ConsumerWidget {
 
   Future<void> _onPlayPressed(WidgetRef ref, Episode episode) async {
     try {
-      debugPrint('▶️ [History] Playing episode: ${episode.title}');
+      Logger.info('▶️ [History] Playing episode: ${episode.title}');
 
       if (episode.audioUrl.isEmpty) {
         final fullEpisode = await _loadEpisode();
@@ -147,8 +145,9 @@ class _HistoryItem extends ConsumerWidget {
       } else {
         await ref.read(playbackProvider.notifier).playEpisode(episode);
       }
-    } catch (e) {
-      debugPrint('❌ [History] Error playing episode: $e');
+    } catch (e, stackTrace) {
+      Logger.error('❌ [History] Error playing episode',
+          error: e, stackTrace: stackTrace);
     }
   }
 }
