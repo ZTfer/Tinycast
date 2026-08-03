@@ -81,7 +81,25 @@
         }
       ]
     },
-    "assignmentSummaries": [],
+    "assignmentSummaries": [
+      {
+        "findingId": "domain-docs-have-no-agent-entrypoint",
+        "revision": 1,
+        "locale": "zh-CN",
+        "title": "根级 AGENTS.md 文档索引入口已建立",
+        "body": "根级 AGENTS.md 已建立，按数据库、Supabase 配置、平台权限、下载调试手册、主题架构五类场景索引 docs/ 全部 10 份文档并提供直达链接与适用场景说明；验证边界为冷启动两跳可达性，13 个链接目标 0 缺失，独立复核 verified。",
+        "outputs": [
+          {
+            "action": "created",
+            "artifact": "Document",
+            "name": "项目文档索引入口（AGENTS.md）",
+            "scope": "Project",
+            "path": "AGENTS.md",
+            "summary": "新建仓库根 AGENTS.md，按场景分组索引 docs/ 全部 10 份文档（数据库、Supabase 配置、平台权限、下载调试手册 4 份、主题架构文档 3 份）并附适用场景说明，同时引用 .agents/rules/ 三份规则与交付前检查命令；冷启动两跳可达性验证通过，13 个链接目标 0 缺失。"
+          }
+        ]
+      }
+    ],
     "dimensions": [
       {
         "id": "task-understanding",
@@ -197,7 +215,41 @@
       "aiFixPrompt": "/better-harness fix this issue\n\n在根级入口（与规则路由同一份 AGENTS.md 或 README）建立 docs/ 索引：列出数据库、Supabase 配置、平台权限、下载调试手册与主题架构文档的适用场景。\n\n## Validation\n\n- 以冷启动视角确认从根入口两跳内可达任一 docs/ 文档",
       "dimensionRefs": [
         "task-understanding"
-      ]
+      ],
+      "actualOutputRevision": 1,
+      "actualOutput": [
+        {
+          "action": "created",
+          "artifact": "Document",
+          "name": "项目文档索引入口（AGENTS.md）",
+          "scope": "Project",
+          "path": "AGENTS.md",
+          "summary": "新建仓库根 AGENTS.md，按场景分组索引 docs/ 全部 10 份文档（数据库、Supabase 配置、平台权限、下载调试手册 4 份、主题架构文档 3 份）并附适用场景说明，同时引用 .agents/rules/ 三份规则与交付前检查命令；冷启动两跳可达性验证通过，13 个链接目标 0 缺失。"
+        }
+      ],
+      "assignmentSummary": {
+        "locale": "zh-CN",
+        "title": "根级 AGENTS.md 文档索引入口已建立",
+        "body": "根级 AGENTS.md 已建立，按数据库、Supabase 配置、平台权限、下载调试手册、主题架构五类场景索引 docs/ 全部 10 份文档并提供直达链接与适用场景说明；验证边界为冷启动两跳可达性，13 个链接目标 0 缺失，独立复核 verified。"
+      },
+      "postFixRepairReview": {
+        "modelId": "agent-work-loop-v4",
+        "findingId": "domain-docs-have-no-agent-entrypoint",
+        "status": "verified",
+        "summary": "根级 AGENTS.md 已新建，按场景分组索引全部 10 份 docs/ 文档并附适用场景说明，冷启动两跳可达性验证通过且 0 链接缺失。",
+        "reason": "修复产出完全覆盖 expectedOutput（根级入口给出 docs/ 各文档的用途路由，调试与配置手册可按场景直达）：AGENTS.md 位于仓库根、以表格形式为数据库、Supabase 配置、平台权限、下载调试手册（4 份）与主题架构文档（3 份）逐一提供直达链接和场景描述，链接目标文件全部存在，超出原始 finding 提及的八份文档。",
+        "confidence": "high",
+        "evidenceRefs": [
+          {
+            "kind": "fix-validation",
+            "id": "domain-docs-have-no-agent-entrypoint-hop-check"
+          },
+          {
+            "kind": "asset-integrity",
+            "id": "asset-integrity-reviewed-0-findings"
+          }
+        ]
+      }
     }
   ]
 }
