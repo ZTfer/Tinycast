@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: test
-title: TinyCast Flutter 应用测试套件
-scope:
-    - test/
-source_files: []
-depends_on: []
-related_to:
-    - path: data/services

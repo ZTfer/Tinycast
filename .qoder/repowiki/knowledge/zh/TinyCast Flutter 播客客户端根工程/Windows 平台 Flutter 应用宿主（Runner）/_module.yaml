@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: windows_platform
+title: Windows 平台 Flutter 应用宿主（Runner）
+scope:
+    - windows/
+source_files: []
+depends_on: []
+related_to:
+    - path: linux_platform

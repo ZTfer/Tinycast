@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: trae
 nodes_managed: true
-exported_at: "2026-08-03T09:48:43Z"
+exported_at: "2026-08-03T10:52:11Z"
 modules:
     "":
-        dir_name: TinyCast 播客应用（Flutter 多平台项目根）
-        title: TinyCast 播客应用（Flutter 多平台项目根）
+        dir_name: TinyCast Flutter 播客客户端根工程
+        title: TinyCast Flutter 播客客户端根工程
         scope:
             - README.md
             - .gitignore
@@ -44,7 +44,7 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: data/services
+            - path: ios_platform
     app_entry:
         dir_name: 应用入口与多窗口管理
         title: 应用入口与多窗口管理
@@ -58,10 +58,7 @@ modules:
         depends_on: []
         related_to:
             - path: core
-            - path: linux_platform
-            - path: macos_platform
             - path: presentation/features/home
-            - path: windows_platform
     assets:
         dir_name: 静态资源与主题配置中心
         title: 静态资源与主题配置中心
@@ -70,11 +67,10 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: core
+        related_to: []
     core:
-        dir_name: 应用核心基础设施（路由、主题、状态与工具）
-        title: 应用核心基础设施（路由、主题、状态与工具）
+        dir_name: 核心基础设施与共享服务
+        title: 核心基础设施与共享服务
         scope:
             - lib/core/
         source_files: []
@@ -82,11 +78,10 @@ modules:
         depends_on: []
         related_to:
             - path: app_entry
-            - path: assets
-            - path: docs
+            - path: test
     data:
-        dir_name: 数据层（Data Layer）
-        title: 数据层（Data Layer）
+        dir_name: 播客应用数据层（Clean Architecture）
+        title: 播客应用数据层（Clean Architecture）
         scope:
             - lib/data/
         source_files: []
@@ -107,6 +102,7 @@ modules:
         depends_on: []
         related_to:
             - path: data/repositories
+            - path: data/services
     data/models:
         dir_name: Isar 本地数据模型
         title: Isar 本地数据模型
@@ -115,8 +111,7 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: data/services
+        related_to: []
     data/repositories:
         dir_name: 数据仓库层（Repository 实现）
         title: 数据仓库层（Repository 实现）
@@ -127,7 +122,11 @@ modules:
         depends_on: []
         related_to:
             - path: data/datasources
+            - path: data/services
             - path: domain
+            - path: presentation/features/favorite
+            - path: presentation/features/history
+            - path: presentation/features/queue
             - path: presentation/providers
     data/services:
         dir_name: 数据层业务服务（下载、播放、缓存、搜索与设置）
@@ -138,11 +137,10 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: android_platform
-            - path: data/models
-            - path: ios_platform
+            - path: data/datasources
+            - path: data/repositories
+            - path: presentation/features/library
             - path: presentation/features/search
-            - path: presentation/features/subscribe
             - path: presentation/providers
             - path: test
     docs:
@@ -153,8 +151,7 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: core
+        related_to: []
     domain:
         dir_name: 播客领域模型与用例层
         title: 播客领域模型与用例层
@@ -165,6 +162,7 @@ modules:
         depends_on: []
         related_to:
             - path: data/repositories
+            - path: test
     ios_platform:
         dir_name: iOS 平台 Runner 与构建配置
         title: iOS 平台 Runner 与构建配置
@@ -174,7 +172,8 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: data/services
+            - path: android_platform
+            - path: macos_platform
     linux_platform:
         dir_name: Linux 平台原生宿主（GTK + CMake）
         title: Linux 平台原生宿主（GTK + CMake）
@@ -184,7 +183,7 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: app_entry
+            - path: windows_platform
     macos_platform:
         dir_name: macOS 平台 Runner 应用与 Flutter 桥接
         title: macOS 平台 Runner 应用与 Flutter 桥接
@@ -194,7 +193,7 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: app_entry
+            - path: ios_platform
     presentation:
         dir_name: TinyCast Flutter 展示层（Presentation）
         title: TinyCast Flutter 展示层（Presentation）
@@ -242,7 +241,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: data/repositories
     presentation/features/history:
         dir_name: 播放历史页面（History Feature）
         title: 播放历史页面（History Feature）
@@ -251,7 +251,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: data/repositories
     presentation/features/home:
         dir_name: 首页容器与多端布局适配
         title: 首页容器与多端布局适配
@@ -271,7 +272,7 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: presentation/providers
+            - path: data/services
     presentation/features/queue:
         dir_name: 队列与空状态页面
         title: 队列与空状态页面
@@ -280,7 +281,8 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to: []
+        related_to:
+            - path: data/repositories
     presentation/features/search:
         dir_name: 搜索功能（本地内容搜索与播客订阅搜索）
         title: 搜索功能（本地内容搜索与播客订阅搜索）
@@ -309,7 +311,7 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: data/services
+            - path: presentation/providers
     presentation/providers:
         dir_name: Riverpod 状态管理与业务 Provider
         title: Riverpod 状态管理与业务 Provider
@@ -321,7 +323,8 @@ modules:
         related_to:
             - path: data/repositories
             - path: data/services
-            - path: presentation/features/library
+            - path: presentation/features/subscribe
+            - path: test
     presentation/widgets:
         dir_name: Flutter 原子-分子-有机体组件库
         title: Flutter 原子-分子-有机体组件库
@@ -340,7 +343,10 @@ modules:
         children: []
         depends_on: []
         related_to:
+            - path: core
             - path: data/services
+            - path: domain
+            - path: presentation/providers
     windows_platform:
         dir_name: Windows 平台 Flutter 应用宿主（Runner）
         title: Windows 平台 Flutter 应用宿主（Runner）
@@ -350,4 +356,4 @@ modules:
         children: []
         depends_on: []
         related_to:
-            - path: app_entry
+            - path: linux_platform

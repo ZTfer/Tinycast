@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: presentation/features/library
+title: 播客库与节目详情页（Library & Podcast Detail）
+scope:
+    - lib/presentation/features/library/
+source_files: []
+depends_on: []
+related_to:
+    - path: data/services

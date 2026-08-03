@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: macos_platform
+title: macOS 平台 Runner 应用与 Flutter 桥接
+scope:
+    - macos/
+source_files: []
+depends_on: []
+related_to:
+    - path: ios_platform

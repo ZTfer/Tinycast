@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: app_entry
+title: 应用入口与多窗口管理
+scope:
+    - lib/main.dart
+    - lib/multi_window.dart
+    - lib/window_utils.dart
+    - lib/src/
+source_files: []
+depends_on: []
+related_to:
+    - path: core
+    - path: presentation/features/home
