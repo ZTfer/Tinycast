@@ -50,13 +50,21 @@ final getUnplayedEpisodesUseCaseProvider = Provider<GetUnplayedEpisodesUseCase>(
 });
 
 class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
+  int _loadRequestId = 0;
+
   @override
   UnplayedEpisodesState build() {
     final subscription = FeedRefreshScheduler.instance.onRefreshCompleted.listen(
       (_) => loadUnplayedEpisodes(),
     );
     ref.onDispose(subscription.cancel);
-    Future.microtask(() => loadUnplayedEpisodes());
+    // Skip if a load was already kicked off before this microtask runs
+    // (e.g. an immediate call from a test or caller after reading the notifier).
+    Future.microtask(() {
+      if (_loadRequestId == 0) {
+        loadUnplayedEpisodes();
+      }
+    });
     return UnplayedEpisodesState();
   }
 
@@ -67,15 +75,16 @@ class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
       ref.read(playHistoryRepositoryForUnplayedProvider);
 
   Future<void> loadUnplayedEpisodes() async {
+    final requestId = ++_loadRequestId;
     state = state.copyWith(status: UnplayedEpisodesStatus.loading, errorMessage: null);
     try {
       // 从 Episode 表获取未播放列表（Episode.isPlayed 为缓存字段）
       final episodes = await _getUnplayedEpisodesUseCase();
-      if (!ref.mounted) return;
+      if (!ref.mounted || requestId != _loadRequestId) return;
 
       // 交叉验证：从 PlayHistory（唯一数据源）获取已播放的 episode ID
       final playedEpisodeIds = await _playHistoryRepository.getPlayedEpisodeIds();
-      if (!ref.mounted) return;
+      if (!ref.mounted || requestId != _loadRequestId) return;
 
       // 过滤掉 PlayHistory 中标记为已播放但 Episode 缓存未同步的条目
       final filteredEpisodes = episodes
@@ -84,7 +93,7 @@ class UnplayedEpisodesNotifier extends Notifier<UnplayedEpisodesState> {
 
       state = state.copyWith(status: UnplayedEpisodesStatus.success, episodes: filteredEpisodes);
     } catch (e) {
-      if (!ref.mounted) return;
+      if (!ref.mounted || requestId != _loadRequestId) return;
       state = state.copyWith(
         status: UnplayedEpisodesStatus.error,
         errorMessage: e.toString(),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/providers/auth_provider.dart';
 import 'package:tinycast/core/services/sync_service.dart';
+import 'package:tinycast/core/services/sync_tombstone_store.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/favorite_provider.dart';
@@ -49,12 +50,16 @@ class SyncNotifier extends Notifier<SyncState> {
     ref.listen(authStateProvider, (previous, next) {
       final wasLoggedIn = previous?.value != null;
       final isLoggedIn = next.value != null;
+      final previousUserId = previous?.value?.id;
 
       if (isLoggedIn && !wasLoggedIn) {
         _startPeriodicSync();
         Future.microtask(() => syncNow());
       } else if (!isLoggedIn && wasLoggedIn) {
         _stopPeriodicSync();
+        // Clear user-scoped sync state so the next account cannot inherit
+        // pending deletes or last-pushed snapshots from this session.
+        Future.microtask(() => _clearSyncStateForUser(previousUserId));
       }
     });
 
@@ -98,6 +103,24 @@ class SyncNotifier extends Notifier<SyncState> {
     _syncTimer = null;
     state = state.copyWith(status: SyncStatus.idle);
     Logger.info('Periodic sync stopped');
+  }
+
+  Future<void> _clearSyncStateForUser(String? userId) async {
+    try {
+      if (userId != null && userId.isNotEmpty) {
+        await SyncTombstoneStore.instance.clearForUser(userId);
+        await SyncService.clearLastSyncTimeForUser(userId);
+      }
+      await SyncTombstoneStore.instance.clearLegacyUnscopedKeys();
+      await SyncService.clearLegacyLastSyncTime();
+      state = state.copyWith(status: SyncStatus.idle, lastSyncTime: null);
+    } catch (e, stackTrace) {
+      Logger.error(
+        'Failed to clear sync state on sign-out',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void requestSync() {

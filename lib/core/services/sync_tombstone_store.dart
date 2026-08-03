@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 /// Records user deletions made locally since the last successful sync so
@@ -8,6 +11,10 @@ import 'package:tinycast/core/utils/logger.dart';
 /// inferred by diffing the local snapshot against the cloud, because
 /// snapshot-based mirror deletion causes devices to delete data that other
 /// devices just uploaded but this device has not pulled yet.
+///
+/// All keys are scoped by the authenticated Supabase user id so account
+/// switches on the same device cannot leak pending deletes or push
+/// snapshots across users.
 class SyncTombstoneStore {
   SyncTombstoneStore._();
 
@@ -17,6 +24,28 @@ class SyncTombstoneStore {
   static const String _favoriteKey = 'sync_tombstone_favorites';
   static const String _queueKey = 'sync_tombstone_queue';
   static const String _pushedSubscriptionsKey = 'sync_pushed_subscription_ids';
+
+  /// Legacy unscoped keys from before user isolation (cleared on logout).
+  static const List<String> _legacyUnscopedKeys = [
+    _subscriptionKey,
+    _favoriteKey,
+    _queueKey,
+    _pushedSubscriptionsKey,
+  ];
+
+  /// Serializes read-modify-write so concurrent deletes cannot drop ids.
+  Future<void> _writeChain = Future.value();
+
+  String? get _userId {
+    if (!SupabaseService().isInitialized) return null;
+    return SupabaseService().client.auth.currentUser?.id;
+  }
+
+  String? _scopedKey(String baseKey, {String? userId}) {
+    final id = userId ?? _userId;
+    if (id == null || id.isEmpty) return null;
+    return '${baseKey}_$id';
+  }
 
   // ========== Read pending deletes ==========
 
@@ -58,50 +87,109 @@ class SyncTombstoneStore {
       _read(_pushedSubscriptionsKey);
 
   Future<void> saveLastPushedSubscriptionIds(Set<String> ids) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_pushedSubscriptionsKey, ids.toList());
-    } catch (e) {
-      Logger.error(
-        '[SYNC] Failed to save pushed subscription snapshot',
-        error: e,
-      );
-    }
+    final key = _scopedKey(_pushedSubscriptionsKey);
+    if (key == null) return;
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList(key, ids.toList());
+      } catch (e) {
+        Logger.error(
+          '[SYNC] Failed to save pushed subscription snapshot',
+          error: e,
+        );
+      }
+    });
+  }
+
+  // ========== Account lifecycle ==========
+
+  /// Clears all tombstones and push snapshots for [userId].
+  Future<void> clearForUser(String userId) async {
+    if (userId.isEmpty) return;
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        for (final base in _legacyUnscopedKeys) {
+          await prefs.remove('${base}_$userId');
+        }
+        Logger.info('[SYNC] Cleared tombstones for user $userId');
+      } catch (e) {
+        Logger.error(
+          '[SYNC] Failed to clear tombstones for user $userId',
+          error: e,
+        );
+      }
+    });
+  }
+
+  /// Clears pre-scoping global keys so they cannot affect a later account.
+  Future<void> clearLegacyUnscopedKeys() async {
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        for (final key in _legacyUnscopedKeys) {
+          await prefs.remove(key);
+        }
+      } catch (e) {
+        Logger.error('[SYNC] Failed to clear legacy tombstone keys', error: e);
+      }
+    });
   }
 
   // ========== Internal ==========
 
-  Future<Set<String>> _read(String key) async {
+  Future<Set<String>> _read(String baseKey) async {
+    final key = _scopedKey(baseKey);
+    if (key == null) return <String>{};
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getStringList(key)?.toSet() ?? <String>{};
     } catch (e) {
-      Logger.error('[SYNC] Failed to read tombstones for $key', error: e);
+      Logger.error('[SYNC] Failed to read tombstones for $baseKey', error: e);
       return <String>{};
     }
   }
 
-  Future<void> _add(String key, String id) async {
+  Future<void> _add(String baseKey, String id) async {
     if (id.isEmpty) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final ids = prefs.getStringList(key)?.toSet() ?? <String>{};
-      if (!ids.add(id)) return;
-      await prefs.setStringList(key, ids.toList());
-    } catch (e) {
-      Logger.error('[SYNC] Failed to record tombstone for $key', error: e);
-    }
+    final key = _scopedKey(baseKey);
+    if (key == null) return;
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final ids = prefs.getStringList(key)?.toSet() ?? <String>{};
+        if (!ids.add(id)) return;
+        await prefs.setStringList(key, ids.toList());
+      } catch (e) {
+        Logger.error('[SYNC] Failed to record tombstone for $baseKey', error: e);
+      }
+    });
   }
 
-  Future<void> _removeAll(String key, Set<String> ids) async {
+  Future<void> _removeAll(String baseKey, Set<String> ids) async {
     if (ids.isEmpty) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final existing = prefs.getStringList(key)?.toSet() ?? <String>{};
-      existing.removeAll(ids);
-      await prefs.setStringList(key, existing.toList());
-    } catch (e) {
-      Logger.error('[SYNC] Failed to resolve tombstones for $key', error: e);
-    }
+    final key = _scopedKey(baseKey);
+    if (key == null) return;
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final existing = prefs.getStringList(key)?.toSet() ?? <String>{};
+        existing.removeAll(ids);
+        await prefs.setStringList(key, existing.toList());
+      } catch (e) {
+        Logger.error(
+          '[SYNC] Failed to resolve tombstones for $baseKey',
+          error: e,
+        );
+      }
+    });
+  }
+
+  Future<T> _withWriteLock<T>(Future<T> Function() action) {
+    final previous = _writeChain;
+    final completer = Completer<void>();
+    _writeChain = completer.future;
+    return previous.then((_) => action()).whenComplete(completer.complete);
   }
 }

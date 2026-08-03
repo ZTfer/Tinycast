@@ -212,10 +212,15 @@ class HoconParser {
           _validateBraceBalance(includeTokens);
           final included = HoconParser._parseObject(includeTokens);
           _deepMerge(merged, included);
-        } catch (e) {
-          Logger.warning(
-            '[ThemeLoader] include error for "$includePath": $e',
+        } catch (e, stack) {
+          // Propagate so loadStyles() surfaces a visible failure instead of
+          // silently shipping a partially merged theme.
+          Logger.error(
+            '[ThemeLoader] include error for "$includePath"',
+            error: e,
+            stackTrace: stack,
           );
+          rethrow;
         }
       }
     }
@@ -508,8 +513,20 @@ class ThemeLoader {
     _cachedWidgetStyles = null;
     _cachedThemeConfigs = null;
 
-    final colorsJson = await loadColors();
-    _cachedThemeConfigs = _buildThemeConfigs(colorsJson);
+    try {
+      final colorsJson = await loadColors();
+      _cachedThemeConfigs = _buildThemeConfigs(colorsJson);
+    } catch (e, stack) {
+      // Desktop main() awaits preload before runApp; do not crash the process.
+      // ThemeNotifier falls back to compiled defaults when cache is null.
+      Logger.error(
+        '[ThemeLoader] Colors preload failed, using compiled defaults',
+        error: e,
+        stackTrace: stack,
+      );
+      return;
+    }
+
     _cachedWidgetStyles = {};
 
     try {
@@ -518,9 +535,11 @@ class ThemeLoader {
         typographyJson,
         _cachedThemeConfigs!,
       );
-    } catch (e) {
-      Logger.warning(
-        '[ThemeLoader] Typography load failed, using defaults: $e',
+    } catch (e, stack) {
+      Logger.error(
+        '[ThemeLoader] Typography load failed, using defaults',
+        error: e,
+        stackTrace: stack,
       );
     }
 

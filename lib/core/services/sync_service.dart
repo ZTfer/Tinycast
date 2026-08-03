@@ -45,6 +45,7 @@ class SyncService {
   static const int _progressNotifyInterval = 5;
 
   final RemoteSyncDataSource _remoteDataSource;
+  final String? Function()? _userIdResolver;
   SyncProgressCallback? onProgressChanged;
   bool _allStepsSucceeded = true;
 
@@ -56,26 +57,54 @@ class SyncService {
   // Cloud podcast ids this device has successfully pushed subscriptions for.
   Set<String> _lastPushedSubscriptionIds = {};
 
-  SyncService({RemoteSyncDataSource? remoteDataSource})
-    : _remoteDataSource = remoteDataSource ?? RemoteSyncDataSource();
+  SyncService({
+    RemoteSyncDataSource? remoteDataSource,
+    String? Function()? userIdResolver,
+  }) : _remoteDataSource = remoteDataSource ?? RemoteSyncDataSource(),
+       _userIdResolver = userIdResolver;
 
   String? get _userId {
+    final override = _userIdResolver?.call();
+    if (override != null) return override;
     if (!SupabaseService().isInitialized) return null;
     return SupabaseService().client.auth.currentUser?.id;
   }
 
   bool get canSync => SupabaseService().isInitialized && _userId != null;
 
+  String? get _scopedLastSyncKey {
+    final userId = _userId;
+    if (userId == null || userId.isEmpty) return null;
+    return '${_lastSyncTimestampKey}_$userId';
+  }
+
   Future<DateTime?> getLastSyncTime() async {
+    final key = _scopedLastSyncKey;
+    if (key == null) return null;
     final prefs = await SharedPreferences.getInstance();
-    final timestamp = prefs.getString(_lastSyncTimestampKey);
+    final timestamp = prefs.getString(key);
     if (timestamp == null) return null;
     return DateTime.tryParse(timestamp);
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
+    final key = _scopedLastSyncKey;
+    if (key == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastSyncTimestampKey, time.toIso8601String());
+    await prefs.setString(key, time.toIso8601String());
+  }
+
+  /// Clears the last-sync timestamp for [userId] (used on sign-out).
+  static Future<void> clearLastSyncTimeForUser(String userId) async {
+    if (userId.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('${_lastSyncTimestampKey}_$userId');
+  }
+
+  /// Clears the pre-scoping global last-sync key.
+  static Future<void> clearLegacyLastSyncTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_lastSyncTimestampKey);
   }
 
   Future<void> sync() async {
@@ -300,6 +329,7 @@ class SyncService {
       // Propagate local unsubscribes via explicit tombstones instead of
       // mirror-deleting every cloud record missing locally, which would
       // delete data other devices just uploaded.
+      var deleteFailures = 0;
       for (final pendingCloudId in _pendingSubscriptionDeletes) {
         final podcastId = int.tryParse(pendingCloudId);
         if (podcastId == null) continue;
@@ -309,11 +339,17 @@ class SyncService {
             '[SYNC] Deleted cloud subscription for podcast_id=$podcastId',
           );
         } catch (e) {
+          deleteFailures++;
           Logger.error(
             '[SYNC] Failed to delete cloud subscription for podcast_id=$podcastId',
             error: e,
           );
         }
+      }
+      if (deleteFailures > 0) {
+        throw StateError(
+          '$deleteFailures subscription cloud delete(s) failed; will retry',
+        );
       }
 
       // Only resolve tombstones whose deletion is confirmed; the rest will
@@ -377,6 +413,7 @@ class SyncService {
 
       // Propagate local unfavorites via explicit tombstones instead of
       // mirror-deleting every cloud record missing locally.
+      var deleteFailures = 0;
       for (final pendingCloudId in _pendingFavoriteDeletes) {
         final episodeId = int.tryParse(pendingCloudId);
         if (episodeId == null) continue;
@@ -386,11 +423,17 @@ class SyncService {
             '[SYNC] Deleted cloud favorite for episode_id=$episodeId',
           );
         } catch (e) {
+          deleteFailures++;
           Logger.error(
             '[SYNC] Failed to delete cloud favorite for episode_id=$episodeId',
             error: e,
           );
         }
+      }
+      if (deleteFailures > 0) {
+        throw StateError(
+          '$deleteFailures favorite cloud delete(s) failed; will retry',
+        );
       }
 
       final confirmedFavDeletes = await _confirmedAbsentCloudIds(
@@ -429,6 +472,7 @@ class SyncService {
 
       // Differential delete: only remove items the user explicitly removed
       // locally, avoiding the non-atomic "delete all then re-insert".
+      var deleteFailures = 0;
       for (final pendingCloudId in _pendingQueueDeletes) {
         final episodeId = int.tryParse(pendingCloudId);
         if (episodeId == null) continue;
@@ -438,11 +482,17 @@ class SyncService {
             '[SYNC] Deleted cloud queue item for episode_id=$episodeId',
           );
         } catch (e) {
+          deleteFailures++;
           Logger.error(
             '[SYNC] Failed to delete cloud queue item for episode_id=$episodeId',
             error: e,
           );
         }
+      }
+      if (deleteFailures > 0) {
+        throw StateError(
+          '$deleteFailures queue cloud delete(s) failed; will retry',
+        );
       }
 
       final confirmedQueueDeletes = await _confirmedAbsentCloudIds(
@@ -753,7 +803,8 @@ class SyncService {
   Future<void> _mergeFavoritesFromCloud(
     List<Map<String, dynamic>> cloudFavorites,
   ) async {
-    if (cloudFavorites.isEmpty) return;
+    // Do not early-return on empty cloud list: an empty list still means
+    // "propagate full clear" for local favorites that already have supabaseId.
     final isar = IsarService.instance.isar;
 
     final cloudFavoriteRowIds = <String>{};
@@ -839,7 +890,8 @@ class SyncService {
   Future<void> _mergeQueueItemsFromCloud(
     List<Map<String, dynamic>> cloudQueue,
   ) async {
-    if (cloudQueue.isEmpty) return;
+    // Do not early-return on empty cloud list: an empty list still means
+    // "propagate full clear" for local queue items that already have supabaseId.
     final isar = IsarService.instance.isar;
 
     final cloudQueueRowIds = <String>{};

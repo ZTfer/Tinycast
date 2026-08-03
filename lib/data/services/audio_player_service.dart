@@ -519,6 +519,10 @@ class AudioPlayerService {
     final progress = positionMs / durationMs;
 
     try {
+      // Only persist progress here. Marking completed belongs to the
+      // playback-completed / near-end skip paths in PlaybackNotifier; doing
+      // it on every pause/seek at >=95% would hide the episode from
+      // getLatestPlayingHistory and break restart restore.
       await PlayProgressService.instance.updatePlayProgress(
         episodeId: episode.id,
         positionMs: positionMs,
@@ -526,15 +530,6 @@ class AudioPlayerService {
         episodeGuid: episode.guid,
         episodeITunesId: episode.itunesId,
       );
-
-      if (progress >= 0.95) {
-        await PlayProgressService.instance.markEpisodeAsPlayed(
-          episodeId: episode.id,
-          episodeGuid: episode.guid,
-          episodeITunesId: episode.itunesId,
-          podcastITunesId: episode.podcastITunesId,
-        );
-      }
 
       Logger.info(
         'Play progress saved: ${(progress * 100).toStringAsFixed(1)}%',

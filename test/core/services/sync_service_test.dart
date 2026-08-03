@@ -23,12 +23,17 @@ void main() {
     });
 
     group('getLastSyncTime', () {
+      const testUserId = 'test-user-ss';
+
+      SyncService buildService() => SyncService(
+            remoteDataSource: mockRemoteDataSource,
+            userIdResolver: () => testUserId,
+          );
+
       test('SS-009: 无上次同步时间时应该返回 null', () async {
         SharedPreferences.setMockInitialValues({});
 
-        final syncService = SyncService(
-          remoteDataSource: mockRemoteDataSource,
-        );
+        final syncService = buildService();
 
         final result = await syncService.getLastSyncTime();
 
@@ -38,12 +43,10 @@ void main() {
       test('SS-010: 有上次同步时间时应该返回正确时间', () async {
         final testTime = DateTime(2025, 1, 15, 10, 30, 0);
         SharedPreferences.setMockInitialValues({
-          'last_sync_timestamp': testTime.toIso8601String(),
+          'last_sync_timestamp_$testUserId': testTime.toIso8601String(),
         });
 
-        final syncService = SyncService(
-          remoteDataSource: mockRemoteDataSource,
-        );
+        final syncService = buildService();
 
         final result = await syncService.getLastSyncTime();
 
@@ -58,14 +61,12 @@ void main() {
       test('SS-011: 保存时间戳后应该可以读取', () async {
         SharedPreferences.setMockInitialValues({});
 
-        final syncService = SyncService(
-          remoteDataSource: mockRemoteDataSource,
-        );
+        final syncService = buildService();
 
         final testTime = DateTime(2025, 3, 20, 14, 0, 0);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
-          'last_sync_timestamp',
+          'last_sync_timestamp_$testUserId',
           testTime.toIso8601String(),
         );
 
@@ -75,6 +76,19 @@ void main() {
         expect(result!.year, equals(2025));
         expect(result.month, equals(3));
         expect(result.day, equals(20));
+      });
+
+      test('未登录时 getLastSyncTime 返回 null', () async {
+        SharedPreferences.setMockInitialValues({
+          'last_sync_timestamp': DateTime(2025, 1, 1).toIso8601String(),
+        });
+
+        final syncService = SyncService(
+          remoteDataSource: mockRemoteDataSource,
+          userIdResolver: () => null,
+        );
+
+        expect(await syncService.getLastSyncTime(), isNull);
       });
     });
 

@@ -140,7 +140,8 @@ class LocalQueueDataSource {
         Logger.warning(
           '📋 [QUEUE-DS] episodeId: ${episode.id} 已存在于队列中, 先移除再插播',
         );
-        await removeFromQueue(existing.id);
+        // Reposition only — do not write a sync tombstone for a temporary remove.
+        await removeFromQueue(existing.id, recordTombstone: false);
       }
 
       late final Queue queueItem;
@@ -187,7 +188,10 @@ class LocalQueueDataSource {
     }
   }
 
-  Future<void> removeFromQueue(int id) async {
+  Future<void> removeFromQueue(
+    int id, {
+    bool recordTombstone = true,
+  }) async {
     try {
       Logger.info('📋 [QUEUE-DS] 开始从队列移除, id: $id');
 
@@ -219,7 +223,9 @@ class LocalQueueDataSource {
         }
       });
 
-      await SyncDeleteRecorder.instance.recordQueueRemoval(item.episodeId);
+      if (recordTombstone) {
+        await SyncDeleteRecorder.instance.recordQueueRemoval(item.episodeId);
+      }
 
       Logger.info(
         '📋 [QUEUE-DS] 队列移除成功, id: $id, 原position: $removedPosition, 更新了 $updatedCount 条后续记录',

@@ -41,9 +41,15 @@ class FavoriteState {
 }
 
 class FavoriteNotifier extends Notifier<FavoriteState> {
+  int _loadRequestId = 0;
+
   @override
   FavoriteState build() {
-    Future.microtask(loadFavorites);
+    Future.microtask(() {
+      if (_loadRequestId == 0) {
+        loadFavorites();
+      }
+    });
     return FavoriteState();
   }
 
@@ -52,11 +58,13 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
 
   /// 加载所有收藏状态
   Future<void> loadFavorites() async {
+    final requestId = ++_loadRequestId;
     Logger.info('⭐ [FAVORITE-PROVIDER] ====== loadFavorites 开始 ======');
     state = state.copyWith(status: FavoriteStatus.loading, errorMessage: null);
 
     try {
       final ids = await _repository.getAllFavoriteEpisodeIds();
+      if (requestId != _loadRequestId) return;
       Logger.info('⭐ [FAVORITE-PROVIDER] loadFavorites 成功, 收到 ${ids.length} 条收藏记录, ids: $ids');
       state = state.copyWith(
         status: FavoriteStatus.success,
@@ -64,6 +72,7 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
       );
       Logger.info('⭐ [FAVORITE-PROVIDER] ====== loadFavorites 完成, 当前收藏数: ${state.favoriteEpisodeIds.length} ======');
     } catch (e, stackTrace) {
+      if (requestId != _loadRequestId) return;
       Logger.error('⭐ [FAVORITE-PROVIDER] loadFavorites 失败', error: e, stackTrace: stackTrace);
       state = state.copyWith(
         status: FavoriteStatus.error,
@@ -74,6 +83,8 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
 
   /// 切换收藏状态。以数据库为准，返回切换后是否仍为收藏。
   Future<bool> toggleFavorite(Episode episode) async {
+    // Invalidate in-flight loads so they cannot overwrite this toggle.
+    _loadRequestId++;
     final currentlyFavorite = await _repository.isFavorite(episode);
     Logger.info('⭐ [FAVORITE-PROVIDER] ====== toggleFavorite 开始 ======');
     Logger.info('⭐ [FAVORITE-PROVIDER] episodeId: ${episode.id}, 当前状态: ${currentlyFavorite ? "已收藏" : "未收藏"}');
@@ -120,6 +131,7 @@ class FavoriteNotifier extends Notifier<FavoriteState> {
 
   /// 根据 episode 列表移除收藏（用于取消关注时清理）
   Future<void> removeByEpisodes(List<Episode> episodes) async {
+    _loadRequestId++;
     final episodeIds = episodes.map((e) => e.id).toSet();
     final toRemove = state.favoriteEpisodeIds.where((id) => episodeIds.contains(id)).toList();
     if (toRemove.isEmpty) return;

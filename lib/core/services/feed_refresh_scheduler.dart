@@ -32,7 +32,8 @@ class FeedRefreshScheduler {
   final StreamController<void> _refreshCompletedController =
       StreamController<void>.broadcast();
 
-  /// Emits after a background/scheduled refresh finishes (success or empty).
+  /// Emits after a background/scheduled refresh finishes
+  /// (success, empty subscriptions, or error).
   Stream<void> get onRefreshCompleted => _refreshCompletedController.stream;
 
   FeedRefreshScheduler({
@@ -120,6 +121,7 @@ class FeedRefreshScheduler {
 
       if (podcasts.isEmpty) {
         Logger.info('$_logTag 无已订阅播客，跳过刷新');
+        _emitRefreshCompleted();
         return;
       }
 
@@ -134,15 +136,21 @@ class FeedRefreshScheduler {
         '新剧集 ${result.totalNewEpisodes}',
       );
 
-      if (!_refreshCompletedController.isClosed) {
-        _refreshCompletedController.add(null);
-      }
+      _emitRefreshCompleted();
     } catch (e, stackTrace) {
       Logger.error(
         '$_logTag 刷新执行异常',
         error: e,
         stackTrace: stackTrace,
       );
+      // Still notify listeners so UI can settle (e.g. stop loading state).
+      _emitRefreshCompleted();
+    }
+  }
+
+  void _emitRefreshCompleted() {
+    if (!_refreshCompletedController.isClosed) {
+      _refreshCompletedController.add(null);
     }
   }
 
