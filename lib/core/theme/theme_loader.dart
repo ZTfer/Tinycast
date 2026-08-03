@@ -13,8 +13,33 @@ void _debug(String msg) {
 class HoconParser {
   static Map<String, dynamic> parse(String content) {
     final tokens = _tokenize(content);
+    _validateBraceBalance(tokens);
     final result = _parseObject(tokens);
     return _resolveReferences(result);
+  }
+
+  /// 校验花括号配平，不平衡时抛出 [FormatException] 而非静默产出错结果
+  static void _validateBraceBalance(List<_Token> tokens) {
+    int depth = 0;
+    for (final token in tokens) {
+      if (token is _OpenBraceToken) {
+        depth++;
+      } else if (token is _KeyValueToken && token.value == '{') {
+        depth++;
+      } else if (token is _CloseBraceToken) {
+        depth--;
+        if (depth < 0) {
+          throw FormatException(
+            'HOCON parse error: unexpected closing brace "}"',
+          );
+        }
+      }
+    }
+    if (depth != 0) {
+      throw FormatException(
+        'HOCON parse error: $depth unclosed brace(s) "{"',
+      );
+    }
   }
 
   static List<_Token> _tokenize(String content) {
@@ -172,6 +197,7 @@ class HoconParser {
   static Future<Map<String, dynamic>> _loadWithIncludes(String rootPath) async {
     final content = await rootBundle.loadString(rootPath);
     final tokens = HoconParser._tokenize(content);
+    _validateBraceBalance(tokens);
 
     Map<String, dynamic> merged = {};
 
@@ -183,10 +209,13 @@ class HoconParser {
         try {
           final includeContent = await rootBundle.loadString(fullPath);
           final includeTokens = HoconParser._tokenize(includeContent);
+          _validateBraceBalance(includeTokens);
           final included = HoconParser._parseObject(includeTokens);
           _deepMerge(merged, included);
         } catch (e) {
-          _debug('include error: $e');
+          Logger.warning(
+            '[ThemeLoader] include error for "$includePath": $e',
+          );
         }
       }
     }
@@ -287,7 +316,10 @@ class HoconParser {
       if (current is Map && current.containsKey(part)) {
         current = current[part];
       } else {
-        _debug('    lookup failed at: ${parts.join('.')} (current key: $part)');
+        Logger.warning(
+          '[ThemeLoader] Unresolved reference: ${parts.join('.')} '
+          '(failed at "$part")',
+        );
         return '';
       }
     }
@@ -486,7 +518,11 @@ class ThemeLoader {
         typographyJson,
         _cachedThemeConfigs!,
       );
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning(
+        '[ThemeLoader] Typography load failed, using defaults: $e',
+      );
+    }
 
     try {
       final stylesJson = await loadStyles();
@@ -503,7 +539,11 @@ class ThemeLoader {
         _cachedWidgetStyles!['widgetTextStyles'] = widgetTextStyles;
       }
     } catch (e, stack) {
-      _debug('preload error: $e\n$stack');
+      Logger.error(
+        '[ThemeLoader] Styles preload failed',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -624,7 +664,12 @@ class ThemeLoader {
       final json = await HoconParser._loadWithIncludes(_stylesPath);
       _cachedStylesJson = json;
       return json;
-    } catch (_) {
+    } catch (e, stack) {
+      Logger.error(
+        '[ThemeLoader] Failed to load styles',
+        error: e,
+        stackTrace: stack,
+      );
       return null;
     }
   }
