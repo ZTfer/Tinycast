@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: presentation/widgets
-title: Flutter 原子-分子-有机体组件库
-scope:
-    - lib/presentation/widgets/
-source_files: []
-depends_on: []
-related_to: []

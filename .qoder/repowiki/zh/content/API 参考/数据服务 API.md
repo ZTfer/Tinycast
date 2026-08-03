@@ -7,11 +7,24 @@
 - [podcast_search_service.dart](file://lib/data/services/podcast_search_service.dart)
 - [itunes_search_service.dart](file://lib/data/services/itunes_search_service.dart)
 - [feed_refresh_service.dart](file://lib/data/services/feed_refresh_service.dart)
+- [play_history_mapper.dart](file://lib/data/mappers/play_history_mapper.dart)
+- [play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
+- [play_history_repository_impl.dart](file://lib/data/repositories/play_history_repository_impl.dart)
+- [play_history_repository.dart](file://lib/domain/repositories/play_history_repository.dart)
+- [play_history_model.dart](file://lib/data/models/play_history_model.dart)
+- [play_history.dart](file://lib/domain/entities/play_history.dart)
 - [podcast.dart](file://lib/domain/entities/podcast.dart)
 - [episode.dart](file://lib/domain/entities/episode.dart)
 - [app_constants.dart](file://lib/core/utils/app_constants.dart)
 - [app_exception.dart](file://lib/core/utils/app_exception.dart)
 </cite>
+
+## 更新摘要
+**所做更改**   
+- 新增播放历史映射器（PlayHistoryMapper）章节，详细说明领域实体与 Isar 模型的双向转换
+- 增强播放进度服务（PlayProgressService）章节，添加 syncEpisodePlaybackState 方法说明
+- 更新依赖关系分析，包含新的播放历史相关组件
+- 完善架构总览图，展示播放状态管理的完整流程
 
 ## 目录
 1. [简介](#简介)
@@ -32,6 +45,8 @@
 - 播客搜索服务：从 URL/域名自动发现并解析 RSS 源
 - iTunes 搜索服务：通过 iTunes Search API 获取播客元数据与封面
 - Feed 刷新服务：增量拉取新剧集、冷却与退化策略
+- **新增** 播放历史映射服务：PlayHistory 领域实体与 Isar 模型的双向转换
+- **新增** 播放进度同步服务：维护跨应用层的数据一致性
 
 每个服务均包含接口定义、输入参数、返回数据、异常处理、网络配置、缓存策略、数据转换逻辑以及使用示例与优化建议。
 
@@ -42,6 +57,8 @@
 - ITunesSearchService 对接 iTunes 搜索
 - AudioDownloadService 管理下载任务、并发与持久化
 - FeedRefreshService 编排远程拉取与本地写入
+- **新增** PlayHistoryMapper 负责播放历史的领域实体与持久化模型转换
+- **新增** PlayProgressService 协调播放状态的跨层同步
 
 ```mermaid
 graph TB
@@ -51,10 +68,16 @@ RPS["RssParserService"]
 ITS["ITunesSearchService"]
 ADS["AudioDownloadService"]
 FRS["FeedRefreshService"]
+PHM["PlayHistoryMapper"]
+PPS["PlayProgressService"]
 end
 subgraph "领域模型"
 POD["Podcast"]
 EP["Episode"]
+PH["PlayHistory"]
+end
+subgraph "持久化模型"
+PHM["PlayHistory Model"]
 end
 subgraph "工具与配置"
 AC["AppConstants"]
@@ -78,6 +101,11 @@ ADS -.-> AC
 ADS -.-> AE
 FRS -.-> AC
 FRS -.-> AE
+PHM --> PH
+PHM --> PHM
+PPS --> PH
+PPS --> EP
+PPS --> |同步状态| EP
 ```
 
 图表来源
@@ -86,21 +114,10 @@ FRS -.-> AE
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
 - [audio_download_service.dart:1-800](file://lib/data/services/audio_download_service.dart#L1-L800)
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
-- [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [app_constants.dart:1-82](file://lib/core/utils/app_constants.dart#L1-L82)
-- [app_exception.dart:1-148](file://lib/core/utils/app_exception.dart#L1-L148)
-
-章节来源
-- [podcast_search_service.dart:1-208](file://lib/data/services/podcast_search_service.dart#L1-L208)
-- [rss_parser_service.dart:1-459](file://lib/data/services/rss_parser_service.dart#L1-L459)
-- [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
-- [audio_download_service.dart:1-800](file://lib/data/services/audio_download_service.dart#L1-L800)
-- [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
-- [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [app_constants.dart:1-82](file://lib/core/utils/app_constants.dart#L1-L82)
-- [app_exception.dart:1-148](file://lib/core/utils/app_exception.dart#L1-L148)
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
 
 ## 核心组件
 - RSS 解析服务（RssParserService）
@@ -138,6 +155,16 @@ FRS -.-> AE
   - 返回：FeedRefreshResult / BatchRefreshResult
   - 策略：冷却时间 5 分钟；失败次数达到阈值进入退化模式延长间隔；并发分块执行
   - 数据：增量比对 GUID，批量插入新剧集，更新总数与最后拉取时间
+- **新增** 播放历史映射器（PlayHistoryMapper）
+  - 核心方法：toEntity(model)、toModel(entity)、toEntityList(models)
+  - 功能：PlayHistory 领域实体与 Isar 持久化模型的双向转换
+  - 字段映射：完整的字段对应关系，包括播放状态、进度、时间戳等
+  - 自动 ID 处理：支持 Isar.autoIncrement 和手动 ID 设置
+- **新增** 播放进度服务（PlayProgressService）
+  - 核心方法：updatePlayProgress、markEpisodeAsPlayed、createOrUpdatePlayHistory、syncEpisodePlaybackState
+  - 功能：统一管理播放状态的更新与跨层同步
+  - 数据一致性：确保 PlayHistory 作为唯一数据源，Episode 缓存字段同步更新
+  - 事务处理：使用 Isar 事务保证数据一致性
 
 章节来源
 - [rss_parser_service.dart:1-459](file://lib/data/services/rss_parser_service.dart#L1-L459)
@@ -145,13 +172,13 @@ FRS -.-> AE
 - [podcast_search_service.dart:1-208](file://lib/data/services/podcast_search_service.dart#L1-L208)
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
-- [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [app_constants.dart:1-82](file://lib/core/utils/app_constants.dart#L1-L82)
-- [app_exception.dart:1-148](file://lib/core/utils/app_exception.dart#L1-L148)
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+- [play_history_repository_impl.dart:1-312](file://lib/data/repositories/play_history_repository_impl.dart#L1-L312)
+- [play_history_repository.dart:1-82](file://lib/domain/repositories/play_history_repository.dart#L1-L82)
 
 ## 架构总览
-下图展示五大服务之间的调用关系与数据流向，包括网络请求、解析、存储与事件通知。
+下图展示五大服务之间的调用关系与数据流向，包括网络请求、解析、存储与事件通知，以及新增的播放状态管理机制。
 
 ```mermaid
 sequenceDiagram
@@ -161,6 +188,8 @@ participant RPS as "RssParserService"
 participant ITS as "ITunesSearchService"
 participant ADS as "AudioDownloadService"
 participant FRS as "FeedRefreshService"
+participant PHS as "PlayProgressService"
+participant PHM as "PlayHistoryMapper"
 UI->>PSS : searchPodcast(url)
 alt 直接XML
 PSS->>RPS : parseRssFeed(xmlUrl)
@@ -177,6 +206,12 @@ ADS-->>UI : Stream<DownloadStatus>/<double>
 ADS-->>UI : AudioDownloadEvent(全局)
 UI->>FRS : refreshAllFeeds(podcasts, force)
 FRS-->>UI : BatchRefreshResult
+UI->>PHS : updatePlayProgress(episodeId, positionMs, progressRatio)
+PHS->>PHS : _syncEpisodeProgress()
+PHS-->>UI : 更新 PlayHistory 和 Episode 缓存
+UI->>PHS : markEpisodeAsPlayed(episodeId)
+PHS->>PHS : _syncEpisodePlayedStatus()
+PHS-->>UI : 标记完成并同步状态
 ```
 
 图表来源
@@ -185,6 +220,7 @@ FRS-->>UI : BatchRefreshResult
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
 - [audio_download_service.dart:1-800](file://lib/data/services/audio_download_service.dart#L1-L800)
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
 
 ## 详细组件分析
 
@@ -456,18 +492,149 @@ FailNoRss --> Done
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
 - [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
 
+### **新增** 播放历史映射器（PlayHistoryMapper）
+- 核心方法
+  - toEntity(PlayHistory model): 将 Isar 模型转换为领域实体
+  - toModel(PlayHistory entity): 将领域实体转换为 Isar 模型
+  - toEntityList(List<PlayHistory> models): 批量转换模型列表为实体列表
+- 输入参数
+  - model: PlayHistory Isar 持久化模型
+  - entity: PlayHistory 领域实体
+- 返回数据
+  - 领域实体或 Isar 模型的对应类型
+- 字段映射
+  - 完整字段对应：id、supabaseId、episodeId、episodeGuid、episodeITunesId、podcastId、podcastGuid、podcastITunesId、title、description、artworkUrl、lastPlayedPositionMs、playProgress、isPlayed、playedDuration、status、lastUpdateTime、createdAt、isDeleted
+  - 自动 ID 处理：当 entity.id == 0 时使用 Isar.autoIncrement
+- 设计原则
+  - 单向转换：Model -> Entity 和 Entity -> Model 独立实现
+  - 类型安全：使用 Dart 泛型确保类型正确性
+  - 性能优化：批量转换避免重复计算
+
+```mermaid
+classDiagram
+class PlayHistoryMapper {
++toEntity(model) PlayHistory
++toModel(entity) PlayHistory
++toEntityList(models) PlayHistory[]
+}
+class PlayHistoryEntity {
++int id
++String supabaseId
++int episodeId
++String episodeGuid
++String episodeITunesId
++int podcastId
++String podcastGuid
++String podcastITunesId
++String title
++String description
++String artworkUrl
++int lastPlayedPositionMs
++double playProgress
++bool isPlayed
++int playedDuration
++PlayHistoryStatus status
++DateTime lastUpdateTime
++DateTime createdAt
++bool isDeleted
+}
+class PlayHistoryModel {
++Id id
++String supabaseId
++int episodeId
++String episodeGuid
++String episodeITunesId
++int podcastId
++String podcastGuid
++String podcastITunesId
++String title
++String description
++String artworkUrl
++int lastPlayedPositionMs
++double playProgress
++bool isPlayed
++int playedDuration
++PlayHistoryStatus status
++DateTime lastUpdateTime
++DateTime createdAt
++bool isDeleted
+}
+PlayHistoryMapper --> PlayHistoryEntity : "转换"
+PlayHistoryMapper --> PlayHistoryModel : "转换"
+```
+
+图表来源
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
+
+章节来源
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
+
+### **新增** 播放进度服务（PlayProgressService）
+- 核心方法
+  - updatePlayProgress(episodeId, positionMs, progressRatio, episodeGuid, episodeITunesId): 更新播放进度并同步到 Episode 缓存
+  - markEpisodeAsPlayed(episodeId, episodeGuid, episodeITunesId, podcastGuid, podcastITunesId): 标记剧集为已播放并同步状态
+  - createOrUpdatePlayHistory(episode, positionMs, progressRatio): 创建或更新播放历史记录
+  - syncEpisodePlaybackState(episodeId, isPlayed, playProgress): 将播放状态同步到 Episode 缓存
+- 输入参数
+  - episodeId: 剧集 ID
+  - positionMs: 播放位置（毫秒）
+  - progressRatio: 播放进度比例（0.0-1.0）
+  - episodeGuid/episodeITunesId: 剧集标识符
+  - podcastGuid/podcastITunesId: 播客标识符
+  - episode: Episode 领域实体
+- 返回数据
+  - Future<void>: 异步操作完成
+- 数据一致性保证
+  - PlayHistory 作为唯一数据源，Episode 的 isPlayed 和 playProgress 字段仅作为缓存
+  - 所有播放状态变更都通过 PlayHistoryRepository 更新
+  - 自动同步 Episode 缓存字段，确保跨层数据一致性
+- 事务处理
+  - 使用 Isar.writeTxn 确保数据操作的原子性
+  - 异常处理和日志记录
+- 内部方法
+  - _syncEpisodeProgress: 同步播放进度到 Episode 缓存
+  - _syncEpisodePlayedStatus: 同步播放完成状态到 Episode 缓存
+
+```mermaid
+flowchart TD
+Start(["开始 updatePlayProgress"]) --> UpdateHistory["更新 PlayHistory 记录"]
+UpdateHistory --> SyncProgress["同步播放进度到 Episode 缓存"]
+SyncProgress --> CheckChange{"状态有变化?"}
+CheckChange --> |是| UpdateEpisode["更新 Episode.isPlayed 和 playProgress"]
+CheckChange --> |否| Done["完成"]
+UpdateEpisode --> SetTimestamp["设置 updatedAt 时间戳"]
+SetTimestamp --> SaveEpisode["保存 Episode 到数据库"]
+SaveEpisode --> Done
+Done --> End(["结束"])
+```
+
+图表来源
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+
+章节来源
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+- [play_history_repository_impl.dart:1-312](file://lib/data/repositories/play_history_repository_impl.dart#L1-L312)
+- [play_history_repository.dart:1-82](file://lib/domain/repositories/play_history_repository.dart#L1-L82)
+
 ## 依赖关系分析
 - 服务间耦合
   - PodcastSearchService 依赖 RssParserService
   - FeedRefreshService 依赖 Remote/Local 数据源与 Mapper
   - AudioDownloadService 依赖 FileStorageService、IsarService、ImageCacheService
   - ITunesSearchService 独立，仅依赖 Dio 与 AppConstants
+  - **新增** PlayHistoryMapper 依赖 PlayHistory 领域实体和 Isar 模型
+  - **新增** PlayProgressService 依赖 PlayHistoryRepository、IsarService 和 Episode 模型
 - 外部依赖
   - Dio 用于 HTTP 请求
   - xml 库用于 RSS/Atom 解析
   - Isar 用于本地持久化
 - 潜在循环依赖
   - 当前未发现循环依赖，服务职责边界清晰
+  - PlayProgressService 通过 Repository 抽象避免直接依赖具体实现
 
 ```mermaid
 graph LR
@@ -478,6 +645,12 @@ ADS["AudioDownloadService"] --> FS["FileStorageService"]
 ADS --> ISAR["IsarService"]
 ADS --> IMG["ImageCacheService"]
 ITS["ITunesSearchService"] --> DIO["Dio"]
+PHM["PlayHistoryMapper"] --> ENTITY["PlayHistory Entity"]
+PHM --> MODEL["PlayHistory Model"]
+PPS["PlayProgressService"] --> REPO["PlayHistoryRepository"]
+PPS --> ISAR
+PPS --> EPISODE["Episode Model"]
+REPO --> PHM
 ```
 
 图表来源
@@ -486,6 +659,9 @@ ITS["ITunesSearchService"] --> DIO["Dio"]
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
 - [audio_download_service.dart:1-800](file://lib/data/services/audio_download_service.dart#L1-L800)
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+- [play_history_repository_impl.dart:1-312](file://lib/data/repositories/play_history_repository_impl.dart#L1-L312)
 
 章节来源
 - [podcast_search_service.dart:1-208](file://lib/data/services/podcast_search_service.dart#L1-L208)
@@ -493,6 +669,9 @@ ITS["ITunesSearchService"] --> DIO["Dio"]
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
 - [audio_download_service.dart:1-800](file://lib/data/services/audio_download_service.dart#L1-L800)
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
+- [play_history_mapper.dart:1-64](file://lib/data/mappers/play_history_mapper.dart#L1-L64)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
+- [play_history_repository_impl.dart:1-312](file://lib/data/repositories/play_history_repository_impl.dart#L1-L312)
 
 ## 性能考量
 - 网络层
@@ -507,8 +686,11 @@ ITS["ITunesSearchService"] --> DIO["Dio"]
 - 刷新层
   - 冷却与退化策略降低无效请求
   - 批量刷新分块并发，平衡吞吐与稳定性
-
-[本节为通用指导，不直接分析具体文件]
+- **新增** 播放历史层
+  - 使用索引优化查询性能（episodeId、podcastId、lastUpdateTime）
+  - 批量操作减少数据库往返
+  - 事务处理保证数据一致性同时提高性能
+  - 缓存策略：Episode 缓存字段避免重复查询 PlayHistory
 
 ## 故障排查指南
 - 常见异常类型
@@ -523,9 +705,11 @@ ITS["ITunesSearchService"] --> DIO["Dio"]
   - 检查网络状态与代理设置
   - 确认 RSS/HTML 可访问性与 Content-Type
   - 下载失败时检查临时文件与磁盘空间
+  - **新增** 播放历史数据不一致时检查 PlayHistory 和 Episode 缓存字段
 - 恢复策略
   - 重试机制已在服务内实现，必要时调整重试次数与间隔
   - 对于反爬虫挑战，切换网络或使用备用 RSS 地址
+  - **新增** 播放状态不一致时重新同步 Episode 缓存字段
 
 章节来源
 - [app_exception.dart:1-148](file://lib/core/utils/app_exception.dart#L1-L148)
@@ -534,11 +718,10 @@ ITS["ITunesSearchService"] --> DIO["Dio"]
 - [podcast_search_service.dart:1-208](file://lib/data/services/podcast_search_service.dart#L1-L208)
 - [itunes_search_service.dart:1-317](file://lib/data/services/itunes_search_service.dart#L1-L317)
 - [feed_refresh_service.dart:1-239](file://lib/data/services/feed_refresh_service.dart#L1-L239)
+- [play_progress_service.dart:1-176](file://lib/core/services/play_progress_service.dart#L1-L176)
 
 ## 结论
-TinyCast 的数据服务 API 围绕 RSS 解析、播客搜索、iTunes 搜索、音频下载与 Feed 刷新五大能力构建，具备完善的异常处理、网络配置与并发控制。通过清晰的职责划分与稳定的数据模型，服务易于扩展与维护。建议在业务层结合缓存与重试策略，进一步提升鲁棒性与用户体验。
-
-[本节为总结，不直接分析具体文件]
+TinyCast 的数据服务 API 围绕 RSS 解析、播客搜索、iTunes 搜索、音频下载与 Feed 刷新五大能力构建，具备完善的异常处理、网络配置与并发控制。**新增的播放历史映射器和播放进度同步服务**进一步增强了数据一致性和用户体验。通过清晰的职责划分与稳定的数据模型，服务易于扩展与维护。建议在业务层结合缓存与重试策略，进一步提升鲁棒性与用户体验。
 
 ## 附录
 - 使用示例（概念性说明）
@@ -547,10 +730,12 @@ TinyCast 的数据服务 API 围绕 RSS 解析、播客搜索、iTunes 搜索、
   - iTunes 搜索：调用 searchPodcastOnITunes(term, limit)，展示搜索结果与封面
   - 音频下载：调用 downloadEpisode(episode)，订阅状态与进度流，处理暂停/恢复/取消
   - Feed 刷新：调用 refreshAllFeeds(podcasts, force)，汇总结果并更新 UI
+  - **新增** 播放历史：使用 PlayHistoryMapper 进行数据转换，通过 PlayProgressService 管理播放状态
 - 最佳实践
   - 对关键操作添加超时与重试
   - 合理使用 Stream 进行异步反馈
   - 避免重复下载与解析，利用 GUID 去重
   - 监控失败率，动态调整冷却与退化策略
-
-[本节为补充信息，不直接分析具体文件]
+  - **新增** 使用 Repository 抽象层避免直接依赖具体实现
+  - **新增** 保持 PlayHistory 作为播放状态的单一数据源
+  - **新增** 及时同步 Episode 缓存字段确保数据一致性

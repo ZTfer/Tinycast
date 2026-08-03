@@ -1,7 +1,7 @@
 # Clean Architecture 详解
 
 <cite>
-**本文引用的文件**   
+**本文引用的文件**
 - [main.dart](file://lib/main.dart)
 - [app_router.dart](file://lib/core/router/app_router.dart)
 - [podcast_repository.dart](file://lib/domain/repositories/podcast_repository.dart)
@@ -12,7 +12,17 @@
 - [local_podcast_datasource.dart](file://lib/data/datasources/local_podcast_datasource.dart)
 - [supabase_service.dart](file://lib/core/services/supabase_service.dart)
 - [pubspec.yaml](file://pubspec.yaml)
+- [podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
+- [podcast_mapper.dart](file://lib/data/mappers/podcast_mapper.dart)
 </cite>
+
+## 更新摘要
+**所做更改**
+- 更新了依赖注入和 Provider 架构的实现细节
+- 增强了 Repository 模式的实现说明
+- 完善了数据层与领域层的解耦机制
+- 添加了 Riverpod 依赖注入的具体示例
+- 更新了架构图以反映最新的分层结构
 
 ## 目录
 1. [简介](#简介)
@@ -70,7 +80,7 @@ DA3 --> DA5
 C2 --> P1
 ```
 
-图表来源 
+**图表来源**
 - [main.dart:106-177](file://lib/main.dart#L106-L177)
 - [app_router.dart:20-132](file://lib/core/router/app_router.dart#L20-L132)
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
@@ -78,7 +88,7 @@ C2 --> P1
 - [local_podcast_datasource.dart:13-17](file://lib/data/datasources/local_podcast_datasource.dart#L13-L17)
 - [supabase_service.dart:8-47](file://lib/core/services/supabase_service.dart#L8-L47)
 
-章节来源
+**章节来源**
 - [main.dart:106-177](file://lib/main.dart#L106-L177)
 - [pubspec.yaml:1-196](file://pubspec.yaml#L1-L196)
 
@@ -101,7 +111,7 @@ C2 --> P1
   - SupabaseService：Supabase 客户端初始化与访问
   - 工具与异常：Logger、AppException、NetworkHelper 等
 
-章节来源
+**章节来源**
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
 - [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
@@ -111,7 +121,7 @@ C2 --> P1
 - [supabase_service.dart:8-47](file://lib/core/services/supabase_service.dart#L8-L47)
 
 ## 架构总览
-Clean Architecture 的核心在于“依赖方向由外向内”，外层只依赖内层抽象，内层不依赖外层具体实现。TinyCast 通过以下机制实现：
+Clean Architecture 的核心在于"依赖方向由外向内"，外层只依赖内层抽象，内层不依赖外层具体实现。TinyCast 通过以下机制实现：
 - 依赖倒置：domain 层仅声明 PodcastRepository 接口；data 层提供 PodcastRepositoryImpl 实现
 - 数据流：presentation → usecase → repository interface → repository impl → datasources → storage/network
 - 隔离变化：UI 变更不影响业务；存储/网络实现替换不影响上层
@@ -138,7 +148,7 @@ Repo-->>UC : 返回领域实体
 UC-->>UI : 更新状态/渲染
 ```
 
-图表来源 
+**图表来源**
 - [get_podcast_by_id_usecase.dart:4-20](file://lib/domain/usecases/get_podcast_by_id_usecase.dart#L4-L20)
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
 - [podcast_repository_impl.dart:15-36](file://lib/data/repositories/podcast_repository_impl.dart#L15-L36)
@@ -189,12 +199,12 @@ class PodcastRepository {
 }
 ```
 
-图表来源 
+**图表来源**
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
 - [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
 
-章节来源
+**章节来源**
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
 - [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
@@ -218,11 +228,11 @@ ThrowErr --> End(["结束"])
 ReturnEntity --> End
 ```
 
-图表来源 
+**图表来源**
 - [podcast_repository_impl.dart:39-141](file://lib/data/repositories/podcast_repository_impl.dart#L39-L141)
 - [local_podcast_datasource.dart:89-127](file://lib/data/datasources/local_podcast_datasource.dart#L89-L127)
 
-章节来源
+**章节来源**
 - [podcast_repository_impl.dart:15-524](file://lib/data/repositories/podcast_repository_impl.dart#L15-L524)
 - [local_podcast_datasource.dart:13-800](file://lib/data/datasources/local_podcast_datasource.dart#L13-L800)
 
@@ -242,11 +252,11 @@ Repo-->>UC : Podcast?
 UC-->>UI : 返回结果或抛异常
 ```
 
-图表来源 
+**图表来源**
 - [get_podcast_by_id_usecase.dart:4-20](file://lib/domain/usecases/get_podcast_by_id_usecase.dart#L4-L20)
 - [podcast_repository.dart:15-15](file://lib/domain/repositories/podcast_repository.dart#L15-L15)
 
-章节来源
+**章节来源**
 - [get_podcast_by_id_usecase.dart:4-20](file://lib/domain/usecases/get_podcast_by_id_usecase.dart#L4-L20)
 
 ### 展示层：路由与入口
@@ -264,11 +274,11 @@ Router-->>Page : 构建目标页面
 Page-->>Main : 渲染完成
 ```
 
-图表来源 
+**图表来源**
 - [main.dart:106-177](file://lib/main.dart#L106-L177)
 - [app_router.dart:20-132](file://lib/core/router/app_router.dart#L20-L132)
 
-章节来源
+**章节来源**
 - [main.dart:106-177](file://lib/main.dart#L106-L177)
 - [app_router.dart:20-132](file://lib/core/router/app_router.dart#L20-L132)
 
@@ -286,11 +296,33 @@ class SupabaseService {
 }
 ```
 
-图表来源 
+**图表来源**
 - [supabase_service.dart:8-47](file://lib/core/services/supabase_service.dart#L8-L47)
 
-章节来源
+**章节来源**
 - [supabase_service.dart:8-47](file://lib/core/services/supabase_service.dart#L8-L47)
+
+### 依赖注入：Riverpod Provider 架构
+- PodcastRepositoryProvider 通过 Provider 管理仓库实例的生命周期
+- UseCase Providers 统一管理用例的创建与依赖注入
+- 支持测试时替换 Mock 实现，提升可测试性
+
+```mermaid
+graph LR
+A["PodcastRepositoryProvider"] --> B["PodcastRepositoryImpl"]
+B --> C["LocalPodcastDataSource"]
+B --> D["RemotePodcastDataSource"]
+E["SubscribePodcastUseCaseProvider"] --> F["SubscribePodcastUseCase"]
+G["GetPodcastByIdUseCaseProvider"] --> H["GetPodcastByIdUseCase"]
+F --> A
+H --> A
+```
+
+**图表来源**
+- [podcast_provider.dart:62-92](file://lib/presentation/providers/podcast_provider.dart#L62-L92)
+
+**章节来源**
+- [podcast_provider.dart:62-92](file://lib/presentation/providers/podcast_provider.dart#L62-L92)
 
 ## 依赖关系分析
 - 依赖方向
@@ -311,12 +343,12 @@ Core["Core"] -.-> Presentation
 Core -.-> Data
 ```
 
-图表来源 
+**图表来源**
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
 - [podcast_repository_impl.dart:15-36](file://lib/data/repositories/podcast_repository_impl.dart#L15-L36)
 - [supabase_service.dart:8-47](file://lib/core/services/supabase_service.dart#L8-L47)
 
-章节来源
+**章节来源**
 - [podcast_repository.dart:6-41](file://lib/domain/repositories/podcast_repository.dart#L6-L41)
 - [podcast_repository_impl.dart:15-36](file://lib/data/repositories/podcast_repository_impl.dart#L15-L36)
 
@@ -332,8 +364,6 @@ Core -.-> Data
 - 资源清理
   - 取消订阅时安全删除本地音频文件，释放存储空间
 
-[本节为通用指导，无需特定文件引用]
-
 ## 故障排查指南
 - 常见异常类型
   - AppException.storage：数据库操作失败（IsarError 捕获）
@@ -346,14 +376,12 @@ Core -.-> Data
 - 网络与解析
   - RSS 解析失败、iTunes 搜索超时等应降级处理并记录
 
-章节来源
+**章节来源**
 - [local_podcast_datasource.dart:42-56](file://lib/data/datasources/local_podcast_datasource.dart#L42-L56)
 - [podcast_repository_impl.dart:129-141](file://lib/data/repositories/podcast_repository_impl.dart#L129-L141)
 
 ## 结论
 TinyCast 通过 Clean Architecture 实现了清晰的职责分离与稳定的依赖方向。领域层聚焦业务规则，数据层屏蔽实现细节，展示层专注交互与状态，核心层提供基础设施。该模式显著提升了可测试性（Mock 接口即可）、可维护性（变更局部化）与可扩展性（新增数据源/平台成本低）。建议持续完善用例覆盖、强化异常分类与监控指标，以支撑长期演进。
-
-[本节为总结性内容，无需特定文件引用]
 
 ## 附录
 - 依赖与版本管理
@@ -363,7 +391,7 @@ TinyCast 通过 Clean Architecture 实现了清晰的职责分离与稳定的依
 - 主题与国际化
   - core/theme 提供主题加载与样式配置；intl 支持国际化与格式化
 
-章节来源
+**章节来源**
 - [pubspec.yaml:1-196](file://pubspec.yaml#L1-L196)
 - [main.dart:106-177](file://lib/main.dart#L106-L177)
 - [app_router.dart:20-132](file://lib/core/router/app_router.dart#L20-L132)

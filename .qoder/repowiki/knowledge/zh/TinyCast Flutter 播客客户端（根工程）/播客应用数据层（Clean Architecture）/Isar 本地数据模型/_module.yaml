@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: data/models
-title: Isar 本地数据模型
-scope:
-    - lib/data/models/
-source_files: []
-depends_on: []
-related_to: []

@@ -4,6 +4,9 @@
 **本文引用的文件**   
 - [podcast.dart](file://lib/domain/entities/podcast.dart)
 - [episode.dart](file://lib/domain/entities/episode.dart)
+- [play_history.dart](file://lib/domain/entities/play_history.dart)
+- [feed_refresh_result.dart](file://lib/domain/entities/feed_refresh_result.dart)
+- [queue_item.dart](file://lib/domain/entities/queue_item.dart)
 - [search_history.dart](file://lib/domain/entities/search_history.dart)
 - [search_result.dart](file://lib/domain/entities/search_result.dart)
 - [play_history_model.dart](file://lib/data/models/play_history_model.dart)
@@ -14,6 +17,14 @@
 - [queue_model.dart](file://lib/data/models/queue_model.dart)
 - [database.md](file://docs/database.md)
 </cite>
+
+## 更新摘要
+**所做更改**   
+- 新增 PlayHistory 领域实体，提供完整的播放历史追踪功能
+- 增强 Episode 实体，添加更多 iTunes 扩展字段
+- 新增 FeedRefreshResult 和 BatchRefreshResult 值对象，用于 Feed 刷新结果建模
+- 新增 QueueItem 领域实体，与 Isar Queue 模型解耦
+- 更新实体关系图和依赖分析以反映新的架构设计
 
 ## 目录
 1. [简介](#简介)
@@ -28,7 +39,9 @@
 10. [附录](#附录)
 
 ## 简介
-本文件为 TinyCast 应用的“领域实体 API”提供权威文档，聚焦业务实体类的结构定义、字段说明与数据验证规则。重点覆盖 Podcast、Episode、PlayHistory 等核心实体，阐明实体间的关联关系、数据约束与业务规则，并提供创建、更新、查询的示例路径，以及序列化、反序列化和持久化接口说明。同时给出版本兼容性与迁移策略建议，帮助开发者在演进中保持向后兼容与数据一致性。
+本文件为 TinyCast 应用的"领域实体 API"提供权威文档，聚焦业务实体类的结构定义、字段说明与数据验证规则。重点覆盖 Podcast、Episode、PlayHistory 等核心实体，阐明实体间的关联关系、数据约束与业务规则，并提供创建、更新、查询的示例路径，以及序列化、反序列化和持久化接口说明。同时给出版本兼容性与迁移策略建议，帮助开发者在演进中保持向后兼容与数据一致性。
+
+**更新** 本次更新引入了全新的 PlayHistory 领域实体，增强了 Episode 实体的功能，并新增了 FeedRefreshResult 和 QueueItem 实体以改进数据建模。
 
 ## 项目结构
 TinyCast 采用分层架构：
@@ -41,6 +54,10 @@ graph TB
 subgraph "领域层"
 D_Podcast["Podcast(领域实体)"]
 D_Episode["Episode(领域实体)"]
+D_PlayHistory["PlayHistory(领域实体)"]
+D_FeedRefreshResult["FeedRefreshResult(值对象)"]
+D_BatchRefreshResult["BatchRefreshResult(值对象)"]
+D_QueueItem["QueueItem(领域实体)"]
 D_SearchHistory["SearchHistory(领域实体)"]
 D_SearchResult["SearchResult(领域实体)"]
 end
@@ -54,6 +71,8 @@ M_Queue["Queue(Isar 模型)"]
 end
 D_Podcast --> M_Podcast
 D_Episode --> M_Episode
+D_PlayHistory -.-> M_PlayHistory
+D_QueueItem -.-> M_Queue
 D_SearchHistory --> M_SearchHistory
 M_PlayHistory -.-> M_Episode
 M_PlayHistory -.-> M_Podcast
@@ -61,10 +80,13 @@ M_PlayHistory -.-> M_Podcast
 
 图表来源 
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
 - [search_history.dart:1-12](file://lib/domain/entities/search_history.dart#L1-L12)
 - [search_result.dart:1-17](file://lib/domain/entities/search_result.dart#L1-L17)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
 - [podcast_model.dart:1-78](file://lib/data/models/podcast_model.dart#L1-L78)
 - [episode_model.dart:1-67](file://lib/data/models/episode_model.dart#L1-L67)
 - [search_history_model.dart:1-14](file://lib/data/models/search_history_model.dart#L1-L14)
@@ -73,10 +95,13 @@ M_PlayHistory -.-> M_Podcast
 
 章节来源
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
 - [search_history.dart:1-12](file://lib/domain/entities/search_history.dart#L1-L12)
 - [search_result.dart:1-17](file://lib/domain/entities/search_result.dart#L1-L17)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
 - [podcast_model.dart:1-78](file://lib/data/models/podcast_model.dart#L1-L78)
 - [episode_model.dart:1-67](file://lib/data/models/episode_model.dart#L1-L67)
 - [search_history_model.dart:1-14](file://lib/data/models/search_history_model.dart#L1-L14)
@@ -94,10 +119,19 @@ M_PlayHistory -.-> M_Podcast
   - 作用：描述单集音频内容与播放状态
   - 关键字段：id、podcastId、title、description、audioUrl、audioType、pubDate、duration、artworkUrl、isPlayed/isDownloaded/isFavorite、downloadProgress/playProgress、lastPlayedAt、itunes* 扩展字段
   - 约束：podcastId 外键语义；时间戳 pubDate、createdAt、updatedAt；进度范围 0.0-1.0
-- PlayHistory（播放历史）
+- **新增** PlayHistory（播放历史）
   - 作用：记录每集的播放轨迹与完成状态，支持软删除与快照字段
   - 关键字段：episodeId、podcastId、title/description/artworkUrl（快照）、lastPlayedPositionMs、playProgress、isPlayed、playedDuration、status、lastUpdateTime、createdAt、isDeleted
   - 约束：status 枚举（playing/completed/skipped）；lastUpdateTime 索引；软删除 isDeleted
+- **新增** FeedRefreshResult（Feed 刷新结果）
+  - 作用：表示单个播客的 Feed 刷新结果
+  - 关键字段：podcastId、newEpisodesCount、success、error
+- **新增** BatchRefreshResult（批量刷新结果）
+  - 作用：聚合多个 Feed 刷新结果，提供统计信息
+  - 关键字段：totalNewEpisodes、successCount、failureCount、results
+- **新增** QueueItem（队列条目）
+  - 作用：表示播放队列中的单个条目
+  - 关键字段：id、episodeId、podcastId、position、addedAt、各种 ID 标识符
 - SearchHistory（搜索历史）
   - 作用：记录用户搜索关键词与时间
   - 关键字段：id、keyword、searchedAt
@@ -106,8 +140,10 @@ M_PlayHistory -.-> M_Podcast
 
 章节来源
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
 - [search_history.dart:1-12](file://lib/domain/entities/search_history.dart#L1-L12)
 - [search_result.dart:1-17](file://lib/domain/entities/search_result.dart#L1-L17)
 
@@ -115,8 +151,10 @@ M_PlayHistory -.-> M_Podcast
 领域实体与数据模型的对应关系如下：
 - 领域 Podcast ↔ Isar Podcast
 - 领域 Episode ↔ Isar Episode
+- 领域 PlayHistory ↔ Isar PlayHistory（通过 copyWith 方法转换）
+- 领域 QueueItem ↔ Isar Queue（通过 copyWith 方法转换）
 - 领域 SearchHistory ↔ Isar SearchHistoryModel
-- PlayHistory 仅存在于数据层，用于播放历史追踪
+- FeedRefreshResult/BatchRefreshResult 为纯值对象，不参与持久化
 
 ```mermaid
 classDiagram
@@ -150,11 +188,22 @@ class Episode_领域 {
 +DateTime lastPlayedAt
 +DateTime createdAt
 +DateTime updatedAt
++String? itunesId
++String? podcastITunesId
++String? itunesArtworkUrl
++DateTime? itunesReleaseDate
++String? itunesExplicitness
++String? itunesContentAdvisoryRating
 }
-class PlayHistory_数据 {
+class PlayHistory_领域 {
 +int id
++String? supabaseId
 +int episodeId
++String? episodeGuid
++String? episodeITunesId
 +int podcastId
++String? podcastGuid
++String? podcastITunesId
 +String title
 +String? description
 +String? artworkUrl
@@ -167,20 +216,41 @@ class PlayHistory_数据 {
 +DateTime createdAt
 +bool isDeleted
 }
-class SearchHistory_领域 {
+class FeedRefreshResult_值对象 {
++int podcastId
++int newEpisodesCount
++bool success
++String? error
+}
+class BatchRefreshResult_值对象 {
++int totalNewEpisodes
++int successCount
++int failureCount
++FeedRefreshResult[] results
+}
+class QueueItem_领域 {
 +int id
-+String keyword
-+DateTime searchedAt
++String? supabaseId
++int episodeId
++String? episodeGuid
++String? episodeITunesId
++int? podcastId
++String? podcastGuid
++String? podcastITunesId
++int position
++DateTime addedAt
 }
 Podcast_领域 <.. Episode_领域 : "一对多"
-Episode_领域 <.. PlayHistory_数据 : "被引用(快照)"
+Episode_领域 <.. PlayHistory_领域 : "被引用(快照)"
+QueueItem_领域 <.. Episode_领域 : "引用"
 ```
 
 图表来源 
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
-- [search_history.dart:1-12](file://lib/domain/entities/search_history.dart#L1-L12)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
 
 ## 详细组件分析
 
@@ -227,15 +297,18 @@ Repo-->>UI : "返回结果"
 ```
 
 章节来源
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
 - [episode_model.dart:1-67](file://lib/data/models/episode_model.dart#L1-L67)
 
 ### PlayHistory（播放历史）
-- 数据模型（lib/data/models/play_history_model.dart）
+- **新增** 领域实体（lib/domain/entities/play_history.dart）
   - 主要属性：episodeId、podcastId、标题/描述/封面快照、播放位置毫秒、播放进度、是否完成、累计时长、状态枚举、最后更新时间、创建时间、软删除标记
-  - 索引：episodeId、podcastId、lastUpdateTime
   - 枚举：PlayHistoryStatus{playing, completed, skipped}
   - 用途：历史记录展示、MiniPlayer 恢复、统计分析
+  - 特点：与 Isar 模型解耦，提供 copyWith 方法支持不可变更新
+- 数据模型（lib/data/models/play_history_model.dart）
+  - 索引：episodeId、podcastId、lastUpdateTime
+  - 字段差异：与领域实体基本一致，包含 Isar 注解和索引配置
 - 数据约束与规则（参考 docs/database.md）
   - 优先通过 episodeITunesId/episodeGuid 匹配，再回退到 episodeId
   - 软删除使用 isDeleted=true，不物理删除
@@ -255,8 +328,32 @@ G --> H
 ```
 
 章节来源
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
 - [database.md:205-234](file://docs/database.md#L205-L234)
+
+### FeedRefreshResult 和 BatchRefreshResult（Feed 刷新结果）
+- **新增** 值对象（lib/domain/entities/feed_refresh_result.dart）
+  - FeedRefreshResult：表示单个播客的 Feed 刷新结果
+    - 字段：podcastId、newEpisodesCount、success、error
+    - 用途：封装单个播客的刷新操作结果
+  - BatchRefreshResult：聚合多个 Feed 刷新结果
+    - 字段：totalNewEpisodes、successCount、failureCount、results
+    - 用途：批量刷新操作的统计和结果汇总
+  - 特点：纯值对象，不包含持久化逻辑，避免 Domain 层依赖 Data 层服务
+
+章节来源
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+
+### QueueItem（队列条目）
+- **新增** 领域实体（lib/domain/entities/queue_item.dart）
+  - 主要属性：id、supabaseId、episodeId、各种 ID 标识符（guid/iTunesId）、podcastId、position、addedAt
+  - 用途：表示播放队列中的单个条目，与 Isar Queue 模型解耦
+  - 特点：提供多种 ID 标识符支持，确保跨设备同步时的数据一致性
+
+章节来源
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
+- [queue_model.dart:1-29](file://lib/data/models/queue_model.dart#L1-L29)
 
 ### SearchHistory（搜索历史）
 - 领域实体（lib/domain/entities/search_history.dart）
@@ -294,6 +391,7 @@ G --> H
 - 领域实体之间：
   - Episode 引用 Podcast（通过 podcastId）
   - SearchResult 聚合 Podcast 与 Episode
+  - QueueItem 引用 Episode（通过 episodeId）
 - 数据模型之间：
   - PlayHistory 引用 Episode/Podcast（通过 episodeId/podcastId 及 fallback 字段）
   - Favorite/Queue 引用 Episode/Podcast（通过 id/guid/iTunesId）
@@ -301,18 +399,22 @@ G --> H
 ```mermaid
 graph LR
 P["Podcast(领域)"] --> E["Episode(领域)"]
-E --> PH["PlayHistory(数据)"]
+E --> PH["PlayHistory(领域)"]
+E --> QI["QueueItem(领域)"]
 E --> F["Favorite(数据)"]
 E --> Q["Queue(数据)"]
 S["SearchResult(领域)"] --> P
 S --> E
+PH -.-> PH_M["PlayHistory(数据)"]
+QI -.-> Q_M["Queue(数据)"]
 ```
 
 图表来源 
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
-- [favorite_model.dart:1-20](file://lib/data/models/favorite_model.dart#L1-L20)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
+- [play_history_model.dart:1-52](file://lib/data/models/play_history_model.dart#L1-L52)
 - [queue_model.dart:1-29](file://lib/data/models/queue_model.dart#L1-L29)
 - [search_result.dart:1-17](file://lib/domain/entities/search_result.dart#L1-L17)
 
@@ -328,6 +430,8 @@ S --> E
   - 软删除 isDeleted 替代物理删除，提升查询稳定性
 - 写入频率
   - 播放进度自动保存需节流（如每10秒或≥5%变化），避免频繁 I/O
+- **新增** 值对象优化
+  - FeedRefreshResult/BatchRefreshResult 作为纯值对象，避免不必要的持久化开销
 
 [本节为通用指导，无需具体文件引用]
 
@@ -340,12 +444,14 @@ S --> E
   - 确认自动保存触发条件与定时器是否正常；检查 lastUpdateTime 是否及时更新
 - 枚举解析异常
   - 旧数据可能包含未知枚举值，需在反序列化时提供默认值与降级策略
+- **新增** 值对象问题
+  - FeedRefreshResult/BatchRefreshResult 应正确处理 null 值和边界情况
 
 章节来源
 - [database.md:494-501](file://docs/database.md#L494-L501)
 
 ## 结论
-TinyCast 的领域实体设计清晰、职责明确，配合 Isar 数据模型实现了高效的本地持久化与查询。PlayHistory 的快照与软删除机制保障了用户体验与数据稳定性。建议在后续迭代中继续完善枚举与字段的兼容性处理，确保向前与向后兼容。
+TinyCast 的领域实体设计清晰、职责明确，配合 Isar 数据模型实现了高效的本地持久化与查询。PlayHistory 的快照与软删除机制保障了用户体验与数据稳定性。新增的 FeedRefreshResult、BatchRefreshResult 和 QueueItem 实体进一步提升了数据建模的完整性和代码的可维护性。建议在后续迭代中继续完善枚举与字段的兼容性处理，确保向前与向后兼容。
 
 [本节为总结，无需具体文件引用]
 
@@ -360,15 +466,26 @@ TinyCast 的领域实体设计清晰、职责明确，配合 Isar 数据模型�
   - 必填：id、podcastId、title、description、audioUrl、pubDate、createdAt、updatedAt
   - 可选：link、guid、author、duration、artworkUrl、itunes* 系列
   - 约束：进度范围 0.0-1.0；布尔 isExplicit/isPlayed/isDownloaded/isFavorite
-- PlayHistory（数据）
+- **新增** PlayHistory（领域）
   - 必填：episodeId、podcastId、title、lastUpdateTime、createdAt
   - 可选：supabaseId、episodeGuid、episodeITunesId、podcastGuid、podcastITunesId、description、artworkUrl、lastPlayedPositionMs、playProgress、isPlayed、playedDuration、status、isDeleted
   - 约束：status 枚举；lastUpdateTime 索引；软删除 isDeleted
+- **新增** FeedRefreshResult（值对象）
+  - 必填：podcastId
+  - 可选：newEpisodesCount、success、error
+- **新增** BatchRefreshResult（值对象）
+  - 必填：results
+  - 可选：totalNewEpisodes、successCount、failureCount
+- **新增** QueueItem（领域）
+  - 必填：id、episodeId、position、addedAt
+  - 可选：supabaseId、episodeGuid、episodeITunesId、podcastId、podcastGuid、podcastITunesId
 
 章节来源
 - [podcast.dart:1-74](file://lib/domain/entities/podcast.dart#L1-L74)
-- [episode.dart:1-66](file://lib/domain/entities/episode.dart#L1-L66)
-- [play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
+- [episode.dart:1-133](file://lib/domain/entities/episode.dart#L1-L133)
+- [play_history.dart:1-94](file://lib/domain/entities/play_history.dart#L1-L94)
+- [feed_refresh_result.dart:1-44](file://lib/domain/entities/feed_refresh_result.dart#L1-L44)
+- [queue_item.dart:1-27](file://lib/domain/entities/queue_item.dart#L1-L27)
 
 ### 创建、更新、查询示例（路径指引）
 - 创建 Podcast
@@ -377,14 +494,21 @@ TinyCast 的领域实体设计清晰、职责明确，配合 Isar 数据模型�
 - 更新 Episode 播放进度
   - 领域属性：[episode.dart:21-25](file://lib/domain/entities/episode.dart#L21-L25)
   - 数据模型字段：[episode_model.dart:45-53](file://lib/data/models/episode_model.dart#L45-L53)
-- 查询 PlayHistory 已完成记录
-  - 数据模型与索引：[play_history_model.dart:13-46](file://lib/data/models/play_history_model.dart#L13-L46)
-  - 查询策略参考：[database.md:236-239](file://docs/database.md#L236-L239)
+- **新增** 创建 PlayHistory 记录
+  - 领域构造：[play_history.dart:26-46](file://lib/domain/entities/play_history.dart#L26-L46)
+  - 数据模型映射：[play_history_model.dart:8-51](file://lib/data/models/play_history_model.dart#L8-L51)
+- **新增** 处理 Feed 刷新结果
+  - 值对象构造：[feed_refresh_result.dart:8-13](file://lib/domain/entities/feed_refresh_result.dart#L8-L13)
+  - 批量结果处理：[feed_refresh_result.dart:32-37](file://lib/domain/entities/feed_refresh_result.dart#L32-L37)
+- **新增** 管理播放队列
+  - 队列条目构造：[queue_item.dart:14-25](file://lib/domain/entities/queue_item.dart#L14-L25)
+  - 数据模型字段：[queue_model.dart:5-28](file://lib/data/models/queue_model.dart#L5-L28)
 
 ### 序列化与反序列化
 - AppSettings（配置实体）提供 toJson/fromJson 与 copyWith，可作为其他实体序列化参考
   - 路径：[app_settings.dart:138-174](file://lib/domain/entities/app_settings.dart#L138-L174)
 - Isar 模型由 build_runner 生成 .g.dart 文件，负责序列化/反序列化与索引映射
+- **新增** 领域实体使用不可变设计，通过 copyWith 方法实现更新
 
 章节来源
 - [app_settings.dart:138-174](file://lib/domain/entities/app_settings.dart#L138-L174)
@@ -398,6 +522,8 @@ TinyCast 的领域实体设计清晰、职责明确，配合 Isar 数据模型�
   - PlayHistory 优先使用 episodeITunesId/episodeGuid，再回退到 episodeId，保证历史数据可用
 - 软删除
   - 使用 isDeleted 标记而非物理删除，便于恢复与审计
+- **新增** 值对象兼容
+  - FeedRefreshResult/BatchRefreshResult 应处理空值和边界情况
 
 章节来源
 - [database.md:236-239](file://docs/database.md#L236-L239)
