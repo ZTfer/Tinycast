@@ -1075,21 +1075,27 @@ class SyncService {
     };
 
     if (p.itunesId != null) map['itunes_id'] = p.itunesId;
-    if (p.itunesArtworkUrl != null)
+    if (p.itunesArtworkUrl != null) {
       map['itunes_artwork_url'] = p.itunesArtworkUrl;
-    if (p.itunesCollectionExplicitness != null)
+    }
+    if (p.itunesCollectionExplicitness != null) {
       map['itunes_collection_explicitness'] = p.itunesCollectionExplicitness;
-    if (p.itunesCollectionViewUrl != null)
+    }
+    if (p.itunesCollectionViewUrl != null) {
       map['itunes_collection_view_url'] = p.itunesCollectionViewUrl;
-    if (p.itunesContentAdvisoryRating != null)
+    }
+    if (p.itunesContentAdvisoryRating != null) {
       map['itunes_content_advisory_rating'] = p.itunesContentAdvisoryRating;
+    }
     if (p.itunesCountry != null) map['itunes_country'] = p.itunesCountry;
     if (p.itunesGenreIds != null) map['itunes_genre_ids'] = p.itunesGenreIds;
     if (p.itunesGenres != null) map['itunes_genres'] = p.itunesGenres;
-    if (p.itunesPrimaryGenreName != null)
+    if (p.itunesPrimaryGenreName != null) {
       map['itunes_primary_genre_name'] = p.itunesPrimaryGenreName;
-    if (p.itunesReleaseDate != null)
+    }
+    if (p.itunesReleaseDate != null) {
       map['itunes_release_date'] = p.itunesReleaseDate!.toIso8601String();
+    }
     if (p.keywords != null) map['keywords'] = p.keywords;
     if (p.rssUrl.isNotEmpty) map['rss_urls'] = [p.rssUrl];
     final podcastCloudId = p.supabaseId != null
@@ -1112,15 +1118,19 @@ class SyncService {
     if (e.guid != null) map['guid'] = e.guid;
     if (e.artworkUrl != null) map['artwork_url'] = e.artworkUrl;
     if (e.duration != null) map['duration'] = e.duration;
-    if (e.itunesArtworkUrl != null)
+    if (e.itunesArtworkUrl != null) {
       map['itunes_artwork_url'] = e.itunesArtworkUrl;
-    if (e.itunesContentAdvisoryRating != null)
+    }
+    if (e.itunesContentAdvisoryRating != null) {
       map['itunes_content_advisory_rating'] = e.itunesContentAdvisoryRating;
-    if (e.itunesExplicitness != null)
+    }
+    if (e.itunesExplicitness != null) {
       map['itunes_explicitness'] = e.itunesExplicitness;
+    }
     if (e.itunesId != null) map['itunes_id'] = e.itunesId;
-    if (e.itunesReleaseDate != null)
+    if (e.itunesReleaseDate != null) {
       map['itunes_release_date'] = e.itunesReleaseDate!.toIso8601String();
+    }
     if (e.link != null) map['link'] = e.link;
     if (e.podcastITunesId != null) map['podcast_itunes_id'] = e.podcastITunesId;
     map['pub_date'] = e.pubDate.toIso8601String();
@@ -1342,8 +1352,9 @@ class SyncService {
     local.guid = cloud['guid'] as String? ?? local.guid;
     local.link = cloud['link'] as String? ?? local.link;
     local.duration = cloud['duration'] as int? ?? local.duration;
-    if (cloud['artwork_url'] != null)
+    if (cloud['artwork_url'] != null) {
       local.artworkUrl = cloud['artwork_url'] as String?;
+    }
     local.itunesId = cloud['itunes_id'] as String? ?? local.itunesId;
     local.podcastITunesId =
         cloud['podcast_itunes_id'] as String? ?? local.podcastITunesId;
