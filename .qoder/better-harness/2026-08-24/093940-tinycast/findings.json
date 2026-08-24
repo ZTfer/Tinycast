@@ -1,0 +1,247 @@
+{
+  "summary": {
+    "projectName": "tinycast",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 26,
+    "overview": "tinycast 已建立清晰的指导路由（AGENTS.md 根入口、规则卡与领域文档索引）与成熟的下载域排查文档，抽样的 40 个会话（共 109 个）内也未观察到强执行摩擦。但交付验证门只在指令层存在：111 次编辑后没有任何验证命令，30 天内最热的核心同步路径有 9 处必需用例被结构性 skip，规则卡约束与实现存在漂移，同步故障的持久日志在全部指引面不可发现。相关机制大多已经具备，下一步是把它们接入日常工作。",
+    "strengths": [
+      "AGENTS.md 根入口把编码规则、领域文档与交付前检查组织成清晰的路由体系",
+      "多平台启动与构建路径文档化程度好，抽样会话内未见强执行摩擦",
+      "下载域已有三份调试手册与日志标识符速查表，问题排查习惯成熟"
+    ],
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Rules",
+        "Skills",
+        "Hooks",
+        "Commands",
+        "Custom Agents",
+        "MCP",
+        "Workflows",
+        "Plugins",
+        "Session Insights",
+        "Memories"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 1,
+          "paths": [
+            "AGENTS.md"
+          ]
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 136,
+          "paths": [
+            "~/.agents/skills/adaptive/SKILL.md",
+            "~/.qoder/skills/adaptive/SKILL.md",
+            "~/.agents/skills/agp-9-upgrade/SKILL.md",
+            "~/.qoder/skills/agp-9-upgrade/SKILL.md",
+            "~/.agents/skills/android-cli/SKILL.md",
+            "~/.qoder/skills/android-cli/SKILL.md",
+            "~/.agents/skills/android-intent-security/SKILL.md",
+            "~/.qoder/skills/android-intent-security/SKILL.md",
+            "~/.agents/skills/animate/SKILL.md",
+            "~/.agents/skills/animate-expo/SKILL.md",
+            "~/.agents/skills/animation-vocabulary/SKILL.md",
+            "~/.agents/skills/macos-development/app-planner/SKILL.md"
+          ]
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 2,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/security-scan/.qoder-plugin/qoder-hooks.json"
+          ]
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 1,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-marketplace/context7/1.0.0/commands/docs.md"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 1,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-marketplace/context7/1.0.0/agents/docs-researcher.md"
+          ]
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 8,
+          "paths": [
+            "~/Library/Application Support/Qoder/SharedClientCache/mcp.json",
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.mcp.json",
+            "~/.qoder/plugins/cache/qoder-marketplace/context7/1.0.0/.mcp.json"
+          ]
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 5,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/better-harness/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-marketplace/context7/1.0.0/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin",
+            "~/.qoder/plugins/cache/qoder-bundler/security-scan/.qoder-plugin/plugin.json"
+          ]
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Project",
+            "Global"
+          ],
+          "count": 2
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ],
+      "repositorySourceRows": [
+        {
+          "surface": "Rules",
+          "provider": "claude",
+          "owner": ".",
+          "count": 1,
+          "paths": [
+            "CLAUDE.md"
+          ]
+        }
+      ]
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 70,
+        "summary": "AGENTS.md 根入口、规则卡与领域文档路由清晰；但规则卡约束与实现漂移，文件日志位置等关键运行时事实未进入任何指引面。",
+        "findingRefs": [
+          "rule-implementation-drift",
+          "sync-debug-observability"
+        ]
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 68,
+        "summary": "启动与构建路径文档化程度好，抽样会话内未见强执行摩擦；权限与沙盒边界部分依赖平台默认而非显式声明。",
+        "findingRefs": []
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 50,
+        "summary": "抽样会话中 111 次编辑后没有任何验证命令，交付验收命令对最热的核心同步路径只有被 skip 的用例。",
+        "findingRefs": [
+          "session-validation-gap",
+          "sync-regression-uncovered"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 52,
+        "summary": "交付边界以 AGENTS.md 指令与检查清单定义，但抽样会话内没有观察到会话闭合或验收证据。",
+        "findingRefs": []
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 60,
+        "summary": "会话观察覆盖 94 个任务事件并识别出重复工作候选，但尚无可比的后续窗口来验证任何改进。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "session-validation-gap",
+      "title": "代码变更在会话结束时仍未经任何验证命令",
+      "severity": "Medium",
+      "reason": "AGENTS.md 与 README 把 flutter analyze 加 flutter test 定为交付前必过门槛，但在分层抽样的 40 个会话（共 109 个，中等置信度）中观察到 111 次编辑事件而没有一次验证命令；保留的 94 个任务事件的闭合与验收也均未被观察。变更以未验证状态离开会话，说明交付门只在指令层存在，尚未接入实际交付行为。",
+      "expectedOutput": [
+        "Update the existing Rule owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Rule",
+      "aiFixPrompt": "/better-harness fix this issue\n\n把 AGENTS.md 的交付验证门接入会话尾部的实际交付路径，保持既有检查清单不变，并写明确切命令与预期输出。\n\n## Validation\n\n- 对最近一次会话内的真实变更运行 flutter analyze 与 flutter test 并记录结果\n- 确认交付门中包含可直接执行的命令与预期输出，下一次变更可沿用",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "sync-regression-uncovered",
+      "title": "核心同步路径的回归无法被交付验收命令捕获",
+      "severity": "Medium",
+      "reason": "30 天观察窗口内最热的改动集中在云同步域（含正确性修复历史与真实的云端删除副作用），但该域三个测试文件共 9 处必需用例处于 skip 状态，跳过理由互证同一结构原因：SupabaseService 与 IsarService 全局单例无法注入、SyncNotifier 硬编码创建 SyncService。被 skip 的用例在 flutter test 中静默通过，交付验收命令对同步路径的行为回归零覆盖。",
+      "expectedOutput": [
+        "Update the existing Test owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Test",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为 SyncService 及其数据源引入构造注入边界，解除同步域测试中被 skip 的必需用例，保持既有测试意图不变。\n\n## Validation\n\n- 运行 flutter test 确认同步域 skip 用例数量降为零\n- 运行 flutter analyze 保持零警告",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "rule-implementation-drift",
+      "title": "规则约束与实现漂移，Agent 日常决策收到矛盾指引",
+      "severity": "Low",
+      "reason": "canonical 规则卡 .agents/rules/ai-rules-for-flutter-and-dart.md 头卡写明日志仅允许 dart:developer 且禁止 ! 断言；但项目唯一的日志门面 lib/core/utils/logger.dart 内部使用 debugPrint，同步服务建立在它之上并有 29 处 Logger 调用，该热门文件中还存在多处 ! 断言。Agent 遵循规则卡会与代码库现实冲突，只能靠逐例自行裁决。",
+      "expectedOutput": [
+        "Update the existing Rule owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Rule",
+      "aiFixPrompt": "/better-harness fix this issue\n\n对照实际实现裁决规则卡中的日志与空安全约束，使指引与代码库一致，保持规则卡的其余结构不变。\n\n## Validation\n\n- 确认规则卡日志条目与 logger 门面的实际输出通道一致\n- 确认空安全条目明确 ! 断言的允许边界或给出迁移口径\n- 运行 flutter analyze 保持零警告",
+      "dimensionRefs": [
+        "task-understanding"
+      ]
+    },
+    {
+      "id": "sync-debug-observability",
+      "title": "排查核心同步故障需要读源码才能找到唯一的持久日志",
+      "severity": "Low",
+      "reason": "文件日志已在生产入口接线（应用启动流程调用初始化，日志写入系统临时目录下的应用日志文件夹），但 AGENTS.md、规则卡与 docs 全部指引面对该位置零提及；下载域有三份调试手册而同步域没有对应排查手册。排查同步故障时唯一持久化证据不可发现，只能读源码定位。",
+      "expectedOutput": [
+        "Update the existing Runbook owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Runbook",
+      "aiFixPrompt": "/better-harness fix this issue\n\n把文件日志的位置与读取方式写进现有调试文档体系，并为同步域补一份最小排查手册，保持现有日志实现不变。\n\n## Validation\n\n- 确认从任一指引面入口可以找到文件日志的位置\n- 运行 flutter analyze 保持零警告",
+      "dimensionRefs": [
+        "task-understanding"
+      ]
+    }
+  ]
+}
