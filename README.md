@@ -20,6 +20,13 @@ flutter analyze   # 静态分析，要求零警告
 flutter test       # 全量测试
 ```
 
+通过标准（预期输出）：
+
+- `flutter analyze`：末行 `No issues found!`，退出码 `0`；出现任何 issue 条目即未通过
+- `flutter test`：末行 `All tests passed!`，退出码 `0`；出现 `Some tests failed.` 即未通过
+
+AI agent 会话的收尾交付门（必须实际运行并把结果记入交付总结）见 [AGENTS.md](AGENTS.md#交付前检查)。
+
 ### CI 策略
 
 本项目当前**未接入托管 CI**（无 GitHub Actions / GitLab CI 流水线），交付验收以开发者本地手动执行上述两条命令为准。
