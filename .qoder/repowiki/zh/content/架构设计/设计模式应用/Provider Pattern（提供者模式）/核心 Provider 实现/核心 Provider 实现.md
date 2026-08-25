@@ -11,7 +11,15 @@
 - [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
 - [lib/data/services/audio_download_service.dart](file://lib/data/services/audio_download_service.dart)
 - [lib/core/services/play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
+- [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)
 </cite>
+
+## 更新摘要
+**所做更改**   
+- 更新了 SyncProvider 章节以反映增强的工厂模式和生命周期管理改进
+- 添加了 Riverpod 3 生命周期限制和异步间隙处理的详细说明
+- 更新了认证状态同步流程以包含新的登出清理机制
+- 增强了故障排查指南以涵盖新的生命周期相关问题
 
 ## 目录
 1. [简介](#简介)
@@ -58,6 +66,7 @@ APS["AudioPlayerService"]
 ADS["AudioDownloadService"]
 PPS["PlayProgressService"]
 SUP["SupabaseService"]
+SS["SyncService"]
 end
 subgraph "Data Layer"
 ISAR["IsarService"]
@@ -71,6 +80,7 @@ PB --> Q
 PB --> PH
 DL --> ADS
 SYNC --> AUTH
+SYNC --> SS
 SYNC --> Q
 SYNC --> POD
 SYNC --> PH
@@ -143,7 +153,7 @@ ADS --> ISAR
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
 
 ## 架构总览
-整体采用“Provider + Service + Repository”的分层架构：
+整体采用"Provider + Service + Repository"的分层架构：
 - Presentation 层通过 NotifierProvider/FutureProvider/StreamProvider 暴露状态
 - Core 层提供跨功能能力（如认证、同步、播放进度）
 - Data 层通过 Isar 数据库与网络服务支撑持久化与远程数据
@@ -182,7 +192,7 @@ SYNC-->>UI : 失效相关 Provider 并刷新
   - 每 10 秒自动保存进度，基于时间与进度阈值避免频繁写入
   - 主窗口恢复上次播放状态（从历史记录恢复并尝试加载本地文件或远端 URL）
 - 业务逻辑
-  - 播放结束：从队列或未完成列表自动续播；若开启“单集结束暂停”，则暂停并关闭睡眠定时器
+  - 播放结束：从队列或未完成列表自动续播；若开启"单集结束暂停"，则暂停并关闭睡眠定时器
   - 自动删除已播放下载：根据设置决定是否删除本地文件
   - 标记为已播放：统一通过 PlayProgressService 同步到 PlayHistory 与 Episode 缓存
   - 进度保存：节流策略（时间间隔与进度差值），确保不丢失且不过度 IO
@@ -321,6 +331,11 @@ class AuthProvider {
 ### SyncProvider（同步与失效）
 - 状态结构
   - SyncState：status（idle/syncing/error）、lastSyncTime、progress、errorMessage
+- **更新** 增强的工厂模式与生命周期管理
+  - 新增 `syncServiceProvider`：独立的 Provider 用于注入 SyncService，支持测试覆盖和生产环境默认构造
+  - Riverpod 3 生命周期限制：在 `onDispose` 中仅取消定时器，禁止修改状态以避免生命周期回调中的状态突变
+  - 异步间隙处理：使用 `ref.mounted` 检查防止在 provider 销毁后修改状态，特别是在多层 await 链中
+  - 改进的登出清理：`_clearSyncStateForUser` 方法清理用户级同步状态，防止下一个账户继承上一个会话的状态
 - 行为
   - 监听认证状态：登录后启动周期同步（每 5 分钟），立即执行一次
   - requestSync：防抖 10 秒后触发 syncNow
@@ -343,11 +358,32 @@ Invalidate --> End(["结束"])
 SetError --> End
 ```
 
+**更新** 生命周期管理与登出清理流程
+
+```mermaid
+flowchart TD
+Login["用户登录"] --> StartSync["启动周期同步器"]
+StartSync --> InitialSync["立即执行初始同步"]
+InitialSync --> MonitorAuth["监控认证状态变化"]
+MonitorAuth --> Logout{"检测到登出?"}
+Logout --> |是| StopTimer["停止周期同步器"]
+StopTimer --> ClearState["清理用户级同步状态"]
+ClearState --> CheckMounted{"ref.mounted?"}
+CheckMounted --> |是| ResetState["重置为默认状态"]
+CheckMounted --> |否| SkipReset["跳过状态重置"]
+ResetState --> End(["完成"])
+SkipReset --> End
+Logout --> |否| Continue["继续监控"]
+Continue --> MonitorAuth
+```
+
 图表来源 
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/core/providers/sync_provider.dart:56-89](file://lib/core/providers/sync_provider.dart#L56-L89)
+- [lib/core/providers/sync_provider.dart:119-140](file://lib/core/providers/sync_provider.dart#L119-L140)
 
 章节来源
 - [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)
 
 ### QueueProvider（播放队列）
 - 状态结构
@@ -425,6 +461,7 @@ POD["PodcastProvider"] --> REPO_POD["PodcastRepository"]
 POD --> FRS["FeedRefreshScheduler"]
 DL["DownloadProvider"] --> ADS["AudioDownloadService"]
 AUTH["AuthProvider"] --> SUP["SupabaseService"]
+SYNC --> SS["SyncService"]
 SYNC --> REPO_Q["QueueRepository"]
 SYNC --> REPO_PH["PlayHistoryRepository"]
 SYNC --> REPO_FAV["FavoriteRepository"]
@@ -451,12 +488,15 @@ SYNC --> REPO_FAV["FavoriteRepository"]
 - 内存管理
   - DownloadProvider：仅维护 Map 状态，完成后及时清理；DownloadQueue 限制并发数（默认 3）
   - PlaybackProvider：在 dispose 中取消所有监听与定时器，释放资源
+  - **更新** SyncProvider：Riverpod 3 生命周期限制下，仅在适当时机清理定时器，避免在生命周期回调中修改状态
 - 异步操作优化
   - QueueProvider：loadQueue 使用 requestId 去重，丢弃过期结果
   - PodcastProvider：loading 阶段保留现有数据，避免 UI 闪烁
+  - **更新** SyncProvider：使用 `ref.mounted` 检查防止异步间隙中的状态突变，确保在 provider 销毁后不会尝试修改状态
 - 缓存与一致性
   - PlayProgressService：将进度与完成态同步至 Episode 缓存，保证多源一致
   - SyncProvider：同步完成后失效相关 Provider，确保 UI 与后端一致
+  - **更新** 登出清理：用户切换时清理用户级同步状态，防止状态污染
 
 [本节为通用指导，无需引用具体文件]
 
@@ -471,9 +511,15 @@ SYNC --> REPO_FAV["FavoriteRepository"]
 - 认证与同步问题
   - 验证 SupabaseService.isInitialized 与 authStateProvider 的流是否正常
   - 检查 SyncProvider 的周期同步与防抖逻辑
+  - **更新** 检查 Riverpod 3 生命周期限制：确保不在 onDispose 中修改状态
+  - **更新** 检查 ref.mounted 使用：确保异步操作在 provider 销毁前完成
 - 队列与历史不一致
   - 检查 QueueProvider 的 refresh 是否在操作后调用
   - 确认 PlayHistoryProvider 的刷新与本地标记逻辑
+- **新增** 生命周期相关问题
+  - 检查 SyncProvider 的登出清理逻辑是否正确执行
+  - 验证用户切换时的状态清理是否完整
+  - 确认测试中正确模拟认证状态变化
 
 章节来源
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
@@ -482,6 +528,7 @@ SYNC --> REPO_FAV["FavoriteRepository"]
 - [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
+- [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)
 
 ## 结论
-TinyCast 的核心 Provider 通过清晰的职责划分与稳健的状态管理，实现了播放、播客、下载与认证的完整闭环。PlaybackProvider 负责播放状态与流程编排，PodcastProvider 管理播客数据与缓存，DownloadProvider 驱动下载任务调度，AuthProvider 提供认证状态流，SyncProvider 保障数据一致性。结合节流、并发控制与缓存同步，系统在性能与用户体验上取得平衡。建议在实际使用中关注日志与错误处理，确保问题可追踪与快速修复。
+TinyCast 的核心 Provider 通过清晰的职责划分与稳健的状态管理，实现了播放、播客、下载与认证的完整闭环。PlaybackProvider 负责播放状态与流程编排，PodcastProvider 管理播客数据与缓存，DownloadProvider 驱动下载任务调度，AuthProvider 提供认证状态流，SyncProvider 保障数据一致性。**最新更新** 增强了 SyncProvider 的工厂模式支持和生命周期管理，解决了 Riverpod 3 中的状态突变问题和异步间隙处理。结合节流、并发控制与缓存同步，系统在性能与用户体验上取得平衡。建议在实际使用中关注日志与错误处理，确保问题可追踪与快速修复。
