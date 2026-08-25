@@ -5,6 +5,73 @@
 我已经为音频下载功能添加了详细的调试日志，使用 emoji 标识符
 让你更容易识别不同类型的日志信息。
 
+## 📄 文件日志位置与读取方式
+
+除控制台输出外，`Logger` 会把日志追加写入本地文件。文件日志由
+`lib/main.dart` 的 `_initializeApp()` 自动调用 `Logger.initFileLogging()`
+开启，无需手动配置。
+
+### 位置规则
+
+- 目录：`<系统临时目录>/tinycast/log/`
+- 文件名：`<YYYY-MM-DD>.log`（按初始化时的本地日期命名，如
+  `2026-08-25.log`）
+
+各平台实际路径：
+
+| 平台 | 日志目录 |
+| ------ | ------ |
+| macOS | `/var/folders/<随机路径>/T/tinycast/log/` |
+| iOS | 应用沙盒 `tmp/tinycast/log/` |
+| Android | `/data/data/<包名>/cache/tinycast/log/` |
+| Linux | `${TMPDIR:-/tmp}/tinycast/log/` |
+| Windows | `%TEMP%\tinycast\log\`（通常为 `C:\Users\<用户名>\AppData\Local\Temp\tinycast\log\`） |
+
+最准确的定位方式：应用启动时会输出一条 info 日志，其中包含完整路径——
+
+```text
+[INFO] [TinyCast] 📝 [LOGGER] File logging initialized: /var/folders/.../T/tinycast/log/2026-08-25.log
+```
+
+### 行格式
+
+```text
+[2026-08-25T14:30:00.123456] [INFO] [TinyCast] 🔄 [SYNC] Starting sync...
+  Error: <异常对象>           ← 仅 error 级别附带
+  StackTrace: <堆栈>          ← 仅 error 级别附带
+```
+
+- 级别：debug 构建写入 INFO 及以上级别，release/profile 构建仅写入 ERROR
+- 控制台输出仅在 debug 构建可见；文件日志在所有构建模式下生效
+
+### 读取方式
+
+```bash
+# 实时跟随当天日志（macOS / Linux）
+tail -f /var/folders/.../T/tinycast/log/$(date +%F).log
+
+# 按标签 / 级别检索
+grep '\[SYNC\]'  /var/folders/.../T/tinycast/log/2026-08-25.log
+grep '\[ERROR\]' /var/folders/.../T/tinycast/log/2026-08-25.log
+
+# 忘记路径时，从历史日志中找回初始化行
+grep 'File logging initialized' /var/folders/.../T/tinycast/log/*.log
+```
+
+本文档其余章节的 emoji 标识符（📁🎵⬇️📥📊✅❌⚠️🔄 等）在文件日志中
+完全相同，可直接用 `grep` 过滤。
+
+### 注意事项
+
+- **临时目录生命周期**：日志位于系统临时目录，重启或系统清理后可能
+  丢失，需要保留时请先行复制
+- **按天命名但不滚动**：文件名在初始化时固定，应用跨天持续运行会继续
+  写入启动日期的文件
+- **失败静默降级**：目录创建或写入失败时文件日志自动停用（不抛异常），
+  此时只剩控制台输出
+- **多窗口共享**：桌面端每个窗口引擎都会初始化文件日志，追加写入同一
+  日期文件
+
 ## 🔍 日志标识符
 
 ### 📁 文件路径相关

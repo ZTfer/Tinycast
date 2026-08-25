@@ -42,6 +42,12 @@ TinyCast 是基于 Flutter 的跨平台播客客户端（Android / iOS / macOS /
 |------|----------|
 | [docs/supabase_setup.md](docs/supabase_setup.md) | 需要配置或排查云同步时查阅：`SUPABASE_URL` 与 `SUPABASE_ANON_KEY` 环境变量配置（`.env` 文件与 `--dart-define` 两种方式）、凭据获取步骤、环境变量优先级、安全注意事项（`.env` 不入库不入包）、Riverpod Provider 用法、初始化失败排查 |
 
+### 云同步调试
+
+| 文档 | 适用场景 |
+|------|----------|
+| [docs/sync_debug_guide.md](docs/sync_debug_guide.md) | 云同步不生效或出错时查阅：同步前置条件（`canSync`）与触发时机（登录即同步/5 分钟周期/10 秒防抖/手动）、`[SYNC]` 日志标识与成功/部分失败/失败序列、12 个同步步骤名速查、同步未发生/步骤失败/远端读写失败/删除未传播/强制全量五个排查路径、`lastSyncTime` 与墓碑的 `shared_preferences` 存储键 |
+
 ### 平台权限
 
 | 文档 | 适用场景 |
@@ -53,7 +59,7 @@ TinyCast 是基于 Flutter 的跨平台播客客户端（Android / iOS / macOS /
 | 文档 | 适用场景 |
 |------|----------|
 | [docs/audio_download_usage.md](docs/audio_download_usage.md) | 需要调用下载 API 或缓存清理时查阅：`AudioDownloadService` 单个/批量/按播客下载方法、队列状态查询、暂停/恢复/取消控制、下载状态与进度 Stream 监听、`CacheCleanupService` 缓存清理（按类型/按播客/保留最近 N 集/自动清理）、文件存储位置与命名规则 |
-| [docs/download_debug_guide.md](docs/download_debug_guide.md) | 下载功能出错时查阅：emoji 日志标识符速查表（📁🎵⬇️📥📊✅❌⚠️🔄 等）、订阅自动下载的日志序列、单个下载流程日志、找不到文件/下载失败/数据库未更新/自动下载未触发四个排查路径、DevTools 与命令行调试方法、文件系统检查命令 |
+| [docs/download_debug_guide.md](docs/download_debug_guide.md) | 下载功能出错或需检索文件日志时查阅：文件日志位置与读取方式（各平台路径、行格式、tail/grep 检索）、emoji 日志标识符速查表（📁🎵⬇️📥📊✅❌⚠️🔄 等）、订阅自动下载的日志序列、单个下载流程日志、找不到文件/下载失败/数据库未更新/自动下载未触发四个排查路径、DevTools 与命令行调试方法、文件系统检查命令 |
 | [docs/download_queue_debug.md](docs/download_queue_debug.md) | 下载队列不执行时查阅：队列处理缺失日志的根因分析、`_processQueue()` 调用链排查、`canStartNewDownload`/`dequeue`/`maxConcurrent` 状态诊断、episode 未找到/立即失败的处理、手动测试代码片段、macOS 容器路径诊断命令 |
 | [docs/uuid_filename_guide.md](docs/uuid_filename_guide.md) | 涉及下载文件命名时查阅：UUID v4 文件命名方案（替代 episodeId）、`downloadedPath` 相对路径存储格式、UUID 生成算法实现、旧文件兼容与迁移说明、安全与隐私考量、Isar Inspector 验证方法 |
 
