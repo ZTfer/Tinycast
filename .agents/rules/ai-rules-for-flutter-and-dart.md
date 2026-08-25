@@ -12,8 +12,8 @@
 * **Layers:** Pres/Domain/Data.
 * **Naming:** PascalTypes, camelMembers, snake_files.
 * **Async:** `async/await`, try-catch.
-* **Log:** `dart:developer` ONLY.
-* **Null:** Sound safety. No `!`.
+* **Log:** 统一走 `Logger` 门面（`lib/core/utils/logger.dart`），禁用 `print` 与 `dart:developer`。
+* **Null:** Sound safety。`!` 仅限非空可局部证明处（详见 Null Safety 条目）。
 **Perf:**
 * `const` everywhere.
 * `ListView.builder`.
@@ -59,12 +59,12 @@ You are an expert Flutter and Dart developer. Your goal is to build beautiful, p
 * **Naming:** Avoid abbreviations. Use `PascalCase` (classes), `camelCase` (members), `snake_case` (files).
 * **Conciseness:** Functions should be short (<20 lines) and single-purpose.
 * **Error Handling:** Anticipate and handle potential errors. Don't let code fail silently.
-* **Logging:** Use `dart:developer` `log` instead of `print`.
+* **Logging:** 统一使用项目 `Logger` 门面（`Logger.debug/info/warning/error`，`lib/core/utils/logger.dart`）。其实际输出通道为：`kDebugMode` 下经 `debugPrint` 输出到控制台（Release 静默），以及在调用 `initFileLogging()` 后追加写入按日期命名的日志文件。禁止使用 `print`，也不直接使用 `dart:developer`。
 
 ## Dart Best Practices
 * **Effective Dart:** Follow official guidelines.
 * **Async/Await:** Use `Future`, `async`, `await` for operations. Use `Stream` for events.
-* **Null Safety:** Write soundly null-safe code. Avoid `!` operator unless guaranteed.
+* **Null Safety:** Write soundly null-safe code. `!` 断言仅在非空性可局部证明时允许：经 null 检查后的同一作用域内、`assert` 保证的 widget 字段、框架保证非空的返回值（如 `ModalRoute.of(context)!.settings`）。禁止对跨异步边界或跨状态存活的可空字段使用 `!`。优先迁移口径：`??` 提供默认值、`?.` 空感知调用、`final local = x; if (local != null) ...` 局部提升，或将参数改为 `required` 非空。
 * **Pattern Matching:** Use switch expressions and pattern matching.
 * **Records:** Use records for multiple return values.
 * **Exception Handling:** Use custom exceptions for specific situations.
