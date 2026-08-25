@@ -39,6 +39,14 @@ class SyncState {
   }
 }
 
+/// Factory for the [SyncService] consumed by [SyncNotifier].
+///
+/// Production uses the default construction; tests override this provider
+/// to inject a fake service instead of reaching into global singletons.
+final syncServiceProvider = Provider<SyncService>((ref) {
+  return SyncService();
+});
+
 class SyncNotifier extends Notifier<SyncState> {
   Timer? _syncTimer;
   Timer? _debounceTimer;
@@ -71,7 +79,10 @@ class SyncNotifier extends Notifier<SyncState> {
     }
 
     ref.onDispose(() {
-      _stopPeriodicSync();
+      // Riverpod 3 forbids modifying provider state inside life-cycle
+      // callbacks, so only the timers are cancelled here.
+      _syncTimer?.cancel();
+      _syncTimer = null;
       _debounceTimer?.cancel();
     });
 
@@ -80,7 +91,7 @@ class SyncNotifier extends Notifier<SyncState> {
 
   Future<void> _loadLastSyncTime() async {
     try {
-      final syncService = SyncService();
+      final syncService = ref.read(syncServiceProvider);
       final lastSyncTime = await syncService.getLastSyncTime();
       if (lastSyncTime != null) {
         state = state.copyWith(lastSyncTime: lastSyncTime);
@@ -113,7 +124,12 @@ class SyncNotifier extends Notifier<SyncState> {
       }
       await SyncTombstoneStore.instance.clearLegacyUnscopedKeys();
       await SyncService.clearLegacyLastSyncTime();
-      state = state.copyWith(status: SyncStatus.idle, lastSyncTime: null);
+      // 清理链跨越多个 await：期间 provider 可能已被销毁（例如登出后
+      // 立即退出应用）。写 state 前确认 Ref 仍存活。
+      if (!ref.mounted) return;
+      // copyWith 的 null 合并语义无法把 lastSyncTime 置回 null，
+      // 直接重置整个状态，避免下一账号继承上一账号的同步状态。
+      state = const SyncState();
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to clear sync state on sign-out',
@@ -133,7 +149,7 @@ class SyncNotifier extends Notifier<SyncState> {
   Future<void> syncNow() async {
     if (state.status == SyncStatus.syncing) return;
 
-    final syncService = SyncService();
+    final syncService = ref.read(syncServiceProvider);
     if (!syncService.canSync) return;
 
     state = state.copyWith(status: SyncStatus.syncing, errorMessage: null);

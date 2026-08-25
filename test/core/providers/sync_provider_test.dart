@@ -1,8 +1,46 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tinycast/core/providers/auth_provider.dart';
 import 'package:tinycast/core/providers/sync_provider.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 
+/// 手写 fake：只实现 SyncNotifier 依赖的成员，其余调用 fail fast。
+class _FakeSyncService implements SyncService {
+  _FakeSyncService({this.canSyncResult = false, this.lastSyncTimeResult});
+
+  bool canSyncResult;
+  DateTime? lastSyncTimeResult;
+  int syncCallCount = 0;
+  final Completer<void> syncGate = Completer<void>();
+
+  @override
+  SyncProgressCallback? onProgressChanged;
+
+  @override
+  bool get canSync => canSyncResult;
+
+  @override
+  Future<void> sync() {
+    syncCallCount++;
+    return syncGate.future;
+  }
+
+  @override
+  Future<DateTime?> getLastSyncTime() async => lastSyncTimeResult;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      super.noSuchMethod(invocation);
+}
+
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
   group('SyncState', () {
     test('SP-001: 初始状态应该是 idle', () {
       const state = SyncState();
@@ -168,28 +206,161 @@ void main() {
     });
   });
 
-  group('集成测试（需要 Supabase + Isar + Riverpod）', () {
-    // SP-004 ~ Auth 阻塞根因：
-    // SyncNotifier.build() 监听 authStateProvider, 且 syncNow() 内部
-    // 硬编码创建 SyncService()（无法注入 Mock），需完整 Riverpod +
-    // Supabase + Isar 环境才能执行。
-    // 可执行环境：配置真实 Supabase + Isar + Riverpod ProviderContainer 后运行集成测试。
-    // 取舍：保持 skip，待 SyncNotifier 重构为可注入 SyncService 后转为单元测试。
+  group('SyncNotifier 集成（Riverpod 注入边界）', () {
+    User buildTestUser(String id) => User(
+          id: id,
+          appMetadata: {},
+          userMetadata: {},
+          aud: 'authenticated',
+          createdAt: DateTime(2025, 1, 1).toIso8601String(),
+        );
 
     test('SP-004: SyncNotifier 初始状态应该是 idle', () {
-      // 阻塞: SyncNotifier.build() 监听 authStateProvider, 需 ProviderContainer
-    }, skip: '集成测试: SyncNotifier.build() 监听 authStateProvider, 需 Riverpod + Auth 环境');
+      final container = ProviderContainer(
+        overrides: [
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    test('SP-005: syncNow() 应该将状态改为 syncing 然后回到 idle', () {
-      // 阻塞: syncNow() 硬编码创建 SyncService(), 无法注入 Mock
-    }, skip: '集成测试: SyncNotifier.syncNow() 硬编码创建 SyncService, 无法注入 Mock');
+      final state = container.read(syncProvider);
 
-    test('SP-007: syncing 状态时 syncNow() 不应该重复执行', () {
-      // 阻塞: 同 SP-005, syncNow() 内部创建 SyncService()
-    }, skip: '集成测试: SyncNotifier.syncNow() 硬编码创建 SyncService, 无法注入 Mock');
+      expect(state.status, equals(SyncStatus.idle));
+      expect(state.lastSyncTime, isNull);
+    });
 
-    test('Auth 状态变化应该触发同步启停', () {
-      // 阻塞: 需 authStateProvider 状态变化 + SyncNotifier 完整环境
-    }, skip: '集成测试: 需 authStateProvider + SyncNotifier + Supabase/Isar 完整环境');
+    test('SP-005: syncNow() 应该将状态改为 syncing 然后回到 idle', () async {
+      final fake = _FakeSyncService(
+        canSyncResult: true,
+        lastSyncTimeResult: DateTime(2025, 1, 15),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(syncProvider.notifier);
+      final syncFuture = notifier.syncNow();
+
+      expect(
+        container.read(syncProvider).status,
+        equals(SyncStatus.syncing),
+      );
+
+      fake.syncGate.complete();
+      await syncFuture;
+
+      final state = container.read(syncProvider);
+      expect(state.status, equals(SyncStatus.idle));
+      expect(state.lastSyncTime, equals(fake.lastSyncTimeResult));
+    });
+
+    test('SP-007: syncing 状态时 syncNow() 不应该重复执行', () async {
+      final fake = _FakeSyncService(canSyncResult: true);
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(syncProvider.notifier);
+      final firstSync = notifier.syncNow();
+
+      expect(
+        container.read(syncProvider).status,
+        equals(SyncStatus.syncing),
+      );
+
+      // syncing 中再次触发应该直接返回，不会重复执行 sync。
+      await notifier.syncNow();
+      expect(fake.syncCallCount, equals(1));
+
+      fake.syncGate.complete();
+      await firstSync;
+
+      expect(fake.syncCallCount, equals(1));
+      expect(container.read(syncProvider).status, equals(SyncStatus.idle));
+    });
+
+    test('Auth 状态变化应该触发同步启停', () async {
+      final testUser = buildTestUser('auth-user-1');
+      final authController = StreamController<User?>.broadcast();
+      addTearDown(authController.close);
+
+      final fake = _FakeSyncService(
+        canSyncResult: true,
+        lastSyncTimeResult: DateTime(2025, 1, 15),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWith((ref) => authController.stream),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // 保持 syncProvider 活跃（模拟生产中 UI 的 watch）；Riverpod 3 在
+      // 无监听者时会暂停 provider 的内部依赖订阅。
+      final stateSubscription = container.listen(syncProvider, (_, _) {});
+      addTearDown(stateSubscription.close);
+
+      // 触发 SyncNotifier.build() 并订阅认证流。
+      await container.pump();
+
+      expect(fake.syncCallCount, equals(0));
+
+      // 登录：监听回调应立即触发一次同步。
+      authController.add(testUser);
+      await container.pump();
+      await container.pump();
+
+      expect(fake.syncCallCount, equals(1));
+      expect(
+        container.read(syncProvider).status,
+        equals(SyncStatus.syncing),
+      );
+
+      fake.syncGate.complete();
+      await container.pump();
+      await container.pump();
+
+      expect(container.read(syncProvider).status, equals(SyncStatus.idle));
+
+      // 预置用户级时间戳，验证登出时被清理。
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'last_sync_timestamp_${testUser.id}',
+        DateTime(2025, 1, 10).toIso8601String(),
+      );
+
+      // 登出：应停止同步并清理用户级同步状态。
+      authController.add(null);
+      // _clearSyncStateForUser 走 Future.microtask + 多层 await 链，
+      // 每轮 pump 只推进部分 microtask，轮询直到状态归零。
+      var stateCleared = false;
+      for (var i = 0; i < 100; i++) {
+        await container.pump();
+        await Future<void>.delayed(Duration.zero);
+        final current = container.read(syncProvider);
+        if (current.lastSyncTime == null &&
+            current.status == SyncStatus.idle &&
+            current.progress == null &&
+            current.errorMessage == null) {
+          stateCleared = true;
+          break;
+        }
+      }
+      expect(stateCleared, isTrue, reason: '登出后同步状态应被重置');
+
+      expect(prefs.getString('last_sync_timestamp_${testUser.id}'), isNull);
+      final state = container.read(syncProvider);
+      expect(state.lastSyncTime, isNull);
+      expect(state.status, equals(SyncStatus.idle));
+    });
   });
 }

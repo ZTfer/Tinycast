@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/services/sync_mappers.dart';
 import 'package:tinycast/core/services/sync_tombstone_store.dart';
@@ -46,6 +47,9 @@ class SyncService {
 
   final RemoteSyncDataSource _remoteDataSource;
   final String? Function()? _userIdResolver;
+  final SupabaseClient? Function()? _supabaseClientResolver;
+  final Isar Function()? _isarResolver;
+  final SyncTombstoneStore Function()? _tombstoneStoreResolver;
   SyncProgressCallback? onProgressChanged;
   bool _allStepsSucceeded = true;
 
@@ -57,20 +61,55 @@ class SyncService {
   // Cloud podcast ids this device has successfully pushed subscriptions for.
   Set<String> _lastPushedSubscriptionIds = {};
 
+  /// Creates a sync service.
+  ///
+  /// All resolver parameters are optional injection seams for tests; each
+  /// falls back to the corresponding production singleton when omitted, so
+  /// default construction keeps the production behavior unchanged.
   SyncService({
     RemoteSyncDataSource? remoteDataSource,
     String? Function()? userIdResolver,
+    SupabaseClient? Function()? supabaseClientResolver,
+    Isar Function()? isarResolver,
+    SyncTombstoneStore Function()? tombstoneStoreResolver,
   }) : _remoteDataSource = remoteDataSource ?? RemoteSyncDataSource(),
-       _userIdResolver = userIdResolver;
+       _userIdResolver = userIdResolver,
+       _supabaseClientResolver = supabaseClientResolver,
+       _isarResolver = isarResolver,
+       _tombstoneStoreResolver = tombstoneStoreResolver;
+
+  /// Supabase client used for direct table access (profile bootstrap).
+  ///
+  /// Returns null when no client is available: either an injected resolver
+  /// yields null (tests without a real Supabase session) or the global
+  /// [SupabaseService] singleton has not been initialized.
+  SupabaseClient? get _supabaseClient {
+    final resolver = _supabaseClientResolver;
+    if (resolver != null) return resolver();
+    if (!SupabaseService().isInitialized) return null;
+    return SupabaseService().client;
+  }
 
   String? get _userId {
     final override = _userIdResolver?.call();
     if (override != null) return override;
-    if (!SupabaseService().isInitialized) return null;
-    return SupabaseService().client.auth.currentUser?.id;
+    return _supabaseClient?.auth.currentUser?.id;
   }
 
-  bool get canSync => SupabaseService().isInitialized && _userId != null;
+  /// Whether a sync cycle is allowed to start.
+  ///
+  /// When [SyncService._supabaseClientResolver] is injected, readiness is
+  /// determined solely by the resolved user id, decoupling tests from the
+  /// global [SupabaseService] singleton.
+  bool get canSync {
+    if (_supabaseClientResolver != null) return _userId != null;
+    return SupabaseService().isInitialized && _userId != null;
+  }
+
+  Isar get _isar => _isarResolver?.call() ?? IsarService.instance.isar;
+
+  SyncTombstoneStore get _tombstoneStore =>
+      _tombstoneStoreResolver?.call() ?? SyncTombstoneStore.instance;
 
   String? get _scopedLastSyncKey {
     final userId = _userId;
@@ -166,8 +205,10 @@ class SyncService {
     final userId = _userId;
     if (userId == null) return;
 
+    final client = _supabaseClient;
+    if (client == null) return;
+
     try {
-      final client = SupabaseService().client;
       final existing = await client
           .from('profiles')
           .select('id')
@@ -198,7 +239,7 @@ class SyncService {
   Future<void> _pullAndMergeCloudChanges(DateTime? since) async {
     // Load pending local deletions so the merge phase does not re-add
     // records the user has deleted locally but not yet pushed.
-    final tombstones = SyncTombstoneStore.instance;
+    final tombstones = _tombstoneStore;
     _pendingSubscriptionDeletes = await tombstones.pendingSubscriptionDeletes();
     _pendingFavoriteDeletes = await tombstones.pendingFavoriteDeletes();
     _pendingQueueDeletes = await tombstones.pendingQueueDeletes();
@@ -250,7 +291,7 @@ class SyncService {
   // ========== Push local changes ==========
 
   Future<void> _pushLocalChanges(DateTime? since) async {
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     _notifyProgress(const SyncProgress(currentTable: 'push_podcasts'));
     await _safeStep('push_podcasts', () async {
@@ -297,7 +338,7 @@ class SyncService {
 
     _notifyProgress(const SyncProgress(currentTable: 'push_subscriptions'));
     await _safeStep('push_subscriptions', () async {
-      final tombstones = SyncTombstoneStore.instance;
+      final tombstones = _tombstoneStore;
       final localPodcasts = await isar.podcasts.where().findAll();
       final subscribedPodcasts = localPodcasts
           .where((p) => p.isSubscribed)
@@ -387,7 +428,7 @@ class SyncService {
 
     _notifyProgress(const SyncProgress(currentTable: 'push_favorites'));
     await _safeStep('push_favorites', () async {
-      final tombstones = SyncTombstoneStore.instance;
+      final tombstones = _tombstoneStore;
       final localFavorites = await isar.favorites.where().findAll();
       final localFavoriteEpisodeCloudIds = <String>{};
 
@@ -446,7 +487,7 @@ class SyncService {
 
     _notifyProgress(const SyncProgress(currentTable: 'push_queue_items'));
     await _safeStep('push_queue_items', () async {
-      final tombstones = SyncTombstoneStore.instance;
+      final tombstones = _tombstoneStore;
       final localQueue = await isar.queues.where().findAll();
       final localQueueEpisodeCloudIds = <String>{};
 
@@ -529,7 +570,7 @@ class SyncService {
     List<Map<String, dynamic>> cloudPodcasts,
   ) async {
     if (cloudPodcasts.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     int count = 0;
 
     await isar.writeTxn(() async {
@@ -590,7 +631,7 @@ class SyncService {
     List<Map<String, dynamic>> cloudEpisodes,
   ) async {
     if (cloudEpisodes.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     int count = 0;
 
     await isar.writeTxn(() async {
@@ -652,7 +693,7 @@ class SyncService {
   Future<void> _mergeSubscriptionsFromCloud(
     List<Map<String, dynamic>> cloudSubscriptions,
   ) async {
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     final subscribedPodcastCloudIds = <String>{};
     for (final sub in cloudSubscriptions) {
@@ -732,7 +773,7 @@ class SyncService {
     List<Map<String, dynamic>> cloudHistory,
   ) async {
     if (cloudHistory.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     int count = 0;
 
     await isar.writeTxn(() async {
@@ -805,7 +846,7 @@ class SyncService {
   ) async {
     // Do not early-return on empty cloud list: an empty list still means
     // "propagate full clear" for local favorites that already have supabaseId.
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     final cloudFavoriteRowIds = <String>{};
     for (final cloudFav in cloudFavorites) {
@@ -892,7 +933,7 @@ class SyncService {
   ) async {
     // Do not early-return on empty cloud list: an empty list still means
     // "propagate full clear" for local queue items that already have supabaseId.
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     final cloudQueueRowIds = <String>{};
     for (final cloudItem in cloudQueue) {
@@ -984,7 +1025,7 @@ class SyncService {
     List<Map<String, dynamic>> results,
   ) async {
     if (results.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final itunesIdToCloudId = <String, String>{};
     for (final r in results) {
       final itunesId = r['itunes_id'] as String?;
@@ -1012,7 +1053,7 @@ class SyncService {
     List<Map<String, dynamic>> results,
   ) async {
     if (results.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final guidToCloudId = <String, String>{};
     for (final r in results) {
       final guid = r['guid'] as String?;
@@ -1040,7 +1081,7 @@ class SyncService {
     List<Map<String, dynamic>> results,
   ) async {
     if (results.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     await isar.writeTxn(() async {
       for (final local in locals) {
@@ -1065,7 +1106,7 @@ class SyncService {
     List<Map<String, dynamic>> results,
   ) async {
     if (results.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     await isar.writeTxn(() async {
       for (final local in locals) {
@@ -1090,7 +1131,7 @@ class SyncService {
     List<Map<String, dynamic>> results,
   ) async {
     if (results.isEmpty) return;
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
 
     await isar.writeTxn(() async {
       for (final local in locals) {
@@ -1119,7 +1160,7 @@ class SyncService {
     final map = episodeToCloudMap(e);
 
     if (e.podcastId > 0) {
-      final isar = IsarService.instance.isar;
+      final isar = _isar;
       final podcast = isar.podcasts.getSync(e.podcastId);
       if (podcast?.supabaseId != null) {
         final podcastId = int.tryParse(podcast!.supabaseId!);
@@ -1134,7 +1175,7 @@ class SyncService {
     final map = playHistoryToCloudMap(h);
 
     if (h.episodeId > 0) {
-      final isar = IsarService.instance.isar;
+      final isar = _isar;
       final episode = isar.episodes.getSync(h.episodeId);
       if (episode?.supabaseId != null) {
         final epId = int.tryParse(episode!.supabaseId!);
@@ -1149,7 +1190,7 @@ class SyncService {
     final map = favoriteToCloudMap(f);
 
     if (f.episodeId > 0) {
-      final isar = IsarService.instance.isar;
+      final isar = _isar;
       final episode = isar.episodes.getSync(f.episodeId);
       if (episode?.supabaseId != null) {
         final epId = int.tryParse(episode!.supabaseId!);
@@ -1164,7 +1205,7 @@ class SyncService {
     final map = queueItemToCloudMap(q);
 
     if (q.episodeId > 0) {
-      final isar = IsarService.instance.isar;
+      final isar = _isar;
       final episode = isar.episodes.getSync(q.episodeId);
       if (episode?.supabaseId != null) {
         final epId = int.tryParse(episode!.supabaseId!);
@@ -1263,7 +1304,7 @@ class SyncService {
     final podcastCloudId = cloud['podcast_id']?.toString();
     if (podcastCloudId == null) return null;
 
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final podcasts = await isar.podcasts
         .filter()
         .supabaseIdEqualTo(podcastCloudId)
@@ -1329,7 +1370,7 @@ class SyncService {
     final episodeCloudId = cloud['episode_id']?.toString();
     if (episodeCloudId == null) return null;
 
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final episodes = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)
@@ -1395,7 +1436,7 @@ class SyncService {
     final episodeCloudId = cloud['episode_id']?.toString();
     if (episodeCloudId == null) return null;
 
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final episodes = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)
@@ -1414,7 +1455,7 @@ class SyncService {
     final episodeCloudId = cloud['episode_id']?.toString();
     if (episodeCloudId == null) return null;
 
-    final isar = IsarService.instance.isar;
+    final isar = _isar;
     final episodes = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)

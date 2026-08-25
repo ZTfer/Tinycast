@@ -661,12 +661,5 @@ void main() {
         expect(result[0]['episode_id'], equals(2));
       });
     });
-
-    group('集成测试（需要真实 Supabase）', () {
-      test('RemoteSyncDataSource 与真实 Supabase 通信', () {
-        // 此测试需要真实的 Supabase 环境
-        // 在 CI/CD 中通过 integration test 运行
-      }, skip: '需要真实 Supabase 环境');
-    });
   });
 }

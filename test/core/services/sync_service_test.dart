@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/core/services/sync_mappers.dart';
 import 'package:tinycast/core/services/sync_service.dart';
@@ -10,6 +11,7 @@ import 'package:tinycast/data/models/play_history_model.dart';
 import 'package:tinycast/data/models/favorite_model.dart';
 import 'package:tinycast/data/models/queue_model.dart';
 
+import '../../helpers/isar_test_env.dart';
 import 'sync_service_test.mocks.dart';
 
 @GenerateMocks([RemoteSyncDataSource])
@@ -465,29 +467,118 @@ void main() {
       });
     });
 
-    group('集成测试（需要 Supabase + Isar）', () {
-      // SS-001 ~ SS-012 阻塞根因：
-      // SyncService.sync() 内部直接依赖 SupabaseService().client 和
-      // IsarService.instance.isar 两个全局单例，单元测试无法注入 Mock。
-      // 可执行环境：配置真实 Supabase 项目 + 初始化 Isar 后运行集成测试。
-      // 取舍：保持 skip，待 SupabaseService/IsarService 重构为可注入依赖后转为单元测试。
+    group('sync() 认证门控（构造注入边界）', () {
+      test('SS-001: sync() 用户未认证时应该跳过同步', () async {
+        final syncService = SyncService(
+          remoteDataSource: mockRemoteDataSource,
+          supabaseClientResolver: () => null,
+          userIdResolver: () => null,
+        );
 
-      test('SS-001: sync() 用户未认证时应该跳过同步', () {
-        // 阻塞: canSync 依赖 SupabaseService().isInitialized 全局单例
-      }, skip: '集成测试: canSync 依赖 SupabaseService 全局单例, 需真实未认证环境');
+        expect(syncService.canSync, isFalse);
 
-      test('SS-002: sync() 应该先拉取后推送', () {
-        // 阻塞: sync() 调用 _ensureUserProfile()（SupabaseService.client）
-        //       及 _pullAndMergeCloudChanges/_pushLocalChanges（IsarService.instance）
-      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
+        await syncService.sync();
 
-      test('SS-003: 同步完成后应该保存时间戳', () {
-        // 阻塞: 同 SS-002, 需完整 sync() 执行路径
-      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
+        verifyZeroInteractions(mockRemoteDataSource);
+      });
+    });
 
-      test('SS-012: 同步过程中应该触发进度回调', () {
-        // 阻塞: 同 SS-002, 需完整 sync() 执行路径
-      }, skip: '集成测试: sync() 依赖 Supabase + Isar 全局单例');
+    group('sync() 完整路径（真实临时 Isar）', () {
+      const testUserId = 'sync-path-user';
+      late IsarTestEnv isarEnv;
+
+      setUpAll(() async {
+        await initializeIsarCoreForTests();
+      });
+
+      setUp(() async {
+        isarEnv = await IsarTestEnv.open();
+        await isarEnv.isar.writeTxn(() async {
+          await isarEnv.isar.podcasts.put(
+            Podcast()
+              ..title = 'Sync Path Podcast'
+              ..author = 'Author'
+              ..description = 'Fixture podcast for sync path tests'
+              ..artworkUrl = ''
+              ..rssUrl = 'https://example.com/rss.xml'
+              ..isExplicit = false
+              ..lastUpdated = DateTime(2025, 1, 1)
+              ..episodeCount = 0
+              ..isSubscribed = true
+              ..subscribedAt = DateTime(2025, 1, 1)
+              ..itunesId = '1001',
+          );
+        });
+      });
+
+      tearDown(() async {
+        await isarEnv.close();
+      });
+
+      SyncService buildService() => SyncService(
+            remoteDataSource: mockRemoteDataSource,
+            userIdResolver: () => testUserId,
+            supabaseClientResolver: () => null,
+            isarResolver: () => isarEnv.isar,
+          );
+
+      void stubEmptyCloudResponses() {
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchEpisodesUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchUserPodcastSubscriptions())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchPlaybackHistoryUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchFavorites())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchQueueItems())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertPodcasts(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+      }
+
+      test('SS-002: sync() 应该先拉取后推送', () async {
+        stubEmptyCloudResponses();
+
+        await buildService().sync();
+
+        verifyInOrder([
+          mockRemoteDataSource.fetchPodcastsUpdatedAfter(any),
+          mockRemoteDataSource.upsertPodcasts(any),
+        ]);
+      });
+
+      test('SS-003: 同步完成后应该保存时间戳', () async {
+        stubEmptyCloudResponses();
+
+        await buildService().sync();
+
+        final prefs = await SharedPreferences.getInstance();
+        final saved = prefs.getString('last_sync_timestamp_$testUserId');
+        expect(saved, isNotNull);
+        expect(DateTime.tryParse(saved!), isNotNull);
+
+        final lastSyncTime = await buildService().getLastSyncTime();
+        expect(lastSyncTime, isNotNull);
+      });
+
+      test('SS-012: 同步过程中应该触发进度回调', () async {
+        stubEmptyCloudResponses();
+
+        final progressTables = <String>[];
+        final syncService = buildService()
+          ..onProgressChanged = (progress) =>
+              progressTables.add(progress.currentTable);
+
+        await syncService.sync();
+
+        expect(progressTables, contains('preparing'));
+        expect(progressTables, contains('podcasts'));
+        expect(progressTables, contains('push_podcasts'));
+        expect(progressTables, contains('completed'));
+      });
     });
   });
 }

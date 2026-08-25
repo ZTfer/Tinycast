@@ -2,8 +2,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
+/// 远程同步数据源，负责与 Supabase 云端表交互。
+///
+/// 默认通过 [SupabaseService] 全局单例解析客户端；测试或集成环境可通过
+/// [clientResolver] 注入自定义客户端解析函数以替代全局状态。
 class RemoteSyncDataSource {
-  SupabaseClient get _client => SupabaseService().client;
+  RemoteSyncDataSource({SupabaseClient? Function()? clientResolver})
+      : _clientResolver = clientResolver;
+
+  final SupabaseClient? Function()? _clientResolver;
+
+  SupabaseClient get _client {
+    final override = _clientResolver?.call();
+    if (override != null) return override;
+    return SupabaseService().client;
+  }
+
   String? get _userId => _client.auth.currentUser?.id;
 
   void _ensureUserId() {
