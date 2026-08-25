@@ -48,6 +48,10 @@ app.*.map.json
 .trae/log/
 .trae/mcp.json
 
+# Qoder IDE related
+.qoder/better-harness/
+.qoder/better-harness-runs/
+
 
 
 # Environment variables
