@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
-import '../database/isar_service.dart';
-import '../models/episode_model.dart' as model;
-import '../models/podcast_model.dart';
-import 'audio_download_service.dart';
-import 'file_storage_service.dart';
-import 'image_cache_service.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/episode_model.dart' as model;
+import 'package:tinycast/data/models/podcast_model.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
+import 'package:tinycast/data/services/file_storage_service.dart';
+import 'package:tinycast/data/services/image_cache_service.dart';
 
 class CacheCleanupService {
   CacheCleanupService._();

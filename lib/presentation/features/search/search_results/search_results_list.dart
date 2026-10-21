@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../search_provider.dart';
-import '../../../providers/navigation_provider.dart';
-import 'search_results_show/search_results_show_item.dart';
-import 'search_results_episode/search_results_episode_item.dart';
+import 'package:tinycast/presentation/features/search/search_provider.dart';
+import 'package:tinycast/presentation/providers/navigation_provider.dart';
+import 'package:tinycast/presentation/features/search/search_results/search_results_show/search_results_show_item.dart';
+import 'package:tinycast/presentation/features/search/search_results/search_results_episode/search_results_episode_item.dart';
 
 class SearchResultsList extends ConsumerWidget {
   const SearchResultsList({super.key});

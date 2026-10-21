@@ -1,5 +1,5 @@
-import '../../core/utils/logger.dart';
-import '../models/podcast_model.dart' as model;
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/models/podcast_model.dart' as model;
 
 class PodcastMergeResult {
   final model.Podcast primary;

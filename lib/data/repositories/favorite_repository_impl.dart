@@ -1,8 +1,8 @@
-import '../../domain/entities/episode.dart';
-import '../../domain/repositories/favorite_repository.dart';
-import '../datasources/local_favorite_datasource.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/favorite_repository.dart';
+import 'package:tinycast/data/datasources/local_favorite_datasource.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 class FavoriteRepositoryImpl implements FavoriteRepository {
   final LocalFavoriteDataSource _dataSource;

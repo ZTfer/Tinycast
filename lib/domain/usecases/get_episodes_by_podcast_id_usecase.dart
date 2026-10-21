@@ -1,5 +1,5 @@
-import '../entities/episode.dart';
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class GetEpisodesByPodcastIdUseCase {
   final PodcastRepository _repository;
@@ -11,10 +11,6 @@ class GetEpisodesByPodcastIdUseCase {
       throw ArgumentError('Podcast ID must be a positive integer');
     }
 
-    try {
-      return await _repository.getEpisodesByPodcastId(podcastId);
-    } catch (e) {
-      throw Exception('Failed to get episodes by podcast ID: $e');
-    }
+    return _repository.getEpisodesByPodcastId(podcastId);
   }
 }

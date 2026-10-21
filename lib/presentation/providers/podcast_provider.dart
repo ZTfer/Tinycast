@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/repositories/podcast_repository.dart';
-import '../../domain/usecases/subscribe_podcast_usecase.dart';
-import '../../domain/usecases/unsubscribe_podcast_usecase.dart';
-import '../../domain/usecases/get_subscribed_podcasts_usecase.dart';
-import '../../domain/usecases/get_podcast_by_id_usecase.dart';
-import '../../domain/usecases/get_episodes_by_podcast_id_usecase.dart';
-import '../../domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
-import '../../data/repositories/podcast_repository_impl.dart';
-import '../../data/services/itunes_search_service.dart';
-import '../../core/utils/logger.dart';
-import '../../core/services/feed_refresh_scheduler.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
+import 'package:tinycast/domain/usecases/subscribe_podcast_usecase.dart';
+import 'package:tinycast/domain/usecases/unsubscribe_podcast_usecase.dart';
+import 'package:tinycast/domain/usecases/get_subscribed_podcasts_usecase.dart';
+import 'package:tinycast/domain/usecases/get_podcast_by_id_usecase.dart';
+import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart';
+import 'package:tinycast/domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart';
+import 'package:tinycast/data/repositories/podcast_repository_impl.dart';
+import 'package:tinycast/data/services/itunes_search_service.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
 
 enum PodcastStatus { initial, loading, success, error }
 

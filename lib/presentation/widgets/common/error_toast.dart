@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../dialogs/toast/vertical_icon_toast.dart';
-import '../../../core/utils/app_exception.dart';
+import 'package:tinycast/presentation/dialogs/toast/vertical_icon_toast.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
 
 class ErrorToast {
   ErrorToast._();

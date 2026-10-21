@@ -1,5 +1,5 @@
-import '../entities/search_result.dart';
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/entities/search_result.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class SearchLocalContentUseCase {
   final PodcastRepository _repository;
@@ -7,12 +7,8 @@ class SearchLocalContentUseCase {
   SearchLocalContentUseCase(this._repository);
 
   Future<SearchResult> call(String keyword) async {
-    try {
-      final podcasts = await _repository.searchPodcasts(keyword);
-      final episodes = await _repository.searchEpisodes(keyword);
-      return SearchResult(podcasts: podcasts, episodes: episodes);
-    } catch (e) {
-      throw Exception('Failed to search local content: $e');
-    }
+    final podcasts = await _repository.searchPodcasts(keyword);
+    final episodes = await _repository.searchEpisodes(keyword);
+    return SearchResult(podcasts: podcasts, episodes: episodes);
   }
 }

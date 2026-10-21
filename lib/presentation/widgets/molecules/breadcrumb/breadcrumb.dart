@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'breadcrumb_item.dart';
+import 'package:tinycast/presentation/widgets/molecules/breadcrumb/breadcrumb_item.dart';
 
 class Breadcrumb extends StatelessWidget {
   final List<BreadcrumbItem> items;

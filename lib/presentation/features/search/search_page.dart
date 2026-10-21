@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'search_provider.dart';
-import 'search_input.dart';
-import 'search_history/search_history_list.dart';
-import 'search_results/search_results_list.dart';
-import 'search_results/search_results_empty/search_results_empty.dart';
-import 'search_toolbar/search_toolbar.dart';
+import 'package:tinycast/presentation/features/search/search_provider.dart';
+import 'package:tinycast/presentation/features/search/search_input.dart';
+import 'package:tinycast/presentation/features/search/search_history/search_history_list.dart';
+import 'package:tinycast/presentation/features/search/search_results/search_results_list.dart';
+import 'package:tinycast/presentation/features/search/search_results/search_results_empty/search_results_empty.dart';
+import 'package:tinycast/presentation/features/search/search_toolbar/search_toolbar.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   final VoidCallback? onClose;

@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/repositories/queue_repository.dart';
-import '../../domain/usecases/get_queue_usecase.dart';
-import '../../domain/usecases/add_to_queue_usecase.dart';
-import '../../core/utils/logger.dart';
-import '../../domain/usecases/remove_from_queue_usecase.dart';
-import '../../domain/usecases/remove_from_queue_by_episode_id_usecase.dart';
-import '../../domain/usecases/clear_queue_usecase.dart';
-import '../../domain/usecases/insert_to_queue_front_usecase.dart';
-import '../../data/repositories/queue_repository_impl.dart';
-import 'podcast_provider.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/queue_repository.dart';
+import 'package:tinycast/domain/usecases/get_queue_usecase.dart';
+import 'package:tinycast/domain/usecases/add_to_queue_usecase.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/domain/usecases/remove_from_queue_usecase.dart';
+import 'package:tinycast/domain/usecases/remove_from_queue_by_episode_id_usecase.dart';
+import 'package:tinycast/domain/usecases/clear_queue_usecase.dart';
+import 'package:tinycast/domain/usecases/insert_to_queue_front_usecase.dart';
+import 'package:tinycast/data/repositories/queue_repository_impl.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 final queueRepositoryProvider = Provider<QueueRepository>((ref) {
   return QueueRepositoryImpl();

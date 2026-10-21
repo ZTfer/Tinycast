@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'navbar_button.dart';
-import 'navbar_large_title.dart';
+import 'package:tinycast/presentation/widgets/organisms/navbar/navbar_button.dart';
+import 'package:tinycast/presentation/widgets/organisms/navbar/navbar_large_title.dart';
 
 class Navbar extends StatelessWidget {
   final String title;

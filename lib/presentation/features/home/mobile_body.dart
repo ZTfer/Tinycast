@@ -31,6 +31,11 @@ class MobileBody extends ConsumerWidget {
           child: Navbar(
             title: _getPageTitle(navigationState.currentPage),
             actionIcon: _getActionIcon(navigationState.currentPage),
+            onActionTap: navigationState.currentPage == AppRoutes.library
+                ? () => ref
+                      .read(navigationProvider.notifier)
+                      .navigateToPage(AppRoutes.subscribe)
+                : null,
           ),
         ),
         Expanded(child: _buildContent(navigationState, ref)),

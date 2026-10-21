@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'login_button.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/login_button.dart';
 
 class GoogleLoginButton extends StatelessWidget {
   final VoidCallback onPressed;

@@ -1,13 +1,33 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/data/models/episode_model.dart';
 import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/services/settings_service.dart';
 import 'package:tinycast/core/services/play_progress_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
+
+/// 计算媒体通知快进/回退的目标位置，并限制在 [0, duration] 内。
+@visibleForTesting
+Duration resolveSkipTarget({
+  required Duration position,
+  required Duration? duration,
+  required Duration offset,
+}) {
+  var target = position + offset;
+  if (target < Duration.zero) {
+    target = Duration.zero;
+  }
+  if (duration != null && duration > Duration.zero && target > duration) {
+    target = duration;
+  }
+  return target;
+}
 
 enum PlaybackState { stopped, playing, paused, buffering }
 
@@ -109,7 +129,11 @@ class AudioPlayerService {
       }
 
       _audioHandler = await AudioService.init(
-        builder: () => _AudioPlayerHandler(_player, _savePlayProgress),
+        builder: () => _AudioPlayerHandler(
+          _player,
+          _savePlayProgress,
+          SettingsService.instance.loadSettings,
+        ),
         config: const AudioServiceConfig(
           androidNotificationChannelId: 'com.tinycast.app.audio',
           androidNotificationChannelName: 'Tinycast Audio Playback',
@@ -625,8 +649,9 @@ class AudioPlayerService {
 class _AudioPlayerHandler extends BaseAudioHandler {
   final AudioPlayer _player;
   final Future<void> Function() _onPauseOrSeek;
+  final Future<AppSettings> Function() _loadSettings;
 
-  _AudioPlayerHandler(this._player, this._onPauseOrSeek) {
+  _AudioPlayerHandler(this._player, this._onPauseOrSeek, this._loadSettings) {
     _player.playbackEventStream.listen(_broadcastState);
   }
 
@@ -643,6 +668,28 @@ class _AudioPlayerHandler extends BaseAudioHandler {
   Future<void> seek(Duration position) async {
     await _player.seek(position);
     await _onPauseOrSeek();
+  }
+
+  @override
+  Future<void> rewind() async {
+    final settings = await _loadSettings();
+    await _seekBy(Duration(seconds: -settings.skipBackwardTime));
+  }
+
+  @override
+  Future<void> fastForward() async {
+    final settings = await _loadSettings();
+    await _seekBy(Duration(seconds: settings.skipForwardTime));
+  }
+
+  Future<void> _seekBy(Duration offset) async {
+    await seek(
+      resolveSkipTarget(
+        position: _player.position,
+        duration: _player.duration,
+        offset: offset,
+      ),
+    );
   }
 
   @override

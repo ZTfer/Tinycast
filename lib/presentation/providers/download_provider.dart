@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/utils/logger.dart';
-import '../../data/services/audio_download_service.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
 
 class DownloadState {
   final Map<String, DownloadStatus> episodeStatuses;

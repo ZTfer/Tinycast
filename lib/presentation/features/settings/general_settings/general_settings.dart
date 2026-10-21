@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
@@ -22,7 +23,7 @@ class GeneralSettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
-                "下载:",
+                '下载:',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: Color(0xD9000000),
@@ -39,7 +40,7 @@ class GeneralSettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
-                "自动下载:",
+                '自动下载:',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: Color(0xD9000000),
@@ -56,7 +57,7 @@ class GeneralSettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
-                "刷新:",
+                '刷新:',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: Color(0xD9000000),
@@ -68,39 +69,40 @@ class GeneralSettings extends StatelessWidget {
             FeedRefreshSettings(),
           ],
         ),
-        TableRow(
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(right: 8.0, top: 8.0),
-              child: Text(
-                "开发者:",
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  color: Color(0xD9000000),
-                  fontSize: 14,
-                  height: 16 / 14,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: GestureDetector(
-                onTap: () {
-                  AppRouter.navigateTo(context, AppRoutes.databaseCleanup);
-                },
-                child: const Text(
-                  "数据库清理工具",
+        if (kDebugMode)
+          TableRow(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(right: 8.0, top: 8.0),
+                child: Text(
+                  '开发者:',
+                  textAlign: TextAlign.right,
                   style: TextStyle(
-                    color: Color(0xFF0000EE),
+                    color: Color(0xD9000000),
                     fontSize: 14,
                     height: 16 / 14,
-                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    AppRouter.navigateTo(context, AppRoutes.databaseCleanup);
+                  },
+                  child: const Text(
+                    '数据库清理工具',
+                    style: TextStyle(
+                      color: Color(0xFF0000EE),
+                      fontSize: 14,
+                      height: 16 / 14,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }

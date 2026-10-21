@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/usecases/get_unplayed_episodes_usecase.dart';
-import '../../domain/repositories/play_history_repository.dart';
-import '../../data/repositories/play_history_repository_impl.dart';
-import '../../core/services/feed_refresh_scheduler.dart';
-import 'podcast_provider.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/usecases/get_unplayed_episodes_usecase.dart';
+import 'package:tinycast/domain/repositories/play_history_repository.dart';
+import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
+import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 enum UnplayedEpisodesStatus { initial, loading, success, error }
 

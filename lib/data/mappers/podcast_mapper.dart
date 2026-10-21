@@ -1,5 +1,5 @@
-import '../../domain/entities/podcast.dart';
-import '../models/podcast_model.dart' as model;
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/data/models/podcast_model.dart' as model;
 
 /// Podcast 实体与模型之间的映射器
 class PodcastMapper {

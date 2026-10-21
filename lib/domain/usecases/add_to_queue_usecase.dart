@@ -1,5 +1,5 @@
-import '../entities/episode.dart';
-import '../repositories/queue_repository.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/queue_repository.dart';
 
 class AddToQueueUseCase {
   final QueueRepository _repository;

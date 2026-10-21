@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
-import '../database/isar_service.dart';
-import '../models/episode_model.dart';
-import '../models/podcast_model.dart';
-import 'file_storage_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:isar_community/isar.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/episode_model.dart';
+import 'package:tinycast/data/models/podcast_model.dart';
+import 'package:tinycast/data/services/file_storage_service.dart';
 
 class ImageCacheService {
   ImageCacheService._();
@@ -119,6 +121,38 @@ class ImageCacheService {
     }
   }
 
+  /// 只更新数据库中的 artworkPath 字段。
+  ///
+  /// 调用方可能持有过期的实体快照，直接 `put(episode)` 会用旧字段覆盖
+  /// 数据库中较新的标题、播放进度等数据，因此这里始终先读取最新记录。
+  @visibleForTesting
+  static Future<void> persistEpisodeArtworkPath(
+    Isar isar,
+    int episodeId,
+    String artworkPath,
+  ) async {
+    await isar.writeTxn(() async {
+      final stored = await isar.episodes.get(episodeId);
+      if (stored == null) return;
+      stored.artworkPath = artworkPath;
+      await isar.episodes.put(stored);
+    });
+  }
+
+  @visibleForTesting
+  static Future<void> persistPodcastArtworkPath(
+    Isar isar,
+    int podcastId,
+    String artworkPath,
+  ) async {
+    await isar.writeTxn(() async {
+      final stored = await isar.podcasts.get(podcastId);
+      if (stored == null) return;
+      stored.artworkPath = artworkPath;
+      await isar.podcasts.put(stored);
+    });
+  }
+
   Future<File?> downloadAndSaveEpisodeArtwork(Episode episode) async {
     try {
       Logger.info('🎬 [ImageCache] ===== 开始 Episode 封面图下载流程 =====');
@@ -184,12 +218,15 @@ class ImageCacheService {
 
       Logger.info('💾 [ImageCache] 更新数据库记录...');
       try {
-        await _isarService.isar.writeTxn(() async {
-          episode.artworkPath = 'images/$fileName';
-          await _isarService.isar.episodes.put(episode);
-        });
+        final artworkPath = 'images/$fileName';
+        await persistEpisodeArtworkPath(
+          _isarService.isar,
+          episode.id,
+          artworkPath,
+        );
+        episode.artworkPath = artworkPath;
         Logger.info('✅ [ImageCache] 数据库更新成功');
-        Logger.info('   🔖 新的 artworkPath: images/$fileName');
+        Logger.info('   🔖 新的 artworkPath: $artworkPath');
       } catch (dbError) {
         Logger.error('❌ [ImageCache] 数据库更新失败（但文件已保存）: $dbError');
       }
@@ -287,12 +324,15 @@ class ImageCacheService {
 
       Logger.info('💾 [ImageCache] 更新数据库记录...');
       try {
-        await _isarService.isar.writeTxn(() async {
-          podcast.artworkPath = 'images/$fileName';
-          await _isarService.isar.podcasts.put(podcast);
-        });
+        final artworkPath = 'images/$fileName';
+        await persistPodcastArtworkPath(
+          _isarService.isar,
+          podcast.id,
+          artworkPath,
+        );
+        podcast.artworkPath = artworkPath;
         Logger.info('✅ [ImageCache] 数据库更新成功');
-        Logger.info('   🔖 新的 artworkPath: images/$fileName');
+        Logger.info('   🔖 新的 artworkPath: $artworkPath');
       } catch (dbError) {
         Logger.error('❌ [ImageCache] 数据库更新失败（但文件已保存）: $dbError');
       }

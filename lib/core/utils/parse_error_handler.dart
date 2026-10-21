@@ -1,6 +1,6 @@
 import 'package:xml/xml.dart';
-import 'app_exception.dart';
-import 'logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// 解析错误处理工具类
 class ParseErrorHandler {

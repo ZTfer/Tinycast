@@ -1,6 +1,6 @@
 import 'dart:async';
-import '../entities/podcast.dart';
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class SubscribePodcastResult {
   final Podcast podcast;
@@ -24,17 +24,13 @@ class SubscribePodcastUseCase {
       throw ArgumentError('Invalid RSS URL format');
     }
 
-    try {
-      final podcast = await _repository.subscribe(normalizedUrl);
-      final itunesFuture = _repository.getITunesSearchFuture(podcast.id);
+    final podcast = await _repository.subscribe(normalizedUrl);
+    final itunesFuture = _repository.getITunesSearchFuture(podcast.id);
 
-      return SubscribePodcastResult(
-        podcast: podcast,
-        itunesSearchFuture: itunesFuture,
-      );
-    } catch (e) {
-      throw Exception('Failed to subscribe to podcast: $e');
-    }
+    return SubscribePodcastResult(
+      podcast: podcast,
+      itunesSearchFuture: itunesFuture,
+    );
   }
 
   String _normalizeUrl(String url) {

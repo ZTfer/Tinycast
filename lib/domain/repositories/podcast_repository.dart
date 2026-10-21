@@ -1,6 +1,6 @@
-import '../entities/podcast.dart';
-import '../entities/episode.dart';
-import '../entities/feed_refresh_result.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/feed_refresh_result.dart';
 import 'dart:async';
 
 abstract class PodcastRepository {

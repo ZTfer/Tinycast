@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'app_colors.dart';
+import 'package:tinycast/core/theme/app_colors.dart';
 
 class AppTextStyles {
   AppTextStyles._();

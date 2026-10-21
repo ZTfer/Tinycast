@@ -6,7 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tinycast/core/providers/auth_provider.dart';
 import 'package:tinycast/core/providers/sync_provider.dart';
+import 'package:tinycast/core/services/local_account_data_service.dart';
 import 'package:tinycast/core/services/sync_service.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/podcast_model.dart' as podcast_model;
+
+import '../../helpers/isar_test_env.dart';
 
 /// 手写 fake：只实现 SyncNotifier 依赖的成员，其余调用 fail fast。
 class _FakeSyncService implements SyncService {
@@ -37,7 +42,21 @@ class _FakeSyncService implements SyncService {
       super.noSuchMethod(invocation);
 }
 
+/// 账号预处理被阻塞，用于验证容器销毁后不再触碰已释放的 Ref。
+class _GateAccountService extends LocalAccountDataService {
+  _GateAccountService(this.gate);
+
+  final Future<bool> gate;
+
+  @override
+  Future<bool> prepareForUser(String userId) => gate;
+}
+
 void main() {
+  setUpAll(() async {
+    await initializeIsarCoreForTests();
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
@@ -316,8 +335,10 @@ void main() {
 
       // 登录：监听回调应立即触发一次同步。
       authController.add(testUser);
-      await container.pump();
-      await container.pump();
+      for (var i = 0; i < 20 && fake.syncCallCount == 0; i++) {
+        await container.pump();
+        await Future<void>.delayed(Duration.zero);
+      }
 
       expect(fake.syncCallCount, equals(1));
       expect(
@@ -361,6 +382,110 @@ void main() {
       final state = container.read(syncProvider);
       expect(state.lastSyncTime, isNull);
       expect(state.status, equals(SyncStatus.idle));
+    });
+
+    test('切换到不同账号时应清空旧账号本地数据后再同步', () async {
+      final env = await IsarTestEnv.open();
+      addTearDown(env.close);
+      final accountService = LocalAccountDataService(
+        isarService: IsarService.forTesting(env.isar),
+      );
+      await accountService.setLastUserId('user-a');
+
+      final userA = buildTestUser('user-a');
+      final userB = buildTestUser('user-b');
+      final authController = StreamController<User?>.broadcast();
+      addTearDown(authController.close);
+
+      final fake = _FakeSyncService(canSyncResult: true);
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          localAccountDataServiceProvider.overrideWithValue(accountService),
+          authStateProvider.overrideWith((ref) => authController.stream),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final stateSubscription = container.listen(syncProvider, (_, _) {});
+      addTearDown(stateSubscription.close);
+      await container.pump();
+
+      authController.add(userA);
+      await container.pump();
+      await container.pump();
+      fake.syncGate.complete();
+      await container.pump();
+      await container.pump();
+
+      final now = DateTime.now();
+      await env.isar.writeTxn(() async {
+        await env.isar.podcasts.put(
+          podcast_model.Podcast()
+            ..id = 1
+            ..title = '旧账号播客'
+            ..author = '作者'
+            ..description = '描述'
+            ..artworkUrl = 'https://example.com/art.jpg'
+            ..rssUrl = 'https://example.com/feed.xml'
+            ..isExplicit = false
+            ..lastUpdated = now
+            ..episodeCount = 0
+            ..isSubscribed = true,
+        );
+      });
+      expect(await env.isar.podcasts.count(), equals(1));
+
+      authController.add(userB);
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
+      while (DateTime.now().isBefore(deadline)) {
+        await container.pump();
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+        if (fake.syncCallCount >= 2 && await env.isar.podcasts.count() == 0) {
+          break;
+        }
+      }
+
+      expect(fake.syncCallCount, equals(2));
+      expect(await env.isar.podcasts.count(), equals(0));
+      expect(await accountService.getLastUserId(), equals('user-b'));
+    });
+
+    test('容器在账号预处理期间销毁后不应再使用已释放的 Ref', () async {
+      final errors = <Object>[];
+      final gate = Completer<bool>();
+
+      await runZonedGuarded(
+        () async {
+          final authController = StreamController<User?>.broadcast();
+          final fake = _FakeSyncService(canSyncResult: true);
+          final container = ProviderContainer(
+            overrides: [
+              syncServiceProvider.overrideWithValue(fake),
+              localAccountDataServiceProvider.overrideWithValue(
+                _GateAccountService(gate.future),
+              ),
+              authStateProvider.overrideWith((ref) => authController.stream),
+            ],
+          );
+
+          final subscription = container.listen(syncProvider, (_, _) {});
+          await container.pump();
+
+          authController.add(buildTestUser('user-a'));
+          await container.pump();
+          await container.pump();
+
+          subscription.close();
+          container.dispose();
+          gate.complete(true);
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await authController.close();
+        },
+        (error, stackTrace) => errors.add(error),
+      );
+
+      expect(errors, isEmpty, reason: 'provider 销毁后仍访问 Ref 会产生未捕获异常');
     });
   });
 }

@@ -17,7 +17,7 @@ import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
-import 'show_info.dart';
+import 'package:tinycast/presentation/features/library/podcast_detail/show_info.dart';
 
 class EpisodesList extends ConsumerWidget {
   final Podcast? podcast;
@@ -151,8 +151,9 @@ class _ShowInfoWithDownloadStatusState
       Logger.info('✅ [UNFOLLOW] 播客列表重新加载完成');
 
       if (!mounted) return;
-      Navigator.of(context).pop();
+      // 先弹 Toast 再关闭页面：pop 后本页 context 失活，Overlay.maybeOf 不再可用。
       ToastUtils.showSuccessToast(context, message: '已取消关注');
+      Navigator.of(context).pop();
       Logger.info('✅ [UNFOLLOW] 取消关注流程全部完成');
     } catch (e, stackTrace) {
       Logger.error('❌ [UNFOLLOW] 取消关注失败', error: e, stackTrace: stackTrace);

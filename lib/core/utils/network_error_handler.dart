@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
-import 'app_exception.dart';
-import 'logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// 网络错误处理工具类
 class NetworkErrorHandler {

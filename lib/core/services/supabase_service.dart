@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tinycast/core/services/secure_local_storage.dart';
 
 /// Supabase 客户端服务
 ///
@@ -23,9 +24,16 @@ class SupabaseService {
       return;
     }
 
+    final projectRef = Uri.parse(supabaseUrl).host.split('.').first;
+
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
+      authOptions: FlutterAuthClientOptions(
+        localStorage: SecureLocalStorage(
+          persistSessionKey: 'sb-$projectRef-auth-token',
+        ),
+      ),
     );
 
     _isInitialized = true;

@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
-import 'episode_info.dart';
-import 'show_info.dart';
-import 'episode_description.dart';
+import 'package:tinycast/presentation/features/episode_detail/episode_info.dart';
+import 'package:tinycast/presentation/features/episode_detail/show_info.dart';
+import 'package:tinycast/presentation/features/episode_detail/episode_description.dart';
 
 class EpisodeDetail extends StatelessWidget {
   final Episode? episode;
@@ -13,9 +14,12 @@ class EpisodeDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0),
-      color: const Color(0xFFFFFFFF),
+      color: theme.backgroundPrimary,
       child: ListView(
         children: [
           EpisodeInfo(episode: episode),

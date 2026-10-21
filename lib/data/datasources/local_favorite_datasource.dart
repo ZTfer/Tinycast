@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
-import '../../core/services/sync_delete_recorder.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../domain/entities/episode.dart';
-import '../database/isar_service.dart';
-import '../models/favorite_model.dart';
+import 'package:tinycast/core/services/sync_delete_recorder.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/favorite_model.dart';
 
 class LocalFavoriteDataSource {
   final IsarService _isarService;

@@ -1,19 +1,37 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'dart:math';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/storage_error_handler.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/storage_error_handler.dart';
 
 class FileStorageService {
-  FileStorageService._();
+  FileStorageService._({
+    Future<Directory> Function()? supportDirectoryResolver,
+    Future<Directory> Function()? temporaryDirectoryResolver,
+  }) : _supportDirectoryResolver = supportDirectoryResolver,
+       _temporaryDirectoryResolver = temporaryDirectoryResolver;
+
+  /// 测试注入入口：目录解析器可指向临时目录，默认走 path_provider。
+  @visibleForTesting
+  FileStorageService.forTesting({
+    Future<Directory> Function()? supportDirectoryResolver,
+    Future<Directory> Function()? temporaryDirectoryResolver,
+  }) : this._(
+         supportDirectoryResolver: supportDirectoryResolver,
+         temporaryDirectoryResolver: temporaryDirectoryResolver,
+       );
 
   static final FileStorageService _instance = FileStorageService._();
 
   static FileStorageService get instance => _instance;
+
+  final Future<Directory> Function()? _supportDirectoryResolver;
+  final Future<Directory> Function()? _temporaryDirectoryResolver;
 
   Directory? _cachedTempDir;
   Directory? _cachedSupportDir;
@@ -54,7 +72,9 @@ class FileStorageService {
   Future<Directory> getTemporaryDirectory() async {
     if (_cachedTempDir != null) return _cachedTempDir!;
     try {
-      final dir = await pp.getTemporaryDirectory();
+      final dir =
+          await (_temporaryDirectoryResolver?.call() ??
+              pp.getTemporaryDirectory());
       _cachedTempDir = dir;
       Logger.debug('📁 [DEBUG] Temporary Directory: ${dir.path}');
       return dir;
@@ -75,7 +95,9 @@ class FileStorageService {
   Future<Directory> getApplicationSupportDirectory() async {
     if (_cachedSupportDir != null) return _cachedSupportDir!;
     try {
-      final dir = await pp.getApplicationSupportDirectory();
+      final dir =
+          await (_supportDirectoryResolver?.call() ??
+              pp.getApplicationSupportDirectory());
       _cachedSupportDir = dir;
       Logger.debug('📁 [DEBUG] Application Support Directory: ${dir.path}');
       return dir;
@@ -277,12 +299,23 @@ class FileStorageService {
     return p.joinAll(parts);
   }
 
+  /// 由 episode ID 派生的稳定 UUID 形状文件名。
+  ///
+  /// 名称必须稳定：暂停恢复、失败重试和「文件已存在」检查都依赖同一路径，
+  /// 每次调用随机生成会留下无法回收的临时分片。
   String generateAudioFileName(String episodeId) {
-    final uuid = _generateUUID();
-    Logger.debug(
-      '🆔 [DEBUG] Generated UUID filename for episode $episodeId: $uuid.mp3',
-    );
-    return '$uuid.mp3';
+    final digest = sha256
+        .convert(utf8.encode('tinycast:audio:$episodeId'))
+        .toString();
+    final version = '4${digest.substring(13, 16)}';
+    final variantValue = (int.parse(digest[16], radix: 16) & 0x3) | 0x8;
+    final variant =
+        '${variantValue.toRadixString(16)}${digest.substring(17, 20)}';
+    final fileName =
+        '${digest.substring(0, 8)}-${digest.substring(8, 12)}-'
+        '$version-$variant-${digest.substring(20, 32)}.mp3';
+    Logger.debug('🆔 [DEBUG] Audio filename for episode $episodeId: $fileName');
+    return fileName;
   }
 
   String generateArtworkFileName() {

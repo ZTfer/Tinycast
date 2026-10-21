@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/app_constants.dart';
-import '../../core/utils/html_rss_extractor.dart';
-import '../../core/utils/itunes_info_dto.dart';
-import '../services/rss_parser_service.dart';
-import '../services/itunes_search_service.dart';
-import 'local_podcast_datasource.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/app_constants.dart';
+import 'package:tinycast/core/utils/html_rss_extractor.dart';
+import 'package:tinycast/core/utils/itunes_info_dto.dart';
+import 'package:tinycast/data/services/rss_parser_service.dart';
+import 'package:tinycast/data/services/itunes_search_service.dart';
+import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
 
 class RemotePodcastDataSource {
   final RssParserService _rssParserService;
@@ -217,7 +217,9 @@ class RemotePodcastDataSource {
   /// 1. feedUrl 完全相同
   /// 2. websiteUrl 域名相同
   /// 3. 标题完全相同
-  /// 4. 返回第一个结果作为兜底
+  ///
+  /// 不返回「第一个结果」作兜底：关键词搜索的首条结果常是同名或相关播客，
+  /// 直接采用会把错误的 iTunes ID 写进数据库，后续同步与元数据都会错位。
   ITunesSearchResult? _findBestMatch(
     List<ITunesSearchResult> results,
     String rssUrl,
@@ -247,19 +249,13 @@ class RemotePodcastDataSource {
       }
     }
 
-    // 匹配标题
+    // 标题匹配
     for (final result in results) {
       if (result.collectionName.toLowerCase() ==
           podcastTitle.toLowerCase()) {
         Logger.info('通过标题匹配到播客: ${result.collectionName}');
         return result;
       }
-    }
-
-    // 兜底：返回第一个结果
-    if (results.isNotEmpty && results.first.collectionId != null) {
-      Logger.info('使用第一个搜索结果: ${results.first.collectionName}');
-      return results.first;
     }
 
     return null;

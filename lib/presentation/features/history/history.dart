@@ -34,30 +34,52 @@ class History extends ConsumerWidget {
   }
 }
 
-class _HistoryItem extends ConsumerWidget {
+class _HistoryItem extends ConsumerStatefulWidget {
   final PlayHistory history;
   final bool showDivider;
 
   const _HistoryItem({required this.history, required this.showDivider});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_HistoryItem> createState() => _HistoryItemState();
+}
+
+class _HistoryItemState extends ConsumerState<_HistoryItem> {
+  late Future<Episode?> _episodeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _episodeFuture = _loadEpisode();
+  }
+
+  @override
+  void didUpdateWidget(_HistoryItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.history.episodeId != widget.history.episodeId ||
+        oldWidget.history.lastUpdateTime != widget.history.lastUpdateTime) {
+      _episodeFuture = _loadEpisode();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<Episode?>(
-      future: _loadEpisode(),
+      future: _episodeFuture,
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
           final episode = snapshot.data!;
           return EpisodeItem(
             episode: episode,
-            showDivider: showDivider,
-            onPlayPressed: () => _onPlayPressed(ref, episode),
-            onEpisodeTap: () => _onPlayPressed(ref, episode),
+            showDivider: widget.showDivider,
+            onPlayPressed: () => _onPlayPressed(episode),
+            onEpisodeTap: () => _onPlayPressed(episode),
           );
         }
 
         return EpisodeItem(
           episode: _convertToEpisodeFromHistory(),
-          showDivider: showDivider,
+          showDivider: widget.showDivider,
           onPlayPressed: () {},
           onEpisodeTap: () {},
         );
@@ -68,11 +90,11 @@ class _HistoryItem extends ConsumerWidget {
   Future<Episode?> _loadEpisode() async {
     try {
       final isar = IsarService.instance.isar;
-      final episodeModel = await isar.episodes.get(history.episodeId);
+      final episodeModel = await isar.episodes.get(widget.history.episodeId);
 
       if (episodeModel == null) {
         Logger.warning(
-          '⚠️ [History] Episode ${history.episodeId} not found in database, using cached data',
+          '⚠️ [History] Episode ${widget.history.episodeId} not found in database, using cached data',
         );
         return null;
       }
@@ -110,30 +132,30 @@ class _HistoryItem extends ConsumerWidget {
   }
 
   Episode _convertToEpisodeFromHistory() {
-    final rawDescription = history.description ?? '';
+    final rawDescription = widget.history.description ?? '';
     final processedDescription = rawDescription.isNotEmpty
         ? HtmlTagRemoveUtils.getListItemSummary(rawDescription)
         : '';
 
     return Episode(
-      id: history.episodeId,
-      podcastId: history.podcastId,
-      title: history.title,
+      id: widget.history.episodeId,
+      podcastId: widget.history.podcastId,
+      title: widget.history.title,
       description: processedDescription,
       audioUrl: '',
-      duration: (history.playedDuration / 1000).round(),
-      artworkUrl: history.artworkUrl,
-      pubDate: history.lastUpdateTime,
-      isPlayed: history.isPlayed,
+      duration: (widget.history.playedDuration / 1000).round(),
+      artworkUrl: widget.history.artworkUrl,
+      pubDate: widget.history.lastUpdateTime,
+      isPlayed: widget.history.isPlayed,
       isFavorite: false,
-      createdAt: history.createdAt,
-      updatedAt: history.lastUpdateTime,
-      itunesId: history.episodeITunesId,
-      podcastITunesId: history.podcastITunesId,
+      createdAt: widget.history.createdAt,
+      updatedAt: widget.history.lastUpdateTime,
+      itunesId: widget.history.episodeITunesId,
+      podcastITunesId: widget.history.podcastITunesId,
     );
   }
 
-  Future<void> _onPlayPressed(WidgetRef ref, Episode episode) async {
+  Future<void> _onPlayPressed(Episode episode) async {
     try {
       Logger.info('▶️ [History] Playing episode: ${episode.title}');
 

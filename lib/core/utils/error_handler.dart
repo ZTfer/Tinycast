@@ -1,10 +1,10 @@
 import 'dart:async';
 // import 'package:flutter/foundation.dart';
 /// 应用异常类导入
-import 'app_exception.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
 
 /// 日志工具类导入
-import 'logger.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// 错误处理类
 class ErrorHandler {

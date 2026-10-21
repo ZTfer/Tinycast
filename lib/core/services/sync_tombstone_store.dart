@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -16,9 +17,17 @@ import 'package:tinycast/core/utils/logger.dart';
 /// switches on the same device cannot leak pending deletes or push
 /// snapshots across users.
 class SyncTombstoneStore {
-  SyncTombstoneStore._();
+  SyncTombstoneStore._() : _userIdResolver = null;
+
+  /// Injects a user-id resolver so tests can exercise scoped storage without
+  /// initializing the global Supabase client.
+  @visibleForTesting
+  SyncTombstoneStore.forTesting({String? Function()? userIdResolver})
+    : _userIdResolver = userIdResolver;
 
   static final SyncTombstoneStore instance = SyncTombstoneStore._();
+
+  final String? Function()? _userIdResolver;
 
   static const String _subscriptionKey = 'sync_tombstone_subscriptions';
   static const String _favoriteKey = 'sync_tombstone_favorites';
@@ -37,6 +46,8 @@ class SyncTombstoneStore {
   Future<void> _writeChain = Future.value();
 
   String? get _userId {
+    final resolver = _userIdResolver;
+    if (resolver != null) return resolver();
     if (!SupabaseService().isInitialized) return null;
     return SupabaseService().client.auth.currentUser?.id;
   }

@@ -1,5 +1,5 @@
-import '../entities/queue_item.dart';
-import '../entities/episode.dart';
+import 'package:tinycast/domain/entities/queue_item.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 
 abstract class QueueRepository {
   Future<List<QueueItem>> getAll();

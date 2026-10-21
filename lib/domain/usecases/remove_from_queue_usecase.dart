@@ -1,4 +1,4 @@
-import '../repositories/queue_repository.dart';
+import 'package:tinycast/domain/repositories/queue_repository.dart';
 
 class RemoveFromQueueUseCase {
   final QueueRepository _repository;

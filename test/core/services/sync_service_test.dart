@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tinycast/core/services/sync_mappers.dart';
 import 'package:tinycast/core/services/sync_service.dart';
+import 'package:tinycast/core/services/sync_tombstone_store.dart';
 import 'package:tinycast/data/datasources/remote_sync_datasource.dart';
 import 'package:tinycast/data/models/podcast_model.dart';
 import 'package:tinycast/data/models/episode_model.dart';
@@ -43,7 +45,7 @@ void main() {
       });
 
       test('SS-010: 有上次同步时间时应该返回正确时间', () async {
-        final testTime = DateTime(2025, 1, 15, 10, 30, 0);
+        final testTime = DateTime.utc(2025, 1, 15, 10, 30, 0);
         SharedPreferences.setMockInitialValues({
           'last_sync_timestamp_$testUserId': testTime.toIso8601String(),
         });
@@ -53,7 +55,8 @@ void main() {
         final result = await syncService.getLastSyncTime();
 
         expect(result, isNotNull);
-        expect(result!.year, equals(2025));
+        expect(result!.isUtc, isTrue);
+        expect(result.year, equals(2025));
         expect(result.month, equals(1));
         expect(result.day, equals(15));
         expect(result.hour, equals(10));
@@ -65,7 +68,7 @@ void main() {
 
         final syncService = buildService();
 
-        final testTime = DateTime(2025, 3, 20, 14, 0, 0);
+        final testTime = DateTime.utc(2025, 3, 20, 14, 0, 0);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
           'last_sync_timestamp_$testUserId',
@@ -75,7 +78,8 @@ void main() {
         final result = await syncService.getLastSyncTime();
 
         expect(result, isNotNull);
-        expect(result!.year, equals(2025));
+        expect(result!.isUtc, isTrue);
+        expect(result.year, equals(2025));
         expect(result.month, equals(3));
         expect(result.day, equals(20));
       });
@@ -384,6 +388,63 @@ void main() {
       });
     });
 
+    group('云端时间戳（UTC）', () {
+      test('SS-013: 推送映射的时间戳必须是带 Z 的 UTC ISO-8601', () {
+        final localTime = DateTime(2025, 1, 15, 12, 30);
+        final podcast = Podcast()
+          ..title = 'P'
+          ..author = 'A'
+          ..description = 'D'
+          ..rssUrl = 'https://example.com/rss.xml'
+          ..isExplicit = false
+          ..lastUpdated = localTime
+          ..episodeCount = 0
+          ..isSubscribed = false;
+        final episode = Episode()
+          ..podcastId = 1
+          ..title = 'E'
+          ..description = 'D'
+          ..audioUrl = 'https://example.com/audio.mp3'
+          ..audioType = 'audio/mpeg'
+          ..isExplicit = false
+          ..isPlayed = false
+          ..isDownloaded = false
+          ..downloadProgress = 0
+          ..playProgress = 0
+          ..pubDate = localTime
+          ..updatedAt = localTime
+          ..itunesReleaseDate = localTime;
+        final history = PlayHistory()
+          ..episodeId = 1
+          ..podcastId = 1
+          ..title = 'H'
+          ..lastUpdateTime = localTime;
+        final queue = Queue()
+          ..episodeId = 1
+          ..position = 0;
+
+        final podcastMap = podcastToCloudMap(podcast);
+        final episodeMap = episodeToCloudMap(episode);
+        final historyMap = playHistoryToCloudMap(history);
+        final queueMap = queueItemToCloudMap(queue);
+
+        final timestamps = <String?>[
+          podcastMap['last_updated'] as String?,
+          podcastMap['updated_at'] as String?,
+          episodeMap['pub_date'] as String?,
+          episodeMap['updated_at'] as String?,
+          episodeMap['itunes_release_date'] as String?,
+          historyMap['last_update_time'] as String?,
+          queueMap['added_at'] as String?,
+        ];
+
+        for (final timestamp in timestamps) {
+          expect(timestamp, isNotNull);
+          expect(timestamp, endsWith('Z'));
+        }
+      });
+    });
+
     group('PlayHistory 重构逻辑', () {
       test('PH-001: playProgress 应该从 PlayHistory 获取', () {
         final history = PlayHistory();
@@ -578,6 +639,223 @@ void main() {
         expect(progressTables, contains('podcasts'));
         expect(progressTables, contains('push_podcasts'));
         expect(progressTables, contains('completed'));
+      });
+    });
+
+    group('sync() 一致性与游标（真实临时 Isar）', () {
+      const testUserId = 'sync-consistency-user';
+      late IsarTestEnv isarEnv;
+
+      setUpAll(() async {
+        await initializeIsarCoreForTests();
+      });
+
+      setUp(() async {
+        isarEnv = await IsarTestEnv.open();
+        SharedPreferences.setMockInitialValues({});
+      });
+
+      tearDown(() async {
+        await isarEnv.close();
+      });
+
+      SyncService buildService({
+        SyncTombstoneStore Function()? tombstoneStoreResolver,
+      }) => SyncService(
+        remoteDataSource: mockRemoteDataSource,
+        userIdResolver: () => testUserId,
+        supabaseClientResolver: () => null,
+        isarResolver: () => isarEnv.isar,
+        tombstoneStoreResolver: tombstoneStoreResolver,
+      );
+
+      String cursorKey() => 'last_sync_timestamp_$testUserId';
+
+      Future<void> seedPodcast({
+        String title = 'Local Podcast',
+        String rssUrl = 'https://example.com/consistency.xml',
+        String itunesId = '9001',
+        String? supabaseId,
+        bool isSubscribed = true,
+        DateTime? lastUpdated,
+      }) async {
+        final podcast = Podcast()
+          ..title = title
+          ..author = 'Author'
+          ..description = 'Description'
+          ..artworkUrl = ''
+          ..rssUrl = rssUrl
+          ..isExplicit = false
+          ..lastUpdated = lastUpdated ?? DateTime.utc(2025, 1, 1)
+          ..episodeCount = 0
+          ..isSubscribed = isSubscribed
+          ..subscribedAt = isSubscribed ? DateTime.utc(2025, 1, 1) : null
+          ..itunesId = itunesId
+          ..supabaseId = supabaseId;
+        await isarEnv.isar.writeTxn(() async {
+          await isarEnv.isar.podcasts.put(podcast);
+        });
+      }
+
+      Future<Podcast?> findLocalPodcast(String rssUrl) async {
+        final matches = await isarEnv.isar.podcasts
+            .filter()
+            .rssUrlEqualTo(rssUrl)
+            .findAll();
+        return matches.isEmpty ? null : matches.first;
+      }
+
+      void stubEmptyCloudResponses() {
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchEpisodesUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchUserPodcastSubscriptions())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchPlaybackHistoryUpdatedAfter(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchFavorites())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.fetchQueueItems())
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertPodcasts(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertEpisodes(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertUserPodcastSubscriptions(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertPlaybackHistory(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertFavorites(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(mockRemoteDataSource.upsertQueueItems(any))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+      }
+
+      test('SS-014: 拉取游标应为 UTC 并带重叠窗口', () async {
+        final storedCursor = DateTime.utc(2025, 1, 15, 10, 30);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cursorKey(), storedCursor.toIso8601String());
+        stubEmptyCloudResponses();
+
+        await buildService().sync();
+
+        final captured = verify(
+          mockRemoteDataSource.fetchPodcastsUpdatedAfter(captureAny),
+        ).captured.single as DateTime?;
+        expect(captured, isNotNull);
+        expect(captured!.isUtc, isTrue);
+        expect(captured, storedCursor.subtract(const Duration(minutes: 2)));
+
+        final saved = prefs.getString(cursorKey());
+        expect(saved, isNotNull);
+        expect(saved, endsWith('Z'));
+        expect((await buildService().getLastSyncTime())!.isUtc, isTrue);
+      });
+
+      test('SS-015: 拉取失败时应跳过推送且不推进游标', () async {
+        stubEmptyCloudResponses();
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenThrow(Exception('network down'));
+
+        await buildService().sync();
+
+        verifyNever(mockRemoteDataSource.upsertPodcasts(any));
+        verifyNever(mockRemoteDataSource.fetchEpisodesUpdatedAfter(any));
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(cursorKey()), isNull);
+      });
+
+      test('SS-016: 单条合并失败时不应推进游标', () async {
+        stubEmptyCloudResponses();
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenAnswer((_) async => [
+              {
+                'id': 1,
+                'itunes_id': 'broken',
+                'title': 'Broken Record',
+                'rss_urls': 'not-a-list',
+                'last_updated': DateTime.utc(2025, 1, 2).toIso8601String(),
+                'updated_at': DateTime.utc(2025, 1, 2).toIso8601String(),
+              },
+            ]);
+
+        await buildService().sync();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(cursorKey()), isNull);
+      });
+
+      test('SS-017: 云端订阅为空时应按已推送快照传播退订', () async {
+        await seedPodcast(supabaseId: '42');
+        final store = SyncTombstoneStore.forTesting(
+          userIdResolver: () => testUserId,
+        );
+        await store.saveLastPushedSubscriptionIds({'42'});
+        stubEmptyCloudResponses();
+
+        await buildService(tombstoneStoreResolver: () => store).sync();
+
+        final podcast = await findLocalPodcast(
+          'https://example.com/consistency.xml',
+        );
+        expect(podcast, isNotNull);
+        expect(podcast!.isSubscribed, isFalse);
+        expect(podcast.subscribedAt, isNull);
+      });
+
+      test('SS-018: 合并云端播客时应保留 lastUpdated 语义', () async {
+        final localUpdatedAt = DateTime.utc(2025, 1, 1);
+        final cloudContentUpdatedAt = DateTime.utc(2025, 1, 2);
+        final cloudRowUpdatedAt = DateTime.utc(2025, 1, 3);
+        await seedPodcast(lastUpdated: localUpdatedAt);
+        stubEmptyCloudResponses();
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenAnswer((_) async => [
+              {
+                'id': 7,
+                'itunes_id': '9001',
+                'title': 'Cloud Podcast',
+                'rss_urls': ['https://example.com/consistency.xml'],
+                'last_updated': cloudContentUpdatedAt.toIso8601String(),
+                'updated_at': cloudRowUpdatedAt.toIso8601String(),
+              },
+            ]);
+
+        await buildService().sync();
+
+        final podcast = await findLocalPodcast(
+          'https://example.com/consistency.xml',
+        );
+        expect(podcast, isNotNull);
+        expect(podcast!.title, 'Cloud Podcast');
+        expect(podcast.lastUpdated.toUtc(), cloudContentUpdatedAt);
+      });
+
+      test('SS-019: 云端内容时间戳更旧时不应覆盖本地播客', () async {
+        final localUpdatedAt = DateTime.utc(2025, 2, 1);
+        await seedPodcast(lastUpdated: localUpdatedAt);
+        stubEmptyCloudResponses();
+        when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
+            .thenAnswer((_) async => [
+              {
+                'id': 8,
+                'itunes_id': '9001',
+                'title': 'Stale Cloud Podcast',
+                'rss_urls': ['https://example.com/consistency.xml'],
+                'last_updated': DateTime.utc(2025, 1, 1).toIso8601String(),
+                'updated_at': DateTime.utc(2025, 3, 1).toIso8601String(),
+              },
+            ]);
+
+        await buildService().sync();
+
+        final podcast = await findLocalPodcast(
+          'https://example.com/consistency.xml',
+        );
+        expect(podcast, isNotNull);
+        expect(podcast!.title, 'Local Podcast');
+        expect(podcast.lastUpdated.toUtc(), localUpdatedAt);
       });
     });
   });

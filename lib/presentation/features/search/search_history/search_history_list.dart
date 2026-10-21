@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../search_provider.dart';
-import 'search_history_item.dart';
+import 'package:tinycast/presentation/features/search/search_provider.dart';
+import 'package:tinycast/presentation/features/search/search_history/search_history_item.dart';
 
 class SearchHistoryList extends ConsumerWidget {
   const SearchHistoryList({super.key});

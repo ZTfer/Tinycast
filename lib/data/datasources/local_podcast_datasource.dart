@@ -1,14 +1,14 @@
 import 'package:isar_community/isar.dart';
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/itunes_info_dto.dart';
-import '../database/isar_service.dart';
-import '../mappers/podcast_mapper.dart';
-import '../mappers/episode_mapper.dart';
-import '../models/podcast_model.dart' as model;
-import '../models/episode_model.dart' as model;
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/itunes_info_dto.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/mappers/podcast_mapper.dart';
+import 'package:tinycast/data/mappers/episode_mapper.dart';
+import 'package:tinycast/data/models/podcast_model.dart' as model;
+import 'package:tinycast/data/models/episode_model.dart' as model;
 
 class LocalPodcastDataSource {
   final IsarService _isarService;
@@ -132,31 +132,34 @@ class LocalPodcastDataSource {
 
       final episodeModels = EpisodeMapper.toModelList(episodes);
 
-      final podcastITunesIdMap = <int, String>{};
       final isar = _isarService.isar;
+      final podcastIds = episodeModels
+          .where(
+            (e) =>
+                e.podcastITunesId == null || e.podcastITunesId!.isEmpty,
+          )
+          .map((e) => e.podcastId)
+          .toSet();
+      final podcastITunesIdMap = <int, String>{};
+      for (final podcastId in podcastIds) {
+        final podcast = await isar.podcasts.get(podcastId);
+        final itunesId = podcast?.itunesId;
+        if (itunesId != null && itunesId.isNotEmpty) {
+          podcastITunesIdMap[podcastId] = itunesId;
+        }
+      }
 
-      await isar.writeTxn(() async {
-        for (final episodeModel in episodeModels) {
-          if (episodeModel.podcastITunesId == null ||
-              episodeModel.podcastITunesId!.isEmpty) {
-            final podcastId = episodeModel.podcastId;
-            String? itunesId = podcastITunesIdMap[podcastId];
-
-            if (itunesId == null) {
-              final podcast = isar.podcasts.getSync(podcastId);
-              if (podcast != null &&
-                  podcast.itunesId != null &&
-                  podcast.itunesId!.isNotEmpty) {
-                itunesId = podcast.itunesId!;
-                podcastITunesIdMap[podcastId] = itunesId;
-              }
-            }
-
-            if (itunesId != null) {
-              episodeModel.podcastITunesId = itunesId;
-            }
+      for (final episodeModel in episodeModels) {
+        if (episodeModel.podcastITunesId == null ||
+            episodeModel.podcastITunesId!.isEmpty) {
+          final itunesId = podcastITunesIdMap[episodeModel.podcastId];
+          if (itunesId != null) {
+            episodeModel.podcastITunesId = itunesId;
           }
         }
+      }
+
+      await isar.writeTxn(() async {
         await isar.episodes.putAll(episodeModels);
       });
 

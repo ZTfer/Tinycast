@@ -1,6 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
+
+/// PostgREST truncates result sets at the server's max-rows (Supabase
+/// defaults to 1000), so list fetches must page explicitly.
+const int syncPageSize = 1000;
+
+/// Fetches every page by repeatedly calling [fetchPage] until a short page
+/// is returned. Callers must pass a stable `order` (unique column) so pages
+/// do not overlap or skip rows.
+@visibleForTesting
+Future<List<Map<String, dynamic>>> fetchAllSyncPages(
+  Future<List<Map<String, dynamic>>> Function(int offset, int limit) fetchPage, {
+  int pageSize = syncPageSize,
+}) async {
+  final all = <Map<String, dynamic>>[];
+  var offset = 0;
+  while (true) {
+    final page = await fetchPage(offset, pageSize);
+    all.addAll(page);
+    if (page.length < pageSize) return all;
+    offset += page.length;
+  }
+}
 
 /// 远程同步数据源，负责与 Supabase 云端表交互。
 ///
@@ -50,14 +73,18 @@ class RemoteSyncDataSource {
     DateTime? since,
   ) async {
     try {
-      var query = _client.from('podcasts').select();
+      return await fetchAllSyncPages((offset, limit) {
+        var query = _client.from('podcasts').select();
 
-      if (since != null) {
-        query = query.gt('updated_at', since.toIso8601String());
-      }
+        if (since != null) {
+          query = query.gt('updated_at', since.toUtc().toIso8601String());
+        }
 
-      final result = await query;
-      return List<Map<String, dynamic>>.from(result);
+        return query
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error(
         'fetchPodcastsUpdatedAfter failed',
@@ -111,14 +138,18 @@ class RemoteSyncDataSource {
     DateTime? since,
   ) async {
     try {
-      var query = _client.from('episodes').select();
+      return await fetchAllSyncPages((offset, limit) {
+        var query = _client.from('episodes').select();
 
-      if (since != null) {
-        query = query.gt('updated_at', since.toIso8601String());
-      }
+        if (since != null) {
+          query = query.gt('updated_at', since.toUtc().toIso8601String());
+        }
 
-      final result = await query;
-      return List<Map<String, dynamic>>.from(result);
+        return query
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error(
         'fetchEpisodesUpdatedAfter failed',
@@ -162,12 +193,15 @@ class RemoteSyncDataSource {
     try {
       _ensureUserId();
 
-      final result = await _client
-          .from('user_podcast_subscriptions')
-          .select()
-          .eq('user_id', _userId!);
-
-      return List<Map<String, dynamic>>.from(result);
+      return await fetchAllSyncPages((offset, limit) {
+        return _client
+            .from('user_podcast_subscriptions')
+            .select()
+            .eq('user_id', _userId!)
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error(
         'fetchUserPodcastSubscriptions failed',
@@ -232,17 +266,24 @@ class RemoteSyncDataSource {
     try {
       _ensureUserId();
 
-      var query = _client
-          .from('playback_history')
-          .select()
-          .eq('user_id', _userId!);
+      return await fetchAllSyncPages((offset, limit) {
+        var query = _client
+            .from('playback_history')
+            .select()
+            .eq('user_id', _userId!);
 
-      if (since != null) {
-        query = query.gt('last_update_time', since.toIso8601String());
-      }
+        if (since != null) {
+          query = query.gt(
+            'last_update_time',
+            since.toUtc().toIso8601String(),
+          );
+        }
 
-      final result = await query;
-      return List<Map<String, dynamic>>.from(result);
+        return query
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error(
         'fetchPlaybackHistoryUpdatedAfter failed',
@@ -301,12 +342,15 @@ class RemoteSyncDataSource {
     try {
       _ensureUserId();
 
-      final result = await _client
-          .from('favorites')
-          .select()
-          .eq('user_id', _userId!);
-
-      return List<Map<String, dynamic>>.from(result);
+      return await fetchAllSyncPages((offset, limit) {
+        return _client
+            .from('favorites')
+            .select()
+            .eq('user_id', _userId!)
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error('fetchFavorites failed', error: e, stackTrace: stackTrace);
       rethrow;
@@ -357,13 +401,15 @@ class RemoteSyncDataSource {
     try {
       _ensureUserId();
 
-      final result = await _client
-          .from('queue_items')
-          .select()
-          .eq('user_id', _userId!)
-          .order('position');
-
-      return List<Map<String, dynamic>>.from(result);
+      return await fetchAllSyncPages((offset, limit) {
+        return _client
+            .from('queue_items')
+            .select()
+            .eq('user_id', _userId!)
+            .order('id')
+            .range(offset, offset + limit - 1)
+            .then((rows) => List<Map<String, dynamic>>.from(rows));
+      });
     } catch (e, stackTrace) {
       Logger.error('fetchQueueItems failed', error: e, stackTrace: stackTrace);
       rethrow;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
 
 class ErrorDialog extends StatelessWidget {
   final AppException exception;

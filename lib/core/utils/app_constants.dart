@@ -8,10 +8,10 @@ class AppConstants {
   AppConstants._();
 
   /// 应用名称
-  static const String appName = "TinyCast";
+  static const String appName = 'TinyCast';
 
   /// 当前应用版本
-  static const String appVersion = "1.0.0";
+  static const String appVersion = '1.0.0';
 
   /// 网络操作的默认超时时间（毫秒）
   static const int defaultTimeout = 30000;
@@ -26,40 +26,40 @@ class AppConstants {
   static const int maxPageSize = 100;
 
   /// 日期格式字符串（例如：2023-12-25）
-  static const String dateFormat = "yyyy-MM-dd";
+  static const String dateFormat = 'yyyy-MM-dd';
 
   /// 日期和时间格式字符串（例如：2023-12-25 14:30:00）
-  static const String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+  static const String dateTimeFormat = 'yyyy-MM-dd HH:mm:ss';
 
   /// 时间格式字符串（例如：14:30:00）
-  static const String timeFormat = "HH:mm:ss";
+  static const String timeFormat = 'HH:mm:ss';
 
   /// 持久化存储键
-  static const String storageKey = "tinycast_storage";
+  static const String storageKey = 'tinycast_storage';
 
   /// 应用设置键
-  static const String settingsKey = "tinycast_settings";
+  static const String settingsKey = 'tinycast_settings';
 
   /// 缓存数据键
-  static const String cacheKey = "tinycast_cache";
+  static const String cacheKey = 'tinycast_cache';
 
   /// 默认下载目录路径
   // Todo：根据平台调整
-  static const String downloadPath = "/downloads";
+  static const String downloadPath = '/downloads';
 
   /// 临时文件目录路径
   // Todo：根据平台调整
-  static const String tempPath = "/temp";
+  static const String tempPath = '/temp';
 
   /// 日志文件目录路径
   // Todo：根据平台调整
-  static const String logPath = "/logs";
+  static const String logPath = '/logs';
 
   /// 默认应用语言代码（ISO 639-1）
-  static const String defaultLanguage = "en";
+  static const String defaultLanguage = 'en';
 
   /// 支持的语言代码列表
-  static const List<String> supportedLanguages = ["en", "zh", "ja", "ko"];
+  static const List<String> supportedLanguages = ['en', 'zh', 'ja', 'ko'];
 
   /// 默认播放速度倍数（1.0 = 正常速度）
   static const double defaultPlaybackSpeed = 1.0;

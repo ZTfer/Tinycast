@@ -360,69 +360,54 @@ class _EpisodeControlBarState extends ConsumerState<EpisodeControlBar> {
 
   @override
   Widget build(BuildContext context) {
-    // 获取当前播放状态
-    final playerState = ref.watch(playbackProvider);
-    final currentEpisodeId = playerState.currentEpisode?.id;
-    final isCurrentEpisode = currentEpisodeId == widget.episodeId;
-
-    // 获取下载状态和进度
-    final downloadState = ref.watch(downloadNotifierProvider);
+    // 获取下载状态和进度：仅订阅本集相关字段，避免任意一集进度变化导致所有行重建
     final episodeIdStr = widget.episodeId.toString();
-    final downloadStatus = downloadState.episodeStatuses[episodeIdStr];
-    final isDownloading =
-        downloadStatus == DownloadStatus.downloading ||
-        downloadStatus == DownloadStatus.queued;
-    final downloadProgress = downloadState.episodeProgress[episodeIdStr];
-
-    // 动态从已下载列表获取，不依赖 widget.isDownloaded
-    final downloadedEpisodes = ref.watch(downloadedEpisodesProvider);
-    final isActuallyDownloaded = downloadedEpisodes.any(
-      (e) => e.id == widget.episodeId,
+    final (isDownloading, downloadProgress) = ref.watch(
+      downloadNotifierProvider.select((state) {
+        final status = state.episodeStatuses[episodeIdStr];
+        return (
+          status == DownloadStatus.downloading ||
+              status == DownloadStatus.queued,
+          state.episodeProgress[episodeIdStr],
+        );
+      }),
     );
 
-    // 监听下载完成事件，刷新所有相关 provider 以同步 isDownloaded 状态
-    ref.listen<DownloadState>(downloadNotifierProvider, (prev, next) {
-      if (prev == null) return;
-      final prevStatus = prev.episodeStatuses[episodeIdStr];
-      final nextStatus = next.episodeStatuses[episodeIdStr];
+    // 动态从已下载列表获取，不依赖 widget.isDownloaded
+    final isActuallyDownloaded = ref.watch(
+      downloadedEpisodesProvider.select(
+        (episodes) => episodes.any((e) => e.id == widget.episodeId),
+      ),
+    );
 
-      final wasInProgress =
-          prevStatus == DownloadStatus.downloading ||
-          prevStatus == DownloadStatus.queued ||
-          prevStatus == null;
+    // 监听本集下载完成事件，刷新所有相关 provider 以同步 isDownloaded 状态
+    ref.listen<DownloadStatus?>(
+      downloadNotifierProvider.select(
+        (state) => state.episodeStatuses[episodeIdStr],
+      ),
+      (prevStatus, nextStatus) {
+        final wasInProgress =
+            prevStatus == DownloadStatus.downloading ||
+            prevStatus == DownloadStatus.queued ||
+            prevStatus == null;
 
-      final nowCompleted = nextStatus == DownloadStatus.completed;
+        if (!wasInProgress || nextStatus != DownloadStatus.completed) return;
 
-      if (wasInProgress && nowCompleted && !isActuallyDownloaded) {
+        final downloadedEpisodes = ref.read(downloadedEpisodesProvider);
+        if (downloadedEpisodes.any((e) => e.id == widget.episodeId)) return;
+
         ref.invalidate(downloadedEpisodesNotifierProvider);
         ref.read(queueNotifierProvider.notifier).refresh();
         ref.read(unplayedEpisodesNotifierProvider.notifier).refresh();
-      }
-    });
+      },
+    );
 
     // 处理播放/暂停切换
     void handlePlayPause() {
-      Logger.info('▶️ [PLAY-PAUSE] handlePlayPause called');
-      Logger.info('▶️ [PLAY-PAUSE] episodeId: ${widget.episodeId}');
-      Logger.info('▶️ [PLAY-PAUSE] isCurrentEpisode: $isCurrentEpisode');
-      Logger.info('▶️ [PLAY-PAUSE] playerState.currentEpisode?.id: ${playerState.currentEpisode?.id}');
-      Logger.info('▶️ [PLAY-PAUSE] isPlaying: ${playerState.isPlaying}');
-      
-      // 只有当 episode 匹配且音频已加载时才切换播放/暂停
-      final isAudioLoaded = playerState.currentEpisode != null;
-      Logger.info('▶️ [PLAY-PAUSE] isAudioLoaded: $isAudioLoaded');
-      
-      if (isCurrentEpisode && isAudioLoaded) {
-        // 当前音频已加载，切换播放/暂停
-        Logger.info('▶️ [PLAY-PAUSE] Toggling play/pause for current episode');
+      final playerState = ref.read(playbackProvider);
+      if (playerState.currentEpisode?.id == widget.episodeId) {
         ref.read(playbackProvider.notifier).togglePlayPause();
-      } else if (isCurrentEpisode) {
-        // episode 匹配但音频未播放，尝试继续播放
-        Logger.info('▶️ [PLAY-PAUSE] Resuming current episode');
-        ref.read(playbackProvider.notifier).play();
       } else {
-        // 播放新音频
-        Logger.info('▶️ [PLAY-PAUSE] Playing new episode');
         widget.onPlayPressed?.call();
       }
     }

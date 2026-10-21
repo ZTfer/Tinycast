@@ -16,10 +16,11 @@ class LibraryEpisodePlayButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playbackState = ref.watch(playbackProvider);
-    final isThisEpisodePlaying =
-        playbackState.currentEpisode?.id == episode.id &&
-        playbackState.isPlaying;
+    final isThisEpisodePlaying = ref.watch(
+      playbackProvider.select(
+        (state) => state.currentEpisode?.id == episode.id && state.isPlaying,
+      ),
+    );
 
     return _LibraryEpisodePlayButtonInner(
       isPlaying: isThisEpisodePlaying,

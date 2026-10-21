@@ -17,12 +17,11 @@ class QueuePlayPauseButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(playbackProvider);
-    final currentEpisodeId = playerState.currentEpisode?.id;
-    final isPlaying = playerState.isPlaying;
-
-    final isCurrentEpisode = currentEpisodeId == episodeId;
-    final showPauseIcon = isCurrentEpisode && isPlaying;
+    final showPauseIcon = ref.watch(
+      playbackProvider.select(
+        (state) => state.currentEpisode?.id == episodeId && state.isPlaying,
+      ),
+    );
 
     return _QueuePlayPauseButtonContent(
       showPauseIcon: showPauseIcon,

@@ -1,4 +1,4 @@
-import '../entities/search_history.dart';
+import 'package:tinycast/domain/entities/search_history.dart';
 
 abstract class SearchHistoryRepository {
   Future<void> saveSearchHistory(String keyword);

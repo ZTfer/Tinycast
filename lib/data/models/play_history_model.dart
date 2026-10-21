@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import '../../domain/entities/play_history.dart' show PlayHistoryStatus;
+import 'package:tinycast/domain/entities/play_history.dart' show PlayHistoryStatus;
 
 export '../../domain/entities/play_history.dart' show PlayHistoryStatus;
 

@@ -16,12 +16,12 @@ Map<String, dynamic> podcastToCloudMap(Podcast p) {
     'description': p.description,
     'is_explicit': p.isExplicit,
     'language': p.language,
-    'last_updated': p.lastUpdated.toIso8601String(),
+    'last_updated': p.lastUpdated.toUtc().toIso8601String(),
     'owner_email': p.ownerEmail,
     'owner_name': p.ownerName,
     'subtitle': p.subtitle,
     'website_url': p.websiteUrl,
-    'updated_at': DateTime.now().toIso8601String(),
+    'updated_at': DateTime.now().toUtc().toIso8601String(),
   };
 
   if (p.itunesId != null) map['itunes_id'] = p.itunesId;
@@ -44,7 +44,7 @@ Map<String, dynamic> podcastToCloudMap(Podcast p) {
     map['itunes_primary_genre_name'] = p.itunesPrimaryGenreName;
   }
   if (p.itunesReleaseDate != null) {
-    map['itunes_release_date'] = p.itunesReleaseDate!.toIso8601String();
+    map['itunes_release_date'] = p.itunesReleaseDate!.toUtc().toIso8601String();
   }
   if (p.keywords != null) map['keywords'] = p.keywords;
   if (p.rssUrl.isNotEmpty) map['rss_urls'] = [p.rssUrl];
@@ -67,7 +67,7 @@ Map<String, dynamic> episodeToCloudMap(Episode e) {
     'description': e.description,
     'audio_url': e.audioUrl,
     'is_explicit': e.isExplicit,
-    'updated_at': DateTime.now().toIso8601String(),
+    'updated_at': DateTime.now().toUtc().toIso8601String(),
   };
 
   if (e.guid != null) map['guid'] = e.guid;
@@ -84,11 +84,11 @@ Map<String, dynamic> episodeToCloudMap(Episode e) {
   }
   if (e.itunesId != null) map['itunes_id'] = e.itunesId;
   if (e.itunesReleaseDate != null) {
-    map['itunes_release_date'] = e.itunesReleaseDate!.toIso8601String();
+    map['itunes_release_date'] = e.itunesReleaseDate!.toUtc().toIso8601String();
   }
   if (e.link != null) map['link'] = e.link;
   if (e.podcastITunesId != null) map['podcast_itunes_id'] = e.podcastITunesId;
-  map['pub_date'] = e.pubDate.toIso8601String();
+  map['pub_date'] = e.pubDate.toUtc().toIso8601String();
   final episodeCloudId =
       e.supabaseId != null ? int.tryParse(e.supabaseId!) : null;
   if (episodeCloudId != null) map['id'] = episodeCloudId;
@@ -112,7 +112,7 @@ Map<String, dynamic> playHistoryToCloudMap(PlayHistory h) {
     'is_played': h.isPlayed,
     'last_played_position_ms': h.lastPlayedPositionMs,
     'play_progress': h.playProgress,
-    'last_update_time': h.lastUpdateTime.toIso8601String(),
+    'last_update_time': h.lastUpdateTime.toUtc().toIso8601String(),
     'played_duration': h.playedDuration,
     'podcast_guid': h.podcastGuid,
     'podcast_itunes_id': h.podcastITunesId,
@@ -151,7 +151,7 @@ Map<String, dynamic> queueItemToCloudMap(Queue q) {
     'podcast_guid': q.podcastGuid,
     'podcast_itunes_id': q.podcastITunesId,
     'position': q.position,
-    'added_at': q.addedAt.toIso8601String(),
+    'added_at': q.addedAt.toUtc().toIso8601String(),
   };
 
   return map;

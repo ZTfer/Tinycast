@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/services/settings_service.dart';
-import '../../../domain/entities/app_settings.dart';
-import '../../../core/utils/logger.dart';
-import '../../../core/services/feed_refresh_scheduler.dart';
-import '../../../core/utils/app_window_context.dart';
+import 'package:tinycast/data/services/settings_service.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
+import 'package:tinycast/core/utils/app_window_context.dart';
 
 enum SettingsStatus { initial, loading, success, error }
 

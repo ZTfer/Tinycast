@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/core/providers/auth_provider.dart';
+import 'package:tinycast/core/services/local_account_data_service.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 import 'package:tinycast/core/services/sync_tombstone_store.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -29,12 +30,13 @@ class SyncState {
     DateTime? lastSyncTime,
     SyncProgress? progress,
     String? errorMessage,
+    bool clearError = false,
   }) {
     return SyncState(
       status: status ?? this.status,
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,
       progress: progress ?? this.progress,
-      errorMessage: errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -47,22 +49,34 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   return SyncService();
 });
 
+final localAccountDataServiceProvider = Provider<LocalAccountDataService>((
+  ref,
+) {
+  return LocalAccountDataService();
+});
+
 class SyncNotifier extends Notifier<SyncState> {
   Timer? _syncTimer;
   Timer? _debounceTimer;
+  Future<void>? _runningSync;
   static const Duration _syncInterval = Duration(minutes: 5);
   static const Duration _debounceDelay = Duration(seconds: 10);
 
   @override
   SyncState build() {
     ref.listen(authStateProvider, (previous, next) {
-      final wasLoggedIn = previous?.value != null;
-      final isLoggedIn = next.value != null;
       final previousUserId = previous?.value?.id;
+      final currentUser = next.value;
+      final wasLoggedIn = previous?.value != null;
+      final isLoggedIn = currentUser != null;
 
-      if (isLoggedIn && !wasLoggedIn) {
-        _startPeriodicSync();
-        Future.microtask(() => syncNow());
+      if (isLoggedIn) {
+        if (!wasLoggedIn) {
+          _startPeriodicSync();
+        }
+        if (!wasLoggedIn || currentUser.id != previousUserId) {
+          Future.microtask(() => _prepareAccount(currentUser.id));
+        }
       } else if (!isLoggedIn && wasLoggedIn) {
         _stopPeriodicSync();
         // Clear user-scoped sync state so the next account cannot inherit
@@ -71,11 +85,11 @@ class SyncNotifier extends Notifier<SyncState> {
       }
     });
 
-    final isLoggedIn = ref.read(authStateProvider).value != null;
-    if (isLoggedIn) {
+    final currentUser = ref.read(authStateProvider).value;
+    if (currentUser != null) {
       _startPeriodicSync();
       _loadLastSyncTime();
-      Future.microtask(() => syncNow());
+      Future.microtask(() => _prepareAccount(currentUser.id));
     }
 
     ref.onDispose(() {
@@ -89,10 +103,49 @@ class SyncNotifier extends Notifier<SyncState> {
     return const SyncState();
   }
 
+  /// 在同步前确认本地数据属于当前账号；账号切换时先清空旧账号数据。
+  Future<void> _prepareAccount(String userId) async {
+    // 等待上一轮同步结束，避免清理数据与上传同时进行。
+    final running = _runningSync;
+    if (running != null) {
+      try {
+        await running;
+      } catch (_) {
+        // 上一轮同步的失败不影响账号预处理。
+      }
+    }
+    if (!ref.mounted) return;
+
+    try {
+      final switched = await ref
+          .read(localAccountDataServiceProvider)
+          .prepareForUser(userId);
+      if (!ref.mounted) return;
+      if (switched) {
+        Logger.info('[SYNC] 账号已切换，旧账号本地数据已清理');
+        _invalidateRelatedProviders();
+        state = const SyncState();
+      }
+    } catch (e, stackTrace) {
+      if (!ref.mounted) return;
+      Logger.error(
+        'Failed to prepare local data for account',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+
+    await _loadLastSyncTime();
+    if (!ref.mounted) return;
+    await syncNow();
+  }
+
   Future<void> _loadLastSyncTime() async {
+    if (!ref.mounted) return;
     try {
       final syncService = ref.read(syncServiceProvider);
       final lastSyncTime = await syncService.getLastSyncTime();
+      if (!ref.mounted) return;
       if (lastSyncTime != null) {
         state = state.copyWith(lastSyncTime: lastSyncTime);
       }
@@ -147,20 +200,37 @@ class SyncNotifier extends Notifier<SyncState> {
   }
 
   Future<void> syncNow() async {
+    if (!ref.mounted) return;
     if (state.status == SyncStatus.syncing) return;
 
     final syncService = ref.read(syncServiceProvider);
     if (!syncService.canSync) return;
 
-    state = state.copyWith(status: SyncStatus.syncing, errorMessage: null);
+    state = state.copyWith(status: SyncStatus.syncing, clearError: true);
 
+    final future = _performSync(syncService);
+    _runningSync = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_runningSync, future)) {
+        _runningSync = null;
+      }
+    }
+  }
+
+  Future<void> _performSync(SyncService syncService) async {
     try {
       syncService.onProgressChanged = (progress) {
+        if (!ref.mounted) return;
         state = state.copyWith(progress: progress);
       };
 
       await syncService.sync();
+      if (!ref.mounted) return;
+
       final lastSyncTime = await syncService.getLastSyncTime();
+      if (!ref.mounted) return;
       state = state.copyWith(
         status: SyncStatus.idle,
         lastSyncTime: lastSyncTime,
@@ -170,6 +240,7 @@ class SyncNotifier extends Notifier<SyncState> {
       Logger.info('Sync completed successfully');
     } catch (e, stackTrace) {
       Logger.error('Sync failed', error: e, stackTrace: stackTrace);
+      if (!ref.mounted) return;
       state = state.copyWith(
         status: SyncStatus.error,
         errorMessage: e.toString(),
@@ -180,11 +251,13 @@ class SyncNotifier extends Notifier<SyncState> {
   }
 
   void _invalidateRelatedProviders() {
+    if (!ref.mounted) return;
     ref.invalidate(queueNotifierProvider);
     ref.invalidate(favoriteProvider);
     ref.invalidate(favoriteEpisodesNotifierProvider);
     ref.invalidate(unplayedEpisodesNotifierProvider);
     ref.invalidate(subscribedPodcastsProvider);
+    ref.invalidate(podcastProvider);
     ref.invalidate(latestPlayingHistoryProvider);
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_text_styles.dart';
-import 'app_theme_config.dart';
-import 'theme_loader.dart';
+import 'package:tinycast/core/theme/app_colors.dart';
+import 'package:tinycast/core/theme/app_text_styles.dart';
+import 'package:tinycast/core/theme/app_theme_config.dart';
+import 'package:tinycast/core/theme/theme_loader.dart';
 
 enum AppThemeMode { light, dark }
 

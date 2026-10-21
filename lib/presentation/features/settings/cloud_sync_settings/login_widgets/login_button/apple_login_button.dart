@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'login_button.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/login_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AppleLoginButton extends StatelessWidget {

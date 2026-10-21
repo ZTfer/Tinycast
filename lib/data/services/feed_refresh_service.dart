@@ -1,13 +1,13 @@
-import '../../core/utils/logger.dart';
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/entities/feed_refresh_result.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/feed_refresh_result.dart';
 export '../../domain/entities/feed_refresh_result.dart'
     show FeedRefreshResult, BatchRefreshResult;
-import '../datasources/remote_podcast_datasource.dart';
-import '../datasources/local_podcast_datasource.dart';
-import '../mappers/podcast_mapper.dart';
-import '../mappers/episode_mapper.dart';
+import 'package:tinycast/data/datasources/remote_podcast_datasource.dart';
+import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
+import 'package:tinycast/data/mappers/podcast_mapper.dart';
+import 'package:tinycast/data/mappers/episode_mapper.dart';
 
 class FeedRefreshService {
   static const _cooldownDuration = Duration(minutes: 5);

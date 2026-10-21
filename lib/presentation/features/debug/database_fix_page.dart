@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import '../../../data/database/isar_service.dart';
-import '../../../data/models/podcast_model.dart' as model;
-import '../../../core/utils/logger.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/podcast_model.dart' as model;
+import 'package:tinycast/core/utils/logger.dart';
 
 class DatabaseFixPage extends ConsumerWidget {
   const DatabaseFixPage({super.key});

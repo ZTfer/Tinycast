@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'theme_data.dart';
-import 'theme_source_flag.dart';
+import 'package:tinycast/core/theme/theme_data.dart';
+import 'package:tinycast/core/theme/theme_source_flag.dart';
 
 class AppTheme {
   AppTheme._();

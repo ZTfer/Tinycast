@@ -1,9 +1,9 @@
-import '../../domain/entities/episode.dart';
-import '../../domain/entities/queue_item.dart';
-import '../../domain/repositories/queue_repository.dart';
-import '../datasources/local_queue_datasource.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/queue_item.dart';
+import 'package:tinycast/domain/repositories/queue_repository.dart';
+import 'package:tinycast/data/datasources/local_queue_datasource.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 class QueueRepositoryImpl implements QueueRepository {
   final LocalQueueDataSource _dataSource;

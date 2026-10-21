@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/presentation/features/home/mobile_home.dart';
@@ -104,8 +105,10 @@ class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
 }
 
 void main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (Platform.isIOS || Platform.isAndroid) {
-    WidgetsFlutterBinding.ensureInitialized();
+    await _preloadTheme();
     await _initializeApp(AppConfig.fromEnvironment());
     WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver.instance);
     unawaited(FeedRefreshScheduler.instance.start());
@@ -113,15 +116,8 @@ void main(List<String> args) async {
     return;
   }
 
-  WidgetsFlutterBinding.ensureInitialized();
   await WindowUtils.initialize();
-
-  if (!ThemeSource.useHardcoded) {
-    await ThemeLoader.preloadThemeConfigs();
-    Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
-  } else {
-    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
-  }
+  await _preloadTheme();
 
   final config = AppConfig.fromEnvironment();
 
@@ -176,6 +172,15 @@ void main(List<String> args) async {
   }
 }
 
+Future<void> _preloadTheme() async {
+  if (ThemeSource.useHardcoded) {
+    Logger.info('ℹ️ 使用硬编码主题常量（lib/core/theme）');
+    return;
+  }
+  await ThemeLoader.preloadThemeConfigs();
+  Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
+}
+
 Future<void> _initializeApp(AppConfig config) async {
   await IsarService.instance.open();
   await AudioPlayerService.instance.init();
@@ -213,6 +218,12 @@ class _MyAppState extends State<MyApp> {
       title: 'Tinycast',
       color: const Color(0x00000000),
       onGenerateRoute: AppRouter.generateRoute,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('zh', 'CN'), Locale('en')],
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,
@@ -238,7 +249,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyAppMobile extends StatefulWidget {
-  const MyAppMobile({super.key});
+  final Widget home;
+
+  const MyAppMobile({super.key, this.home = const MobileHome()});
 
   @override
   State<MyAppMobile> createState() => _MyAppMobileState();
@@ -257,6 +270,13 @@ class _MyAppMobileState extends State<MyAppMobile> {
     return WidgetsApp(
       title: 'TinyCast Mobile',
       color: const Color(0x00000000),
+      onGenerateRoute: AppRouter.generateRoute,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('zh', 'CN'), Locale('en')],
       textStyle: TextStyle(
         fontFamilyFallback: AppTextStyles.fontFamilyFallback,
         color: brightness == Brightness.dark
@@ -265,7 +285,7 @@ class _MyAppMobileState extends State<MyAppMobile> {
         fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
-      home: const MobileHome(),
+      home: widget.home,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,

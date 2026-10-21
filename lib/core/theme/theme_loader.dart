@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import '../utils/logger.dart';
-import 'app_colors.dart';
-import 'app_theme_config.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/theme/app_colors.dart';
+import 'package:tinycast/core/theme/app_theme_config.dart';
 
 void _debug(String msg) {
   Logger.debug('[ThemeLoader] $msg');
@@ -409,7 +409,8 @@ class ThemeLoader {
     ),
   };
 
-  static Map<String, TextStyle> _buildTextStyles(
+  @visibleForTesting
+  static Map<String, TextStyle> buildTextStyles(
     Map<String, dynamic> typography,
     Map<String, AppThemeConfig> themeConfigs,
   ) {
@@ -447,14 +448,19 @@ class ThemeLoader {
       }
 
       TextStyle buildStyle(Map<String, dynamic> values, String brightness) {
-        final fontSize = double.tryParse(values['fontsize'] as String) ?? 14.0;
-        final fontWeight = int.tryParse(values['fontweight'] as String) ?? 400;
+        final fontSize =
+            double.tryParse(values['fontsize'] as String? ?? '') ?? 14.0;
+        final fontWeight =
+            int.tryParse(values['fontweight'] as String? ?? '') ?? 400;
         final lineHeight =
-            double.tryParse(values['lineheight'] as String) ?? 1.4;
+            double.tryParse(values['lineheight'] as String? ?? '') ?? 1.4;
         final letterSpacing =
-            double.tryParse(values['letterspacing'] as String) ?? 0.0;
+            double.tryParse(values['letterspacing'] as String? ?? '') ?? 0.0;
 
-        final colorKey = styleDef['color'] as String? ?? 'labelPrimary';
+        final colorKey =
+            values['color'] as String? ??
+            styleDef['color'] as String? ??
+            'labelPrimary';
 
         return TextStyle(
           fontSize: fontSize,
@@ -481,13 +487,26 @@ class ThemeLoader {
         }
       }
 
+      final baseValues = Map<String, dynamic>.from(styleDef)
+        ..remove('desktop')
+        ..remove('tablet')
+        ..remove('mobile');
+
+      Map<String, dynamic> mergedVariant(String suffix) {
+        final variant = styleDef[suffix];
+        return {
+          ...baseValues,
+          if (variant is Map<String, dynamic>) ...variant,
+        };
+      }
+
       if (styleDef.containsKey('desktop')) {
-        addStylePair('desktop', styleDef['desktop'] as Map<String, dynamic>);
+        addStylePair('desktop', mergedVariant('desktop'));
         if (styleDef.containsKey('tablet')) {
-          addStylePair('tablet', styleDef['tablet'] as Map<String, dynamic>);
+          addStylePair('tablet', mergedVariant('tablet'));
         }
         if (styleDef.containsKey('mobile')) {
-          addStylePair('mobile', styleDef['mobile'] as Map<String, dynamic>);
+          addStylePair('mobile', mergedVariant('mobile'));
         }
       } else {
         addStylePair('', styleDef);
@@ -531,7 +550,7 @@ class ThemeLoader {
 
     try {
       final typographyJson = await loadTypography();
-      _cachedWidgetStyles!['textStyles'] = _buildTextStyles(
+      _cachedWidgetStyles!['textStyles'] = buildTextStyles(
         typographyJson,
         _cachedThemeConfigs!,
       );

@@ -1,5 +1,5 @@
-import 'podcast.dart';
-import 'episode.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 
 class SearchResult {
   final List<Podcast> podcasts;

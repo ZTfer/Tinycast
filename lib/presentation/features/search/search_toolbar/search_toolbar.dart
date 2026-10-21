@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'search_toolbar_key_tips.dart';
-import 'search_toolbar_delete_button.dart';
+import 'package:tinycast/presentation/features/search/search_toolbar/search_toolbar_key_tips.dart';
+import 'package:tinycast/presentation/features/search/search_toolbar/search_toolbar_delete_button.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../search_provider.dart';
+import 'package:tinycast/presentation/features/search/search_provider.dart';
 
 class SearchToolbar extends ConsumerWidget {
   const SearchToolbar({super.key});

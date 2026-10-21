@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/repositories/favorite_repository.dart';
-import '../../data/repositories/favorite_repository_impl.dart';
-import '../../core/utils/logger.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/favorite_repository.dart';
+import 'package:tinycast/data/repositories/favorite_repository_impl.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 /// FavoriteRepository 注入
 final favoriteRepositoryProvider = Provider<FavoriteRepository>((ref) {

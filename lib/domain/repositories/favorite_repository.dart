@@ -1,4 +1,4 @@
-import '../entities/episode.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 
 abstract class FavoriteRepository {
   Future<void> addFavorite(Episode episode);

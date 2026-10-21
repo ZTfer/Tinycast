@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/repositories/podcast_repository.dart';
 import 'package:tinycast/domain/usecases/get_unplayed_episodes_usecase.dart';
@@ -77,14 +78,11 @@ void main() {
       expect(result.length, equals(0));
     });
 
-    test('当 repository 抛出异常时，应该抛出包装后的异常', () async {
-      when(mockRepository.getUnplayedEpisodes())
-          .thenThrow(Exception('Database error'));
+    test('当 repository 抛出 AppException 时，应原样传播', () async {
+      final error = AppException.storage('Database error');
+      when(mockRepository.getUnplayedEpisodes()).thenThrow(error);
 
-      expect(
-        () => useCase(),
-        throwsA(isA<Exception>()),
-      );
+      await expectLater(useCase(), throwsA(same(error)));
     });
 
     test('返回的节目应该包含正确的属性', () async {

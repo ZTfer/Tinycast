@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'search_results_show_item.dart';
+import 'package:tinycast/presentation/features/search/search_results/search_results_show/search_results_show_item.dart';
 
 class SearchResultsPodcastList extends StatelessWidget {
   const SearchResultsPodcastList({super.key});

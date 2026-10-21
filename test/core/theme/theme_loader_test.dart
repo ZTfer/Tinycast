@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tinycast/core/theme/theme_loader.dart';
 
@@ -194,6 +195,64 @@ widgets {
 // another comment
 ''';
       expect(HoconParser.parse(content), isEmpty);
+    });
+  });
+
+  group('ThemeLoader.buildTextStyles', () {
+    test('响应式变体未声明的属性应继承基础样式', () {
+      final typography = <String, dynamic>{
+        'textstyles': <String, dynamic>{
+          'h3': <String, dynamic>{
+            'fontsize': '20',
+            'fontweight': '700',
+            'lineheight': '1.5',
+            'letterspacing': '0.5',
+            'color': 'labelPrimary',
+            'desktop': <String, dynamic>{'fontsize': '14'},
+          },
+        },
+      };
+
+      final styles = ThemeLoader.buildTextStyles(
+        typography,
+        ThemeLoader.cachedThemeConfigs,
+      );
+
+      final desktopLight = styles['h3_desktop_light']!;
+      expect(desktopLight.fontSize, 14,
+          reason: '变体显式声明的字号应覆盖基础值');
+      expect(desktopLight.fontWeight, FontWeight.w700,
+          reason: '变体未声明的字重应继承基础样式');
+      expect(desktopLight.height, 1.5,
+          reason: '变体未声明的行高应继承基础样式');
+      expect(desktopLight.letterSpacing, 0.5,
+          reason: '变体未声明的字距应继承基础样式');
+    });
+
+    test('响应式变体可覆盖基础颜色', () {
+      final typography = <String, dynamic>{
+        'textstyles': <String, dynamic>{
+          'caption1': <String, dynamic>{
+            'fontsize': '12',
+            'color': 'labelPrimary',
+            'desktop': <String, dynamic>{'color': 'labelTertiary'},
+          },
+        },
+      };
+
+      final styles = ThemeLoader.buildTextStyles(
+        typography,
+        ThemeLoader.cachedThemeConfigs,
+      );
+
+      expect(
+        styles['caption1_desktop_light']!.color,
+        ThemeLoader.cachedThemeConfigs['light']!.labelTertiary,
+      );
+      expect(
+        styles['caption1_desktop_dark']!.color,
+        ThemeLoader.cachedThemeConfigs['dark']!.labelTertiary,
+      );
     });
   });
 

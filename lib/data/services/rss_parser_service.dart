@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
-import 'package:intl/intl.dart';
 import 'package:xml/xml.dart';
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/app_constants.dart';
-import '../../core/utils/network_error_handler.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/app_constants.dart';
+import 'package:tinycast/core/utils/network_error_handler.dart';
 
 /// RSS 解析器服务
 ///
@@ -387,23 +386,83 @@ class RssParserService {
       return null;
     }
 
-    // 尝试解析 RSS 标准格式 (RFC 822)
-    final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss', 'en_US');
-    try {
-      final timeZoneRegex = RegExp(r'\s+([+-]\d{2}:?\d{2}|[A-Z]{2,4})\s*$');
-      final cleanedDate = dateTimeString.replaceFirst(timeZoneRegex, '');
-      return rfc822Format.parse(cleanedDate, true);
-    } catch (e) {
-      // 继续尝试其他格式
+    final value = dateTimeString.trim();
+
+    // ISO 8601 自带偏移，DateTime.parse 会换算为正确时刻
+    final isoDateTime = DateTime.tryParse(value);
+    if (isoDateTime != null) {
+      return isoDateTime;
     }
 
-    // 尝试 ISO 8601 格式
-    try {
-      return DateTime.parse(dateTimeString);
-    } catch (e) {
-      Logger.debug('解析日期时间失败: $dateTimeString');
-      return null;
+    final rfc822Pattern = RegExp(
+      r'^(?:[A-Za-z]{3},\s*)?(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+'
+      r'(\d{1,2}):(\d{2})(?::(\d{2}))?\s*'
+      r'([+-]\d{2}:?\d{2}|[A-Za-z]{1,5})?\s*$',
+    );
+    final match = rfc822Pattern.firstMatch(value);
+    final month = match == null
+        ? null
+        : _monthNumbers[match[2]!.toLowerCase()];
+    if (match != null && month != null) {
+      final localTime = DateTime.utc(
+        int.parse(match[3]!),
+        month,
+        int.parse(match[1]!),
+        int.parse(match[4]!),
+        int.parse(match[5]!),
+        int.tryParse(match[6] ?? '') ?? 0,
+      );
+      // RFC 822 的时间是「本地时间 + 时区」，换算成同一 UTC 时刻
+      return localTime.subtract(
+        Duration(minutes: _parseTimezoneOffset(match[7])),
+      );
     }
+
+    Logger.debug('解析日期时间失败: $dateTimeString');
+    return null;
+  }
+
+  static const _monthNumbers = {
+    'jan': 1,
+    'feb': 2,
+    'mar': 3,
+    'apr': 4,
+    'may': 5,
+    'jun': 6,
+    'jul': 7,
+    'aug': 8,
+    'sep': 9,
+    'oct': 10,
+    'nov': 11,
+    'dec': 12,
+  };
+
+  static const _namedTimezoneOffsets = {
+    'est': -300,
+    'edt': -240,
+    'cst': -360,
+    'cdt': -300,
+    'mst': -420,
+    'mdt': -360,
+    'pst': -480,
+    'pdt': -420,
+  };
+
+  /// 返回时区相对 UTC 的分钟偏移；未知缩写按 UTC 处理。
+  int _parseTimezoneOffset(String? timezone) {
+    if (timezone == null || timezone.isEmpty) return 0;
+
+    final namedOffset = _namedTimezoneOffsets[timezone.toLowerCase()];
+    if (namedOffset != null) return namedOffset;
+
+    final numeric = RegExp(r'^([+-])(\d{2}):?(\d{2})$').firstMatch(timezone);
+    if (numeric != null) {
+      final minutes =
+          int.parse(numeric[2]!) * 60 + int.parse(numeric[3]!);
+      return numeric[1] == '-' ? -minutes : minutes;
+    }
+
+    return 0;
   }
 
   bool _isHtmlResponse(String contentType, String content) {

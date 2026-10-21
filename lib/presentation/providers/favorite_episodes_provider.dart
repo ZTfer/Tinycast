@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/usecases/get_favorite_episodes_usecase.dart';
-import 'podcast_provider.dart';
-import 'favorite_provider.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/usecases/get_favorite_episodes_usecase.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/favorite_provider.dart';
 
 enum FavoriteEpisodesStatus { initial, loading, success, error }
 

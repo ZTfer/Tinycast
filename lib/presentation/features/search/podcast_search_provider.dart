@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/podcast.dart';
-import '../../../domain/entities/episode.dart';
-import '../../../data/services/podcast_search_service.dart';
-import '../../../data/services/audio_download_service.dart';
-import '../../../data/services/settings_service.dart';
-import '../../../data/services/itunes_search_service.dart';
-import '../../../domain/repositories/podcast_repository.dart';
-import '../../../domain/usecases/subscribe_podcast_usecase.dart';
-import '../../../domain/usecases/get_subscribed_podcasts_usecase.dart';
-import '../../../data/repositories/podcast_repository_impl.dart';
-import '../../../core/utils/logger.dart';
-import '../../../domain/entities/app_settings.dart';
-import '../../providers/podcast_provider.dart';
-import '../../providers/unplayed_episodes_provider.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/data/services/podcast_search_service.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
+import 'package:tinycast/data/services/settings_service.dart';
+import 'package:tinycast/data/services/itunes_search_service.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
+import 'package:tinycast/domain/usecases/subscribe_podcast_usecase.dart';
+import 'package:tinycast/domain/usecases/get_subscribed_podcasts_usecase.dart';
+import 'package:tinycast/data/repositories/podcast_repository_impl.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/domain/entities/app_settings.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
+import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 
 enum PodcastSearchStatus { idle, loading, success, error }
 

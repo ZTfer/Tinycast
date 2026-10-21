@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/utils/logger.dart';
-import '../../../data/services/audio_download_service.dart';
-import '../../../domain/entities/episode.dart';
-import '../../../domain/usecases/get_downloaded_episodes_usecase.dart';
-import '../../providers/podcast_provider.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/usecases/get_downloaded_episodes_usecase.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 enum DownloadedEpisodesStatus { initial, loading, success, error }
 

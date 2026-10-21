@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'search_provider.dart';
-import '../../../core/router/app_router.dart';
+import 'package:tinycast/presentation/features/search/search_provider.dart';
+import 'package:tinycast/core/router/app_router.dart';
 
 /// 搜索输入框组件
 ///

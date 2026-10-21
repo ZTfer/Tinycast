@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/search_history.dart';
-import '../../../domain/entities/search_result.dart';
-import '../../../domain/repositories/search_history_repository.dart';
-import '../../../domain/usecases/clear_search_history_usecase.dart';
-import '../../../domain/usecases/get_search_history_usecase.dart';
-import '../../../domain/usecases/save_search_history_usecase.dart';
-import '../../../domain/usecases/search_local_content_usecase.dart';
-import '../../../data/repositories/search_history_repository_impl.dart';
-import '../../../core/router/app_routes.dart';
-import '../../providers/podcast_provider.dart';
+import 'package:tinycast/domain/entities/search_history.dart';
+import 'package:tinycast/domain/entities/search_result.dart';
+import 'package:tinycast/domain/repositories/search_history_repository.dart';
+import 'package:tinycast/domain/usecases/clear_search_history_usecase.dart';
+import 'package:tinycast/domain/usecases/get_search_history_usecase.dart';
+import 'package:tinycast/domain/usecases/save_search_history_usecase.dart';
+import 'package:tinycast/domain/usecases/search_local_content_usecase.dart';
+import 'package:tinycast/data/repositories/search_history_repository_impl.dart';
+import 'package:tinycast/core/router/app_routes.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 enum SearchStatus { initial, history, results, empty }
 

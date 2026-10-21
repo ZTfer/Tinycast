@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/repositories/podcast_repository.dart';
-import '../../core/utils/logger.dart';
-import '../providers/podcast_provider.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/presentation/providers/podcast_provider.dart';
 
 enum FeedRefreshStatus { idle, loading, success, error }
 

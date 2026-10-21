@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 
-import '../../domain/entities/play_history.dart' as entity;
-import '../models/play_history_model.dart';
+import 'package:tinycast/domain/entities/play_history.dart' as entity;
+import 'package:tinycast/data/models/play_history_model.dart';
 
 /// PlayHistory 领域实体与 Isar 持久化模型之间的映射
 class PlayHistoryMapper {

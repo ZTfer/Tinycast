@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,17 +33,12 @@ class Library extends ConsumerStatefulWidget {
 }
 
 class _LibraryState extends ConsumerState<Library> {
+  List<int>? _downloadStatusPodcastIds;
+  Future<Map<int, bool>>? _downloadStatusFuture;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPodcasts();
-    });
-  }
-
-  @override
-  void didUpdateWidget(Library oldWidget) {
-    super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPodcasts();
     });
@@ -146,6 +142,7 @@ class _LibraryState extends ConsumerState<Library> {
       Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 5/5: 重新加载播客列表...');
       await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
       ref.read(downloadNotifierProvider.notifier).manualRefresh();
+      _invalidateDownloadStatus();
       Logger.info('✅ [LIBRARY-UNFOLLOW] 播客列表重新加载完成');
 
       if (!mounted) return;
@@ -165,6 +162,7 @@ class _LibraryState extends ConsumerState<Library> {
   Future<void> _removeDownloads(Podcast podcast) async {
     final downloadService = AudioDownloadService.instance;
     await downloadService.removeAllDownloadsForPodcast(podcast.id);
+    _invalidateDownloadStatus();
 
     if (!mounted) return;
     ToastUtils.showSuccessToast(context, message: '已移除所有下载');
@@ -202,14 +200,46 @@ class _LibraryState extends ConsumerState<Library> {
     }
   }
 
+  void _invalidateDownloadStatus() {
+    _downloadStatusPodcastIds = null;
+    _downloadStatusFuture = null;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<Map<int, bool>> _downloadStatusFor(List<Podcast> podcasts) {
+    final ids = podcasts.map((podcast) => podcast.id).toList();
+    if (_downloadStatusFuture == null ||
+        !listEquals(ids, _downloadStatusPodcastIds)) {
+      _downloadStatusPodcastIds = ids;
+      _downloadStatusFuture = _computeDownloadStatus(podcasts);
+    }
+    return _downloadStatusFuture!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(podcastProvider);
     final podcastsRaw = ref.watch(subscribedPodcastsProvider);
     final podcasts = podcastsRaw ?? [];
-    Logger.info(
-      ' [LIBRARY-UI] build 被调用, status=${state.status}, podcasts.length=${podcasts.length}, podcasts.isEmpty=${podcasts.isEmpty}, podcastsRawIsNull=${podcastsRaw == null}',
-    );
+
+    ref.listen<DownloadState>(downloadNotifierProvider, (previous, next) {
+      if (previous == null) return;
+      const terminalStatuses = {
+        DownloadStatus.completed,
+        DownloadStatus.failed,
+        DownloadStatus.cancelled,
+      };
+      final hasTerminalChange = next.episodeStatuses.entries.any(
+        (entry) =>
+            terminalStatuses.contains(entry.value) &&
+            previous.episodeStatuses[entry.key] != entry.value,
+      );
+      if (hasTerminalChange) {
+        _invalidateDownloadStatus();
+      }
+    });
 
     return Localizations(
       locale: const Locale('zh', 'CN'),
@@ -222,12 +252,8 @@ class _LibraryState extends ConsumerState<Library> {
         onRefresh: _onRefresh,
         color: const Color(0xFF000000),
         child: FutureBuilder<Map<int, bool>>(
-          key: ValueKey(podcasts.length),
-          future: _computeDownloadStatus(podcasts),
+          future: _downloadStatusFor(podcasts),
           builder: (context, snapshot) {
-            Logger.info(
-              ' [LIBRARY-UI] FutureBuilder builder, snapshot.connectionState=${snapshot.connectionState}, hasData=${snapshot.hasData}',
-            );
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _buildContent(
@@ -245,12 +271,15 @@ class _LibraryState extends ConsumerState<Library> {
 
   Future<Map<int, bool>> _computeDownloadStatus(List<Podcast> podcasts) async {
     final downloadService = AudioDownloadService.instance;
-    final result = <int, bool>{};
-    for (final podcast in podcasts) {
-      result[podcast.id] = await downloadService
-          .hasDownloadedEpisodesForPodcast(podcast.id);
-    }
-    return result;
+    final entries = await Future.wait(
+      podcasts.map(
+        (podcast) async => MapEntry(
+          podcast.id,
+          await downloadService.hasDownloadedEpisodesForPodcast(podcast.id),
+        ),
+      ),
+    );
+    return {for (final entry in entries) entry.key: entry.value};
   }
 
   Widget _buildContent(

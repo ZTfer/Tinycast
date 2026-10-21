@@ -45,6 +45,10 @@ class SyncService {
   static const String _lastSyncTimestampKey = 'last_sync_timestamp';
   static const int _progressNotifyInterval = 5;
 
+  /// Re-pulls a small window before the saved cursor so clock skew between
+  /// devices cannot silently skip records. Re-merging rows is idempotent.
+  static const Duration _cursorOverlap = Duration(minutes: 2);
+
   final RemoteSyncDataSource _remoteDataSource;
   final String? Function()? _userIdResolver;
   final SupabaseClient? Function()? _supabaseClientResolver;
@@ -123,14 +127,14 @@ class SyncService {
     final prefs = await SharedPreferences.getInstance();
     final timestamp = prefs.getString(key);
     if (timestamp == null) return null;
-    return DateTime.tryParse(timestamp);
+    return DateTime.tryParse(timestamp)?.toUtc();
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
     final key = _scopedLastSyncKey;
     if (key == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(key, time.toIso8601String());
+    await prefs.setString(key, time.toUtc().toIso8601String());
   }
 
   /// Clears the last-sync timestamp for [userId] (used on sign-out).
@@ -172,7 +176,16 @@ class SyncService {
       // Pull first so the push phase operates on the merged local state.
       // This prevents this device from deleting cloud records that other
       // devices uploaded but this device has not pulled yet.
-      await _pullAndMergeCloudChanges(lastSyncTime);
+      final pullSince = lastSyncTime?.subtract(_cursorOverlap);
+      final pullsSucceeded = await _pullAndMergeCloudChanges(pullSince);
+
+      if (!pullsSucceeded) {
+        Logger.warning(
+          '⚠️ [SYNC] Pull failed; skipping push to avoid overwriting cloud data',
+        );
+        _notifyProgress(const SyncProgress(currentTable: 'pull_failed'));
+        return;
+      }
 
       await _pushLocalChanges(lastSyncTime);
 
@@ -236,7 +249,13 @@ class SyncService {
 
   // ========== Pull cloud changes ==========
 
-  Future<void> _pullAndMergeCloudChanges(DateTime? since) async {
+  /// Pulls cloud changes into local storage.
+  ///
+  /// Returns false when any fetch failed, in which case the caller must not
+  /// push: local state is stale and pushing could overwrite newer cloud data.
+  /// Per-record merge failures are counted separately: they block cursor
+  /// advancement (via [_allStepsSucceeded]) but do not block the push phase.
+  Future<bool> _pullAndMergeCloudChanges(DateTime? since) async {
     // Load pending local deletions so the merge phase does not re-add
     // records the user has deleted locally but not yet pushed.
     final tombstones = _tombstoneStore;
@@ -245,47 +264,93 @@ class SyncService {
     _pendingQueueDeletes = await tombstones.pendingQueueDeletes();
     _lastPushedSubscriptionIds = await tombstones.lastPushedSubscriptionIds();
 
+    Future<bool> pullStep(
+      String stepName,
+      Future<List<Map<String, dynamic>>> Function() fetch,
+      Future<void> Function(List<Map<String, dynamic>>) merge,
+    ) async {
+      final List<Map<String, dynamic>> cloudRows;
+      try {
+        cloudRows = await fetch();
+      } catch (e, stackTrace) {
+        _allStepsSucceeded = false;
+        Logger.error(
+          '[SYNC] Pull step "$stepName" failed; aborting pull and push',
+          error: e,
+          stackTrace: stackTrace,
+        );
+        return false;
+      }
+
+      try {
+        await merge(cloudRows);
+      } catch (e, stackTrace) {
+        _allStepsSucceeded = false;
+        Logger.error(
+          '[SYNC] Merge step "$stepName" left records unmerged; '
+          'sync cursor will not advance',
+          error: e,
+          stackTrace: stackTrace,
+        );
+      }
+      return true;
+    }
+
     _notifyProgress(const SyncProgress(currentTable: 'podcasts'));
-    await _safeStep('pull_podcasts', () async {
-      final cloudPodcasts = await _remoteDataSource.fetchPodcastsUpdatedAfter(
-        since,
-      );
-      await _mergePodcastsFromCloud(cloudPodcasts);
-    });
+    if (!await pullStep(
+      'pull_podcasts',
+      () => _remoteDataSource.fetchPodcastsUpdatedAfter(since),
+      _mergePodcastsFromCloud,
+    )) {
+      return false;
+    }
 
     _notifyProgress(const SyncProgress(currentTable: 'episodes'));
-    await _safeStep('pull_episodes', () async {
-      final cloudEpisodes = await _remoteDataSource.fetchEpisodesUpdatedAfter(
-        since,
-      );
-      await _mergeEpisodesFromCloud(cloudEpisodes);
-    });
+    if (!await pullStep(
+      'pull_episodes',
+      () => _remoteDataSource.fetchEpisodesUpdatedAfter(since),
+      _mergeEpisodesFromCloud,
+    )) {
+      return false;
+    }
 
     _notifyProgress(const SyncProgress(currentTable: 'subscriptions'));
-    await _safeStep('pull_subscriptions', () async {
-      final cloudSubscriptions = await _remoteDataSource
-          .fetchUserPodcastSubscriptions();
-      await _mergeSubscriptionsFromCloud(cloudSubscriptions);
-    });
+    if (!await pullStep(
+      'pull_subscriptions',
+      _remoteDataSource.fetchUserPodcastSubscriptions,
+      _mergeSubscriptionsFromCloud,
+    )) {
+      return false;
+    }
 
     _notifyProgress(const SyncProgress(currentTable: 'playback_history'));
-    await _safeStep('pull_playback_history', () async {
-      final cloudHistory = await _remoteDataSource
-          .fetchPlaybackHistoryUpdatedAfter(since);
-      await _mergePlaybackHistoryFromCloud(cloudHistory);
-    });
+    if (!await pullStep(
+      'pull_playback_history',
+      () => _remoteDataSource.fetchPlaybackHistoryUpdatedAfter(since),
+      _mergePlaybackHistoryFromCloud,
+    )) {
+      return false;
+    }
 
     _notifyProgress(const SyncProgress(currentTable: 'favorites'));
-    await _safeStep('pull_favorites', () async {
-      final cloudFavorites = await _remoteDataSource.fetchFavorites();
-      await _mergeFavoritesFromCloud(cloudFavorites);
-    });
+    if (!await pullStep(
+      'pull_favorites',
+      _remoteDataSource.fetchFavorites,
+      _mergeFavoritesFromCloud,
+    )) {
+      return false;
+    }
 
     _notifyProgress(const SyncProgress(currentTable: 'queue_items'));
-    await _safeStep('pull_queue_items', () async {
-      final cloudQueue = await _remoteDataSource.fetchQueueItems();
-      await _mergeQueueItemsFromCloud(cloudQueue);
-    });
+    if (!await pullStep(
+      'pull_queue_items',
+      _remoteDataSource.fetchQueueItems,
+      _mergeQueueItemsFromCloud,
+    )) {
+      return false;
+    }
+
+    return true;
   }
 
   // ========== Push local changes ==========
@@ -572,6 +637,7 @@ class SyncService {
     if (cloudPodcasts.isEmpty) return;
     final isar = _isar;
     int count = 0;
+    var failures = 0;
 
     await isar.writeTxn(() async {
       for (final cloudPodcast in cloudPodcasts) {
@@ -596,9 +662,14 @@ class SyncService {
           }
 
           if (local != null) {
-            final cloudUpdatedAt = _parseDateTime(cloudPodcast['updated_at']);
-            if (cloudUpdatedAt != null &&
-                cloudUpdatedAt.isAfter(local.lastUpdated)) {
+            // Compare content timestamps, not the row's write time: every
+            // push restamps `updated_at`, which must not masquerade as a
+            // content change or clobber the local "last updated" display.
+            final cloudContentUpdatedAt =
+                _parseDateTime(cloudPodcast['last_updated']) ??
+                _parseDateTime(cloudPodcast['updated_at']);
+            if (cloudContentUpdatedAt != null &&
+                cloudContentUpdatedAt.isAfter(local.lastUpdated)) {
               _updatePodcastFromCloud(local, cloudPodcast);
               await isar.podcasts.put(local);
             }
@@ -607,6 +678,7 @@ class SyncService {
             await isar.podcasts.put(newPodcast);
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge podcast record: ${cloudPodcast['id']}',
             error: e,
@@ -625,6 +697,10 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures podcast record(s) failed to merge');
+    }
   }
 
   Future<void> _mergeEpisodesFromCloud(
@@ -633,6 +709,7 @@ class SyncService {
     if (cloudEpisodes.isEmpty) return;
     final isar = _isar;
     int count = 0;
+    var failures = 0;
 
     await isar.writeTxn(() async {
       for (final cloudEpisode in cloudEpisodes) {
@@ -670,6 +747,7 @@ class SyncService {
             }
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge episode record: ${cloudEpisode['id']}',
             error: e,
@@ -688,12 +766,17 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures episode record(s) failed to merge');
+    }
   }
 
   Future<void> _mergeSubscriptionsFromCloud(
     List<Map<String, dynamic>> cloudSubscriptions,
   ) async {
     final isar = _isar;
+    var failures = 0;
 
     final subscribedPodcastCloudIds = <String>{};
     for (final sub in cloudSubscriptions) {
@@ -704,13 +787,6 @@ class SyncService {
     }
 
     await isar.writeTxn(() async {
-      if (cloudSubscriptions.isEmpty) {
-        Logger.info(
-          '[SYNC] Cloud subscriptions empty, skip unsubscribe to protect local data',
-        );
-        return;
-      }
-
       for (final sub in cloudSubscriptions) {
         try {
           final podcastCloudId = sub['podcast_id']?.toString();
@@ -731,6 +807,7 @@ class SyncService {
             }
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge subscription record: ${sub['podcast_id']}',
             error: e,
@@ -760,6 +837,7 @@ class SyncService {
             await isar.podcasts.put(podcast);
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to unsubscribe podcast: ${podcast.title}',
             error: e,
@@ -767,6 +845,10 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures subscription record(s) failed to merge');
+    }
   }
 
   Future<void> _mergePlaybackHistoryFromCloud(
@@ -775,6 +857,7 @@ class SyncService {
     if (cloudHistory.isEmpty) return;
     final isar = _isar;
     int count = 0;
+    var failures = 0;
 
     await isar.writeTxn(() async {
       for (final cloudRecord in cloudHistory) {
@@ -821,6 +904,7 @@ class SyncService {
             }
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge playback history record: ${cloudRecord['id']}',
             error: e,
@@ -839,6 +923,10 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures playback history record(s) failed to merge');
+    }
   }
 
   Future<void> _mergeFavoritesFromCloud(
@@ -847,6 +935,7 @@ class SyncService {
     // Do not early-return on empty cloud list: an empty list still means
     // "propagate full clear" for local favorites that already have supabaseId.
     final isar = _isar;
+    var failures = 0;
 
     final cloudFavoriteRowIds = <String>{};
     for (final cloudFav in cloudFavorites) {
@@ -898,6 +987,7 @@ class SyncService {
             }
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge favorite record: ${cloudFav['id']}',
             error: e,
@@ -919,6 +1009,7 @@ class SyncService {
             await isar.favorites.delete(fav.id);
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to remove local favorite: ${fav.id}',
             error: e,
@@ -926,6 +1017,10 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures favorite record(s) failed to merge');
+    }
   }
 
   Future<void> _mergeQueueItemsFromCloud(
@@ -934,6 +1029,7 @@ class SyncService {
     // Do not early-return on empty cloud list: an empty list still means
     // "propagate full clear" for local queue items that already have supabaseId.
     final isar = _isar;
+    var failures = 0;
 
     final cloudQueueRowIds = <String>{};
     for (final cloudItem in cloudQueue) {
@@ -988,6 +1084,7 @@ class SyncService {
             }
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to merge queue item record: ${cloudItem['id']}',
             error: e,
@@ -1009,6 +1106,7 @@ class SyncService {
             await isar.queues.delete(item.id);
           }
         } catch (e) {
+          failures++;
           Logger.error(
             '[SYNC] Failed to remove local queue item: ${item.id}',
             error: e,
@@ -1016,6 +1114,10 @@ class SyncService {
         }
       }
     });
+
+    if (failures > 0) {
+      throw StateError('$failures queue record(s) failed to merge');
+    }
   }
 
   // ========== Update supabaseId mappings after push ==========
@@ -1296,8 +1398,10 @@ class SyncService {
       final rssUrls = (cloud['rss_urls'] as List).cast<String>();
       if (rssUrls.isNotEmpty) local.rssUrl = rssUrls.first;
     }
-    local.lastUpdated =
-        _parseDateTime(cloud['updated_at']) ?? local.lastUpdated;
+    final cloudContentUpdatedAt = _parseDateTime(cloud['last_updated']);
+    if (cloudContentUpdatedAt != null) {
+      local.lastUpdated = cloudContentUpdatedAt;
+    }
   }
 
   Future<Episode?> _episodeFromCloud(Map<String, dynamic> cloud) async {

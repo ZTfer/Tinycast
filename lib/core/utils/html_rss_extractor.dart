@@ -1,5 +1,5 @@
 import 'package:html/parser.dart' as html_parser;
-import 'logger.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 class HtmlRssExtractor {
   HtmlRssExtractor._();

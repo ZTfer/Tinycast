@@ -19,7 +19,7 @@ class PlaySettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
-                "连续播放:",
+                '连续播放:',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: Color(0xD9000000),
@@ -36,7 +36,7 @@ class PlaySettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 8.0, top: 8.0),
               child: Text(
-                "跳过按钮:",
+                '跳过按钮:',
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: Color(0xD9000000),

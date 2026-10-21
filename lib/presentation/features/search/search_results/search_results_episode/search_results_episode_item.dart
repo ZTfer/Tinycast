@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../../core/utils/html_tag_remove_utils.dart';
+import 'package:tinycast/core/utils/html_tag_remove_utils.dart';
 
 class SearchResultsEpisodeItem extends StatefulWidget {
   final String episodeTitle;

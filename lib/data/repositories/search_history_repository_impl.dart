@@ -1,8 +1,8 @@
 import 'package:isar_community/isar.dart';
-import '../../domain/entities/search_history.dart';
-import '../../domain/repositories/search_history_repository.dart';
-import '../database/isar_service.dart';
-import '../models/search_history_model.dart';
+import 'package:tinycast/domain/entities/search_history.dart';
+import 'package:tinycast/domain/repositories/search_history_repository.dart';
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/search_history_model.dart';
 
 class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
   /// 搜索历史记录条数上限，超出时淘汰最旧条目

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tinycast/presentation/widgets/organisms/sidebar/sidebar_button.dart';
@@ -85,15 +86,16 @@ class Sidebar extends StatelessWidget {
                           : SidebarButtonState.defaultState,
                       onPressed: () => onPageChanged(AppRoutes.subscribe),
                     ),
-                    _buildMenuButton(
-                      icon: LucideIcons.flaskConical,
-                      // label: 'Test Page',
-                      route: AppRoutes.testPage,
-                      state: currentPage == AppRoutes.testPage
-                          ? SidebarButtonState.iconActive
-                          : SidebarButtonState.defaultState,
-                      onPressed: () => onPageChanged(AppRoutes.testPage),
-                    ),
+                    if (kDebugMode)
+                      _buildMenuButton(
+                        icon: LucideIcons.flaskConical,
+                        // label: 'Test Page',
+                        route: AppRoutes.testPage,
+                        state: currentPage == AppRoutes.testPage
+                            ? SidebarButtonState.iconActive
+                            : SidebarButtonState.defaultState,
+                        onPressed: () => onPageChanged(AppRoutes.testPage),
+                      ),
                   ],
                 ),
               ),

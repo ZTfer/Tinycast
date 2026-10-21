@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 // import 'apple_login_button.dart';
-import 'google_login_button.dart';
+import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/google_login_button.dart';
 
 class SocialLoginButtonGroup extends StatelessWidget {
   final VoidCallback onGoogleLogin;

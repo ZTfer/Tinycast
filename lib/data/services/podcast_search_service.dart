@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart' as dio;
-import '../../core/utils/html_rss_extractor.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/app_constants.dart';
-import '../../core/utils/network_error_handler.dart';
-import 'rss_parser_service.dart';
+import 'package:tinycast/core/utils/html_rss_extractor.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/app_constants.dart';
+import 'package:tinycast/core/utils/network_error_handler.dart';
+import 'package:tinycast/data/services/rss_parser_service.dart';
 
 /// 播客搜索服务
 ///

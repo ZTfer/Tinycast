@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'remove_played_downloads.dart';
-import 'download_when_favorite.dart';
+import 'package:tinycast/presentation/features/settings/general_settings/download_settings/remove_played_downloads.dart';
+import 'package:tinycast/presentation/features/settings/general_settings/download_settings/download_when_favorite.dart';
 
 class DownloadSettings extends StatelessWidget {
   const DownloadSettings({super.key});

@@ -1,19 +1,19 @@
 import 'dart:async';
 
-import '../../domain/entities/podcast.dart';
-import '../../domain/entities/episode.dart';
-import '../../domain/repositories/podcast_repository.dart';
-import '../datasources/remote_podcast_datasource.dart';
-import '../datasources/local_podcast_datasource.dart';
-import '../services/file_storage_service.dart';
-import '../services/itunes_search_service.dart';
-import '../services/podcast_merge_service.dart';
-import '../services/feed_refresh_service.dart';
-import '../mappers/podcast_mapper.dart';
-import '../mappers/episode_mapper.dart';
-import '../../core/services/sync_delete_recorder.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/logger.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
+import 'package:tinycast/data/datasources/remote_podcast_datasource.dart';
+import 'package:tinycast/data/datasources/local_podcast_datasource.dart';
+import 'package:tinycast/data/services/file_storage_service.dart';
+import 'package:tinycast/data/services/itunes_search_service.dart';
+import 'package:tinycast/data/services/podcast_merge_service.dart';
+import 'package:tinycast/data/services/feed_refresh_service.dart';
+import 'package:tinycast/data/mappers/podcast_mapper.dart';
+import 'package:tinycast/data/mappers/episode_mapper.dart';
+import 'package:tinycast/core/services/sync_delete_recorder.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
 class PodcastRepositoryImpl implements PodcastRepository {
   final RemotePodcastDataSource _remoteDataSource;

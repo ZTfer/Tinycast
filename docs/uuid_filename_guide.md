@@ -1,9 +1,11 @@
-# UUID 文件命名方案
+# UUID 形状文件命名方案
 
 ## 📋 概述
 
-从现在开始，所有下载的音频文件将使用 **UUID v4** 作为文件名，
-而不是之前的 episode ID。
+所有下载的音频文件使用 **UUID 形状**的文件名。该名称由 episode ID 经
+SHA-256 派生而来，对同一 episode **稳定不变**（不是每次调用随机生成），
+因此暂停恢复、失败重试和「文件已存在」检查始终指向同一个文件，
+不会留下无法回收的临时分片。
 
 ## 🔧 实现细节
 
@@ -16,35 +18,34 @@
 示例：195.mp3, 196.mp3, 197.mp3
 ```
 
-**新格式**（UUID v4）：
+**新格式**（稳定 UUID 形状）：
 
 ```text
 {uuid}.mp3
 示例：a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
 ```
 
-### UUID 生成规则
-
-生成的 UUID 符合 **UUID v4 标准**：
+### 生成规则
 
 ```text
-格式：xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-
-其中：
-- x = 随机十六进制字符 (0-9, a-f)
-- 第13位固定为 '4' (标识版本号)
-- 第17位为 '8', '9', 'a', 或 'b' (标识变体)
+1. digest = SHA-256("tinycast:audio:{episodeId}")   （64 位十六进制）
+2. 取前 32 位，按 UUID 格式分段：8-4-4-4-12
+3. 第 13 位固定为 '4'（版本位）
+4. 第 17 位强制为 8/9/a/b（变体位）
+5. 追加 .mp3 后缀
 ```
+
+同一 episode 无论调用多少次、在多少台设备上，得到的名称都相同。
 
 ### 示例输出
 
 ```text
-🆔 [DEBUG] Generated UUID filename for episode 195:
+🆔 [DEBUG] Audio filename for episode 195:
        a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
-🆔 [DEBUG] Generated UUID filename for episode 196:
-       b2c3d4e5-f6a7-4bcd-ef01-234567890abc.mp3
-🆔 [DEBUG] Generated UUID filename for episode 197:
-       c3d4e5f6-a7b8-4cde-f01-234567890abcd.mp3
+🆔 [DEBUG] Audio filename for episode 195:   ← 再次调用，名称相同
+       a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
+🆔 [DEBUG] Audio filename for episode 196:   ← 不同 episode，名称不同
+       b2c3d4e5-f6a7-4bcd-8f01-234567890abc.mp3
 ```
 
 ## 💾 数据库存储
@@ -77,29 +78,28 @@ final fullPath = await fileStorageService.getFullFilePath(
 - ✅ 新方式：`a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3`
   → 不暴露任何信息
 
-### 2. **唯一性**
+### 2. **稳定性**
 
-- UUID 保证全局唯一（概率极低冲突）
-- 即使在不同设备、不同时间生成，也不会重复
-- 避免文件名冲突
+- 同一 episode 的名称恒定，暂停/恢复、失败重试复用同一临时文件
+- 「文件已存在」检查可靠，不会因为重新生成名称而重复下载
+- 不会在临时目录留下无法定位的孤儿分片
 
 ### 3. **隐私保护**
 
-- 用户无法通过文件名推断出：
-  - episode 的内部 ID
-  - 下载顺序
-  - 数据库结构
+- 文件名不直接暴露 episode ID，无法一眼读出数据库主键
+- 哈希空间足够分散，不同 episode 不会重名
+- 注意：这是本地沙盒内的命名策略，不构成密码学安全边界
 
 ### 4. **标准化**
 
-- 符合 RFC 4122 标准
-- 与业界最佳实践一致
-- 便于与其他系统集成
+- 名称形状符合 UUID v4 格式（版本位、变体位均正确）
+- 与业界常见的文件名去标识化做法一致
+- 便于与其他按 UUID 处理文件名的系统集成
 
 ### 5. **可追溯性**
 
-- 每个 UUID 都是唯一的标识符
-- 可以通过数据库的 `downloadedPath` 字段追踪文件
+- 名称由 episode ID 确定性派生，重算即可定位文件
+- 也可以通过数据库的 `downloadedPath` 字段追踪文件
 - 便于调试和问题排查
 
 ## 🔍 日志输出示例
@@ -115,7 +115,7 @@ final fullPath = await fileStorageService.getFullFilePath(
    - Title: 这半年，我们又买了哪些科技好物？
    - Audio URL: https://example.com/audio.mp3
 📁 [DEBUG] Temporary Directory: /var/folders/xxx/T/tinycast
-🆔 [DEBUG] Generated UUID filename for episode 195:
+🆔 [DEBUG] Audio filename for episode 195:
        a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3    ← 新！
    - File name: a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
                                                      ← 新！
@@ -145,9 +145,8 @@ final fullPath = await fileStorageService.getFullFilePath(
 └── Data/Library/Application Support/com.example.tinycast/
     └── audio/
         ├── a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3 (57 MB)  ← 新格式
-        ├── b2c3d4e5-f6a7-4bcd-ef01-234567890abc.mp3 (66 MB)  ← 新格式
-        ├── c3d4e5f6-a7b8-4cde-f01-234567890abcd.mp3 (111 MB)
-           ← 新格式
+        ├── b2c3d4e5-f6a7-4bcd-8f01-234567890abc.mp3 (66 MB)  ← 新格式
+        ├── c3d4e5f6-a7b8-4cde-9f01-234567890abc.mp3 (111 MB) ← 新格式
         └── ...
 ```
 
@@ -161,7 +160,9 @@ final fullPath = await fileStorageService.getFullFilePath(
 - 系统能正确读取和播放这些文件
 - 不需要立即迁移
 
-**新下载的文件**将自动使用 UUID 命名。
+**新下载的文件**将自动使用稳定 UUID 形状命名。由于名称由 episode ID
+派生，同一集重复下载（重新订阅、删除后重下）会得到与旧文件相同的名称；
+旧命名文件只要仍在 `downloadedPath` 中记录就继续有效。
 
 ### 数据库兼容性
 
@@ -175,11 +176,13 @@ Episode 模型的 `downloadedPath` 字段：
 
 ### 方法1：查看日志
 
-搜索 `🆔 [DEBUG]` 可以看到所有 UUID 生成记录：
+搜索 `🆔 [DEBUG]` 可以看到音频文件名生成记录：
 
 ```text
-🆔 [DEBUG] Generated UUID filename for episode XXX: {uuid}.mp3
+🆔 [DEBUG] Audio filename for episode XXX: {uuid}.mp3
 ```
+
+同一 episode 的日志名在每次生成时都相同。
 
 ### 方法2：检查文件系统
 
@@ -201,52 +204,48 @@ Application\ Support/com.example.tinycast/audio/
 
 ## ⚙️ 技术实现
 
-### UUID 生成算法
+### 音频文件名生成（确定性）
 
 ```dart
-String _generateUUID() {
-  final random = Random();
-  const hexChars = '0123456789abcdef';
-
-  final segments = [
-    // 8 个字符
-    List.generate(8, (_) => hexChars[random.nextInt(16)]).join(),
-    // 4 个字符
-    List.generate(4, (_) => hexChars[random.nextInt(16)]).join(),
-    // 4 个字符，第一位是 4 (版本号)
-    '4' + List.generate(3, (_) => hexChars[random.nextInt(16)]).join(),
-    // 4 个字符，第一位是 8,9,a,b (变体)
-    ['8', '9', 'a', 'b'][random.nextInt(4)] +
-        List.generate(3, (_) => hexChars[random.nextInt(16)]).join(),
-    // 12 个字符
-    List.generate(12, (_) => hexChars[random.nextInt(16)]).join(),
-  ];
-
-  return segments.join('-');
+String generateAudioFileName(String episodeId) {
+  final digest = sha256
+      .convert(utf8.encode('tinycast:audio:$episodeId'))
+      .toString();
+  final version = '4${digest.substring(13, 16)}';
+  final variantValue = (int.parse(digest[16], radix: 16) & 0x3) | 0x8;
+  final variant =
+      '${variantValue.toRadixString(16)}${digest.substring(17, 20)}';
+  return '${digest.substring(0, 8)}-${digest.substring(8, 12)}-'
+      '$version-$variant-${digest.substring(20, 32)}.mp3';
 }
 ```
 
-### 冲突概率
+- 输入固定为 `tinycast:audio:{episodeId}`，因此结果只取决于 episode ID
+- 取摘要前 32 个十六进制字符，按 `8-4-4-4-12` 分段
+- 版本位固定为 `4`，变体位强制落在 `8/9/a/b`
+- 封面图仍使用随机 UUID（`generateArtworkFileName()`），不需要稳定复用
 
-UUID v4 的碰撞概率极低：
+### 名称唯一性
 
-- 生成 1 亿个 UUID，碰撞概率约为 **5.3 × 10^-20**
-- 相当于连续投掷硬币 66 次全部为正面的概率
-- **实际上可以认为不会发生碰撞**
+音频文件名不再依赖随机数，而是依赖 SHA-256：
+
+- 同一 episode 在任何设备、任何时间生成的名字完全一致
+- 两个不同 episode 只有在 SHA-256 摘要前 128 位碰撞时才会同名，实际不可能发生
+- 即使手工构造极端输入，数据库中的 `downloadedPath` 仍是最终依据
 
 ## 📝 最佳实践建议
 
 1. **不要依赖文件名推断信息**
-   - 文件名是随机生成的 UUID
+   - 文件名是由 episode ID 哈希派生的 UUID 形状字符串
    - 所有元数据应从数据库获取
 
 2. **始终通过数据库访问文件**
    - 使用 `episode.downloadedPath` 获取文件位置
-   - 不要猜测或硬编码文件名
+   - 需要重新计算名称时统一调用 `generateAudioFileName(episodeId)`
 
 3. **日志记录**
-   - 保留 UUID 生成日志便于调试
-   - 可以通过 episode ID 追踪到具体文件
+   - 保留 `🆔 [DEBUG] Audio filename` 日志便于调试
+   - 日志中的名称可稳定复现，可通过 episode ID 追踪到具体文件
 
 4. **清理策略**
    - 使用数据库记录判断文件是否需要删除
@@ -265,8 +264,13 @@ UUID v4 的碰撞概率极低：
 
 **暴露的信息**（安全）：
 
-- ✅ 仅显示随机字符串
-- ✅ 无法反向推导原始数据
+- ✅ 仅显示哈希派生的伪随机字符串
+- ✅ 无法直接读出原始 episode ID
+
+### 边界说明
+
+名称是「命名混淆」而非加密：知道 episode ID 的人可以重算文件名。
+安全性依赖应用沙盒与系统权限，而非文件名本身。
 
 ### 文件访问控制
 

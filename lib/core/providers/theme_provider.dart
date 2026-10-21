@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../theme/app_theme_config.dart';
-import '../theme/theme_loader.dart';
+import 'package:tinycast/core/theme/app_theme_config.dart';
+import 'package:tinycast/core/theme/theme_loader.dart';
 
 final themeProvider = AsyncNotifierProvider<ThemeNotifier, ThemeState>(
   ThemeNotifier.new,

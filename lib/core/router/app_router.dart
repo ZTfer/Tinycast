@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
@@ -19,6 +20,13 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    final isDebugOnlyRoute =
+        settings.name == AppRoutes.testPage ||
+        settings.name == AppRoutes.databaseCleanup;
+    if (!kDebugMode && isDebugOnlyRoute) {
+      settings = const RouteSettings(name: AppRoutes.home);
+    }
+
     switch (settings.name) {
       case AppRoutes.home:
         return PageRouteBuilder(
@@ -168,18 +176,38 @@ class AppRouter {
     Navigator.popUntil(context, ModalRoute.withName(routeName));
   }
 
+  static const _settingsWindowArguments = '{"type":"settings"}';
+  static const _subscribeWindowArguments = '{"type":"subscribe"}';
+
+  static Future<void>? _settingsWindowOpening;
+  static Future<void>? _subscribeWindowOpening;
+
   /// 打开设置窗口
-  static Future<void> openSettingsWindow() async {
-    final controller = await WindowController.create(
-      WindowConfiguration(hiddenAtLaunch: true, arguments: '{"type":"settings"}'),
-    );
-    await controller.show();
+  static Future<void> openSettingsWindow() {
+    return _settingsWindowOpening ??=
+        _showSingletonWindow(_settingsWindowArguments).whenComplete(() {
+      _settingsWindowOpening = null;
+    });
   }
 
   /// 打开订阅窗口
-  static Future<void> openSubscribeWindow() async {
+  static Future<void> openSubscribeWindow() {
+    return _subscribeWindowOpening ??=
+        _showSingletonWindow(_subscribeWindowArguments).whenComplete(() {
+      _subscribeWindowOpening = null;
+    });
+  }
+
+  static Future<void> _showSingletonWindow(String arguments) async {
+    final windows = await WindowController.getAll();
+    for (final window in windows) {
+      if (window.arguments == arguments) {
+        await window.show();
+        return;
+      }
+    }
     final controller = await WindowController.create(
-      WindowConfiguration(hiddenAtLaunch: true, arguments: '{"type":"subscribe"}'),
+      WindowConfiguration(hiddenAtLaunch: true, arguments: arguments),
     );
     await controller.show();
   }

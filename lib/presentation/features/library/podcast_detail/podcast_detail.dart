@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
-import 'episodes_list.dart';
+import 'package:tinycast/presentation/features/library/podcast_detail/episodes_list.dart';
 
 /// 播客详情页面
 ///

@@ -1,16 +1,10 @@
-import '../entities/podcast.dart';
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class GetSubscribedPodcastsUseCase {
   final PodcastRepository _repository;
 
   GetSubscribedPodcastsUseCase(this._repository);
 
-  Future<List<Podcast>> call() async {
-    try {
-      return await _repository.getSubscribedPodcasts();
-    } catch (e) {
-      throw Exception('Failed to get subscribed podcasts: $e');
-    }
-  }
+  Future<List<Podcast>> call() async => _repository.getSubscribedPodcasts();
 }

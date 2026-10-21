@@ -1,5 +1,5 @@
-import '../entities/episode.dart';
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class GetLatestEpisodesByPodcastIdUseCase {
   final PodcastRepository _repository;
@@ -11,13 +11,9 @@ class GetLatestEpisodesByPodcastIdUseCase {
       throw ArgumentError('Podcast ID must be a positive integer');
     }
 
-    try {
-      return await _repository.getLatestEpisodesByPodcastId(
-        podcastId,
-        limit: limit,
-      );
-    } catch (e) {
-      throw Exception('Failed to get latest episodes by podcast ID: $e');
-    }
+    return _repository.getLatestEpisodesByPodcastId(
+      podcastId,
+      limit: limit,
+    );
   }
 }

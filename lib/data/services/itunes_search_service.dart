@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../core/utils/app_constants.dart';
-import '../../core/utils/network_error_handler.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/core/utils/app_constants.dart';
+import 'package:tinycast/core/utils/network_error_handler.dart';
 
 /// iTunes 播客搜索结果
 ///

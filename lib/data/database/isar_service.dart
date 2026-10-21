@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
@@ -20,6 +21,12 @@ class IsarService {
   bool _isInitialized = false;
 
   IsarService._internal();
+
+  /// 仅用于测试：注入一个已打开的 Isar 实例，绕过 path_provider。
+  @visibleForTesting
+  IsarService.forTesting(Isar isar)
+    : _isar = isar,
+      _isInitialized = true;
 
   static IsarService get instance {
     _instance ??= IsarService._internal();

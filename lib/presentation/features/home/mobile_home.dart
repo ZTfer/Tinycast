@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:tinycast/core/theme/app_theme.dart';
 import 'package:tinycast/presentation/features/home/mobile_body.dart';
 
 class MobileHome extends StatelessWidget {
@@ -6,6 +7,9 @@ class MobileHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(color: const Color(0xFFF5F5F5), child: MobileBody());
+    final theme = AppTheme.fromBrightness(
+      MediaQuery.platformBrightnessOf(context),
+    );
+    return Container(color: theme.backgroundSecondary, child: MobileBody());
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/presentation/features/queue/queue_empty_page/queue_empty_page.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/episode_item.dart';
 import 'package:tinycast/presentation/providers/playback_provider.dart';
@@ -40,90 +41,105 @@ class Queue extends ConsumerWidget {
       return const QueueEmptyPage();
     }
 
-    final List<Widget> children = [];
+    final List<Widget> slivers = [];
 
     if (queueEpisodes.isNotEmpty) {
-      children.addAll([
-        _buildSectionTitle('队列'),
-        ...queueEpisodes.asMap().entries.map((entry) {
-          final index = entry.key;
-          final episode = entry.value;
-          final isLast = index == queueEpisodes.length - 1;
-          return EpisodeItem(
-            episode: episode,
-            showDivider: !isLast,
-            showRemoveFromQueue: true,
-            onRemoveFromQueue: () async {
-              await ref
-                  .read(queueNotifierProvider.notifier)
-                  .removeFromQueueByEpisodeId(episode);
-            },
-            onPlayPressed: () {
-              ref.read(playbackProvider.notifier).playEpisode(episode);
-            },
-            onEpisodeTap: () async {
-              final useCase = ref.read(getPodcastByIdUseCaseProvider);
-              final podcast = await useCase(episode.podcastId);
-              if (podcast != null) {
-                ref
-                    .read(navigationProvider.notifier)
-                    .showEpisodeDetail(episode, podcast);
-              }
-            },
-          );
-        }),
-      ]);
+      slivers.add(_buildSectionTitle('队列'));
+      slivers.add(
+        SliverList.builder(
+          itemCount: queueEpisodes.length,
+          itemBuilder: (context, index) {
+            final episode = queueEpisodes[index];
+            return _buildEpisodeItem(
+              ref,
+              episode,
+              showDivider: index < queueEpisodes.length - 1,
+              showRemoveFromQueue: true,
+            );
+          },
+        ),
+      );
 
       if (unplayedEpisodes.isNotEmpty) {
-        children.add(_buildDivider());
+        slivers.add(_buildDivider());
       }
     }
 
     if (unplayedEpisodes.isNotEmpty) {
-      children.addAll([
-        _buildSectionTitle('继续播放'),
-        ...unplayedEpisodes.asMap().entries.map((entry) {
-          final index = entry.key;
-          final episode = entry.value;
-          final isLast = index == unplayedEpisodes.length - 1;
-          return EpisodeItem(
-            episode: episode,
-            showDivider: !isLast,
-            onPlayPressed: () {
-              ref.read(playbackProvider.notifier).playEpisode(episode);
-            },
-            onEpisodeTap: () async {
-              final useCase = ref.read(getPodcastByIdUseCaseProvider);
-              final podcast = await useCase(episode.podcastId);
-              if (podcast != null) {
-                ref
-                    .read(navigationProvider.notifier)
-                    .showEpisodeDetail(episode, podcast);
-              }
-            },
-          );
-        }),
-      ]);
+      slivers.add(_buildSectionTitle('继续播放'));
+      slivers.add(
+        SliverList.builder(
+          itemCount: unplayedEpisodes.length,
+          itemBuilder: (context, index) {
+            final episode = unplayedEpisodes[index];
+            return _buildEpisodeItem(
+              ref,
+              episode,
+              showDivider: index < unplayedEpisodes.length - 1,
+            );
+          },
+        ),
+      );
     }
 
-    return ListView(children: children);
+    return CustomScrollView(slivers: slivers);
+  }
+
+  Widget _buildEpisodeItem(
+    WidgetRef ref,
+    Episode episode, {
+    required bool showDivider,
+    bool showRemoveFromQueue = false,
+  }) {
+    return EpisodeItem(
+      key: ValueKey(episode.id),
+      episode: episode,
+      showDivider: showDivider,
+      showRemoveFromQueue: showRemoveFromQueue,
+      onRemoveFromQueue: showRemoveFromQueue
+          ? () async {
+              await ref
+                  .read(queueNotifierProvider.notifier)
+                  .removeFromQueueByEpisodeId(episode);
+            }
+          : null,
+      onPlayPressed: () {
+        ref.read(playbackProvider.notifier).playEpisode(episode);
+      },
+      onEpisodeTap: () async {
+        final useCase = ref.read(getPodcastByIdUseCaseProvider);
+        final podcast = await useCase(episode.podcastId);
+        if (podcast != null) {
+          ref
+              .read(navigationProvider.notifier)
+              .showEpisodeDetail(episode, podcast);
+        }
+      },
+    );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-          color: Color(0xFF888888),
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: Color(0xFF888888),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildDivider() {
-    return Container(height: 0.5, color: const Color(0xFFE0E0E0));
+    return const SliverToBoxAdapter(
+      child: SizedBox(
+        height: 0.5,
+        child: ColoredBox(color: Color(0xFFE0E0E0)),
+      ),
+    );
   }
 }

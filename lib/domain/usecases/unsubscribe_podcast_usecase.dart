@@ -1,4 +1,4 @@
-import '../repositories/podcast_repository.dart';
+import 'package:tinycast/domain/repositories/podcast_repository.dart';
 
 class UnsubscribePodcastUseCase {
   final PodcastRepository _repository;
@@ -10,10 +10,6 @@ class UnsubscribePodcastUseCase {
       throw ArgumentError('Podcast ID must be a positive integer');
     }
 
-    try {
-      await _repository.unsubscribe(podcastId);
-    } catch (e) {
-      throw Exception('Failed to unsubscribe from podcast: $e');
-    }
+    await _repository.unsubscribe(podcastId);
   }
 }

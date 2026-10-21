@@ -1,4 +1,4 @@
-import '../entities/play_history.dart';
+import 'package:tinycast/domain/entities/play_history.dart';
 
 /// 播放历史 Repository 抽象接口（Domain 层）
 abstract class PlayHistoryRepository {

@@ -1,11 +1,11 @@
 import 'package:isar_community/isar.dart';
-import '../../core/services/sync_delete_recorder.dart';
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_exception.dart';
-import '../../domain/entities/episode.dart' as domain;
-import '../database/isar_service.dart';
-import '../models/queue_model.dart';
-import '../models/episode_model.dart' as model;
+import 'package:tinycast/core/services/sync_delete_recorder.dart';
+import 'package:tinycast/core/utils/logger.dart';
+import 'package:tinycast/core/utils/app_exception.dart';
+import 'package:tinycast/domain/entities/episode.dart' as domain;
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/models/queue_model.dart';
+import 'package:tinycast/data/models/episode_model.dart' as model;
 
 class LocalQueueDataSource {
   final IsarService _isarService;

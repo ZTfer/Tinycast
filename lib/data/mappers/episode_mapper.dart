@@ -1,5 +1,5 @@
-import '../../domain/entities/episode.dart';
-import '../models/episode_model.dart' as model;
+import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/data/models/episode_model.dart' as model;
 
 /// Episode 实体与模型之间的映射器
 class EpisodeMapper {
