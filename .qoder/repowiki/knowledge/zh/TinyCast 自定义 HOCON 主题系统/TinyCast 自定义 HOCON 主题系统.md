@@ -12,7 +12,7 @@ source_files:
     - lib/core/theme/app_text_styles.dart
     - lib/core/theme/app_theme.dart
     - lib/core/theme/theme_loader.dart
-    - lib/core/theme/theme_loader.dart
+    - lib/core/theme/theme_data.dart
     - docs/theme/overview.md
     - docs/theme/colors.md
     - docs/theme/typography.md
@@ -35,9 +35,9 @@ TinyCast 采用了一套**独立于 Material Design 的自定义主题系统**�
 - **theme_data.dart**：AppThemeData 类统一暴露颜色、间距、圆角、阴影和 Widget 样式访问入口
 
 ### 运行时加载层
-- **theme_loader.dart**：内置轻量级 HOCON 解析器，支持注释、嵌套对象、include 引用、`${}` 变量替换
-- **theme_provider.dart**：基于 Riverpod 的主题状态管理，支持从本地文件或远程 JSON 动态加载主题
+- **theme_loader.dart**：内置轻量级 HOCON 解析器，支持注释、嵌套对象、include 引用、`${}` 变量替换；`main()` 启动时调用 `preloadThemeConfigs()` 写入静态缓存
 - **app_theme.dart**：静态入口，根据 Brightness 自动选择 light/dark 主题
+- **无 Riverpod 主题 Provider**：主题不经过状态管理，运行时直接读取缓存；修改 `.conf` 需重新构建/重启应用
 
 ## 设计原则
 

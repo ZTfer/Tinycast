@@ -12,6 +12,6 @@ scope:
 
 ### Supabase 云服务
 - 角色：用户认证、云同步、远程数据库与存储的 BaaS 提供方
-- 配置方式：优先从 `.env` 读取 `SUPABASE_URL` / `SUPABASE_ANON_KEY`，回退到 `--dart-define` 编译时参数；未配置时跳过初始化不影响其他功能
+- 配置方式：`run.sh` 读取 `.env` 后转成 `--dart-define`；应用只读取编译时变量，未配置时跳过初始化不影响其他功能
 - 使用模式：通过 Riverpod Provider `supabaseClientProvider` 获取 `SupabaseClient`；Session 持久化由 `flutter_secure_storage` 管理
 - 验证：具体 API/参数以官方文档为准

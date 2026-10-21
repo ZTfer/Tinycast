@@ -403,7 +403,7 @@ NB --> LTI["NavbarLargeTitle"]
 - 动画与重绘
   - 按钮使用 AnimatedContainer，仅在悬停时启用过渡，离开时 Duration.zero 避免闪烁
 - 主题解析
-  - 编译时常量模式（AppColors）性能最优；运行时 HOCON 解析适合动态换肤
+  - 默认走 HOCON 解析并缓存；编译时常量模式（AppColors，需开启 useHardcoded）性能最优
 - 响应式与多端
   - 通过 MediaQuery.platformBrightnessOf 切换明暗主题；布局尺寸与间距由主题集中管理
 - 无障碍

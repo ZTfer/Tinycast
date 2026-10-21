@@ -40,8 +40,8 @@ TinyCast 采用分层组织：
 ```mermaid
 graph TB
 A["应用入口<br/>main.dart"] --> B["ProviderScope<br/>Riverpod 容器"]
-B --> C["core/providers<br/>认证与同步"]
-B --> D["presentation/providers<br/>播放/队列/播客/下载"]
+B --> C["core/providers<br/>认证"]
+B --> D["presentation/providers<br/>同步/播放/队列/播客/下载"]
 D --> E["domain/usecases<br/>用例编排"]
 E --> F["data/repositories<br/>仓库实现"]
 F --> G["data/datasources<br/>本地/远程数据源"]

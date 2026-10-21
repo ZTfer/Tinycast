@@ -334,8 +334,8 @@ TinyCast 的 Supabase 集成围绕"认证—同步—存储"三条主线展开�
 ### 环境变量与初始化
 - 必需变量：SUPABASE_URL、SUPABASE_ANON_KEY
 - 配置方式：
-  - 开发：.env 文件优先加载
-  - 构建发布：--dart-define 注入编译时变量
+  - 开发：run.sh 读取 .env 并转成 --dart-define；应用只读取编译时变量
+  - 构建发布：--dart-define 注入；值会被编译进产物，不能放 service_role 等密钥
 - 初始化：在 _initializeApp 中根据 AppConfig.fromEnvironment() 判断是否为占位符，非占位则调用 SupabaseService().initialize(...)
 
 **章节来源**

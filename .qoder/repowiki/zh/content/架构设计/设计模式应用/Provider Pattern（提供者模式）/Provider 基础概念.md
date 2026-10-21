@@ -156,30 +156,23 @@ Invalidate --> End(["结束"])
 章节来源
 - [sync_provider.dart:41-155](file://lib/presentation/providers/sync_provider.dart#L41-L155)
 
-### 主题状态（AsyncNotifierProvider）
-ThemeNotifier 异步加载主题配置，失败时回退到默认配置。UI 可通过 AsyncNotifierProvider 获取 ThemeState，并根据亮度选择对应主题配置。
+### 主题加载（非 Provider）
+主题不使用 AsyncNotifierProvider。`main()` 在首帧前调用 `ThemeLoader.preloadThemeConfigs()`，把 HOCON 配置写入静态缓存；运行时 `AppTheme.fromBrightness` 按系统亮度读取。没有 ThemeNotifier、ThemeState 或 themeProvider。
 
 ```mermaid
-classDiagram
-class ThemeNotifier {
-+build() Future~ThemeState~
-+loadFromJson(json) void
-+loadFromRemoteJson(jsonString) void
-}
-class ThemeState {
-+lightConfig AppThemeConfig
-+darkConfig AppThemeConfig
-+forBrightness(brightness) AppThemeConfig
-}
-ThemeNotifier --> ThemeState : "构建/更新"
+sequenceDiagram
+participant Main as "main()"
+participant Loader as "ThemeLoader"
+participant App as "AppTheme"
+Main->>Loader : preloadThemeConfigs()
+Loader-->>Main : 静态缓存就绪
+App->>Loader : 按系统亮度读取缓存
 ```
 
-图表来源
-- [theme_loader.dart:65-91](file://lib/core/theme/theme_loader.dart#L65-L91)
-- [theme_loader.dart:11-26](file://lib/core/theme/theme_loader.dart#L11-L26)
-
 章节来源
-- [theme_loader.dart:7-91](file://lib/core/theme/theme_loader.dart#L7-L91)
+- [main.dart](file://lib/main.dart)
+- [theme_loader.dart](file://lib/core/theme/theme_loader.dart)
+- [app_theme.dart](file://lib/core/theme/app_theme.dart)
 
 ### 下载状态（NotifierProvider + 全局事件流）
 DownloadNotifier 订阅 AudioDownloadService 的全局事件流，维护每个 episode 的状态与进度，并提供清理与查询接口。
@@ -256,17 +249,17 @@ BaseProvider 提供便捷工厂方法，快速创建 Provider、FutureProvider�
 
 ## 依赖关系分析
 - 应用入口 main.dart 使用 ProviderScope 提供依赖注入上下文
-- Core 层 Provider 依赖服务类（如 SupabaseService）
+- Core 层认证 Provider 依赖服务类（如 SupabaseService）
 - Presentation 层 Provider 依赖业务服务与跨模块 Provider（如 sync 失效其他 Provider）
+- 主题不在 Provider 层，启动时由 ThemeLoader 预加载
 - 各 Provider 之间通过 ref.invalidate 实现解耦的数据刷新
 
 ```mermaid
 graph LR
 Main["main.dart<br/>ProviderScope"] --> CoreA["auth_provider.dart"]
-Main --> CoreB["sync_provider.dart"]
-Main --> CoreC["theme_provider.dart"]
-CoreB --> PresA["download_provider.dart"]
-CoreB --> PresB["settings_provider.dart"]
+Main --> PresS["sync_provider.dart"]
+PresS --> PresA["download_provider.dart"]
+PresS --> PresB["settings_provider.dart"]
 CoreA --> ServiceA["supabase_service.dart"]
 ```
 

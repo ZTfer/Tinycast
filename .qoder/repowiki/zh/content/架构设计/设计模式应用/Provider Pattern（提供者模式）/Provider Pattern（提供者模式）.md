@@ -47,17 +47,17 @@
 
 ## 项目结构
 本项目采用分层组织方式，Provider 主要分布在 core/providers 与 presentation/providers 两个目录：
-- core/providers：基础设施级能力，如认证、同步、主题等
-- presentation/providers：业务层状态与交互，如播放、播客、下载、队列、设置、收藏、未播放剧集等
+- core/providers：仅认证状态（auth_provider）
+- presentation/providers：业务层状态与交互，如同步、播放、播客、下载、队列、设置、收藏、未播放剧集等
+- 主题不在 Provider 层：启动时由 ThemeLoader 预加载后静态读取
 
 ```mermaid
 graph TB
 subgraph "核心提供者"
 A["auth_provider.dart"]
-B["sync_provider.dart"]
-C["theme_provider.dart"]
 end
 subgraph "展示层提供者"
+B["sync_provider.dart"]
 D["playback_provider.dart"]
 E["podcast_provider.dart"]
 F["download_provider.dart"]

@@ -340,7 +340,7 @@ TinyCast 的核心服务围绕 Supabase、同步、播放进度与网络连接�
   - 先打开 Isar，再初始化 Supabase，最后运行业务逻辑
   - 参考：_initializeApp 中顺序调用
 - Supabase 配置
-  - 开发建议使用 .env，发布使用 --dart-define
+  - 开发建议用 run.sh 读取 .env 并转成 --dart-define；应用本身只读取编译时变量
   - 参考：docs/supabase_setup.md 的环境变量说明
 - 同步调用
   - 在登录后触发 sync()，监听 onProgressChanged 更新 UI

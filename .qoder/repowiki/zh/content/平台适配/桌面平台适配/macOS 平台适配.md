@@ -205,9 +205,9 @@ MainFlutterWindow --> FlutterMultiWindowPlugin : "设置窗口创建回调"
 - [macos/Runner/Configs/Warnings.xcconfig:1-14](file://macos/Runner/Configs/Warnings.xcconfig#L1-L14)
 
 ### Entitlements：沙盒与能力开关
-- DebugProfile.entitlements：开启沙盒、JIT、网络客户端与服务端（便于调试）
-- Release.entitlements：仅开启沙盒与网络客户端（生产最小权限）
-- 注意：如需访问用户选择文件、下载目录等，需在对应目标添加相应 entitlements
+- DebugProfile.entitlements：开启沙盒、JIT、网络客户端与服务端、用户选择文件只读（便于调试）
+- Release.entitlements：开启沙盒、网络客户端与用户选择文件只读（生产最小权限）
+- 注意：如需访问下载目录等更多位置，需在对应目标添加相应 entitlements
 
 章节来源
 - [macos/Runner/DebugProfile.entitlements:1-15](file://macos/Runner/DebugProfile.entitlements#L1-L15)

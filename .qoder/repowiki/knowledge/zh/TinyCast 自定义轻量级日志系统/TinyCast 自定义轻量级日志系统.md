@@ -16,7 +16,7 @@ TinyCast 未使用第三方日志框架，而是基于 `dart:io`、`flutter/foun
 - **位置**: `lib/core/utils/logger.dart`
 - **级别枚举**: `LogLevel.debug / info / warning / error`
 - **默认标签**: `_defaultTag = 'TinyCast'`
-- **最小级别控制**: `_minLevel` 在 debug 模式下为 `info`，release 模式为 `error`，可通过 `setMinLevel()` 动态调整
+- **最小级别控制**: `_minLevel` 在 debug 模式下为 `info`，release 模式为 `warning`，可通过 `setMinLevel()` 动态调整
 - **文件日志**: 通过 `initFileLogging({String? logDirPath})` 初始化，默认写入应用支持目录下的 `log/YYYY-MM-DD.log`，支持自定义路径
 
 ## 输出格式

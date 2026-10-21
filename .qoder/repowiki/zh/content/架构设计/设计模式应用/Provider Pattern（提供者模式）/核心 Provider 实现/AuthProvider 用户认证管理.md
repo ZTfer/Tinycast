@@ -258,7 +258,7 @@ GoogleLoginButton --> CloudSyncSettings : "回调触发"
 - 流式状态：authStateProvider 使用 StreamProvider 监听 onAuthStateChange，减少轮询开销，提升响应性。
 - 错误处理：SupabaseAuthService 捕获异常并记录日志，再由 UI 层统一提示，避免崩溃。
 - 外部授权模式：使用 LaunchMode.externalApplication 打开系统浏览器，提高安全性与兼容性。
-- 配置优先级：通过 docs/supabase_setup.md 说明 .env 与 --dart-define 的优先级，便于多环境切换。
+- 配置方式：通过 docs/supabase_setup.md 说明 run.sh 如何把 .env 转成 --dart-define，便于多环境切换。
 
 [本节为通用指导，不直接分析具体文件]
 

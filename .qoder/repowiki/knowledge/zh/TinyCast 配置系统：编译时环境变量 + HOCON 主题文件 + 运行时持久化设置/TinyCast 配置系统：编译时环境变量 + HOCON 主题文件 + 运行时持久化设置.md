@@ -45,7 +45,7 @@ source_files:
 
 ## 3. 架构与设计决策
 - **分层清晰**：编译期配置（`AppConfig`）→ 主题配置（HOCON 文件 + ThemeLoader）→ 运行时设置（Isar + SettingsService）三层分离，互不耦合。
-- **主题可热更新**：默认关闭硬编码模式（`ThemeSource.useHardcoded = false`），编辑 `.conf` 文件后无需重新编译即可生效，便于设计师快速迭代。
+- **主题在启动时加载**：默认关闭硬编码模式（`ThemeSource.useHardcoded = false`），HOCON 在启动时预加载进静态缓存；修改 `.conf` 后需重新构建/重启应用，运行期不监听文件。
 - **配置引用与复用**：`styles.conf` 通过 `include "colors.conf"` 和 `include "typography.conf"` 组合，使用 `${textstyles.h3.desktop.fontsize}` 等路径引用，避免重复定义。
 - **安全策略**：Supabase 凭据通过 `--dart-define` 注入，代码中仅保留占位符；`.env.example` 明确禁止提交真实密钥。
 - **向后兼容**：`SettingsService.migrateFromSharedPreferences()` 保证从旧版 `shared_preferences` 平滑迁移到 Isar，失败时记录日志但不中断启动。
