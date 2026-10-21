@@ -4,7 +4,7 @@
 **本文引用的文件**   
 - [main.dart](file://lib/main.dart)
 - [auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [base_provider.dart](file://lib/presentation/providers/base_provider.dart)
 - [base_state_notifier.dart](file://lib/presentation/providers/base_state_notifier.dart)
 - [playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
@@ -71,7 +71,7 @@ F --> H["data/services<br/>音频/下载/设置等"]
 - [download_provider.dart:51-156](file://lib/presentation/providers/download_provider.dart#L51-L156)
 - [queue_provider.dart:78-290](file://lib/presentation/providers/queue_provider.dart#L78-L290)
 - [podcast_provider.dart:98-264](file://lib/presentation/providers/podcast_provider.dart#L98-L264)
-- [sync_provider.dart:41-168](file://lib/core/providers/sync_provider.dart#L41-L168)
+- [sync_provider.dart:41-168](file://lib/presentation/providers/sync_provider.dart#L41-L168)
 - [auth_provider.dart:1-22](file://lib/core/providers/auth_provider.dart#L1-L22)
 
 ## 架构总览
@@ -287,11 +287,11 @@ Sync->>Ref : invalidate(相关Provider)
 
 图表来源 
 - [auth_provider.dart:9-21](file://lib/core/providers/auth_provider.dart#L9-L21)
-- [sync_provider.dart:41-151](file://lib/core/providers/sync_provider.dart#L41-L151)
+- [sync_provider.dart:41-151](file://lib/presentation/providers/sync_provider.dart#L41-L151)
 
 章节来源
 - [auth_provider.dart:1-22](file://lib/core/providers/auth_provider.dart#L1-L22)
-- [sync_provider.dart:41-168](file://lib/core/providers/sync_provider.dart#L41-L168)
+- [sync_provider.dart:41-168](file://lib/presentation/providers/sync_provider.dart#L41-L168)
 
 ### 基础抽象（BaseProvider & BaseStateNotifier）
 - BaseProvider：统一创建 Provider/FutureProvider/StreamProvider/Lazy 的便捷方法
@@ -355,7 +355,7 @@ VM_Sync["SyncProvider"] --> Svc_Sync["SyncService"]
 - [playback_provider.dart:361-411](file://lib/presentation/providers/playback_provider.dart#L361-L411)
 - [download_provider.dart:55-94](file://lib/presentation/providers/download_provider.dart#L55-L94)
 - [queue_provider.dart:104-137](file://lib/presentation/providers/queue_provider.dart#L104-L137)
-- [sync_provider.dart:110-151](file://lib/core/providers/sync_provider.dart#L110-L151)
+- [sync_provider.dart:110-151](file://lib/presentation/providers/sync_provider.dart#L110-L151)
 
 ## 结论
 TinyCast 的 ViewModel 层以 Riverpod 为核心，结合用例与仓库抽象，实现了清晰的分层与关注点分离。通过事件驱动与状态不可变更新，保证了 UI 的一致性与可预测性。播放、下载、队列、播客与同步等场景均围绕 NotifierProvider 展开，配合 BaseStateNotifier 的通用状态机，显著降低了样板代码与出错概率。建议继续强化单元测试与集成测试，完善错误边界与降级策略，进一步提升稳定性与可维护性。

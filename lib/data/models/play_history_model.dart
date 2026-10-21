@@ -9,6 +9,7 @@ part 'play_history_model.g.dart';
 class PlayHistory {
   Id id = Isar.autoIncrement;
 
+  @Index()
   String? supabaseId;
 
   @Index()

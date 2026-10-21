@@ -25,13 +25,11 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 焦点节点，用于处理键盘事件
   final FocusNode _focusNode = FocusNode();
 
-  /// 用于追踪上次同步的搜索关键词，避免循环更新
-  String _lastSyncedKeyword = '';
-
   @override
   void initState() {
     super.initState();
     _focusNode.onKeyEvent = _handleKeyEvent;
+    _syncKeyword(ref.read(searchProvider).searchKeyword);
   }
 
   @override
@@ -73,91 +71,84 @@ class _SearchInputState extends ConsumerState<SearchInput> {
   /// 清空输入框内容
   void _clearInput() {
     _controller.clear();
-    _lastSyncedKeyword = '';
     ref.read(searchProvider.notifier).resetToHistory();
     setState(() {});
   }
 
+  void _syncKeyword(String keyword) {
+    if (_controller.text == keyword) return;
+    _controller.value = TextEditingValue(
+      text: keyword,
+      selection: TextSelection.collapsed(offset: keyword.length),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final searchKeyword = ref.watch(searchProvider).searchKeyword;
-
-    // 只有当 provider 中的关键词发生变化时才同步到 controller
-    // 这避免了在用户编辑时（如按 Backspace）强制覆盖用户输入
-    if (searchKeyword != _lastSyncedKeyword) {
-      _lastSyncedKeyword = searchKeyword;
-      if (_controller.text != searchKeyword) {
-        _controller.text = searchKeyword;
-        _controller.selection = TextSelection.collapsed(
-          offset: searchKeyword.length,
-        );
-      }
-    }
+    // 仅在 provider 中的关键词变化时同步到 controller，
+    // 避免在 build 期间直接修改 controller。
+    ref.listen<String>(
+      searchProvider.select((state) => state.searchKeyword),
+      (previous, next) => _syncKeyword(next),
+    );
 
     return Material(
       color: Colors.transparent,
-      child: Localizations(
-        locale: const Locale('en', 'US'),
-        delegates: const <LocalizationsDelegate<dynamic>>[
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        child: TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          autofocus: true,
-          onChanged: (value) {
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            suffixIcon: _controller.text.isNotEmpty
-                ? GestureDetector(
-                    onTap: _clearInput,
-                    child: Icon(
-                      LucideIcons.x,
-                      size: 16.0,
-                      color: const Color(0xFF333333),
-                      ),
-                  )
-                : null,
-            hintText: '搜索播客',
-            hintStyle: const TextStyle(
-              fontSize: 12.0,
-              color: Color(0xFF999999),
-              height: 16.0 / 12.0,
-            ),
-            filled: true,
-            fillColor: const Color(0xFFF0F0F0),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-              vertical: 8.0,
-            ),
-            constraints: const BoxConstraints(
-              minHeight: 34.0,
-              maxHeight: 34.0,
-            ),
-          ),
-          style: const TextStyle(
+      child: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        autofocus: true,
+        onChanged: (value) {
+          setState(() {});
+        },
+        decoration: InputDecoration(
+          suffixIcon: _controller.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: _clearInput,
+                  child: Icon(
+                    LucideIcons.x,
+                    size: 16.0,
+                    color: const Color(0xFF333333),
+                    ),
+                )
+              : null,
+          hintText: '搜索播客',
+          hintStyle: const TextStyle(
             fontSize: 12.0,
-            color: Color(0xFF000000),
+            color: Color(0xFF999999),
             height: 16.0 / 12.0,
           ),
-          cursorColor: const Color(0xFF000000),
-          maxLines: 1,
-          minLines: 1,
+          filled: true,
+          fillColor: const Color(0xFFF0F0F0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8.0,
+            vertical: 8.0,
+          ),
+          constraints: const BoxConstraints(
+            minHeight: 34.0,
+            maxHeight: 34.0,
+          ),
         ),
+        style: const TextStyle(
+          fontSize: 12.0,
+          color: Color(0xFF000000),
+          height: 16.0 / 12.0,
+        ),
+        cursorColor: const Color(0xFF000000),
+        maxLines: 1,
+        minLines: 1,
       ),
     );
   }

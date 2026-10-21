@@ -6,6 +6,7 @@ part 'episode_model.g.dart';
 class Episode {
   Id id = Isar.autoIncrement;
 
+  @Index()
   String? supabaseId;
 
   @Index()
@@ -17,6 +18,7 @@ class Episode {
 
   String? link;
 
+  @Index()
   String? guid;
 
   String? author;
@@ -52,6 +54,7 @@ class Episode {
 
   late DateTime updatedAt;
 
+  @Index()
   String? itunesId;
 
   String? podcastITunesId;

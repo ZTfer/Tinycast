@@ -17,7 +17,8 @@ class RemotePodcastDataSource {
   final ITunesSearchService? _itunesSearchService;
   final LocalPodcastDataSource? _localDataSource;
 
-  Future<void>? _currentITunesSearchFuture;
+  /// 结果 Map 中携带本次订阅对应的 iTunes 搜索 Future，避免并发订阅时取到别人的请求
+  static const String itunesSearchFutureKey = 'itunesSearchFuture';
 
   RemotePodcastDataSource({
     RssParserService? rssParserService,
@@ -42,13 +43,15 @@ class RemotePodcastDataSource {
 
       Logger.info('成功获取播客: ${podcast.title}, ${episodes.length} 个节目');
 
+      Future<void>? itunesSearchFuture;
       if (_itunesSearchService != null && _localDataSource != null) {
-        _currentITunesSearchFuture = _asyncITunesSearch(podcast, rssUrl);
+        itunesSearchFuture = _asyncITunesSearch(podcast, rssUrl);
       }
 
       return {
         'podcast': podcast,
         'episodes': episodes,
+        itunesSearchFutureKey: itunesSearchFuture,
       };
     } on AppException catch (e) {
       final msg = e.message.toLowerCase();
@@ -123,10 +126,6 @@ class RemotePodcastDataSource {
     if (data is String) return data;
     if (data == null) return '';
     return data.toString();
-  }
-
-  Future<void>? getITunesSearchFuture() {
-    return _currentITunesSearchFuture;
   }
 
   Future<void> _asyncITunesSearch(Podcast podcast, String rssUrl) async {

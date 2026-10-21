@@ -299,9 +299,9 @@ class LocalQueueDataSource {
         await _isarService.isar.queues.clear();
       });
 
-      for (final item in items) {
-        await SyncDeleteRecorder.instance.recordQueueRemoval(item.episodeId);
-      }
+      await SyncDeleteRecorder.instance.recordQueueRemovals(
+        items.map((item) => item.episodeId),
+      );
 
       Logger.info('📋 [QUEUE-DS] 队列清空成功');
     } on IsarError catch (e, stackTrace) {
@@ -348,6 +348,10 @@ class LocalQueueDataSource {
         return;
       }
 
+      final existingEpisodeIds = (await _isarService.isar.episodes.getAll(
+        allQueueItems.map((item) => item.episodeId).toSet().toList(),
+      )).whereType<model.Episode>().map((episode) => episode.id).toSet();
+
       final queueIdsToDelete = <int>[];
       final episodeIdsDeleted = <int>[];
       for (final queueItem in allQueueItems) {
@@ -379,18 +383,12 @@ class LocalQueueDataSource {
           Logger.info(
             '📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（podcastId 匹配）',
           );
-        } else {
-          final episode = await _isarService.isar.episodes
-              .where()
-              .idEqualTo(queueItem.episodeId)
-              .findFirst();
-          if (episode == null) {
-            queueIdsToDelete.add(queueItem.id);
-            episodeIdsDeleted.add(queueItem.episodeId);
-            Logger.info(
-              '📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（孤立记录）',
-            );
-          }
+        } else if (!existingEpisodeIds.contains(queueItem.episodeId)) {
+          queueIdsToDelete.add(queueItem.id);
+          episodeIdsDeleted.add(queueItem.episodeId);
+          Logger.info(
+            '📋 [QUEUE-DS] 标记删除队列记录: episodeId=${queueItem.episodeId}（孤立记录）',
+          );
         }
       }
 
@@ -403,9 +401,7 @@ class LocalQueueDataSource {
         await _isarService.isar.queues.deleteAll(queueIdsToDelete);
       });
 
-      for (final episodeId in episodeIdsDeleted) {
-        await SyncDeleteRecorder.instance.recordQueueRemoval(episodeId);
-      }
+      await SyncDeleteRecorder.instance.recordQueueRemovals(episodeIdsDeleted);
 
       Logger.info(
         '📋 [QUEUE-DS] 根据 podcastId 移除队列完成, 共移除 ${queueIdsToDelete.length} 条记录',

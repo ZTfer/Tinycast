@@ -77,6 +77,9 @@ class SyncTombstoneStore {
   Future<void> recordQueueDelete(String episodeCloudId) =>
       _add(_queueKey, episodeCloudId);
 
+  Future<void> recordQueueDeletes(Set<String> episodeCloudIds) =>
+      _addAll(_queueKey, episodeCloudIds);
+
   /// Removes ids from the pending set. Used both when the record is present
   /// locally again (a local re-add beats a pending delete) and when the
   /// cloud deletion has been confirmed.
@@ -174,6 +177,25 @@ class SyncTombstoneStore {
         await prefs.setStringList(key, ids.toList());
       } catch (e) {
         Logger.error('[SYNC] Failed to record tombstone for $baseKey', error: e);
+      }
+    });
+  }
+
+  Future<void> _addAll(String baseKey, Set<String> newIds) async {
+    final idsToAdd = newIds.where((id) => id.isNotEmpty).toSet();
+    if (idsToAdd.isEmpty) return;
+    final key = _scopedKey(baseKey);
+    if (key == null) return;
+    await _withWriteLock(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final ids = prefs.getStringList(key)?.toSet() ?? <String>{};
+        final before = ids.length;
+        ids.addAll(idsToAdd);
+        if (ids.length == before) return;
+        await prefs.setStringList(key, ids.toList());
+      } catch (e) {
+        Logger.error('[SYNC] Failed to record tombstones for $baseKey', error: e);
       }
     });
   }

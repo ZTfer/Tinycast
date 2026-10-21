@@ -5,7 +5,7 @@
 - [artwork_image.dart](file://lib/presentation/widgets/atoms/artwork_image/artwork_image.dart)
 - [primary_button.dart](file://lib/presentation/widgets/atoms/buttons/primary_button.dart)
 - [secondary_button.dart](file://lib/presentation/widgets/atoms/buttons/secondary_button.dart)
-- [list_play_button.dart](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart)
+- [list_play_button.dart](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart)
 - [horizontal_more_button.dart](file://lib/presentation/widgets/atoms/buttons/horizontal_more_button.dart)
 - [queue_play_pause_button.dart](file://lib/presentation/widgets/atoms/buttons/queue_play_pause_button.dart)
 - [label_checkbox.dart](file://lib/presentation/widgets/atoms/checkbox/label_checkbox.dart)
@@ -56,7 +56,7 @@ E --> |"交互"| G
 - [artwork_image.dart:1-291](file://lib/presentation/widgets/atoms/artwork_image/artwork_image.dart#L1-L291)
 - [primary_button.dart:1-128](file://lib/presentation/widgets/atoms/buttons/primary_button.dart#L1-L128)
 - [secondary_button.dart:1-133](file://lib/presentation/widgets/atoms/buttons/secondary_button.dart#L1-L133)
-- [list_play_button.dart:1-151](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L1-L151)
+- [list_play_button.dart:1-151](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L1-L151)
 - [horizontal_more_button.dart:1-82](file://lib/presentation/widgets/atoms/buttons/horizontal_more_button.dart#L1-L82)
 - [queue_play_pause_button.dart:1-116](file://lib/presentation/widgets/atoms/buttons/queue_play_pause_button.dart#L1-L116)
 - [label_checkbox.dart:1-145](file://lib/presentation/widgets/atoms/checkbox/label_checkbox.dart#L1-L145)
@@ -67,7 +67,7 @@ E --> |"交互"| G
 - [artwork_image.dart:1-291](file://lib/presentation/widgets/atoms/artwork_image/artwork_image.dart#L1-L291)
 - [primary_button.dart:1-128](file://lib/presentation/widgets/atoms/buttons/primary_button.dart#L1-L128)
 - [secondary_button.dart:1-133](file://lib/presentation/widgets/atoms/buttons/secondary_button.dart#L1-L133)
-- [list_play_button.dart:1-151](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L1-L151)
+- [list_play_button.dart:1-151](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L1-L151)
 - [horizontal_more_button.dart:1-82](file://lib/presentation/widgets/atoms/buttons/horizontal_more_button.dart#L1-L82)
 - [queue_play_pause_button.dart:1-116](file://lib/presentation/widgets/atoms/buttons/queue_play_pause_button.dart#L1-L116)
 - [label_checkbox.dart:1-145](file://lib/presentation/widgets/atoms/checkbox/label_checkbox.dart#L1-L145)
@@ -89,7 +89,7 @@ E --> |"交互"| G
 - [artwork_image.dart:14-91](file://lib/presentation/widgets/atoms/artwork_image/artwork_image.dart#L14-L91)
 - [primary_button.dart:3-42](file://lib/presentation/widgets/atoms/buttons/primary_button.dart#L3-L42)
 - [secondary_button.dart:8-47](file://lib/presentation/widgets/atoms/buttons/secondary_button.dart#L8-L47)
-- [list_play_button.dart:8-55](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L8-L55)
+- [list_play_button.dart:8-55](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L8-L55)
 - [horizontal_more_button.dart:7-30](file://lib/presentation/widgets/atoms/buttons/horizontal_more_button.dart#L7-L30)
 - [queue_play_pause_button.dart:6-33](file://lib/presentation/widgets/atoms/buttons/queue_play_pause_button.dart#L6-L33)
 - [label_checkbox.dart:16-37](file://lib/presentation/widgets/atoms/checkbox/label_checkbox.dart#L16-L37)
@@ -272,8 +272,8 @@ ArtworkImage --> _ArtworkImageState : "持有状态"
   - 内部维护 _isHovering/_isPressed 状态，背景色与内容颜色随状态变化。
 
 章节来源
-- [list_play_button.dart:8-55](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L8-L55)
-- [list_play_button.dart:57-151](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L57-L151)
+- [list_play_button.dart:8-55](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L8-L55)
+- [list_play_button.dart:57-151](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L57-L151)
 
 ### HorizontalMoreButton（更多操作按钮）
 - 功能概述
@@ -475,7 +475,7 @@ TinyCast 的原子组件以简洁、一致的设计原则为基础，提供了�
 - [artwork_image_test.dart:1-200](file://test/presentation/widgets/atoms/artwork_image_test.dart#L1-L200)
 - [primary_button.dart:28-38](file://lib/presentation/widgets/atoms/buttons/primary_button.dart#L28-L38)
 - [secondary_button.dart:33-43](file://lib/presentation/widgets/atoms/buttons/secondary_button.dart#L33-L43)
-- [list_play_button.dart:39-51](file://lib/presentation/widgets/atoms/buttons/list_play_button.dart#L39-L51)
+- [list_play_button.dart:39-51](file://lib/presentation/features/library/library_episode_item/library_episode_play_button.dart#L39-L51)
 - [horizontal_more_button.dart:20-26](file://lib/presentation/widgets/atoms/buttons/horizontal_more_button.dart#L20-L26)
 - [queue_play_pause_button.dart:11-16](file://lib/presentation/widgets/atoms/buttons/queue_play_pause_button.dart#L11-L16)
 - [label_checkbox.dart:28-33](file://lib/presentation/widgets/atoms/checkbox/label_checkbox.dart#L28-L33)

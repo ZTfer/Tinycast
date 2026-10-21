@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tinycast/core/providers/sync_provider.dart';
+import 'package:tinycast/presentation/providers/sync_provider.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 
 class LoginSuccessPage extends ConsumerStatefulWidget {

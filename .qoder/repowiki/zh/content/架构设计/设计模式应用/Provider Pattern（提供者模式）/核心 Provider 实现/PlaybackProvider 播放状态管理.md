@@ -5,7 +5,7 @@
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/data/services/audio_player_service.dart](file://lib/data/services/audio_player_service.dart)
 - [lib/core/services/play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
-- [lib/data/repositories/play_history_repository.dart](file://lib/data/repositories/play_history_repository.dart)
+- [lib/data/repositories/play_history_repository_impl.dart](file://lib/data/repositories/play_history_repository_impl.dart)
 - [lib/data/models/play_history_model.dart](file://lib/data/models/play_history_model.dart)
 - [lib/main.dart](file://lib/main.dart)
 - [lib/multi_window.dart](file://lib/multi_window.dart)
@@ -61,7 +61,7 @@ PN --> MW
 - [lib/presentation/providers/playback_provider.dart:1-120](file://lib/presentation/providers/playback_provider.dart#L1-L120)
 - [lib/data/services/audio_player_service.dart:1-120](file://lib/data/services/audio_player_service.dart#L1-L120)
 - [lib/core/services/play_progress_service.dart:1-60](file://lib/core/services/play_progress_service.dart#L1-L60)
-- [lib/data/repositories/play_history_repository.dart:1-60](file://lib/data/repositories/play_history_repository.dart#L1-L60)
+- [lib/data/repositories/play_history_repository_impl.dart:1-60](file://lib/data/repositories/play_history_repository_impl.dart#L1-L60)
 - [lib/data/models/play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
 - [lib/main.dart:131-177](file://lib/main.dart#L131-L177)
 - [lib/multi_window.dart:241-408](file://lib/multi_window.dart#L241-L408)
@@ -70,7 +70,7 @@ PN --> MW
 - [lib/presentation/providers/playback_provider.dart:1-120](file://lib/presentation/providers/playback_provider.dart#L1-L120)
 - [lib/data/services/audio_player_service.dart:1-120](file://lib/data/services/audio_player_service.dart#L1-L120)
 - [lib/core/services/play_progress_service.dart:1-60](file://lib/core/services/play_progress_service.dart#L1-L60)
-- [lib/data/repositories/play_history_repository.dart:1-60](file://lib/data/repositories/play_history_repository.dart#L1-L60)
+- [lib/data/repositories/play_history_repository_impl.dart:1-60](file://lib/data/repositories/play_history_repository_impl.dart#L1-L60)
 - [lib/data/models/play_history_model.dart:1-51](file://lib/data/models/play_history_model.dart#L1-L51)
 - [lib/main.dart:131-177](file://lib/main.dart#L131-L177)
 - [lib/multi_window.dart:241-408](file://lib/multi_window.dart#L241-L408)
@@ -88,7 +88,7 @@ PN --> MW
 - [lib/presentation/providers/playback_provider.dart:64-120](file://lib/presentation/providers/playback_provider.dart#L64-L120)
 - [lib/data/services/audio_player_service.dart:12-98](file://lib/data/services/audio_player_service.dart#L12-L98)
 - [lib/core/services/play_progress_service.dart:8-42](file://lib/core/services/play_progress_service.dart#L8-L42)
-- [lib/data/repositories/play_history_repository.dart:7-35](file://lib/data/repositories/play_history_repository.dart#L7-L35)
+- [lib/data/repositories/play_history_repository_impl.dart:7-35](file://lib/data/repositories/play_history_repository_impl.dart#L7-L35)
 - [lib/data/models/play_history_model.dart:5-51](file://lib/data/models/play_history_model.dart#L5-L51)
 
 ## 架构总览
@@ -118,7 +118,7 @@ PN-->>UI : 更新 PlayerState
 - [lib/presentation/providers/playback_provider.dart:583-653](file://lib/presentation/providers/playback_provider.dart#L583-L653)
 - [lib/data/services/audio_player_service.dart:302-324](file://lib/data/services/audio_player_service.dart#L302-L324)
 - [lib/core/services/play_progress_service.dart:17-42](file://lib/core/services/play_progress_service.dart#L17-L42)
-- [lib/data/repositories/play_history_repository.dart:104-117](file://lib/data/repositories/play_history_repository.dart#L104-L117)
+- [lib/data/repositories/play_history_repository_impl.dart:104-117](file://lib/data/repositories/play_history_repository_impl.dart#L104-L117)
 
 ## 详细组件分析
 
@@ -231,12 +231,12 @@ H --> I["记录最后保存时间与位置"]
 **图表来源** 
 - [lib/presentation/providers/playback_provider.dart:361-411](file://lib/presentation/providers/playback_provider.dart#L361-L411)
 - [lib/core/services/play_progress_service.dart:17-42](file://lib/core/services/play_progress_service.dart#L17-L42)
-- [lib/data/repositories/play_history_repository.dart:104-117](file://lib/data/repositories/play_history_repository.dart#L104-L117)
+- [lib/data/repositories/play_history_repository_impl.dart:104-117](file://lib/data/repositories/play_history_repository_impl.dart#L104-L117)
 
 **章节来源**
 - [lib/presentation/providers/playback_provider.dart:361-411](file://lib/presentation/providers/playback_provider.dart#L361-L411)
 - [lib/core/services/play_progress_service.dart:17-42](file://lib/core/services/play_progress_service.dart#L17-L42)
-- [lib/data/repositories/play_history_repository.dart:104-117](file://lib/data/repositories/play_history_repository.dart#L104-L117)
+- [lib/data/repositories/play_history_repository_impl.dart:104-117](file://lib/data/repositories/play_history_repository_impl.dart#L104-L117)
 
 ### 睡眠定时器功能
 - 配置：AppSettings.sleepTimer 与 sleepTimerEndTimeMillis。
@@ -406,14 +406,14 @@ PN --> SY["SyncProvider"]
 - [lib/presentation/providers/playback_provider.dart:1-22](file://lib/presentation/providers/playback_provider.dart#L1-L22)
 - [lib/data/services/audio_player_service.dart:1-11](file://lib/data/services/audio_player_service.dart#L1-L11)
 - [lib/core/services/play_progress_service.dart:1-7](file://lib/core/services/play_progress_service.dart#L1-L7)
-- [lib/data/repositories/play_history_repository.dart:1-5](file://lib/data/repositories/play_history_repository.dart#L1-L5)
+- [lib/data/repositories/play_history_repository_impl.dart:1-5](file://lib/data/repositories/play_history_repository_impl.dart#L1-L5)
 - [lib/data/models/play_history_model.dart:1-5](file://lib/data/models/play_history_model.dart#L1-L5)
 
 **章节来源**
 - [lib/presentation/providers/playback_provider.dart:1-22](file://lib/presentation/providers/playback_provider.dart#L1-L22)
 - [lib/data/services/audio_player_service.dart:1-11](file://lib/data/services/audio_player_service.dart#L1-L11)
 - [lib/core/services/play_progress_service.dart:1-7](file://lib/core/services/play_progress_service.dart#L1-L7)
-- [lib/data/repositories/play_history_repository.dart:1-5](file://lib/data/repositories/play_history_repository.dart#L1-L5)
+- [lib/data/repositories/play_history_repository_impl.dart:1-5](file://lib/data/repositories/play_history_repository_impl.dart#L1-L5)
 - [lib/data/models/play_history_model.dart:1-5](file://lib/data/models/play_history_model.dart#L1-L5)
 
 ## 性能考量

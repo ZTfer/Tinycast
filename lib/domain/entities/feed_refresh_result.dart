@@ -3,12 +3,14 @@ class FeedRefreshResult {
   final int podcastId;
   final int newEpisodesCount;
   final bool success;
+  final bool skipped;
   final String? error;
 
   FeedRefreshResult({
     required this.podcastId,
     this.newEpisodesCount = 0,
     this.success = false,
+    this.skipped = false,
     this.error,
   });
 
@@ -16,6 +18,8 @@ class FeedRefreshResult {
   String toString() {
     if (success) {
       return 'FeedRefreshResult{podcastId: $podcastId, newEpisodes: $newEpisodesCount}';
+    } else if (skipped) {
+      return 'FeedRefreshResult{podcastId: $podcastId, skipped}';
     } else {
       return 'FeedRefreshResult{podcastId: $podcastId, error: $error}';
     }
@@ -26,18 +30,20 @@ class FeedRefreshResult {
 class BatchRefreshResult {
   final int totalNewEpisodes;
   final int successCount;
+  final int skippedCount;
   final int failureCount;
   final List<FeedRefreshResult> results;
 
   BatchRefreshResult({
     this.totalNewEpisodes = 0,
     this.successCount = 0,
+    this.skippedCount = 0,
     this.failureCount = 0,
     required this.results,
   });
 
   @override
   String toString() {
-    return 'BatchRefreshResult{totalNew: $totalNewEpisodes, success: $successCount, failures: $failureCount}';
+    return 'BatchRefreshResult{totalNew: $totalNewEpisodes, success: $successCount, skipped: $skippedCount, failures: $failureCount}';
   }
 }

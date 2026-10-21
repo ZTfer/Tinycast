@@ -194,7 +194,10 @@ class HoconParser {
     return result;
   }
 
-  static Future<Map<String, dynamic>> _loadWithIncludes(String rootPath) async {
+  static Future<Map<String, dynamic>> _loadWithIncludes(
+    String rootPath, {
+    String paletteMode = 'light',
+  }) async {
     final content = await rootBundle.loadString(rootPath);
     final tokens = HoconParser._tokenize(content);
     _validateBraceBalance(tokens);
@@ -228,7 +231,10 @@ class HoconParser {
     final parsed = HoconParser._parseObject(tokens);
     _deepMerge(merged, parsed);
 
-    final resolved = HoconParser._resolveReferences(merged);
+    final resolved = HoconParser._resolveReferences(
+      merged,
+      paletteMode: paletteMode,
+    );
 
     if (resolved.containsKey('widgets')) {
       final widgets = resolved['widgets'] as Map<String, dynamic>;
@@ -261,7 +267,10 @@ class HoconParser {
     }
   }
 
-  static Map<String, dynamic> _resolveReferences(Map<String, dynamic> root) {
+  static Map<String, dynamic> _resolveReferences(
+    Map<String, dynamic> root, {
+    String paletteMode = 'light',
+  }) {
     _debug('=== _resolveReferences START ===');
     _debug('root keys: ${root.keys.toList()}');
     if (root.containsKey('widgets')) {
@@ -273,13 +282,14 @@ class HoconParser {
         }
       }
     }
-    return _resolveRefsInMap(root, root, null);
+    return _resolveRefsInMap(root, root, null, paletteMode);
   }
 
   static dynamic _resolveRefsInMap(
     Map<String, dynamic> map,
     Map<String, dynamic> root,
     String? currentPath,
+    String paletteMode,
   ) {
     final result = <String, dynamic>{};
 
@@ -293,9 +303,14 @@ class HoconParser {
           entry.value as Map<String, dynamic>,
           root,
           path,
+          paletteMode,
         );
       } else if (entry.value is String) {
-        result[entry.key] = _resolveRefValue(entry.value as String, root);
+        result[entry.key] = _resolveRefValue(
+          entry.value as String,
+          root,
+          paletteMode,
+        );
       } else {
         result[entry.key] = entry.value;
       }
@@ -304,10 +319,17 @@ class HoconParser {
     return result;
   }
 
-  static String _resolveRefValue(String value, Map<String, dynamic> root) {
+  static String _resolveRefValue(
+    String value,
+    Map<String, dynamic> root,
+    String paletteMode,
+  ) {
     final refMatch = RegExp(r'^\$\{([^}]+)\}$').firstMatch(value);
     if (refMatch != null) {
-      final refPath = refMatch.group(1)!;
+      var refPath = refMatch.group(1)!;
+      if (paletteMode == 'dark' && refPath.endsWith('.light')) {
+        refPath = '${refPath.substring(0, refPath.length - 6)}.dark';
+      }
       final result = _lookupPath(root, refPath.split('.'));
       _debug('  resolve: $value -> $refPath -> "$result"');
       return result;
@@ -362,6 +384,7 @@ class ThemeLoader {
   static Map<String, dynamic>? _cachedColorsJson;
   static Map<String, dynamic>? _cachedTypographyJson;
   static Map<String, dynamic>? _cachedStylesJson;
+  static Map<String, dynamic>? _cachedStylesJsonDark;
 
   static Map<String, AppThemeConfig>? _cachedThemeConfigs;
   static Map<String, Map<String, dynamic>>? _cachedWidgetStyles;
@@ -527,6 +550,7 @@ class ThemeLoader {
 
   static Future<void> preloadThemeConfigs() async {
     _cachedStylesJson = null;
+    _cachedStylesJsonDark = null;
     _cachedColorsJson = null;
     _cachedTypographyJson = null;
     _cachedWidgetStyles = null;
@@ -564,14 +588,17 @@ class ThemeLoader {
 
     try {
       final stylesJson = await loadStyles();
+      final stylesDarkJson = await loadStyles(paletteMode: 'dark');
       _debug('stylesJson keys: ${stylesJson?.keys.toList()}');
 
       if (stylesJson != null) {
-        _cachedWidgetStyles = {'styles': stylesJson};
+        _cachedWidgetStyles!['styles'] = stylesJson;
+        final darkStyles = stylesDarkJson ?? stylesJson;
+        _cachedWidgetStyles!['stylesDark'] = darkStyles;
 
         final widgetTextStyles = _buildWidgetTextStyles(
           stylesJson,
-          _cachedThemeConfigs!,
+          darkStyles,
         );
         _debug('widgetTextStyles keys: ${widgetTextStyles.keys.toList()}');
         _cachedWidgetStyles!['widgetTextStyles'] = widgetTextStyles;
@@ -586,20 +613,28 @@ class ThemeLoader {
   }
 
   static Map<String, TextStyle> _buildWidgetTextStyles(
-    Map<String, dynamic> stylesJson,
-    Map<String, AppThemeConfig> themeConfigs,
+    Map<String, dynamic> lightStylesJson,
+    Map<String, dynamic> darkStylesJson,
   ) {
     final result = <String, TextStyle>{};
 
     final styleRootKeys = ['widgets', 'page'];
 
     for (final rootKey in styleRootKeys) {
-      if (stylesJson.containsKey(rootKey)) {
+      if (lightStylesJson.containsKey(rootKey)) {
         _processNode(
           path: rootKey,
-          node: stylesJson[rootKey] as Map<String, dynamic>,
+          node: lightStylesJson[rootKey] as Map<String, dynamic>,
           result: result,
-          themeConfigs: themeConfigs,
+          brightness: 'light',
+        );
+      }
+      if (darkStylesJson.containsKey(rootKey)) {
+        _processNode(
+          path: rootKey,
+          node: darkStylesJson[rootKey] as Map<String, dynamic>,
+          result: result,
+          brightness: 'dark',
         );
       }
     }
@@ -611,13 +646,13 @@ class ThemeLoader {
     required String path,
     required Map<String, dynamic> node,
     required Map<String, TextStyle> result,
-    required Map<String, AppThemeConfig> themeConfigs,
+    required String brightness,
   }) {
     final hasStyleValues =
         node.containsKey('fontsize') || node.containsKey('color');
 
     if (hasStyleValues) {
-      _debug('building style: $path');
+      _debug('building style: $path ($brightness)');
       _debug('values: $node');
 
       final fontSizeStr = node['fontsize']?.toString();
@@ -644,7 +679,7 @@ class ThemeLoader {
         );
       }
 
-      final lightStyle = TextStyle(
+      final style = TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.values.firstWhere(
           (w) => w.value == fontWeight,
@@ -656,10 +691,7 @@ class ThemeLoader {
       );
 
       final styleKey = path.replaceAll('.', '_');
-      result['${styleKey}_light'] = lightStyle;
-      result['${styleKey}_dark'] = lightStyle.copyWith(
-        color: color ?? themeConfigs['dark']!.labelPrimary,
-      );
+      result['${styleKey}_$brightness'] = style;
     } else {
       for (final childEntry in node.entries) {
         if (childEntry.value is Map<String, dynamic>) {
@@ -667,7 +699,7 @@ class ThemeLoader {
             path: '$path.${childEntry.key}',
             node: childEntry.value as Map<String, dynamic>,
             result: result,
-            themeConfigs: themeConfigs,
+            brightness: brightness,
           );
         }
       }
@@ -694,13 +726,25 @@ class ThemeLoader {
     return json;
   }
 
-  static Future<Map<String, dynamic>?> loadStyles() async {
-    if (_cachedStylesJson != null) {
-      return _cachedStylesJson!;
+  static Future<Map<String, dynamic>?> loadStyles({
+    String paletteMode = 'light',
+  }) async {
+    final cache = paletteMode == 'dark'
+        ? _cachedStylesJsonDark
+        : _cachedStylesJson;
+    if (cache != null) {
+      return cache;
     }
     try {
-      final json = await HoconParser._loadWithIncludes(_stylesPath);
-      _cachedStylesJson = json;
+      final json = await HoconParser._loadWithIncludes(
+        _stylesPath,
+        paletteMode: paletteMode,
+      );
+      if (paletteMode == 'dark') {
+        _cachedStylesJsonDark = json;
+      } else {
+        _cachedStylesJson = json;
+      }
       return json;
     } catch (e, stack) {
       Logger.error(
@@ -761,6 +805,7 @@ class ThemeLoader {
     _cachedColorsJson = null;
     _cachedTypographyJson = null;
     _cachedStylesJson = null;
+    _cachedStylesJsonDark = null;
     _cachedThemeConfigs = null;
     _cachedWidgetStyles = null;
   }

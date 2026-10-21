@@ -226,18 +226,41 @@ class SyncNotifier extends Notifier<SyncState> {
         state = state.copyWith(progress: progress);
       };
 
-      await syncService.sync();
+      final result = await syncService.sync();
       if (!ref.mounted) return;
 
-      final lastSyncTime = await syncService.getLastSyncTime();
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        status: SyncStatus.idle,
-        lastSyncTime: lastSyncTime,
-      );
-
-      _invalidateRelatedProviders();
-      Logger.info('Sync completed successfully');
+      switch (result.status) {
+        case SyncResultStatus.success:
+          final lastSyncTime = await syncService.getLastSyncTime();
+          if (!ref.mounted) return;
+          state = state.copyWith(
+            status: SyncStatus.idle,
+            lastSyncTime: lastSyncTime,
+          );
+          _invalidateRelatedProviders();
+          Logger.info('Sync completed successfully');
+        case SyncResultStatus.partial:
+          // Some steps merged data locally but the cursor did not advance;
+          // reflect the partial result instead of claiming success.
+          state = state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: '同步部分失败：${result.failedSteps.join(', ')}',
+          );
+          _invalidateRelatedProviders();
+          Logger.warning(
+            'Sync finished partially: ${result.failedSteps.join(', ')}',
+          );
+        case SyncResultStatus.pullFailed:
+        case SyncResultStatus.failed:
+          state = state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: result.error?.toString() ?? '同步失败',
+          );
+          Logger.error('Sync failed: ${result.error}');
+        case SyncResultStatus.skipped:
+          state = state.copyWith(status: SyncStatus.idle);
+          Logger.warning('Sync skipped: not authenticated');
+      }
     } catch (e, stackTrace) {
       Logger.error('Sync failed', error: e, stackTrace: stackTrace);
       if (!ref.mounted) return;

@@ -14,9 +14,10 @@ class VolumeControlPopup extends ConsumerWidget {
     return VolumeControlBar(
       volume: (volume * 100).round(),
       onVolumeChanged: (value) {
-        final volumeValue = value / 100.0;
-        ref.read(playbackProvider.notifier).setVolume(volumeValue);
-        ref.read(settingsProvider.notifier).updateVolume(volumeValue);
+        ref.read(playbackProvider.notifier).setVolume(value / 100.0);
+      },
+      onVolumeChangeEnd: (value) {
+        ref.read(settingsProvider.notifier).updateVolume(value / 100.0);
       },
     );
   }

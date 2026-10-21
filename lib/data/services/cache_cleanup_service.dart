@@ -42,51 +42,63 @@ class CacheCleanupService {
     try {
       Logger.info('开始清理音频缓存');
 
-      // Update DB first so playback never thinks files exist after a failed cleanup.
-      late final List<model.Episode> downloadedEpisodes;
-      await _isarService.isar.writeTxn(() async {
-        downloadedEpisodes = await _isarService.isar.episodes
-            .filter()
-            .isDownloadedEqualTo(true)
-            .findAll();
-
-        for (final episode in downloadedEpisodes) {
-          episode.isDownloaded = false;
-          episode.downloadedPath = null;
-          episode.downloadProgress = 0.0;
-          episode.updatedAt = DateTime.now();
-        }
-
-        await _isarService.isar.episodes.putAll(downloadedEpisodes);
-      });
-
-      for (final episode in downloadedEpisodes) {
-        AudioDownloadService.instance.sendGlobalEvent(
-          episodeId: episode.id.toString(),
-          status: DownloadStatus.idle,
-        );
-      }
+      final downloadedEpisodes = await _isarService.isar.episodes
+          .filter()
+          .isDownloadedEqualTo(true)
+          .findAll();
 
       final audioDir = await _fileStorageService.getAudioDirectory();
+      final deletedPaths = <String>{};
       int deletedCount = 0;
       if (await audioDir.exists()) {
-        final files = audioDir.listSync();
-        for (var file in files) {
-          if (file is File) {
-            try {
-              await file.delete();
-              deletedCount++;
-            } catch (e) {
-              Logger.warning('删除音频缓存文件失败: ${file.path}, $e');
-            }
+        for (final entity in audioDir.listSync()) {
+          if (entity is! File) continue;
+          try {
+            await entity.delete();
+            deletedPaths.add(entity.path);
+            deletedCount++;
+          } catch (e) {
+            Logger.warning('删除音频缓存文件失败: ${entity.path}, $e');
           }
         }
       } else {
         Logger.info('音频目录不存在，仅完成数据库状态清理');
       }
 
+      // 删除失败的文件仍然存在，保留下载状态以便下次清理和播放定位
+      final clearedEpisodes = <model.Episode>[];
+      for (final episode in downloadedEpisodes) {
+        final path = episode.downloadedPath;
+        if (path != null) {
+          final fullPath = await _fileStorageService.getFullFilePath(path);
+          if (!deletedPaths.contains(fullPath) && await File(fullPath).exists()) {
+            Logger.warning('音频文件仍存在，保留下载状态以便重试: $path');
+            continue;
+          }
+        }
+
+        episode.isDownloaded = false;
+        episode.downloadedPath = null;
+        episode.downloadProgress = 0.0;
+        episode.updatedAt = DateTime.now();
+        clearedEpisodes.add(episode);
+      }
+
+      if (clearedEpisodes.isNotEmpty) {
+        await _isarService.isar.writeTxn(() async {
+          await _isarService.isar.episodes.putAll(clearedEpisodes);
+        });
+
+        for (final episode in clearedEpisodes) {
+          AudioDownloadService.instance.sendGlobalEvent(
+            episodeId: episode.id.toString(),
+            status: DownloadStatus.idle,
+          );
+        }
+      }
+
       Logger.info(
-        '音频缓存清理完成: $deletedCount 个文件已删除，${downloadedEpisodes.length} 条数据库记录已更新',
+        '音频缓存清理完成: $deletedCount 个文件已删除，${clearedEpisodes.length} 条数据库记录已更新',
       );
     } catch (e, stackTrace) {
       Logger.error('清理音频缓存失败', error: e, stackTrace: stackTrace);
@@ -119,45 +131,41 @@ class CacheCleanupService {
   }
 
   Future<void> _clearAllImagePaths() async {
-    try {
-      Logger.info('开始清除数据库中的图片路径');
+    Logger.info('开始清除数据库中的图片路径');
 
-      // 清除 episode 的 artworkPath
-      await _isarService.isar.writeTxn(() async {
-        final episodes = await _isarService.isar.episodes
-            .filter()
-            .artworkPathIsNotNull()
-            .findAll();
+    // 清除 episode 的 artworkPath
+    await _isarService.isar.writeTxn(() async {
+      final episodes = await _isarService.isar.episodes
+          .filter()
+          .artworkPathIsNotNull()
+          .findAll();
 
-        for (final episode in episodes) {
-          episode.artworkPath = null;
-        }
+      for (final episode in episodes) {
+        episode.artworkPath = null;
+      }
 
-        await _isarService.isar.episodes.putAll(episodes);
+      await _isarService.isar.episodes.putAll(episodes);
 
-        Logger.info('已清除 ${episodes.length} 个 episode 的 artworkPath');
-      });
+      Logger.info('已清除 ${episodes.length} 个 episode 的 artworkPath');
+    });
 
-      // 清除 podcast 的 artworkPath
-      await _isarService.isar.writeTxn(() async {
-        final podcasts = await _isarService.isar.podcasts
-            .filter()
-            .artworkPathIsNotNull()
-            .findAll();
+    // 清除 podcast 的 artworkPath
+    await _isarService.isar.writeTxn(() async {
+      final podcasts = await _isarService.isar.podcasts
+          .filter()
+          .artworkPathIsNotNull()
+          .findAll();
 
-        for (final podcast in podcasts) {
-          podcast.artworkPath = null;
-        }
+      for (final podcast in podcasts) {
+        podcast.artworkPath = null;
+      }
 
-        await _isarService.isar.podcasts.putAll(podcasts);
+      await _isarService.isar.podcasts.putAll(podcasts);
 
-        Logger.info('已清除 ${podcasts.length} 个 podcast 的 artworkPath');
-      });
+      Logger.info('已清除 ${podcasts.length} 个 podcast 的 artworkPath');
+    });
 
-      Logger.info('数据库中图片路径清除完成');
-    } catch (e, stackTrace) {
-      Logger.error('清除图片路径失败', error: e, stackTrace: stackTrace);
-    }
+    Logger.info('数据库中图片路径清除完成');
   }
 
   Future<void> clearPlayedEpisodes() async {
@@ -240,6 +248,7 @@ class CacheCleanupService {
             deletedCount++;
           } catch (e) {
             Logger.warning('删除节目文件失败: ${episode.downloadedPath}');
+            continue;
           }
         }
 
@@ -280,6 +289,7 @@ class CacheCleanupService {
             deletedCount++;
           } catch (e) {
             Logger.warning('删除播客节目文件失败: ${episode.downloadedPath}');
+            continue;
           }
         }
 
@@ -397,30 +407,33 @@ class CacheCleanupService {
           .findAll();
 
       int deletedCount = 0;
+      var currentCacheSize = await getCacheSize();
+      final targetBytes = targetCacheSizeMB * 1024 * 1024;
 
       for (var episode in downloadedEpisodes) {
-        if (episode.downloadedPath != null) {
-          try {
-            await _fileStorageService.deleteFile(episode.downloadedPath!);
-            deletedCount++;
-          } catch (e) {
-            Logger.warning('删除最旧节目文件失败: ${episode.downloadedPath}');
-          }
-
-          await _isarService.updateEpisodeDownloadStatus(
-            episodeId: episode.id,
-            isDownloaded: false,
-            downloadedPath: null,
-          );
-        }
-
-        final currentCacheSize = await getCacheSize();
-        final currentCacheSizeMB = currentCacheSize / (1024 * 1024);
-
-        if (currentCacheSizeMB < targetCacheSizeMB) {
+        if (currentCacheSize < targetBytes) {
           Logger.info('已达到目标缓存大小，停止清理');
           break;
         }
+
+        final path = episode.downloadedPath;
+        if (path == null) continue;
+
+        final fileSize = await _fileStorageService.getFileSize(path);
+        try {
+          await _fileStorageService.deleteFile(path);
+          deletedCount++;
+          currentCacheSize -= fileSize;
+        } catch (e) {
+          Logger.warning('删除最旧节目文件失败: $path');
+          continue;
+        }
+
+        await _isarService.updateEpisodeDownloadStatus(
+          episodeId: episode.id,
+          isDownloaded: false,
+          downloadedPath: null,
+        );
       }
 
       Logger.info('自动清理完成: $deletedCount 个文件已删除');

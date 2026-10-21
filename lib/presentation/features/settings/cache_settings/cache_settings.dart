@@ -54,6 +54,9 @@ class _CacheSettingsState extends State<CacheSettings> {
   }
 
   Future<void> _performCleanup() async {
+    final confirmed = await _confirmCleanup();
+    if (!confirmed || !mounted) return;
+
     setState(() {
       _isCleaning = true;
       _errorMessage = null;
@@ -150,6 +153,102 @@ class _CacheSettingsState extends State<CacheSettings> {
       case CleanupOption.recent10:
         return '保留最近10集，删除其余';
     }
+  }
+
+  String _getConfirmMessage() {
+    switch (_selectedOption) {
+      case CleanupOption.all:
+        return '将删除所有已下载的音频和图片缓存，删除后需要重新下载。';
+      case CleanupOption.played:
+        return '将删除所有已播放节目的下载文件，删除后需要重新下载。';
+      case CleanupOption.recent5:
+        return '将保留最近 5 集，删除其余已下载的节目文件。';
+      case CleanupOption.recent10:
+        return '将保留最近 10 集，删除其余已下载的节目文件。';
+    }
+  }
+
+  Future<bool> _confirmCleanup() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Center(
+        child: Container(
+          width: 360,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '清理缓存',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF000000),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _getConfirmMessage(),
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                spacing: 12,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(dialogContext).pop(false),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        '取消',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF666666),
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(dialogContext).pop(true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF000000),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        '确认清理',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFFFFFFFF),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return confirmed ?? false;
   }
 
   void _showDropdown() {

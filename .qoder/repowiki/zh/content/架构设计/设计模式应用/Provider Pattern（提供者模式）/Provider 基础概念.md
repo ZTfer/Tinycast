@@ -3,13 +3,13 @@
 <cite>
 **本文引用的文件**
 - [pubspec.yaml](file://pubspec.yaml)
-- [main.dart](file://main.dart)
+- [main.dart](file://lib/main.dart)
 - [ai-rules-for-flutter-and-dart.md](file://.agents/rules/ai-rules-for-flutter-and-dart.md)
 - [upgrade-dependencies/summary.md](file://.trae/specs/upgrade-dependencies/summary.md)
 - [supabase_service.dart](file://lib/core/services/supabase_service.dart)
 - [auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [sync_provider.dart](file://lib/core/providers/sync_provider.dart)
-- [theme_provider.dart](file://lib/core/providers/theme_provider.dart)
+- [sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
+- [theme_loader.dart](file://lib/core/theme/theme_loader.dart)
 - [base_provider.dart](file://lib/presentation/providers/base_provider.dart)
 - [download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [navigation_provider.dart](file://lib/presentation/providers/navigation_provider.dart)
@@ -49,12 +49,12 @@ D --> F["业务逻辑与服务调用"]
 ```
 
 图表来源
-- [main.dart:106-176](file://main.dart#L106-L176)
+- [main.dart:106-176](file://lib/main.dart#L106-L176)
 - [pubspec.yaml:56-58](file://pubspec.yaml#L56-L58)
 
 章节来源
 - [pubspec.yaml:56-58](file://pubspec.yaml#L56-L58)
-- [main.dart:106-176](file://main.dart#L106-L176)
+- [main.dart:106-176](file://lib/main.dart#L106-L176)
 
 ## 核心组件
 - Provider：用于不可变值或单例服务的依赖注入（如 SupabaseClient）
@@ -69,8 +69,8 @@ D --> F["业务逻辑与服务调用"]
 章节来源
 - [ai-rules-for-flutter-and-dart.md:87-99](file://.agents/rules/ai-rules-for-flutter-and-dart.md#L87-L99)
 - [auth_provider.dart:9-16](file://lib/core/providers/auth_provider.dart#L9-L16)
-- [theme_provider.dart:7-9](file://lib/core/providers/theme_provider.dart#L7-L9)
-- [sync_provider.dart:153-155](file://lib/core/providers/sync_provider.dart#L153-L155)
+- [theme_loader.dart:7-9](file://lib/core/theme/theme_loader.dart#L7-L9)
+- [sync_provider.dart:153-155](file://lib/presentation/providers/sync_provider.dart#L153-L155)
 - [download_provider.dart:132-135](file://lib/presentation/providers/download_provider.dart#L132-L135)
 - [settings_provider.dart:35-37](file://lib/presentation/providers/settings_provider.dart#L35-L37)
 
@@ -94,7 +94,7 @@ P-->>W : 通知重建
 
 图表来源
 - [auth_provider.dart:9-16](file://lib/core/providers/auth_provider.dart#L9-L16)
-- [sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 - [download_provider.dart:55-94](file://lib/presentation/providers/download_provider.dart#L55-L94)
 - [settings_provider.dart:44-61](file://lib/presentation/providers/settings_provider.dart#L44-L61)
 
@@ -150,11 +150,11 @@ Invalidate --> End(["结束"])
 ```
 
 图表来源
-- [sync_provider.dart:47-74](file://lib/core/providers/sync_provider.dart#L47-L74)
-- [sync_provider.dart:110-150](file://lib/core/providers/sync_provider.dart#L110-L150)
+- [sync_provider.dart:47-74](file://lib/presentation/providers/sync_provider.dart#L47-L74)
+- [sync_provider.dart:110-150](file://lib/presentation/providers/sync_provider.dart#L110-L150)
 
 章节来源
-- [sync_provider.dart:41-155](file://lib/core/providers/sync_provider.dart#L41-L155)
+- [sync_provider.dart:41-155](file://lib/presentation/providers/sync_provider.dart#L41-L155)
 
 ### 主题状态（AsyncNotifierProvider）
 ThemeNotifier 异步加载主题配置，失败时回退到默认配置。UI 可通过 AsyncNotifierProvider 获取 ThemeState，并根据亮度选择对应主题配置。
@@ -175,11 +175,11 @@ ThemeNotifier --> ThemeState : "构建/更新"
 ```
 
 图表来源
-- [theme_provider.dart:65-91](file://lib/core/providers/theme_provider.dart#L65-L91)
-- [theme_provider.dart:11-26](file://lib/core/providers/theme_provider.dart#L11-L26)
+- [theme_loader.dart:65-91](file://lib/core/theme/theme_loader.dart#L65-L91)
+- [theme_loader.dart:11-26](file://lib/core/theme/theme_loader.dart#L11-L26)
 
 章节来源
-- [theme_provider.dart:7-91](file://lib/core/providers/theme_provider.dart#L7-L91)
+- [theme_loader.dart:7-91](file://lib/core/theme/theme_loader.dart#L7-L91)
 
 ### 下载状态（NotifierProvider + 全局事件流）
 DownloadNotifier 订阅 AudioDownloadService 的全局事件流，维护每个 episode 的状态与进度，并提供清理与查询接口。
@@ -271,14 +271,14 @@ CoreA --> ServiceA["supabase_service.dart"]
 ```
 
 图表来源
-- [main.dart:106-176](file://main.dart#L106-L176)
+- [main.dart:106-176](file://lib/main.dart#L106-L176)
 - [auth_provider.dart:5-21](file://lib/core/providers/auth_provider.dart#L5-L21)
-- [sync_provider.dart:143-150](file://lib/core/providers/sync_provider.dart#L143-L150)
+- [sync_provider.dart:143-150](file://lib/presentation/providers/sync_provider.dart#L143-L150)
 - [supabase_service.dart:52-54](file://lib/core/services/supabase_service.dart#L52-L54)
 
 章节来源
-- [main.dart:106-176](file://main.dart#L106-L176)
-- [sync_provider.dart:143-150](file://lib/core/providers/sync_provider.dart#L143-L150)
+- [main.dart:106-176](file://lib/main.dart#L106-L176)
+- [sync_provider.dart:143-150](file://lib/presentation/providers/sync_provider.dart#L143-L150)
 
 ## 性能考量
 - 使用 ref.watch 精确订阅，避免不必要的重建
@@ -298,8 +298,8 @@ CoreA --> ServiceA["supabase_service.dart"]
 
 章节来源
 - [auth_provider.dart:9-16](file://lib/core/providers/auth_provider.dart#L9-L16)
-- [sync_provider.dart:88-101](file://lib/core/providers/sync_provider.dart#L88-L101)
-- [theme_provider.dart:67-77](file://lib/core/providers/theme_provider.dart#L67-L77)
+- [sync_provider.dart:88-101](file://lib/presentation/providers/sync_provider.dart#L88-L101)
+- [theme_loader.dart:67-77](file://lib/core/theme/theme_loader.dart#L67-L77)
 - [download_provider.dart:55-94](file://lib/presentation/providers/download_provider.dart#L55-L94)
 - [settings_provider.dart:44-61](file://lib/presentation/providers/settings_provider.dart#L44-L61)
 

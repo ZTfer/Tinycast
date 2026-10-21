@@ -22,6 +22,11 @@ class VolumeControlBar extends StatefulWidget {
   /// 参数为新的音量值，范围 0-100
   final ValueChanged<int>? onVolumeChanged;
 
+  /// 一次调整结束（松手或点击完成）时的回调。
+  ///
+  /// 用于只在此刻持久化音量，避免拖动过程中频繁写数据库。
+  final ValueChanged<int>? onVolumeChangeEnd;
+
   /// 进度条轨道的颜色（未播放部分）
   final Color trackColor;
 
@@ -41,6 +46,7 @@ class VolumeControlBar extends StatefulWidget {
     super.key,
     this.volume = 30,
     this.onVolumeChanged,
+    this.onVolumeChangeEnd,
     this.trackColor = const Color(0xFFE0E0E0),
     this.progressColor = const Color(0xFF333333),
     this.thumbColor = const Color(0xFF333333),
@@ -111,7 +117,9 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
               if (box == null) return;
               final localPos = box.globalToLocal(details.globalPosition);
               final progress = _calcProgress(localPos, box.size.width);
-              widget.onVolumeChanged?.call(_progressToVolume(progress));
+              final volume = _progressToVolume(progress);
+              widget.onVolumeChanged?.call(volume);
+              widget.onVolumeChangeEnd?.call(volume);
             },
             onHorizontalDragStart: (details) {
               final box = _getTrackRenderBox();
@@ -133,7 +141,9 @@ class _VolumeControlBarState extends State<VolumeControlBar> {
               widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
             },
             onHorizontalDragEnd: (details) {
-              widget.onVolumeChanged?.call(_progressToVolume(_dragValue));
+              final volume = _progressToVolume(_dragValue);
+              widget.onVolumeChanged?.call(volume);
+              widget.onVolumeChangeEnd?.call(volume);
               setState(() => _isDragging = false);
             },
             child: SizedBox(

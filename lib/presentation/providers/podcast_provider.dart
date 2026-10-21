@@ -38,16 +38,20 @@ class PodcastState {
 
   PodcastState copyWith({
     PodcastStatus? status,
-    Podcast? podcast,
+    Object? podcast = _notProvided,
     List<Podcast>? podcasts,
-    List<Episode>? episodes,
+    Object? episodes = _notProvided,
     Object? errorMessage = _notProvided,
   }) {
     return PodcastState(
       status: status ?? this.status,
-      podcast: podcast ?? this.podcast,
+      podcast: identical(podcast, _notProvided)
+          ? this.podcast
+          : podcast as Podcast?,
       podcasts: podcasts ?? this.podcasts,
-      episodes: episodes ?? this.episodes,
+      episodes: identical(episodes, _notProvided)
+          ? this.episodes
+          : episodes as List<Episode>?,
       errorMessage: identical(errorMessage, _notProvided)
           ? this.errorMessage
           : errorMessage as String?,
@@ -144,12 +148,17 @@ class PodcastNotifier extends Notifier<PodcastState> {
     state = state.copyWith(status: PodcastStatus.loading, errorMessage: null);
     try {
       await _unsubscribePodcastUseCase(podcastId);
-      state = state.copyWith(status: PodcastStatus.success, podcast: null);
+      state = state.copyWith(
+        status: PodcastStatus.success,
+        podcast: null,
+        episodes: null,
+      );
     } catch (e) {
       state = state.copyWith(
         status: PodcastStatus.error,
         errorMessage: e.toString(),
       );
+      rethrow;
     }
   }
 
@@ -264,6 +273,19 @@ final latestEpisodesProvider = FutureProvider.family<List<Episode>, int>(
     return await useCase(podcastId, limit: 3);
   },
   retry: (error, stackTrace) => null,
+  isAutoDispose: true,
+);
+
+/// 根据 ID 查询单个节目，供播放历史等只持有 episodeId 的列表使用。
+final episodeByIdProvider = FutureProvider.family<Episode?, int>(
+  (ref, id) async {
+    final episodes = await ref
+        .watch(podcastRepositoryProvider)
+        .getEpisodesByIds([id]);
+    return episodes.isEmpty ? null : episodes.first;
+  },
+  retry: (error, stackTrace) => null,
+  isAutoDispose: true,
 );
 
 /// 根据 ID 查询单个播客的 Provider
@@ -273,4 +295,5 @@ final podcastByIdProvider = FutureProvider.family<Podcast?, int>(
     return await useCase.call(id);
   },
   retry: (error, stackTrace) => null,
+  isAutoDispose: true,
 );

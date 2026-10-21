@@ -13,7 +13,7 @@ import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/queue_provider.dart';
 import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
 import 'package:tinycast/core/utils/logger.dart';
-import 'package:tinycast/core/providers/sync_provider.dart';
+import 'package:tinycast/presentation/providers/sync_provider.dart';
 import 'package:tinycast/presentation/providers/settings_provider.dart';
 import 'package:tinycast/core/services/play_progress_service.dart';
 import 'package:tinycast/core/utils/app_window_context.dart';
@@ -376,6 +376,8 @@ class PlaybackNotifier extends Notifier<PlayerState> {
   Future<void> _autoSaveProgressIfNeeded() async {
     final currentEpisode = state.currentEpisode;
     if (currentEpisode == null) return;
+    // 暂停时位置不会变化，无需周期性写入；暂停/停止会显式保存。
+    if (!state.isPlaying) return;
 
     final positionMs = state.currentPosition.inMilliseconds;
     final now = DateTime.now();

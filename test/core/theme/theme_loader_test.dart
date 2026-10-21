@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tinycast/core/theme/theme_data.dart';
 import 'package:tinycast/core/theme/theme_loader.dart';
 
 /// HOCON 解析器与 include 链的最小单元测试
@@ -261,6 +263,93 @@ widgets {
       // rootBundle 需要 TestWidgetsFlutterBinding 初始化
       TestWidgetsFlutterBinding.ensureInitialized();
       ThemeLoader.clearCache();
+    });
+
+    test('preloadThemeConfigs 同时保留 textStyles 与 styles 缓存', () async {
+      await ThemeLoader.preloadThemeConfigs();
+
+      expect(
+        ThemeLoader.cachedWidgetStyles['textStyles'],
+        isNotNull,
+        reason: 'styles.conf 的加载不应覆盖 typography 生成的 textStyles',
+      );
+      expect(ThemeLoader.cachedWidgetStyles['styles'], isNotNull);
+      expect(ThemeLoader.cachedWidgetStyles['widgetTextStyles'], isNotNull);
+    });
+
+    test('widget text styles 的暗色变体使用暗色调色板', () async {
+      await ThemeLoader.preloadThemeConfigs();
+
+      final styles = ThemeLoader.cachedWidgetStyles['widgetTextStyles']!;
+      final lightTitle = styles['widgets_episode_item_title_light'];
+      final darkTitle = styles['widgets_episode_item_title_dark'];
+
+      expect(lightTitle, isNotNull);
+      expect(darkTitle, isNotNull);
+      expect(
+        lightTitle!.color,
+        ThemeLoader.cachedThemeConfigs['light']!.labelPrimary,
+      );
+      expect(
+        darkTitle!.color,
+        ThemeLoader.cachedThemeConfigs['dark']!.labelPrimary,
+        reason: 'styles.conf 引用的是 light 调色板，暗色模式必须解析为 dark 值',
+      );
+    });
+
+    test('AppThemeData 的暗色布局颜色来自暗色调色板', () async {
+      await ThemeLoader.preloadThemeConfigs();
+
+      final dark = AppThemeData.fromSource(
+        mode: AppThemeMode.dark,
+        useHardcoded: false,
+      );
+      final config = ThemeLoader.cachedThemeConfigs['dark']!;
+
+      expect(dark.episodeItemTitle.color, config.labelPrimary);
+      expect(dark.episodeItemDescription.color, config.labelTertiary);
+      expect(dark.episodeItemPubDate.color, config.labelTertiary);
+      expect(dark.homeToolbarButtonContentColor, config.labelPrimary);
+      expect(
+        dark.episodeProgressTrackColor,
+        const Color(0x10FFFFFF),
+        reason: 'gray-10 暗色值应替换 light 引用',
+      );
+    });
+
+    test('文本样式按目标平台选择 desktop/mobile 变体', () async {
+      await ThemeLoader.preloadThemeConfigs();
+
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      final desktop = AppThemeData.fromSource(
+        mode: AppThemeMode.light,
+        useHardcoded: false,
+      );
+      expect(desktop.h3.fontSize, 14);
+
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final mobile = AppThemeData.fromSource(
+        mode: AppThemeMode.light,
+        useHardcoded: false,
+      );
+      expect(mobile.h3.fontSize, 22);
+    });
+
+    test('caption 使用 typography.conf 的 caption1 而非硬编码回退', () async {
+      await ThemeLoader.preloadThemeConfigs();
+
+      final theme = AppThemeData.fromSource(
+        mode: AppThemeMode.light,
+        useHardcoded: false,
+      );
+
+      expect(theme.caption.fontSize, 12);
+      expect(
+        theme.caption.color,
+        ThemeLoader.cachedThemeConfigs['light']!.labelTertiary,
+      );
     });
 
     test('通过 include 链加载 styles.conf 并解析引用', () async {

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tinycast/core/router/app_routes.dart';
+import 'package:tinycast/core/utils/logger.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
 import 'package:tinycast/presentation/features/library/library.dart';
@@ -19,123 +20,86 @@ import 'package:tinycast/domain/entities/episode.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 
 class AppRouter {
+  static PageRouteBuilder<dynamic> _buildRoute(
+    RouteSettings settings,
+    WidgetBuilder builder,
+  ) {
+    return PageRouteBuilder(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+      transitionDuration: Duration.zero,
+    );
+  }
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final isDebugOnlyRoute =
         settings.name == AppRoutes.testPage ||
         settings.name == AppRoutes.databaseCleanup;
     if (!kDebugMode && isDebugOnlyRoute) {
+      Logger.warning('⚠️ [ROUTER] 调试路由在生产环境不可用: ${settings.name}');
       settings = const RouteSettings(name: AppRoutes.home);
     }
 
     switch (settings.name) {
       case AppRoutes.home:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const HomePage(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const HomePage());
       case AppRoutes.queue:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Queue(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Queue());
       case AppRoutes.library:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Library(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Library());
       case AppRoutes.favorite:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Favorite(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Favorite());
       case AppRoutes.history:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const History(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const History());
       case AppRoutes.downloads:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Downloads(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Downloads());
       case AppRoutes.subscribe:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Subscribe(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Subscribe());
       case AppRoutes.settings:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Settings(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const Settings());
       case AppRoutes.search:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const SearchPage(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const SearchPage());
       case AppRoutes.testPage:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const TestPage(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const TestPage());
       case AppRoutes.podcastDetail:
-        final podcastId = settings.arguments is int
-            ? settings.arguments as int
-            : (settings.arguments as Podcast).id;
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PodcastDetail(podcastId: podcastId),
-          transitionDuration: Duration.zero,
+        final podcastId = switch (settings.arguments) {
+          final int id => id,
+          final Podcast podcast => podcast.id,
+          _ => null,
+        };
+        if (podcastId == null) {
+          Logger.error(
+            '❌ [ROUTER] podcastDetail 缺少有效的播客参数: '
+            '${settings.arguments}',
+          );
+          return _buildRoute(settings, (_) => const HomePage());
+        }
+        return _buildRoute(
+          settings,
+          (_) => PodcastDetail(podcastId: podcastId),
         );
       case AppRoutes.episodeDetail:
         final args = settings.arguments;
-        Episode? episode;
-        if (args is Episode) {
-          episode = args;
-        } else if (args is Map<String, dynamic>) {
-          episode = args['episode'] as Episode?;
+        final episode = switch (args) {
+          final Episode episode => episode,
+          final Map<String, dynamic> map when map['episode'] is Episode =>
+            map['episode'] as Episode,
+          _ => null,
+        };
+        if (episode == null) {
+          Logger.warning(
+            '⚠️ [ROUTER] episodeDetail 未携带可用的 Episode 参数: $args',
+          );
         }
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              EpisodeDetail(episode: episode),
-          transitionDuration: Duration.zero,
+        return _buildRoute(
+          settings,
+          (_) => EpisodeDetail(episode: episode),
         );
       case AppRoutes.databaseCleanup:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const DatabaseCleanupPage(),
-          transitionDuration: Duration.zero,
-        );
+        return _buildRoute(settings, (_) => const DatabaseCleanupPage());
       default:
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const HomePage(),
-          transitionDuration: Duration.zero,
-        );
+        Logger.warning('⚠️ [ROUTER] 未注册的路由，回退首页: ${settings.name}');
+        return _buildRoute(settings, (_) => const HomePage());
     }
   }
 
@@ -177,24 +141,14 @@ class AppRouter {
   }
 
   static const _settingsWindowArguments = '{"type":"settings"}';
-  static const _subscribeWindowArguments = '{"type":"subscribe"}';
 
   static Future<void>? _settingsWindowOpening;
-  static Future<void>? _subscribeWindowOpening;
 
   /// 打开设置窗口
   static Future<void> openSettingsWindow() {
     return _settingsWindowOpening ??=
         _showSingletonWindow(_settingsWindowArguments).whenComplete(() {
       _settingsWindowOpening = null;
-    });
-  }
-
-  /// 打开订阅窗口
-  static Future<void> openSubscribeWindow() {
-    return _subscribeWindowOpening ??=
-        _showSingletonWindow(_subscribeWindowArguments).whenComplete(() {
-      _subscribeWindowOpening = null;
     });
   }
 

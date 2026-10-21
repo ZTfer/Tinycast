@@ -6,6 +6,7 @@ part 'queue_model.g.dart';
 class Queue {
   Id id = Isar.autoIncrement;
 
+  @Index()
   String? supabaseId;
 
   @Index()

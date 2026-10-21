@@ -7,8 +7,14 @@ import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:tinycast/domain/entities/episode.dart' as _i4;
+import 'package:tinycast/domain/entities/podcast.dart' as _i6;
+import 'package:tinycast/domain/usecases/get_episodes_by_podcast_id_usecase.dart'
+    as _i7;
 import 'package:tinycast/domain/usecases/get_latest_episodes_by_podcast_id_usecase.dart'
     as _i2;
+import 'package:tinycast/domain/usecases/get_podcast_by_id_usecase.dart' as _i5;
+import 'package:tinycast/domain/usecases/unsubscribe_podcast_usecase.dart'
+    as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -41,4 +47,59 @@ class MockGetLatestEpisodesByPodcastIdUseCase extends _i1.Mock
             returnValue: _i3.Future<List<_i4.Episode>>.value(<_i4.Episode>[]),
           )
           as _i3.Future<List<_i4.Episode>>);
+}
+
+/// A class which mocks [GetPodcastByIdUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetPodcastByIdUseCase extends _i1.Mock
+    implements _i5.GetPodcastByIdUseCase {
+  MockGetPodcastByIdUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<_i6.Podcast?> call(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [id]),
+            returnValue: _i3.Future<_i6.Podcast?>.value(),
+          )
+          as _i3.Future<_i6.Podcast?>);
+}
+
+/// A class which mocks [GetEpisodesByPodcastIdUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetEpisodesByPodcastIdUseCase extends _i1.Mock
+    implements _i7.GetEpisodesByPodcastIdUseCase {
+  MockGetEpisodesByPodcastIdUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<List<_i4.Episode>> call(int? podcastId) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [podcastId]),
+            returnValue: _i3.Future<List<_i4.Episode>>.value(<_i4.Episode>[]),
+          )
+          as _i3.Future<List<_i4.Episode>>);
+}
+
+/// A class which mocks [UnsubscribePodcastUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUnsubscribePodcastUseCase extends _i1.Mock
+    implements _i8.UnsubscribePodcastUseCase {
+  MockUnsubscribePodcastUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<void> call(int? podcastId) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [podcastId]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

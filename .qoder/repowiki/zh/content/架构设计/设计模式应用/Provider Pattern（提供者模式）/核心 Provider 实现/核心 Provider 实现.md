@@ -8,7 +8,7 @@
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/data/services/audio_download_service.dart](file://lib/data/services/audio_download_service.dart)
 - [lib/core/services/play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
 - [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)
@@ -96,7 +96,7 @@ ADS --> ISAR
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
 - [lib/data/services/audio_download_service.dart](file://lib/data/services/audio_download_service.dart)
@@ -107,7 +107,7 @@ ADS --> ISAR
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
 - [lib/data/services/audio_download_service.dart](file://lib/data/services/audio_download_service.dart)
@@ -148,7 +148,7 @@ ADS --> ISAR
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
 
@@ -180,7 +180,7 @@ SYNC-->>UI : 失效相关 Provider 并刷新
 图表来源 
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/core/services/play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 
 ## 详细组件分析
 
@@ -378,11 +378,11 @@ Continue --> MonitorAuth
 ```
 
 图表来源 
-- [lib/core/providers/sync_provider.dart:56-89](file://lib/core/providers/sync_provider.dart#L56-L89)
-- [lib/core/providers/sync_provider.dart:119-140](file://lib/core/providers/sync_provider.dart#L119-L140)
+- [lib/presentation/providers/sync_provider.dart:56-89](file://lib/presentation/providers/sync_provider.dart#L56-L89)
+- [lib/presentation/providers/sync_provider.dart:119-140](file://lib/presentation/providers/sync_provider.dart#L119-L140)
 
 章节来源
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)
 
 ### QueueProvider（播放队列）
@@ -472,14 +472,14 @@ SYNC --> REPO_FAV["FavoriteRepository"]
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 
 章节来源
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 
 ## 性能考量
 - 状态更新频率控制
@@ -525,7 +525,7 @@ SYNC --> REPO_FAV["FavoriteRepository"]
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/play_history_provider.dart](file://lib/presentation/providers/play_history_provider.dart)
 - [test/core/providers/sync_provider_test.dart](file://test/core/providers/sync_provider_test.dart)

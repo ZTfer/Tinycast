@@ -15,6 +15,45 @@ import 'package:tinycast/data/models/queue_model.dart';
 
 enum SyncStatus { idle, syncing, error }
 
+enum SyncResultStatus { success, partial, pullFailed, skipped, failed }
+
+/// Outcome of one sync cycle.
+///
+/// [success] means every pull, merge and push step completed and the sync
+/// cursor advanced. [partial] and [pullFailed] mean the cursor did not
+/// advance, so the next cycle retries the same window.
+class SyncResult {
+  final SyncResultStatus status;
+  final List<String> failedSteps;
+  final DateTime? completedAt;
+  final Object? error;
+
+  const SyncResult._({
+    required this.status,
+    this.failedSteps = const [],
+    this.completedAt,
+    this.error,
+  });
+
+  const SyncResult.success(DateTime completedAt)
+    : this._(status: SyncResultStatus.success, completedAt: completedAt);
+
+  const SyncResult.partial(List<String> failedSteps)
+    : this._(status: SyncResultStatus.partial, failedSteps: failedSteps);
+
+  const SyncResult.pullFailed(Object error)
+    : this._(status: SyncResultStatus.pullFailed, error: error);
+
+  const SyncResult.skipped()
+    : this._(status: SyncResultStatus.skipped);
+
+  const SyncResult.failed(Object error)
+    : this._(status: SyncResultStatus.failed, error: error);
+
+  bool get isSuccess => status == SyncResultStatus.success;
+  bool get cursorAdvanced => status == SyncResultStatus.success;
+}
+
 class SyncProgress {
   final int totalItems;
   final int syncedItems;
@@ -55,7 +94,7 @@ class SyncService {
   final Isar Function()? _isarResolver;
   final SyncTombstoneStore Function()? _tombstoneStoreResolver;
   SyncProgressCallback? onProgressChanged;
-  bool _allStepsSucceeded = true;
+  final List<String> _failedSteps = [];
 
   // Pending local deletions to propagate to the cloud during push.
   Set<String> _pendingSubscriptionDeletes = {};
@@ -150,16 +189,16 @@ class SyncService {
     await prefs.remove(_lastSyncTimestampKey);
   }
 
-  Future<void> sync() async {
+  Future<SyncResult> sync() async {
     if (!canSync) {
       Logger.warning('Sync skipped: user not authenticated');
-      return;
+      return const SyncResult.skipped();
     }
 
     try {
       Logger.info('🔄 [SYNC] Starting sync...');
       _notifyProgress(const SyncProgress(currentTable: 'preparing'));
-      _allStepsSucceeded = true;
+      _failedSteps.clear();
 
       await _ensureUserProfile();
 
@@ -184,27 +223,35 @@ class SyncService {
           '⚠️ [SYNC] Pull failed; skipping push to avoid overwriting cloud data',
         );
         _notifyProgress(const SyncProgress(currentTable: 'pull_failed'));
-        return;
+        return SyncResult.pullFailed(
+          StateError('One or more pull steps failed'),
+        );
       }
 
       await _pushLocalChanges(lastSyncTime);
 
       final now = DateTime.now();
-      if (_allStepsSucceeded) {
+      if (_failedSteps.isEmpty) {
         await _saveLastSyncTime(now);
         Logger.info('✅ [SYNC] Sync completed at $now');
       } else {
         Logger.warning(
-          '⚠️ [SYNC] Sync finished with step failures; lastSyncTime not advanced',
+          '⚠️ [SYNC] Sync finished with step failures (${_failedSteps.join(', ')}); '
+          'lastSyncTime not advanced',
         );
       }
 
       _notifyProgress(
         SyncProgress(totalItems: 0, syncedItems: 0, currentTable: 'completed'),
       );
+
+      return _failedSteps.isEmpty
+          ? SyncResult.success(now)
+          : SyncResult.partial(List.unmodifiable(_failedSteps));
     } catch (e, stackTrace) {
       Logger.error('❌ [SYNC] Sync failed', error: e, stackTrace: stackTrace);
-      rethrow;
+      _notifyProgress(const SyncProgress(currentTable: 'failed'));
+      return SyncResult.failed(e);
     }
   }
 
@@ -273,7 +320,7 @@ class SyncService {
       try {
         cloudRows = await fetch();
       } catch (e, stackTrace) {
-        _allStepsSucceeded = false;
+        _recordStepFailure(stepName);
         Logger.error(
           '[SYNC] Pull step "$stepName" failed; aborting pull and push',
           error: e,
@@ -285,7 +332,7 @@ class SyncService {
       try {
         await merge(cloudRows);
       } catch (e, stackTrace) {
-        _allStepsSucceeded = false;
+        _recordStepFailure(stepName);
         Logger.error(
           '[SYNC] Merge step "$stepName" left records unmerged; '
           'sync cursor will not advance',
@@ -361,8 +408,11 @@ class SyncService {
     _notifyProgress(const SyncProgress(currentTable: 'push_podcasts'));
     await _safeStep('push_podcasts', () async {
       final localPodcasts = await isar.podcasts.where().findAll();
-      if (localPodcasts.isNotEmpty) {
-        final podcastMaps = localPodcasts
+      final changedPodcasts = localPodcasts
+          .where((p) => _changedSince(p.supabaseId, p.lastUpdated, since))
+          .toList();
+      if (changedPodcasts.isNotEmpty) {
+        final podcastMaps = changedPodcasts
             .where((p) => p.itunesId != null && p.itunesId!.isNotEmpty)
             .map(_podcastToCloudMap)
             .where((m) => m['id'] != null || m['itunes_id'] != null)
@@ -373,7 +423,7 @@ class SyncService {
             .toList();
         if (podcastMaps.isNotEmpty) {
           final results = await _remoteDataSource.upsertPodcasts(podcastMaps);
-          await _updatePodcastSupabaseIds(localPodcasts, results);
+          await _updatePodcastSupabaseIds(changedPodcasts, results);
         }
       }
     });
@@ -384,8 +434,11 @@ class SyncService {
 
       await _backfillEpisodePodcastITunesId(isar, localEpisodes);
 
-      if (localEpisodes.isNotEmpty) {
-        final episodeMaps = localEpisodes
+      final changedEpisodes = localEpisodes
+          .where((e) => _changedSince(e.supabaseId, e.updatedAt, since))
+          .toList();
+      if (changedEpisodes.isNotEmpty) {
+        final episodeMaps = changedEpisodes
             .where((e) => e.guid != null && e.guid!.isNotEmpty)
             .map(_episodeToCloudMap)
             .where((m) => m.containsKey('podcast_id'))
@@ -396,7 +449,7 @@ class SyncService {
             .toList();
         if (episodeMaps.isNotEmpty) {
           final results = await _remoteDataSource.upsertEpisodes(episodeMaps);
-          await _updateEpisodeSupabaseIds(localEpisodes, results);
+          await _updateEpisodeSupabaseIds(changedEpisodes, results);
         }
       }
     });
@@ -435,37 +488,12 @@ class SyncService {
       // Propagate local unsubscribes via explicit tombstones instead of
       // mirror-deleting every cloud record missing locally, which would
       // delete data other devices just uploaded.
-      var deleteFailures = 0;
-      for (final pendingCloudId in _pendingSubscriptionDeletes) {
-        final podcastId = int.tryParse(pendingCloudId);
-        if (podcastId == null) continue;
-        try {
-          await _remoteDataSource.deleteUserPodcastSubscription(podcastId);
-          Logger.info(
-            '[SYNC] Deleted cloud subscription for podcast_id=$podcastId',
-          );
-        } catch (e) {
-          deleteFailures++;
-          Logger.error(
-            '[SYNC] Failed to delete cloud subscription for podcast_id=$podcastId',
-            error: e,
-          );
-        }
-      }
-      if (deleteFailures > 0) {
-        throw StateError(
-          '$deleteFailures subscription cloud delete(s) failed; will retry',
-        );
-      }
-
-      // Only resolve tombstones whose deletion is confirmed; the rest will
-      // be retried on the next sync.
-      final confirmedSubDeletes = await _confirmedAbsentCloudIds(
-        fetch: _remoteDataSource.fetchUserPodcastSubscriptions,
-        idField: 'podcast_id',
+      await _propagateTombstoneDeletes(
         pending: _pendingSubscriptionDeletes,
+        deleteRemote: _remoteDataSource.deleteUserPodcastSubscription,
+        entityLabel: 'subscription',
+        resolve: tombstones.resolveSubscriptionDeletes,
       );
-      await tombstones.resolveSubscriptionDeletes(confirmedSubDeletes);
 
       // Snapshot the subscriptions just pushed, so pull-side unsubscribes
       // never wipe subscriptions that were never pushed successfully.
@@ -475,9 +503,14 @@ class SyncService {
     _notifyProgress(const SyncProgress(currentTable: 'push_playback_history'));
     await _safeStep('push_playback_history', () async {
       final localHistory = await isar.playHistorys.where().findAll();
-      if (localHistory.isNotEmpty) {
+      final changedHistory = localHistory
+          .where(
+            (h) => _changedSince(h.supabaseId, h.lastUpdateTime, since),
+          )
+          .toList();
+      if (changedHistory.isNotEmpty) {
         final historyMaps = <Map<String, dynamic>>[];
-        for (final history in localHistory) {
+        for (final history in changedHistory) {
           if (history.supabaseId != null || history.episodeId > 0) {
             historyMaps.add(_playHistoryToCloudMap(history));
           }
@@ -486,7 +519,7 @@ class SyncService {
           final results = await _remoteDataSource.upsertPlaybackHistory(
             historyMaps,
           );
-          await _updatePlayHistorySupabaseIds(localHistory, results);
+          await _updatePlayHistorySupabaseIds(changedHistory, results);
         }
       }
     });
@@ -495,11 +528,14 @@ class SyncService {
     await _safeStep('push_favorites', () async {
       final tombstones = _tombstoneStore;
       final localFavorites = await isar.favorites.where().findAll();
+      final changedFavorites = localFavorites
+          .where((f) => _changedSince(f.supabaseId, f.createdAt, since))
+          .toList();
       final localFavoriteEpisodeCloudIds = <String>{};
 
-      if (localFavorites.isNotEmpty) {
+      if (changedFavorites.isNotEmpty) {
         final favoriteMaps = <Map<String, dynamic>>[];
-        for (final fav in localFavorites) {
+        for (final fav in changedFavorites) {
           final map = _favoriteToCloudMap(fav);
           favoriteMaps.add(map);
           final episodeCloudId = map['episode_id']?.toString();
@@ -509,7 +545,7 @@ class SyncService {
         }
         if (favoriteMaps.isNotEmpty) {
           final results = await _remoteDataSource.upsertFavorites(favoriteMaps);
-          await _updateFavoriteSupabaseIds(localFavorites, results);
+          await _updateFavoriteSupabaseIds(changedFavorites, results);
         }
       }
 
@@ -519,35 +555,12 @@ class SyncService {
 
       // Propagate local unfavorites via explicit tombstones instead of
       // mirror-deleting every cloud record missing locally.
-      var deleteFailures = 0;
-      for (final pendingCloudId in _pendingFavoriteDeletes) {
-        final episodeId = int.tryParse(pendingCloudId);
-        if (episodeId == null) continue;
-        try {
-          await _remoteDataSource.deleteFavorite(episodeId);
-          Logger.info(
-            '[SYNC] Deleted cloud favorite for episode_id=$episodeId',
-          );
-        } catch (e) {
-          deleteFailures++;
-          Logger.error(
-            '[SYNC] Failed to delete cloud favorite for episode_id=$episodeId',
-            error: e,
-          );
-        }
-      }
-      if (deleteFailures > 0) {
-        throw StateError(
-          '$deleteFailures favorite cloud delete(s) failed; will retry',
-        );
-      }
-
-      final confirmedFavDeletes = await _confirmedAbsentCloudIds(
-        fetch: _remoteDataSource.fetchFavorites,
-        idField: 'episode_id',
+      await _propagateTombstoneDeletes(
         pending: _pendingFavoriteDeletes,
+        deleteRemote: _remoteDataSource.deleteFavorite,
+        entityLabel: 'favorite',
+        resolve: tombstones.resolveFavoriteDeletes,
       );
-      await tombstones.resolveFavoriteDeletes(confirmedFavDeletes);
     });
 
     _notifyProgress(const SyncProgress(currentTable: 'push_queue_items'));
@@ -578,55 +591,47 @@ class SyncService {
 
       // Differential delete: only remove items the user explicitly removed
       // locally, avoiding the non-atomic "delete all then re-insert".
-      var deleteFailures = 0;
-      for (final pendingCloudId in _pendingQueueDeletes) {
-        final episodeId = int.tryParse(pendingCloudId);
-        if (episodeId == null) continue;
-        try {
-          await _remoteDataSource.deleteQueueItem(episodeId);
-          Logger.info(
-            '[SYNC] Deleted cloud queue item for episode_id=$episodeId',
-          );
-        } catch (e) {
-          deleteFailures++;
-          Logger.error(
-            '[SYNC] Failed to delete cloud queue item for episode_id=$episodeId',
-            error: e,
-          );
-        }
-      }
-      if (deleteFailures > 0) {
-        throw StateError(
-          '$deleteFailures queue cloud delete(s) failed; will retry',
-        );
-      }
-
-      final confirmedQueueDeletes = await _confirmedAbsentCloudIds(
-        fetch: _remoteDataSource.fetchQueueItems,
-        idField: 'episode_id',
+      await _propagateTombstoneDeletes(
         pending: _pendingQueueDeletes,
+        deleteRemote: _remoteDataSource.deleteQueueItem,
+        entityLabel: 'queue item',
+        resolve: tombstones.resolveQueueDeletes,
       );
-      await tombstones.resolveQueueDeletes(confirmedQueueDeletes);
     });
   }
 
-  /// Returns the subset of [pending] cloud ids that are confirmed absent
-  /// from the cloud list returned by [fetch].
-  Future<Set<String>> _confirmedAbsentCloudIds({
-    required Future<List<Map<String, dynamic>>> Function() fetch,
-    required String idField,
+  /// Deletes each pending cloud row and resolves the tombstones that were
+  /// deleted successfully. A failed delete stays pending for the next sync.
+  Future<void> _propagateTombstoneDeletes({
     required Set<String> pending,
+    required Future<void> Function(int cloudId) deleteRemote,
+    required String entityLabel,
+    required Future<void> Function(Set<String> confirmed) resolve,
   }) async {
-    if (pending.isEmpty) return <String>{};
-    final cloudRows = await fetch();
-    final presentIds = <String>{};
-    for (final row in cloudRows) {
-      final id = row[idField]?.toString();
-      if (id != null) {
-        presentIds.add(id);
+    final confirmed = <String>{};
+    var failures = 0;
+    for (final pendingId in pending) {
+      final cloudId = int.tryParse(pendingId);
+      if (cloudId == null) continue;
+      try {
+        await deleteRemote(cloudId);
+        confirmed.add(pendingId);
+        Logger.info('[SYNC] Deleted cloud $entityLabel $cloudId');
+      } catch (e) {
+        failures++;
+        Logger.error(
+          '[SYNC] Failed to delete cloud $entityLabel $cloudId',
+          error: e,
+        );
       }
     }
-    return pending.where((id) => !presentIds.contains(id)).toSet();
+    await resolve(confirmed);
+    pending.removeAll(confirmed);
+    if (failures > 0) {
+      throw StateError(
+        '$failures $entityLabel cloud delete(s) failed; will retry',
+      );
+    }
   }
 
   // ========== Merge cloud data into local Isar ==========
@@ -647,18 +652,16 @@ class SyncService {
 
           Podcast? local;
           if (itunesId != null && itunesId.isNotEmpty) {
-            final all = await isar.podcasts
+            local = await isar.podcasts
                 .filter()
                 .itunesIdEqualTo(itunesId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
           if (local == null && cloudId != null) {
-            final all = await isar.podcasts
+            local = await isar.podcasts
                 .filter()
                 .supabaseIdEqualTo(cloudId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
 
           if (local != null) {
@@ -719,18 +722,16 @@ class SyncService {
 
           Episode? local;
           if (guid != null && guid.isNotEmpty) {
-            final all = await isar.episodes
+            local = await isar.episodes
                 .filter()
                 .guidEqualTo(guid)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
           if (local == null && cloudId != null) {
-            final all = await isar.episodes
+            local = await isar.episodes
                 .filter()
                 .supabaseIdEqualTo(cloudId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
 
           if (local != null) {
@@ -867,24 +868,22 @@ class SyncService {
 
           PlayHistory? local;
           if (cloudId != null) {
-            final all = await isar.playHistorys
+            local = await isar.playHistorys
                 .filter()
                 .supabaseIdEqualTo(cloudId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
 
           if (local == null && episodeCloudId != null) {
-            final episodes = await isar.episodes
+            final episode = await isar.episodes
                 .filter()
                 .supabaseIdEqualTo(episodeCloudId)
-                .findAll();
-            if (episodes.isNotEmpty) {
-              final existingHistory = await isar.playHistorys
+                .findFirst();
+            if (episode != null) {
+              local = await isar.playHistorys
                   .filter()
-                  .episodeIdEqualTo(episodes.first.id)
-                  .findAll();
-              if (existingHistory.isNotEmpty) local = existingHistory.first;
+                  .episodeIdEqualTo(episode.id)
+                  .findFirst();
             }
           }
 
@@ -959,24 +958,22 @@ class SyncService {
 
           Favorite? local;
           if (cloudId != null) {
-            final all = await isar.favorites
+            local = await isar.favorites
                 .filter()
                 .supabaseIdEqualTo(cloudId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
 
           if (local == null && episodeCloudId != null) {
-            final episodes = await isar.episodes
+            final episode = await isar.episodes
                 .filter()
                 .supabaseIdEqualTo(episodeCloudId)
-                .findAll();
-            if (episodes.isNotEmpty) {
-              final existingFav = await isar.favorites
+                .findFirst();
+            if (episode != null) {
+              local = await isar.favorites
                   .filter()
-                  .episodeIdEqualTo(episodes.first.id)
-                  .findAll();
-              if (existingFav.isNotEmpty) local = existingFav.first;
+                  .episodeIdEqualTo(episode.id)
+                  .findFirst();
             }
           }
 
@@ -1053,24 +1050,22 @@ class SyncService {
 
           Queue? local;
           if (cloudId != null) {
-            final all = await isar.queues
+            local = await isar.queues
                 .filter()
                 .supabaseIdEqualTo(cloudId)
-                .findAll();
-            if (all.isNotEmpty) local = all.first;
+                .findFirst();
           }
 
           if (local == null && episodeCloudId != null) {
-            final episodes = await isar.episodes
+            final episode = await isar.episodes
                 .filter()
                 .supabaseIdEqualTo(episodeCloudId)
-                .findAll();
-            if (episodes.isNotEmpty) {
-              final existingQueue = await isar.queues
+                .findFirst();
+            if (episode != null) {
+              local = await isar.queues
                   .filter()
-                  .episodeIdEqualTo(episodes.first.id)
-                  .findAll();
-              if (existingQueue.isNotEmpty) local = existingQueue.first;
+                  .episodeIdEqualTo(episode.id)
+                  .findFirst();
             }
           }
 
@@ -1184,20 +1179,26 @@ class SyncService {
   ) async {
     if (results.isEmpty) return;
     final isar = _isar;
+    final cloudIdByEpisodeId = {
+      for (final r in results)
+        r['episode_id']?.toString(): r['id']?.toString(),
+    };
+    final episodes = await isar.episodes.getAll(
+      locals.map((h) => h.episodeId).toSet().toList(),
+    );
+    final episodeById = <int, Episode>{};
+    for (final episode in episodes) {
+      if (episode != null) episodeById[episode.id] = episode;
+    }
 
     await isar.writeTxn(() async {
       for (final local in locals) {
-        if (local.supabaseId == null) {
-          final episode = await isar.episodes.get(local.episodeId);
-          if (episode?.supabaseId != null) {
-            for (final r in results) {
-              if (r['episode_id'].toString() == episode!.supabaseId) {
-                local.supabaseId = r['id']?.toString();
-                await isar.playHistorys.put(local);
-                break;
-              }
-            }
-          }
+        if (local.supabaseId != null) continue;
+        final episodeCloudId = episodeById[local.episodeId]?.supabaseId;
+        final cloudId = cloudIdByEpisodeId[episodeCloudId];
+        if (cloudId != null) {
+          local.supabaseId = cloudId;
+          await isar.playHistorys.put(local);
         }
       }
     });
@@ -1209,20 +1210,26 @@ class SyncService {
   ) async {
     if (results.isEmpty) return;
     final isar = _isar;
+    final cloudIdByEpisodeId = {
+      for (final r in results)
+        r['episode_id']?.toString(): r['id']?.toString(),
+    };
+    final episodes = await isar.episodes.getAll(
+      locals.map((f) => f.episodeId).toSet().toList(),
+    );
+    final episodeById = <int, Episode>{};
+    for (final episode in episodes) {
+      if (episode != null) episodeById[episode.id] = episode;
+    }
 
     await isar.writeTxn(() async {
       for (final local in locals) {
-        if (local.supabaseId == null) {
-          final episode = await isar.episodes.get(local.episodeId);
-          if (episode?.supabaseId != null) {
-            for (final r in results) {
-              if (r['episode_id'].toString() == episode!.supabaseId) {
-                local.supabaseId = r['id']?.toString();
-                await isar.favorites.put(local);
-                break;
-              }
-            }
-          }
+        if (local.supabaseId != null) continue;
+        final episodeCloudId = episodeById[local.episodeId]?.supabaseId;
+        final cloudId = cloudIdByEpisodeId[episodeCloudId];
+        if (cloudId != null) {
+          local.supabaseId = cloudId;
+          await isar.favorites.put(local);
         }
       }
     });
@@ -1234,20 +1241,26 @@ class SyncService {
   ) async {
     if (results.isEmpty) return;
     final isar = _isar;
+    final cloudIdByEpisodeId = {
+      for (final r in results)
+        r['episode_id']?.toString(): r['id']?.toString(),
+    };
+    final episodes = await isar.episodes.getAll(
+      locals.map((q) => q.episodeId).toSet().toList(),
+    );
+    final episodeById = <int, Episode>{};
+    for (final episode in episodes) {
+      if (episode != null) episodeById[episode.id] = episode;
+    }
 
     await isar.writeTxn(() async {
       for (final local in locals) {
-        if (local.supabaseId == null) {
-          final episode = await isar.episodes.get(local.episodeId);
-          if (episode?.supabaseId != null) {
-            for (final r in results) {
-              if (r['episode_id'].toString() == episode!.supabaseId) {
-                local.supabaseId = r['id']?.toString();
-                await isar.queues.put(local);
-                break;
-              }
-            }
-          }
+        if (local.supabaseId != null) continue;
+        final episodeCloudId = episodeById[local.episodeId]?.supabaseId;
+        final cloudId = cloudIdByEpisodeId[episodeCloudId];
+        if (cloudId != null) {
+          local.supabaseId = cloudId;
+          await isar.queues.put(local);
         }
       }
     });
@@ -1409,15 +1422,15 @@ class SyncService {
     if (podcastCloudId == null) return null;
 
     final isar = _isar;
-    final podcasts = await isar.podcasts
+    final podcast = await isar.podcasts
         .filter()
         .supabaseIdEqualTo(podcastCloudId)
-        .findAll();
-    if (podcasts.isEmpty) return null;
+        .findFirst();
+    if (podcast == null) return null;
 
     return Episode()
       ..supabaseId = cloud['id']?.toString()
-      ..podcastId = podcasts.first.id
+      ..podcastId = podcast.id
       ..title = cloud['title'] as String? ?? ''
       ..description = cloud['description'] as String? ?? ''
       ..audioUrl = cloud['audio_url'] as String? ?? ''
@@ -1475,13 +1488,11 @@ class SyncService {
     if (episodeCloudId == null) return null;
 
     final isar = _isar;
-    final episodes = await isar.episodes
+    final episode = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)
-        .findAll();
-    if (episodes.isEmpty) return null;
-
-    final episode = episodes.first;
+        .findFirst();
+    if (episode == null) return null;
 
     return PlayHistory()
       ..supabaseId = cloud['id']?.toString()
@@ -1541,18 +1552,18 @@ class SyncService {
     if (episodeCloudId == null) return null;
 
     final isar = _isar;
-    final episodes = await isar.episodes
+    final episode = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)
-        .findAll();
-    if (episodes.isEmpty) return null;
+        .findFirst();
+    if (episode == null) return null;
 
     return Favorite()
       ..supabaseId = cloud['id']?.toString()
-      ..episodeId = episodes.first.id
-      ..episodeGuid = cloud['episode_guid'] as String? ?? episodes.first.guid
+      ..episodeId = episode.id
+      ..episodeGuid = cloud['episode_guid'] as String? ?? episode.guid
       ..episodeITunesId =
-          cloud['episode_itunes_id'] as String? ?? episodes.first.itunesId;
+          cloud['episode_itunes_id'] as String? ?? episode.itunesId;
   }
 
   Future<Queue?> _queueItemFromCloud(Map<String, dynamic> cloud) async {
@@ -1560,13 +1571,11 @@ class SyncService {
     if (episodeCloudId == null) return null;
 
     final isar = _isar;
-    final episodes = await isar.episodes
+    final episode = await isar.episodes
         .filter()
         .supabaseIdEqualTo(episodeCloudId)
-        .findAll();
-    if (episodes.isEmpty) return null;
-
-    final episode = episodes.first;
+        .findFirst();
+    if (episode == null) return null;
 
     return Queue()
       ..supabaseId = cloud['id']?.toString()
@@ -1589,7 +1598,10 @@ class SyncService {
     local.podcastGuid = cloud['podcast_guid'] as String? ?? local.podcastGuid;
     local.podcastITunesId =
         cloud['podcast_itunes_id'] as String? ?? local.podcastITunesId;
-    local.position = cloud['position'] as int? ?? local.position;
+    // Position is local-wins. Pulls run before pushes and the cloud row has
+    // no content timestamp, so copying the stale cloud position here would
+    // discard a local reorder on every cycle. New cloud-only items are
+    // created through [_queueItemFromCloud] and keep their cloud order.
   }
 
   // ========== Utility methods ==========
@@ -1631,6 +1643,15 @@ class SyncService {
     return null;
   }
 
+  /// A record is pushed when it has never reached the cloud or when its
+  /// content timestamp moved past the last successful sync cursor.
+  bool _changedSince(String? supabaseId, DateTime? updatedAt, DateTime? since) {
+    if (supabaseId == null || supabaseId.isEmpty) return true;
+    if (since == null) return true;
+    if (updatedAt == null) return true;
+    return updatedAt.toUtc().isAfter(since.toUtc());
+  }
+
   PlayHistoryStatus? _parsePlayHistoryStatus(String? value) {
     if (value == null) return null;
     switch (value) {
@@ -1656,12 +1677,18 @@ class SyncService {
     try {
       await action();
     } catch (e, stackTrace) {
-      _allStepsSucceeded = false;
+      _recordStepFailure(stepName);
       Logger.error(
         '[SYNC] Step "$stepName" failed, continuing with remaining steps',
         error: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  void _recordStepFailure(String stepName) {
+    if (!_failedSteps.contains(stepName)) {
+      _failedSteps.add(stepName);
     }
   }
 }

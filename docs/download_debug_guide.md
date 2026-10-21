@@ -1,37 +1,43 @@
 # 音频下载功能调试指南
 
-## 📋 调试日志说明
+## 调试日志说明
 
-我已经为音频下载功能添加了详细的调试日志，使用 emoji 标识符
-让你更容易识别不同类型的日志信息。
+下载流程通过 `lib/core/utils/logger.dart` 的 `Logger` 门面输出日志。日志文本里常见的
+`[DEBUG]`、`[AUTO-DOWNLOAD]`、`[IMAGE_CACHE]` 等是**消息标签**，不是日志级别；
+真正的级别由 `Logger.debug/info/warning/error` 决定。
 
-## 📄 文件日志位置与读取方式
+## 文件日志位置与读取方式
 
 除控制台输出外，`Logger` 会把日志追加写入本地文件。文件日志由
-`lib/main.dart` 的 `_initializeApp()` 自动调用 `Logger.initFileLogging()`
-开启，无需手动配置。
+`lib/main.dart` 的 `_initializeApp()` 自动调用 `Logger.initFileLogging()` 开启，
+无需手动配置。
 
 ### 位置规则
 
-- 目录：`<系统临时目录>/tinycast/log/`
-- 文件名：`<YYYY-MM-DD>.log`（按初始化时的本地日期命名，如
-  `2026-08-25.log`）
+日志写在 `getApplicationSupportDirectory()` 返回的应用支持目录下，与音频、封面图
+同级，**不随系统清理临时目录而丢失**：
 
-各平台实际路径：
+- 目录：`<应用支持目录>/log/`
+- 文件名：`<YYYY-MM-DD>.log`（按初始化时的本地日期命名，如 `2026-08-25.log`）
+
+各平台大致位置：
 
 | 平台 | 日志目录 |
-| ------ | ------ |
-| macOS | `/var/folders/<随机路径>/T/tinycast/log/` |
-| iOS | 应用沙盒 `tmp/tinycast/log/` |
-| Android | `/data/data/<包名>/cache/tinycast/log/` |
-| Linux | `${TMPDIR:-/tmp}/tinycast/log/` |
-| Windows | `%TEMP%\tinycast\log\`（通常为 `C:\Users\<用户名>\AppData\Local\Temp\tinycast\log\`） |
+|------|----------|
+| macOS（沙盒） | `~/Library/Containers/com.example.tinycast/Data/Library/Application Support/com.example.tinycast/log/` |
+| iOS | 应用沙盒 `Library/Application Support/log/` |
+| Android | `/data/data/com.example.tinycast/files/log/` |
+| Linux | `~/.local/share/tinycast/log/` |
+| Windows | `%APPDATA%` 下应用目录中的 `log\` |
 
-最准确的定位方式：应用启动时会输出一条 info 日志，其中包含完整路径——
+打包方式（bundle id、产品名）不同会导致路径差异，最准确的定位方式是应用启动时
+输出的那条 info 日志，其中包含完整文件路径：
 
 ```text
-[INFO] [TinyCast] 📝 [LOGGER] File logging initialized: /var/folders/.../T/tinycast/log/2026-08-25.log
+[INFO] [TinyCast] 📝 [LOGGER] File logging initialized: /Users/<用户名>/Library/Containers/com.example.tinycast/Data/Library/Application Support/com.example.tinycast/log/2026-08-25.log
 ```
+
+先记住这条路径，后续的 `tail` / `grep` 命令都以它为准。
 
 ### 行格式
 
@@ -41,231 +47,318 @@
   StackTrace: <堆栈>          ← 仅 error 级别附带
 ```
 
-- 级别：debug 构建写入 INFO 及以上级别，release/profile 构建仅写入 ERROR
-- 控制台输出仅在 debug 构建可见；文件日志在所有构建模式下生效
+### 级别与输出位置
+
+| 构建模式 | 控制台 | 文件 |
+|----------|--------|------|
+| debug | INFO 及以上 | INFO 及以上 |
+| profile | 无 | INFO 及以上 |
+| release | 无 | WARNING 及以上 |
+
+`Logger` 默认最小级别是 `kReleaseMode ? warning : info`。`Logger.debug()` 的调用
+默认会被过滤掉——包括 `📊` 进度、队列状态块、文件路径细节和 `🆔` 文件名。
+需要查看这些日志时，在启动早期临时加入：
+
+```dart
+Logger.setMinLevel(LogLevel.debug);
+```
+
+例如放在 `lib/main.dart` 的 `_initializeApp()` 开头或 `main()` 中，重新运行应用；
+调试结束后移除该行。开启后 debug 级日志会同时进入控制台与文件日志。
 
 ### 读取方式
 
+以 macOS 沙盒路径为例，其他平台替换为上一节的日志目录：
+
 ```bash
-# 实时跟随当天日志（macOS / Linux）
-tail -f /var/folders/.../T/tinycast/log/$(date +%F).log
+# 实时跟随当天日志
+tail -f "$HOME/Library/Containers/com.example.tinycast/Data/Library/Application Support/com.example.tinycast/log/$(date +%F).log"
 
 # 按标签 / 级别检索
-grep '\[SYNC\]'  /var/folders/.../T/tinycast/log/2026-08-25.log
-grep '\[ERROR\]' /var/folders/.../T/tinycast/log/2026-08-25.log
+grep '\[AUTO-DOWNLOAD\]' <日志目录>/2026-08-25.log
+grep '\[ERROR\]' <日志目录>/2026-08-25.log
 
 # 忘记路径时，从历史日志中找回初始化行
-grep 'File logging initialized' /var/folders/.../T/tinycast/log/*.log
+grep -R 'File logging initialized' <日志目录>/*.log
 ```
-
-本文档其余章节的 emoji 标识符（📁🎵⬇️📥📊✅❌⚠️🔄 等）在文件日志中
-完全相同，可直接用 `grep` 过滤。
 
 ### 注意事项
 
-- **临时目录生命周期**：日志位于系统临时目录，重启或系统清理后可能
-  丢失，需要保留时请先行复制
-- **按天命名但不滚动**：文件名在初始化时固定，应用跨天持续运行会继续
-  写入启动日期的文件
-- **失败静默降级**：目录创建或写入失败时文件日志自动停用（不抛异常），
-  此时只剩控制台输出
-- **多窗口共享**：桌面端每个窗口引擎都会初始化文件日志，追加写入同一
-  日期文件
+- **应用支持目录生命周期**：日志随应用数据保留，卸载应用或手动清理应用数据时才会
+  删除；不会被系统临时目录清理机制回收
+- **按天命名但不滚动**：文件名在初始化时固定，应用跨天持续运行会继续写入启动
+  日期的文件
+- **失败静默降级**：目录创建或写入失败时文件日志自动停用（不抛异常），此时只剩
+  控制台输出
+- **多窗口共享**：桌面端每个窗口引擎都会初始化文件日志，追加写入同一日期文件
+- **debug 级日志默认不输出**：进度 `📊`、队列状态块、文件路径细节等
+  `Logger.debug` 内容需要先调用 `Logger.setMinLevel(LogLevel.debug)` 才会出现
 
-## 🔍 日志标识符
+## 日志标识符
 
-### 📁 文件路径相关
+| 标识 | 含义 / 典型内容 |
+|------|-----------------|
+| `📁 [DEBUG]` | 临时目录、Application Support 目录 |
+| `🎵 [DEBUG]` | 音频目录创建、存在、为空、文件列表 |
+| `🖼️ [DEBUG]` / `🎬 [ImageCache]` | 图片目录、封面图下载 |
+| `🆔 [DEBUG]` | 由 episode ID 派生的稳定音频文件名 |
+| `📥 [DEBUG]` | 任务入队、标题、音频 URL |
+| `📦 [DEBUG]` | 按播客批量下载、集数、逐集列表 |
+| `⬇️` | 下载开始、自动下载策略、封面下载 |
+| `🔄 [DEBUG]` | 队列处理、出队、恢复、服务器不支持 Range |
+| `📊` | 下载进度，按 25% 档位输出 |
+| `✅` | 入队成功、队列启动、下载完成、封面保存 |
+| `❌` | 下载失败、批量失败、封面失败 |
+| `⚠️` | 重复下载、文件已存在检查失败、封面失败等非致命问题 |
+| `🛑 [DEBUG]` | 任务在真正开始前已被取消 |
+| `🚫` | 下载被取消 |
+| `⏸️` | 下载已暂停 |
+| `📄 [DEBUG]` | 相对路径解析出的完整路径 |
+| `🧪 [TEST]` | 手动测试代码的输出（如果自行添加） |
 
-- `📁 [DEBUG]` - 文件目录和路径信息
-- `📄 [DEBUG]` - 完整文件路径
-
-### 🎵 音频文件相关
-
-- `🎵 [DEBUG]` - 音频目录和文件操作
-- `🎯 [DEBUG]` - 自动下载触发
-
-### ⬇️ 下载流程相关
-
-- `⬇️ [DEBUG]` - 下载开始
-- `📥 [DEBUG]` - 下载任务创建
-- `📦 [DEBUG]` - 批量下载
-- `📊 [DEBUG]` - 下载进度
-
-### ✅ 成功状态
-
-- `✅ [DEBUG]` - 操作成功
-
-### ❌ 错误状态
-
-- `❌ [DEBUG]` - 操作失败或错误
-
-### ⚠️ 警告状态
-
-- `⚠️ [DEBUG]` - 非致命性问题
-
-### 🔄 恢复/续传
-
-- `🔄 [DEBUG]` - 断点续传
-
-### 📝 其他信息
-
-- `🖼️ [DEBUG]` - 图片相关
-- `💾 [DEBUG]` - 文件保存
-- `🗑️ [DEBUG]` - 文件删除
-- `⏱️ [DEBUG]` - 时间统计
-- `🌐 [DEBUG]` - 网络请求
-- `⏸️ [DEBUG]` - 暂停状态
-
-## 🎯 关键调试场景
+## 关键调试场景
 
 ### 场景1：订阅新播客时的自动下载
 
-当你订阅一个新播客时，你应该看到以下日志序列：
+订阅成功后只会在**本次新增订阅**时触发自动下载。以下日志中包含 `[DEBUG]` 的行
+需要先按上文开启 `Logger.setMinLevel(LogLevel.debug)` 才能看到；典型序列：
 
 ```text
-[INFO] 🎯 [DEBUG] ====== Auto-download triggered for new subscription ======
-[INFO] 🎯 [DEBUG] Podcast: 播客名称 (ID: 123)
-[INFO] 🎯 [DEBUG] Total episodes available: 50
-[INFO] 🎯 [DEBUG] Will download latest 3 episodes
-[INFO] 📦 [DEBUG] ====== Starting podcast download: 123 ======
+[INFO] 🕒 [LIBRARY] addPodcast 开始, rssUrl=https://example.com/feed.xml
+...
+[INFO] 🕒 [LIBRARY] ... 调度自动下载任务
+[INFO] ⬇️ [AUTO-DOWNLOAD] 策略: latest3, 播客ID: 2
+[INFO] 📦 [DEBUG] ====== Starting podcast download: 2 ======
 [INFO] 📦 [DEBUG] Download limit: 3 episodes
-[INFO] 📦 [DEBUG] Found 50 total episodes for podcast 123
 [INFO] 📦 [DEBUG] Episodes to download: 3
-[DEBUG] 📦 [DEBUG] Episode 1/3: ID=456, Title="第一集"
-[DEBUG] 📦 [DEBUG] Episode 2/3: ID=789, Title="第二集"
-[DEBUG] 📦 [DEBUG] Episode 3/3: ID=101, Title="第三集"
-[INFO] 📥 [DEBUG] Enqueuing download for episode: 456
+[DEBUG] 📦 [DEBUG] Episode 1/3: ID=195, Title="第一集"
+[INFO] 📥 [DEBUG] Enqueuing download for episode: 195
 [DEBUG]    - Title: 第一集
 [DEBUG]    - Audio URL: https://example.com/audio.mp3
-[DEBUG] 📁 [DEBUG] Temporary Directory: /var/folders/xxx/T/tinycast
-[DEBUG] 📁 [DEBUG] Application Support Directory:
-       /Users/user/Library/Application Support/tinycast
-[DEBUG]    - File name: 456.mp3
-[DEBUG]    - Relative path: audio/456.mp3
-[DEBUG]    - Temp path: /var/folders/xxx/T/tinycast/456.mp3
+[DEBUG]    - File name: a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
+[DEBUG]    - Relative path: audio/a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
+[DEBUG]    - Temp path: /var/folders/xxx/T/a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
 [DEBUG] ✅ [DEBUG] Task enqueued, queue size: 1
-[INFO] ✅ [DEBUG] Episode added to queue successfully: 456
-... (重复其他两个episode)
-[INFO] ✅ [DEBUG] Auto-download tasks added to queue successfully
+[INFO] ✅ [DEBUG] Episode added to queue successfully: 195
+...（其余集数同理）
+[INFO] 🔄 [DEBUG] ====== Processing download queue ======
+[DEBUG] 🔄 [DEBUG] Queue status:
+[DEBUG]    - Can start new: true
+[DEBUG]    - Queue length: 3
+[DEBUG]    - Active downloads: 0
+[DEBUG]    - Max concurrent: 3
+[INFO] 🔄 [DEBUG] Dequeued task #1: 195 (status: queued)
+[INFO] ⬇️ [DEBUG] ====== Starting queued download for episode: 195 ======
+[DEBUG] 📊 25%
+[DEBUG] 📊 50%
+[DEBUG] 📊 75%
+[INFO] ✅ 下载完成: 195 (57.00 MB)
+...
 ```
+
+策略为关闭时只有：
+
+```text
+[INFO] ⬇️ [AUTO-DOWNLOAD] 自动下载策略为关闭，跳过
+```
+
+时间范围策略（`past24h` / `past7d` / `past14d` / `past30d`）会先输出：
+
+```text
+[INFO] ⬇️ [AUTO-DOWNLOAD] 时间范围策略，截止时间: 2026-08-18 14:30:00.000
+[INFO] ⬇️ [AUTO-DOWNLOAD] 总集数: 50
+[INFO] ⬇️ [AUTO-DOWNLOAD] 时间范围策略，找到 2 集
+[INFO] ⬇️ [AUTO-DOWNLOAD] 准备下载: 第一集, pubDate: 2026-08-20 10:00:00.000
+```
+
+时间范围策略使用 `downloadEpisodeById()` 并发触发，多个下载任务的队列日志会交错，
+按 episode ID 过滤更清晰。
 
 ### 场景2：单个下载过程
 
-当下载任务开始执行时：
+以下 `[DEBUG]` 行同样需要先开启 debug 级别：
 
 ```text
-[DEBUG] ⬇️ [DEBUG] ====== Starting download for episode: 456 ======
-[DEBUG] ⬇️ [DEBUG] Episode title: 第一集
-[DEBUG] ⬇️ [DEBUG] Audio URL: https://example.com/audio.mp3
-[DEBUG] ⬇️ [DEBUG] Podcast ID: 123
-[DEBUG] 📁 [DEBUG] File paths:
-[DEBUG]    - Audio directory: /Users/user/Library/Application Support/
-              tinycast/audio
-[DEBUG]    - Temp directory: /var/folders/xxx/T/tinycast
-[DEBUG]    - File name: 456.mp3
-[DEBUG]    - Relative path: audio/456.mp3
-[DEBUG]    - Absolute path: /Users/user/Library/Application Support/
-              tinycast/audio/456.mp3
-[DEBUG]    - Temp path: /var/folders/xxx/T/tinycast/456.mp3
-[DEBUG] ✅ [DEBUG] Audio directory exists and is ready
-[INFO] 📥 [DEBUG] Download task created, updating database...
-[DEBUG] 🆕 [DEBUG] No existing temp file, starting fresh download
-[DEBUG] 🌐 [DEBUG] Starting HTTP download from: https://example.com/audio.mp3
-[DEBUG] 📊 [DEBUG] Progress: 10.0% (5.00 MB / 50.00 MB)
-[DEBUG] 📊 [DEBUG] Progress: 20.0% (10.00 MB / 50.00 MB)
-[DEBUG] 📊 [DEBUG] Progress: 30.0% (15.00 MB / 50.00 MB)
+[INFO] ⬇️ 开始下载: 第一集 (195)
+[INFO] 📥 [DEBUG] Enqueuing download for episode: 195
 ...
-[INFO] ✅ [DEBUG] Download completed successfully!
-[INFO] ⏱️ [DEBUG] Download duration: 25s
-[DEBUG] 🗑️ [DEBUG] Deleted existing file at:
-       /Users/user/Library/Application Support/tinycast/audio/456.mp3
-[INFO] 💾 [DEBUG] File saved successfully:
-[INFO]    - Path: /Users/user/Library/Application Support/tinycast/audio/456.mp3
-[INFO]    - Size: 50.00 MB
-[INFO]    - Relative path: audio/456.mp3
+[INFO] 🔄 [DEBUG] ====== Processing download queue ======
+[INFO] 🔄 [DEBUG] Dequeued task #1: 195 (status: queued)
+[INFO] ⬇️ [DEBUG] ====== Starting queued download for episode: 195 ======
+[DEBUG] 🆔 [DEBUG] Audio filename for episode 195:
+       a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
+[DEBUG] 📊 25%
+[DEBUG] 📊 50%
+[DEBUG] 📊 75%
+[INFO] 🖼️ 开始下载 episode 封面图: 第一集
+[INFO] ✅ 下载完成: 195 (57.00 MB)
 ```
 
-### 场景3：检查音频目录内容
+补充说明：
 
-当你调用获取音频目录的方法时：
+- 如果目标文件已存在：`✅ 文件已存在, 标记完成: 195`，不会重新下载
+- 如果同一任务已在队列/下载中：`⚠️ 下载已在进行中: 195`
+- 如果临时文件已有数据但服务器不支持 Range：
+  `🔄 服务器不支持断点续传, 重新下载: 195`
+- 音频完成日志先于封面下载；封面失败只输出
+  `⚠️ 封面图下载失败（不影响音频）`
+- 进度 `📊` 是 `Logger.debug`，默认被过滤；按上文调用
+  `Logger.setMinLevel(LogLevel.debug)` 后才会出现在控制台与文件日志
+
+### 场景3：失败、暂停与取消
+
+下载失败：
 
 ```text
-[DEBUG] 📁 [DEBUG] Application Support Directory:
-       /Users/user/Library/Application Support/tinycast
-[DEBUG] 🎵 [DEBUG] Audio directory exists:
-       /Users/user/Library/Application Support/tinycast/audio
-[DEBUG] 🎵 [DEBUG] Audio file found:
-       /Users/user/Library/Application Support/tinycast/audio/456.mp3 (50.00 MB)
-[DEBUG] 🎵 [DEBUG] Audio file found:
-       /Users/user/Library/Application Support/tinycast/audio/789.mp3 (30.00 MB)
-[DEBUG] 🎵 [DEBUG] Audio Directory:
-       /Users/user/Library/Application Support/tinycast/audio
+[ERROR] ❌ 下载失败: 195, <错误信息>
+  Error: <异常对象>
+  StackTrace: <堆栈>
 ```
 
-如果目录为空：
+数据库中没有该 episode 时，错误信息是 `Episode not found: 195`，同样以
+`❌ 下载失败` 输出。失败不会自动重试，也不会把失败状态写入数据库。
+
+暂停与恢复：
 
 ```text
-[DEBUG] 🎵 [DEBUG] Audio directory exists:
-       /Users/user/Library/Application Support/tinycast/audio
+[INFO] ⏸️ 下载已暂停: 195
+[INFO] Download paused for episode: 195
+[INFO] 🔄 [RESUME] Status changed to idle synchronously for episode: 195
+[INFO] ⬇️ 开始下载: 第一集 (195)
+```
+
+取消：
+
+```text
+[INFO] 🚫 下载取消: 195
+[INFO] Temporary file deleted for episode: 195
+[INFO] Download cancelled for episode: 195
+```
+
+排队中的任务被取消：
+
+```text
+[INFO] 已取消排队中的下载: 195
+```
+
+任务出队后、真正开始前被取消：
+
+```text
+[INFO] 🛑 [DEBUG] Download task was cancelled before start: 195
+```
+
+### 场景4：检查音频目录内容
+
+```text
+[DEBUG] 📁 [DEBUG] Application Support Directory: <app-support-path>
+[DEBUG] 🎵 [DEBUG] Audio directory exists: <app-support-path>/audio
+[DEBUG] 🎵 [DEBUG] Audio file found: <app-support-path>/audio/a1b2c3d4-....mp3 (57.00 MB)
+[DEBUG] 🎵 [DEBUG] Audio Directory: <app-support-path>/audio
+```
+
+目录为空时：
+
+```text
+[DEBUG] 🎵 [DEBUG] Audio directory exists: <app-support-path>/audio
 [DEBUG] 🎵 [DEBUG] Audio directory is empty
 ```
 
-## 🔧 常见问题排查
+## 常见问题排查
 
 ### 问题1：找不到下载的文件
 
-**症状**：订阅成功但找不到音频文件
+**症状**：日志显示下载完成，但按 `{episodeId}.mp3` 找不到文件。
 
 **排查步骤**：
 
-1. 查看是否有 `🎵 [DEBUG] Audio directory created` 日志
-2. 确认目录路径是否正确（macOS 应该在
-   `/Users/{用户名}/Library/Application Support/tinycast/audio/`）
-3. 检查是否有 `💾 [DEBUG] File saved successfully` 日志
-4. 如果有错误，查看 `❌ [DEBUG] ERROR:` 相关日志
+1. 确认看到 `✅ 下载完成: <id> (<size>)`
+2. 文件名现在是 UUID 形状，不是 `{episodeId}.mp3`：
+   `a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3`
+3. 以数据库 `episode.downloadedPath` 为准；它是相对路径（`audio/...mp3`），
+   需要拼接 Application Support 目录
+4. macOS 启用沙盒后，路径在容器内：
+
+   ```text
+   ~/Library/Containers/com.example.tinycast/Data/Library/Application Support/com.example.tinycast/audio/
+   ```
+
+   不要只看 `~/Library/Application Support/tinycast/audio/`
+5. 搜索 `🆔 [DEBUG] Audio filename for episode <id>` 可得到该集的确定文件名
+6. 如果日志是 `✅ 文件已存在, 标记完成`，说明复用了一个已有文件（可能是旧命名），
+   路径同样以 `downloadedPath` 为准
 
 ### 问题2：下载失败
 
-**症状**：下载任务添加但未完成
+**症状**：任务入队后状态变为 failed，没有 `✅ 下载完成`。
 
 **排查步骤**：
 
-1. 查看 `🌐 [DEBUG] Starting HTTP download from:` 后的日志
-2. 检查网络请求是否成功
-3. 查看 DioException 相关的错误信息
-4. 检查临时文件是否被正确创建
+1. 搜索 `❌ 下载失败: <id>`，读取后面的错误信息与堆栈
+2. 检查 `Audio URL` 是否可访问、HTTP 状态码是否为 200/206
+3. 检查临时目录是否可写、磁盘空间是否充足
+4. 检查是否手动取消（`🚫 下载取消`）或暂停（`⏸️ 下载已暂停`）
+5. 下载失败**没有自动重试**；修复原因后重新调用 `downloadEpisode()` 或
+   `downloadEpisodeById()`
 
-### 问题3：数据库更新失败
+### 问题3：文件已下载但数据库状态未更新
 
-**症状**：文件已下载但数据库状态未更新
+**症状**：音频目录中能看到文件，但 UI 仍显示未下载。
 
 **排查步骤**：
 
-1. 查看 `📥 [DEBUG] Download task created, updating database...`
-   日志
-2. 确认 Isar 数据库连接正常
-3. 检查 episode ID 是否有效
+1. 确认有 `✅ 下载完成: <id>`，它表示文件已 rename 到最终目录并写入数据库
+2. 如果只有 `📊` 进度、没有 `✅ 下载完成`，说明任务未进入终态，数据库也不会写入
+   中间进度
+3. 用 Isar Inspector 查看 `episodes` 记录：
+   - `isDownloaded` 是否为 `true`
+   - `downloadedPath` 是否为 `audio/<uuid>.mp3`
+4. `❌ [ImageCache] 数据库更新失败` 与音频无关；它只影响封面
 
 ### 问题4：自动下载未触发
 
-**症状**：订阅播客后没有自动下载
+**症状**：订阅播客后没有下载任务。
 
 **排查步骤**：
 
-1. 查看 `🎯 [DEBUG] ====== Auto-download triggered for new
-   subscription ======` 日志
-2. 确认 podcastId 是否正确传递
-3. 检查是否有 `⚠️ [DEBUG] Auto-download failed but subscription
-   succeeded` 警告
+1. 搜索 `⬇️ [AUTO-DOWNLOAD]`：
+   - 没有该行：可能不是新订阅（已订阅会直接跳过），或订阅流程在调用前失败
+   - `自动下载策略为关闭，跳过`：把设置中的自动下载策略改为非 `off`
+2. 查看 `📦 [DEBUG] Episodes to download: N`：
+   - `0`：该播客没有已入库的 episode，或时间范围策略没有命中
+3. 时间范围策略要检查截止时间日志与 `找到 N 集`
+4. 检查 `⬇️ [AUTO-DOWNLOAD] 自动下载失败` 的 error/stackTrace
 
-## 🛠️ 手动测试方法
+### 问题5：队列不继续下载
+
+**症状**：有任务入队，但没有后续下载。
+
+**排查步骤**：
+
+1. 搜索 `🔄 [DEBUG] ====== Processing download queue ======`
+2. 查看队列状态块中的 `Can start new`、`Queue length`、`Active downloads`、
+   `Max concurrent`
+3. 如果出现 `🔄 [DEBUG] No tasks were processed from queue!` 且队列非空，
+   通常是并发已满（默认 3）
+4. 进入下载后立即失败，会继续处理队列；失败原因见 `❌ 下载失败`
+5. 完整的调用链与状态诊断见
+   [docs/download_queue_debug.md](download_queue_debug.md)
+
+### 问题6：暂停/恢复没有按预期工作
+
+- `pauseDownload()` 只对 `downloading` 状态有效；对排队中任务不会暂停
+- `resumeDownload()` 只对 `paused` 状态有效
+- 失败任务不是 paused，重新下载请调用 `downloadEpisode()` / `downloadEpisodeById()`
+- 暂停会保留临时文件；取消会删除临时文件并重置数据库下载状态
+
+## 手动测试方法
 
 ### 方法1：使用 Flutter DevTools
 
-1. 运行应用：`flutter run -d macos`
-2. 打开浏览器访问 DevTools
-3. 在 Console 中搜索 `[DEBUG]` 过滤日志
-4. 观察完整的下载流程
+1. 运行应用：`flutter run -d macos`（或 `./run.sh`）
+2. 如需查看 `[DEBUG]` 细节，先按上文临时开启 `Logger.setMinLevel(LogLevel.debug)`
+3. 打开 DevTools 的 Console
+4. 过滤 `[DEBUG]`、`[AUTO-DOWNLOAD]` 或具体 episode ID
+5. 观察入队、队列处理、进度与完成日志
 
 ### 方法2：使用命令行输出
 
@@ -273,63 +366,75 @@ grep 'File logging initialized' /var/folders/.../T/tinycast/log/*.log
 flutter run -d macos --verbose
 ```
 
-在终端中直接查看所有日志输出。
-
 ### 方法3：手动触发下载
 
-在代码中添加测试代码：
-
 ```dart
-// 测试单个下载
-final episode = await getTestEpisode();
-await AudioDownloadService.instance.downloadEpisode(episode);
+import 'package:tinycast/data/database/isar_service.dart';
+import 'package:tinycast/data/services/audio_download_service.dart';
+import 'package:tinycast/core/utils/logger.dart';
 
-// 测试批量下载
-await AudioDownloadService.instance.downloadPodcastEpisodes(
-  123,
-  limit: 3,
-);
+Future<void> testSingleDownload(int episodeId) async {
+  final episode = await IsarService.instance.isar.episodes.get(episodeId);
+  if (episode == null) {
+    Logger.warning('Episode not found: $episodeId');
+    return;
+  }
+  await AudioDownloadService.instance.downloadEpisode(episode);
+}
+
+Future<void> testBatchDownload(int podcastId) async {
+  await AudioDownloadService.instance.downloadPodcastEpisodes(
+    podcastId,
+    limit: 2,
+  );
+}
+
+void checkQueueStatus() {
+  final service = AudioDownloadService.instance;
+  Logger.info('Queue length: ${service.getQueueLength()}');
+  Logger.info('Active: ${service.getActiveDownloadsCount()}');
+  Logger.info('Queued IDs: ${service.getQueuedDownloads()}');
+  Logger.info('Active IDs: ${service.getActiveDownloads()}');
+  Logger.info('Paused IDs: ${service.getPausedDownloads()}');
+}
 ```
 
 ### 方法4：检查文件系统
 
 ```bash
-# macOS
-ls -la ~/Library/Application\ Support/tinycast/audio/
+# macOS 沙盒容器
+ls -lh ~/Library/Containers/com.example.tinycast/Data/Library/\
+Application\ Support/com.example.tinycast/audio/
 
 # 或者打开 Finder
-open ~/Library/Application\ Support/tinycast/audio/
+open ~/Library/Containers/com.example.tinycast/Data/Library/\
+Application\ Support/com.example.tinycast/audio/
 ```
 
-## 📊 性能监控
+## 性能与状态监控
 
-通过日志你可以监控：
+通过日志可以观察：
 
-- **下载速度**：通过进度变化和时间计算
-- **文件大小**：每个文件的准确大小
-- **队列状态**：当前排队和正在下载数量
-- **存储空间**：音频目录中的所有文件大小总和
-- **错误率**：下载失败的次数和原因
+- **进度档位**：`📊` 只在跨越 25% 档位时输出，不能当作实时速度曲线
+- **文件大小**：`✅ 下载完成: <id> (<size>)`
+- **队列状态**：队列长度、活跃下载数、最大并发数
+- **错误**：`❌ 下载失败` 与封面警告
+- **存储**：通过 `CacheCleanupService.getCacheSizeFormatted()` 等 API 查询
 
-## 💡 最佳实践
+## 最佳实践
 
-1. **定期清理日志**：调试完成后可以移除或注释掉 DEBUG 日志
-2. **关注关键节点**：重点关注 `✅` 和 `❌` 标识的日志
-3. **时间戳对比**：注意日志的时间顺序，确保流程正确
-4. **文件验证**：每次下载后确认文件确实存在且大小正确
-5. **异常处理**：即使出现警告（⚠️），也要确认主流程是否完成
+1. **按 episode ID 过滤**：批量下载时多个任务日志交错
+2. **先看入队，再看队列，再看完成**：三段式定位比只看错误更高效
+3. **区分日志标签与级别**：消息里的 `[DEBUG]` 不代表它不会写入文件
+4. **关注 `✅ 下载完成` 与 `❌ 下载失败`**：这是任务终态的直接证据
+5. **以数据库路径为准**：文件名是哈希派生的，不要从集数或标题推断
 
-## 🔗 相关文件
+## 相关文件
 
-- `lib/data/services/file_storage_service.dart` - 文件存储服务（路径管理）
-- `lib/data/services/audio_download_service.dart` - 音频下载服务（核心逻辑）
-- `lib/data/repositories/podcast_repository_impl.dart` - 订阅仓库（自动下载触发）
-- `lib/core/utils/logger.dart` - 日志工具类
-
----
-
-**提示**：如果你在生产环境中不需要这么多日志，可以：
-
-1. 将 `Logger.debug()` 改为条件编译
-2. 使用不同的日志级别
-3. 创建一个 DebugService 来统一管理调试开关
+- `lib/data/services/audio_download_service.dart` — 下载、队列、暂停/恢复/取消
+- `lib/data/services/file_storage_service.dart` — 目录与文件名生成
+- `lib/data/services/image_cache_service.dart` — 封面图缓存
+- `lib/data/services/cache_cleanup_service.dart` — 缓存清理
+- `lib/presentation/features/search/podcast_search_provider.dart` — 订阅后的自动下载触发
+- `lib/presentation/widgets/molecules/episode_item/episode_control_bar.dart` — 收藏时的下载触发
+- `lib/core/utils/logger.dart` — 日志级别与文件日志

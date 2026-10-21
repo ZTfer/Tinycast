@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'dart:ui' show PlatformDispatcher;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tinycast/presentation/features/home/homepage.dart';
@@ -15,29 +16,9 @@ import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/services/supabase_service.dart';
 import 'package:tinycast/core/theme/theme_loader.dart';
 import 'package:tinycast/core/theme/theme_source_flag.dart';
-import 'package:tinycast/domain/entities/episode.dart';
-import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/core/theme/app_text_styles.dart';
 import 'package:tinycast/core/services/feed_refresh_scheduler.dart';
 import 'package:tinycast/core/utils/app_window_context.dart';
-
-/// 打开节目详情窗口
-///
-/// 创建并显示一个新的窗口，用于展示节目详情
-/// [episode] 要展示的 episode 数据
-/// [podcast] 关联的 podcast 数据
-Future<void> openEpisodeDetailWindow(Episode episode, Podcast podcast) async {
-  final arguments = WindowArguments(
-    type: 'episode_detail',
-    episode: episode,
-    podcast: podcast,
-  );
-
-  final controller = await WindowController.create(
-    WindowConfiguration(hiddenAtLaunch: true, arguments: arguments.toJson()),
-  );
-  await controller.show();
-}
 
 /// Supabase 配置占位符（编译时默认值）
 /// 实际使用时通过 --dart-define 传入，不要硬编码真实凭据
@@ -106,70 +87,97 @@ class FeedRefreshLifecycleObserver extends WidgetsBindingObserver {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  _installGlobalErrorHandlers();
+  await Logger.initFileLogging();
+
+  final config = AppConfig.fromEnvironment();
 
   if (Platform.isIOS || Platform.isAndroid) {
     await _preloadTheme();
-    await _initializeApp(AppConfig.fromEnvironment());
-    WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver.instance);
-    unawaited(FeedRefreshScheduler.instance.start());
-    runApp(const ProviderScope(child: MyAppMobile()));
+    await _startWindow(
+      config,
+      child: const MyApp(home: MobileHome()),
+      initializeAudio: true,
+      initializeSupabase: true,
+      enableFeedRefresh: true,
+    );
     return;
   }
 
   await WindowUtils.initialize();
   await _preloadTheme();
 
-  final config = AppConfig.fromEnvironment();
-
   final windowController = await WindowController.fromCurrentEngine();
   final arguments = parseArguments(windowController.arguments);
 
   switch (arguments.type) {
-    case 'main':
-      AppWindowContext.isMainWindow = true;
-      await initMainWindow();
-      await _initializeApp(config);
-      WidgetsBinding.instance.addObserver(
-        FeedRefreshLifecycleObserver.instance,
-      );
-      unawaited(FeedRefreshScheduler.instance.start());
-      runApp(const ProviderScope(child: MyApp()));
-      break;
     case 'settings':
       AppWindowContext.isMainWindow = false;
       await initSettingsWindow();
-      await _initializeApp(config);
-      runApp(const ProviderScope(child: SettingsWindowApp()));
+      await _startWindow(
+        config,
+        child: const SettingsWindowApp(),
+        initializeAudio: false,
+        initializeSupabase: true,
+      );
       break;
     case 'subscribe':
       AppWindowContext.isMainWindow = false;
       await initSubscribeWindow();
-      await _initializeApp(config);
-      runApp(const ProviderScope(child: SubscribeWindowApp()));
+      await _startWindow(
+        config,
+        child: const SubscribeWindowApp(),
+        initializeAudio: false,
+        initializeSupabase: false,
+      );
       break;
     case 'episode_detail':
       AppWindowContext.isMainWindow = false;
       await initEpisodeDetailWindow();
-      await _initializeApp(config);
-      runApp(
-        ProviderScope(
-          child: EpisodeDetailWindowApp(
-            episode: arguments.episode,
-            podcast: arguments.podcast,
-          ),
+      await _startWindow(
+        config,
+        child: EpisodeDetailWindowApp(
+          episode: arguments.episode,
+          podcast: arguments.podcast,
         ),
+        initializeAudio: false,
+        initializeSupabase: false,
       );
       break;
     default:
+      if (arguments.type != 'main') {
+        Logger.warning('⚠️ [APP] 未知窗口类型，按主窗口启动: ${arguments.type}');
+      }
       AppWindowContext.isMainWindow = true;
       await initMainWindow();
-      await _initializeApp(config);
-      WidgetsBinding.instance.addObserver(
-        FeedRefreshLifecycleObserver.instance,
+      await _startWindow(
+        config,
+        child: const MyApp(),
+        initializeAudio: true,
+        initializeSupabase: true,
+        enableFeedRefresh: true,
       );
-      unawaited(FeedRefreshScheduler.instance.start());
-      runApp(const ProviderScope(child: MyApp()));
   }
+}
+
+void _installGlobalErrorHandlers() {
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    Logger.error(
+      '❌ [APP] Flutter 框架异常',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
+  PlatformDispatcher.instance.onError = (error, stackTrace) {
+    Logger.error(
+      '❌ [APP] 未捕获的异步异常',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return true;
+  };
 }
 
 Future<void> _preloadTheme() async {
@@ -181,33 +189,122 @@ Future<void> _preloadTheme() async {
   Logger.info('✅ HOCON 主题配置加载完成（使用 .conf 文件）');
 }
 
-Future<void> _initializeApp(AppConfig config) async {
-  await IsarService.instance.open();
-  await AudioPlayerService.instance.init();
-  await Logger.initFileLogging();
+/// 初始化当前窗口所需的本地服务。
+///
+/// 桌面多窗口各自运行在独立引擎中，Isar 必须逐窗口打开；音频与云同步
+/// 只在真正需要的窗口初始化，避免重复注册媒体会话和认证监听。
+Future<void> _initializeApp(
+  AppConfig config, {
+  required bool initializeAudio,
+  required bool initializeSupabase,
+}) async {
+  try {
+    await IsarService.instance.open();
+    Logger.info('✅ Isar 数据库初始化完成');
+  } catch (e, stackTrace) {
+    Logger.error(
+      '❌ [APP] Isar 数据库初始化失败，应用无法启动',
+      error: e,
+      stackTrace: stackTrace,
+    );
+    rethrow;
+  }
 
-  // 初始化 Supabase（如果配置了有效凭据）
-  if (!config.isPlaceholder) {
+  if (initializeAudio) {
+    try {
+      await AudioPlayerService.instance.init();
+      Logger.info('✅ 音频服务初始化完成');
+    } catch (e, stackTrace) {
+      Logger.error(
+        '❌ [APP] 音频服务初始化失败，播放功能不可用',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  if (!initializeSupabase) return;
+
+  if (config.isPlaceholder) {
+    Logger.info('ℹ️ Supabase 未配置（使用占位符），跳过初始化');
+    return;
+  }
+
+  try {
     await SupabaseService().initialize(
       supabaseUrl: config.supabaseUrl,
       supabaseAnonKey: config.supabaseAnonKey,
     );
     Logger.info('✅ Supabase 客户端初始化完成');
-  } else {
-    Logger.info('ℹ️ Supabase 未配置（使用占位符），跳过初始化');
+  } catch (e, stackTrace) {
+    Logger.error(
+      '❌ [APP] Supabase 初始化失败，云同步不可用',
+      error: e,
+      stackTrace: stackTrace,
+    );
   }
 }
 
+Future<void> _startWindow(
+  AppConfig config, {
+  required Widget child,
+  required bool initializeAudio,
+  required bool initializeSupabase,
+  bool enableFeedRefresh = false,
+}) async {
+  try {
+    await _initializeApp(
+      config,
+      initializeAudio: initializeAudio,
+      initializeSupabase: initializeSupabase,
+    );
+  } catch (e) {
+    runApp(
+      ProviderScope(child: StartupErrorApp(message: e.toString())),
+    );
+    return;
+  }
+
+  if (enableFeedRefresh) {
+    WidgetsBinding.instance.addObserver(FeedRefreshLifecycleObserver.instance);
+    unawaited(FeedRefreshScheduler.instance.start());
+  }
+
+  runApp(ProviderScope(child: child));
+}
+
+/// 应用根组件，桌面与移动端共用同一套路由、本地化与主题配置。
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final Widget home;
+
+  const MyApp({super.key, this.home = const HomePage()});
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  Brightness _platformBrightness =
+      WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    if (brightness != _platformBrightness) {
+      setState(() => _platformBrightness = brightness);
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     FeedRefreshLifecycleObserver.instance.dispose();
     super.dispose();
   }
@@ -233,11 +330,13 @@ class _MyAppState extends State<MyApp> {
       },
       textStyle: TextStyle(
         fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-        color: const Color(0xFF000000),
+        color: _platformBrightness == Brightness.dark
+            ? const Color(0xFFFFFFFF)
+            : const Color(0xFF000000),
         fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
-      home: const HomePage(),
+      home: widget.home,
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
@@ -248,44 +347,17 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class MyAppMobile extends StatefulWidget {
-  final Widget home;
+/// 启动失败时显示的最小界面，避免窗口静默空白。
+class StartupErrorApp extends StatelessWidget {
+  final String message;
 
-  const MyAppMobile({super.key, this.home = const MobileHome()});
-
-  @override
-  State<MyAppMobile> createState() => _MyAppMobileState();
-}
-
-class _MyAppMobileState extends State<MyAppMobile> {
-  @override
-  void dispose() {
-    FeedRefreshLifecycleObserver.instance.dispose();
-    super.dispose();
-  }
+  const StartupErrorApp({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
-    final brightness = MediaQuery.platformBrightnessOf(context);
     return WidgetsApp(
-      title: 'TinyCast Mobile',
-      color: const Color(0x00000000),
-      onGenerateRoute: AppRouter.generateRoute,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('zh', 'CN'), Locale('en')],
-      textStyle: TextStyle(
-        fontFamilyFallback: AppTextStyles.fontFamilyFallback,
-        color: brightness == Brightness.dark
-            ? const Color(0xFFFFFFFF)
-            : const Color(0xFF000000),
-        fontSize: 14,
-        fontWeight: FontWeight.normal,
-      ),
-      home: widget.home,
+      title: 'Tinycast',
+      color: const Color(0xFFFEFEFE),
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
         return PageRouteBuilder<T>(
           settings: settings,
@@ -293,12 +365,27 @@ class _MyAppMobileState extends State<MyAppMobile> {
               builder(context),
         );
       },
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.ltr,
-          child: child ?? const SizedBox(),
-        );
-      },
+      textStyle: const TextStyle(
+        color: Color(0xFF000000),
+        fontSize: 14,
+        decoration: TextDecoration.none,
+      ),
+      home: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'TinyCast 启动失败',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(message, textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

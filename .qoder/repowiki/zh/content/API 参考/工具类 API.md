@@ -261,7 +261,7 @@ ThrowEx --> End(["结束"])
 - Logger
   - 级别：debug/info/warning/error，默认最小级别在调试模式下为 info，否则为 error。
   - 输出：控制台输出（调试模式）与文件落盘（需初始化）。
-  - 初始化：initFileLogging 指定日志目录或系统临时目录，按日期命名日志文件。
+  - 初始化：initFileLogging 可指定日志目录，默认写入应用支持目录，按日期命名日志文件。
   - 配置：setMinLevel 调整最小级别；_fileLoggingEnabled 控制文件写入开关。
 
 ```mermaid

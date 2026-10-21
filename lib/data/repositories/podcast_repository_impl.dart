@@ -59,83 +59,29 @@ class PodcastRepositoryImpl implements PodcastRepository {
       );
       final podcastEntity = result['podcast'] as Podcast;
       final episodes = result['episodes'] as List<Episode>;
+      final itunesFuture =
+          result[RemotePodcastDataSource.itunesSearchFutureKey]
+              as Future<void>?;
       Logger.info('🕒 [TIMING] 解析到 ${episodes.length} 个剧集');
 
       Logger.info(
         '播客实体: ${podcastEntity.title}, isSubscribed: ${podcastEntity.isSubscribed}',
       );
 
-      final podcastId = await _localDataSource.savePodcast(podcastEntity);
+      final podcastModel = await _localDataSource.subscribePodcast(
+        podcastEntity,
+        episodes,
+      );
+      final podcastId = podcastModel.id;
       Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] savePodcast 完成, podcastId=$podcastId',
+        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] subscribePodcast 完成, '
+        'podcastId=$podcastId, 保存了 ${episodes.length} 个剧集',
       );
-
-      final episodesWithPodcastId = episodes.map((episode) {
-        return Episode(
-          id: episode.id,
-          podcastId: podcastId,
-          title: episode.title,
-          description: episode.description,
-          link: episode.link,
-          guid: episode.guid,
-          author: episode.author,
-          pubDate: episode.pubDate,
-          audioUrl: episode.audioUrl,
-          audioType: episode.audioType,
-          duration: episode.duration,
-          artworkUrl: episode.artworkUrl,
-          isExplicit: episode.isExplicit,
-          isPlayed: episode.isPlayed,
-          isDownloaded: episode.isDownloaded,
-          downloadedPath: episode.downloadedPath,
-          downloadProgress: episode.downloadProgress,
-          playProgress: episode.playProgress,
-          lastPlayedAt: episode.lastPlayedAt,
-          createdAt: episode.createdAt,
-          updatedAt: episode.updatedAt,
-          itunesId: episode.itunesId,
-          itunesArtworkUrl: episode.itunesArtworkUrl,
-          itunesReleaseDate: episode.itunesReleaseDate,
-          itunesExplicitness: episode.itunesExplicitness,
-          itunesContentAdvisoryRating: episode.itunesContentAdvisoryRating,
-          podcastITunesId: episode.podcastITunesId,
-        );
-      }).toList();
-      Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] episodesWithPodcastId map 完成',
-      );
-
-      await _localDataSource.saveEpisodes(episodesWithPodcastId);
-      Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] saveEpisodes 完成, 保存了 ${episodesWithPodcastId.length} 个剧集',
-      );
-
-      await _localDataSource.updatePodcastSubscription(podcastId, true);
-      Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastSubscription 完成',
-      );
-
-      await _localDataSource.updatePodcastEpisodeCount(
-        podcastId,
-        episodes.length,
-      );
-      Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] updatePodcastEpisodeCount 完成',
-      );
-
-      final podcastModel = await _localDataSource.getPodcastById(podcastId);
-      Logger.info(
-        '🕒 [TIMING] [${stopwatch.elapsedMilliseconds}ms] getPodcastById 完成',
-      );
-      if (podcastModel == null) {
-        throw AppException.unknown('保存播客后无法获取数据');
-      }
 
       Logger.info(
         '获取到的播客模型: ${podcastModel.title}, isSubscribed: ${podcastModel.isSubscribed}, ID: ${podcastModel.id}',
       );
 
-      final itunesFuture = _remoteDataSource.getITunesSearchFuture();
       if (itunesFuture != null) {
         _itunesSearchFutures[podcastId] = itunesFuture;
         // Future 完成后从 Map 中移除，避免长时间运行导致内存泄漏
@@ -496,6 +442,8 @@ class PodcastRepositoryImpl implements PodcastRepository {
 
       if (result.success) {
         Logger.info('播客 $podcastId feed 刷新成功, 新剧集: ${result.newEpisodesCount}');
+      } else if (result.skipped) {
+        Logger.info('播客 $podcastId feed 刷新跳过（冷却或退化策略）');
       } else {
         Logger.warning('播客 $podcastId feed 刷新失败: ${result.error}');
       }

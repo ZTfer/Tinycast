@@ -20,107 +20,6 @@ class ImageCacheService {
   final Dio _dio = Dio();
   final IsarService _isarService = IsarService.instance;
 
-  Future<File?> getCachedImage(String url) async {
-    try {
-      final imagesDir = await _fileStorageService.getImagesDirectory();
-      final fileName = _fileStorageService.generateImageFileName(url);
-      final cachedFile = File('${imagesDir.path}/$fileName');
-
-      if (await cachedFile.exists()) {
-        Logger.info('Image cache hit: $url');
-        return cachedFile;
-      }
-
-      Logger.debug('Image cache miss: $url');
-      return null;
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error getting cached image: $url',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
-  }
-
-  Future<File> cacheImage(String url, File imageFile) async {
-    try {
-      final imagesDir = await _fileStorageService.getImagesDirectory();
-      final fileName = _fileStorageService.generateImageFileName(url);
-      final targetFile = File('${imagesDir.path}/$fileName');
-
-      await imageFile.copy(targetFile.path);
-      Logger.info('Image cached successfully: $url -> ${targetFile.path}');
-      return targetFile;
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error caching image: $url',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw AppException.storage(
-        'Failed to cache image: $url',
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<File> downloadAndCacheImage(String url) async {
-    try {
-      final cachedImage = await getCachedImage(url);
-      if (cachedImage != null) {
-        return cachedImage;
-      }
-
-      Logger.info('Downloading image: $url');
-      final response = await _dio.get(
-        url,
-        options: Options(
-          responseType: ResponseType.bytes,
-        ),
-      );
-
-      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
-        final imagesDir = await _fileStorageService.getImagesDirectory();
-        final fileName = _fileStorageService.generateImageFileName(url);
-        final targetFile = File('${imagesDir.path}/$fileName');
-
-        await targetFile.writeAsBytes(response.data);
-        Logger.info('Image downloaded and cached: $url -> ${targetFile.path}');
-        return targetFile;
-      } else {
-        throw AppException.network(
-          'Failed to download image: HTTP ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e, stackTrace) {
-      Logger.error(
-        'Error downloading image: $url',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw AppException.network(
-        'Failed to download image: ${e.message}',
-        statusCode: e.response?.statusCode,
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error downloading and caching image: $url',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw AppException.unknown(
-        'Failed to download and cache image: $url',
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
   /// 只更新数据库中的 artworkPath 字段。
   ///
   /// 调用方可能持有过期的实体快照，直接 `put(episode)` 会用旧字段覆盖
@@ -153,212 +52,172 @@ class ImageCacheService {
     });
   }
 
-  Future<File?> downloadAndSaveEpisodeArtwork(Episode episode) async {
-    try {
-      Logger.info('🎬 [ImageCache] ===== 开始 Episode 封面图下载流程 =====');
-      Logger.info('   📋 Episode ID: ${episode.id}');
-      Logger.info('   📝 标题: ${episode.title}');
-      Logger.info('   🔗 artworkUrl: ${episode.artworkUrl}');
-      Logger.info('   📁 当前 artworkPath: ${episode.artworkPath ?? "无"}');
-
-      if (episode.artworkUrl == null || episode.artworkUrl!.isEmpty) {
-        Logger.warning('⚠️ [ImageCache] artworkUrl 为空，跳过下载');
-        return null;
-      }
-
-      if (episode.artworkPath != null && episode.artworkPath!.isNotEmpty) {
-        Logger.info('🔍 [ImageCache] 检查本地文件是否存在: ${episode.artworkPath}');
-        final existingFile = File(await _fileStorageService.getFullFilePath(episode.artworkPath!));
-        if (await existingFile.exists()) {
-          Logger.info('✅ [ImageCache] 本地文件已存在，跳过下载: ${existingFile.path}');
-          Logger.info('   📊 文件大小: ${await existingFile.length()} bytes');
-          return existingFile;
-        } else {
-          Logger.warning('⚠️ [ImageCache] artworkPath 存在但文件不存在，需要重新下载');
-        }
-      }
-
-      Logger.info('⬇️ [ImageCache] 开始从网络下载图片...');
-      Logger.info('   🌐 下载 URL: ${episode.artworkUrl}');
-      final startTime = DateTime.now();
-      
-      final response = await _dio.get(
-        episode.artworkUrl!,
-        options: Options(
-          responseType: ResponseType.bytes,
-        ),
-      );
-
-      final downloadDuration = DateTime.now().difference(startTime);
-      Logger.info('⬇️ [ImageCache] 网络下载完成，耗时: ${downloadDuration.inMilliseconds}ms');
-      Logger.info('   📦 响应状态码: ${response.statusCode}');
-      Logger.info('   📏 数据大小: ${response.data?.length ?? 0} bytes');
-
-      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
-        Logger.error('❌ [ImageCache] HTTP 错误: ${response.statusCode}');
-        throw AppException.network(
-          'Failed to download episode artwork: HTTP ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      }
-
-      Logger.info('💾 [ImageCache] 开始保存到本地文件系统...');
-      final imagesDir = await _fileStorageService.getImagesDirectory();
-      final fileName = _fileStorageService.generateArtworkFileName();
-      final targetFile = File('${imagesDir.path}/$fileName');
-      
-      Logger.info('   📁 目标目录: ${imagesDir.path}');
-      Logger.info('   📄 文件名: $fileName');
-      
-      await targetFile.writeAsBytes(response.data);
-      
-      final fileSize = await targetFile.length();
-      Logger.info('✅ [ImageCache] 文件保存成功: ${targetFile.path}');
-      Logger.info('   📊 文件大小: $fileSize bytes');
-
-      Logger.info('💾 [ImageCache] 更新数据库记录...');
-      try {
-        final artworkPath = 'images/$fileName';
-        await persistEpisodeArtworkPath(
-          _isarService.isar,
-          episode.id,
-          artworkPath,
-        );
-        episode.artworkPath = artworkPath;
-        Logger.info('✅ [ImageCache] 数据库更新成功');
-        Logger.info('   🔖 新的 artworkPath: $artworkPath');
-      } catch (dbError) {
-        Logger.error('❌ [ImageCache] 数据库更新失败（但文件已保存）: $dbError');
-      }
-
-      Logger.info('🎉 [ImageCache] ===== Episode 封面图下载流程完成 =====\n');
-      return targetFile;
-    } on DioException catch (e, stackTrace) {
-      Logger.error(
-        '❌ [ImageCache] 网络请求异常: ${episode.artworkUrl}',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw AppException.network(
-        'Failed to download episode artwork: ${e.message}',
-        statusCode: e.response?.statusCode,
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    } catch (e, stackTrace) {
-      Logger.error(
-        '❌ [ImageCache] 未知错误',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw AppException.storage(
-        'Failed to save episode artwork',
-        originalError: e,
-        stackTrace: stackTrace,
-      );
-    }
+  Future<File?> downloadAndSaveEpisodeArtwork(Episode episode) {
+    return _downloadAndSaveArtwork(
+      entityType: 'episode',
+      entityId: episode.id,
+      title: episode.title,
+      artworkUrl: episode.artworkUrl,
+      currentArtworkPath: episode.artworkPath,
+      persistPath: (artworkPath) => persistEpisodeArtworkPath(
+        _isarService.isar,
+        episode.id,
+        artworkPath,
+      ),
+      applyPath: (artworkPath) => episode.artworkPath = artworkPath,
+    );
   }
 
-  Future<File?> downloadAndSavePodcastArtwork(Podcast podcast) async {
-    try {
-      Logger.info('🎬 [ImageCache] ===== 开始 Podcast 封面图下载流程 =====');
-      Logger.info('   📋 Podcast ID: ${podcast.id}');
-      Logger.info('   📝 标题: ${podcast.title}');
-      Logger.info('   🔗 artworkUrl: ${podcast.artworkUrl}');
-      Logger.info('   📁 当前 artworkPath: ${podcast.artworkPath ?? "无"}');
+  Future<File?> downloadAndSavePodcastArtwork(Podcast podcast) {
+    return _downloadAndSaveArtwork(
+      entityType: 'podcast',
+      entityId: podcast.id,
+      title: podcast.title,
+      artworkUrl: podcast.artworkUrl,
+      currentArtworkPath: podcast.artworkPath,
+      persistPath: (artworkPath) => persistPodcastArtworkPath(
+        _isarService.isar,
+        podcast.id,
+        artworkPath,
+      ),
+      applyPath: (artworkPath) => podcast.artworkPath = artworkPath,
+    );
+  }
 
-      if (podcast.artworkUrl.isEmpty) {
+  Future<File?> downloadAndSaveEpisodeArtworkFor({
+    required int episodeId,
+    required String title,
+    required String? artworkUrl,
+    required String? currentArtworkPath,
+  }) {
+    return _downloadAndSaveArtwork(
+      entityType: 'episode',
+      entityId: episodeId,
+      title: title,
+      artworkUrl: artworkUrl,
+      currentArtworkPath: currentArtworkPath,
+      persistPath: (artworkPath) => persistEpisodeArtworkPath(
+        _isarService.isar,
+        episodeId,
+        artworkPath,
+      ),
+      applyPath: (_) {},
+    );
+  }
+
+  Future<File?> downloadAndSavePodcastArtworkFor({
+    required int podcastId,
+    required String title,
+    required String artworkUrl,
+    required String? currentArtworkPath,
+  }) {
+    return _downloadAndSaveArtwork(
+      entityType: 'podcast',
+      entityId: podcastId,
+      title: title,
+      artworkUrl: artworkUrl,
+      currentArtworkPath: currentArtworkPath,
+      persistPath: (artworkPath) => persistPodcastArtworkPath(
+        _isarService.isar,
+        podcastId,
+        artworkPath,
+      ),
+      applyPath: (_) {},
+    );
+  }
+
+  Future<File?> _downloadAndSaveArtwork({
+    required String entityType,
+    required int entityId,
+    required String title,
+    required String? artworkUrl,
+    required String? currentArtworkPath,
+    required Future<void> Function(String artworkPath) persistPath,
+    required void Function(String artworkPath) applyPath,
+  }) async {
+    try {
+      Logger.info(
+        '🎬 [ImageCache] 开始 $entityType 封面图下载: id=$entityId, title=$title',
+      );
+
+      if (artworkUrl == null || artworkUrl.isEmpty) {
         Logger.warning('⚠️ [ImageCache] artworkUrl 为空，跳过下载');
         return null;
       }
 
-      if (podcast.artworkPath != null && podcast.artworkPath!.isNotEmpty) {
-        Logger.info('🔍 [ImageCache] 检查本地文件是否存在: ${podcast.artworkPath}');
-        final existingFile = File(await _fileStorageService.getFullFilePath(podcast.artworkPath!));
+      if (currentArtworkPath != null && currentArtworkPath.isNotEmpty) {
+        final existingFile = File(
+          await _fileStorageService.getFullFilePath(currentArtworkPath),
+        );
         if (await existingFile.exists()) {
-          Logger.info('✅ [ImageCache] 本地文件已存在，跳过下载: ${existingFile.path}');
-          Logger.info('   📊 文件大小: ${await existingFile.length()} bytes');
+          Logger.info('✅ [ImageCache] 本地封面已存在，跳过下载: ${existingFile.path}');
           return existingFile;
-        } else {
-          Logger.warning('⚠️ [ImageCache] artworkPath 存在但文件不存在，需要重新下载');
         }
+        Logger.warning('⚠️ [ImageCache] artworkPath 存在但文件不存在，需要重新下载');
       }
 
-      Logger.info('⬇️ [ImageCache] 开始从网络下载图片...');
-      Logger.info('   🌐 下载 URL: ${podcast.artworkUrl}');
+      Logger.info('⬇️ [ImageCache] 开始下载: $artworkUrl');
       final startTime = DateTime.now();
-      
       final response = await _dio.get(
-        podcast.artworkUrl,
-        options: Options(
-          responseType: ResponseType.bytes,
-        ),
+        artworkUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      Logger.info(
+        '⬇️ [ImageCache] 下载完成，耗时 '
+        '${DateTime.now().difference(startTime).inMilliseconds}ms, '
+        '状态码 ${response.statusCode}',
       );
 
-      final downloadDuration = DateTime.now().difference(startTime);
-      Logger.info('⬇️ [ImageCache] 网络下载完成，耗时: ${downloadDuration.inMilliseconds}ms');
-      Logger.info('   📦 响应状态码: ${response.statusCode}');
-      Logger.info('   📏 数据大小: ${response.data?.length ?? 0} bytes');
-
-      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
-        Logger.error('❌ [ImageCache] HTTP 错误: ${response.statusCode}');
+      if (response.statusCode == null ||
+          response.statusCode! < 200 ||
+          response.statusCode! >= 300) {
         throw AppException.network(
-          'Failed to download podcast artwork: HTTP ${response.statusCode}',
+          'Failed to download $entityType artwork: HTTP ${response.statusCode}',
           statusCode: response.statusCode,
         );
       }
 
-      Logger.info('💾 [ImageCache] 开始保存到本地文件系统...');
       final imagesDir = await _fileStorageService.getImagesDirectory();
       final fileName = _fileStorageService.generateArtworkFileName();
       final targetFile = File('${imagesDir.path}/$fileName');
-      
-      Logger.info('   📁 目标目录: ${imagesDir.path}');
-      Logger.info('   📄 文件名: $fileName');
-      
       await targetFile.writeAsBytes(response.data);
-      
-      final fileSize = await targetFile.length();
-      Logger.info('✅ [ImageCache] 文件保存成功: ${targetFile.path}');
-      Logger.info('   📊 文件大小: $fileSize bytes');
 
-      Logger.info('💾 [ImageCache] 更新数据库记录...');
+      Logger.info(
+        '✅ [ImageCache] 封面已保存: ${targetFile.path} '
+        '(${await targetFile.length()} bytes)',
+      );
+
+      final artworkPath = 'images/$fileName';
       try {
-        final artworkPath = 'images/$fileName';
-        await persistPodcastArtworkPath(
-          _isarService.isar,
-          podcast.id,
-          artworkPath,
-        );
-        podcast.artworkPath = artworkPath;
-        Logger.info('✅ [ImageCache] 数据库更新成功');
-        Logger.info('   🔖 新的 artworkPath: $artworkPath');
+        await persistPath(artworkPath);
+        applyPath(artworkPath);
+        Logger.info('✅ [ImageCache] artworkPath 已更新: $artworkPath');
       } catch (dbError) {
         Logger.error('❌ [ImageCache] 数据库更新失败（但文件已保存）: $dbError');
       }
 
-      Logger.info('🎉 [ImageCache] ===== Podcast 封面图下载流程完成 =====\n');
       return targetFile;
     } on DioException catch (e, stackTrace) {
       Logger.error(
-        '❌ [ImageCache] 网络请求异常: ${podcast.artworkUrl}',
+        '❌ [ImageCache] 网络请求异常: $artworkUrl',
         error: e,
         stackTrace: stackTrace,
       );
       throw AppException.network(
-        'Failed to download podcast artwork: ${e.message}',
+        'Failed to download $entityType artwork: ${e.message}',
         statusCode: e.response?.statusCode,
         originalError: e,
         stackTrace: stackTrace,
       );
     } catch (e, stackTrace) {
+      if (e is AppException) rethrow;
       Logger.error(
-        '❌ [ImageCache] 未知错误',
+        '❌ [ImageCache] 保存封面失败: $artworkUrl',
         error: e,
         stackTrace: stackTrace,
       );
       throw AppException.storage(
-        'Failed to save podcast artwork',
+        'Failed to save $entityType artwork',
         originalError: e,
         stackTrace: stackTrace,
       );
@@ -430,29 +289,4 @@ class ImageCacheService {
     }
   }
 
-  Future<String> getCacheSizeFormatted() async {
-    try {
-      final sizeInBytes = await getCacheSize();
-      return _formatBytes(sizeInBytes);
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error formatting cache size',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      return 'Unknown';
-    }
-  }
-
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) {
-      return '$bytes B';
-    } else if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(2)} KB';
-    } else if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-    } else {
-      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
-    }
-  }
 }

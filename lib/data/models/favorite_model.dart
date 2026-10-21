@@ -6,6 +6,7 @@ part 'favorite_model.g.dart';
 class Favorite {
   Id id = Isar.autoIncrement;
 
+  @Index()
   String? supabaseId;
 
   @Index()

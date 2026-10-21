@@ -6,8 +6,16 @@
 
 ```bash
 flutter pub get
-flutter run
+
+# 需要登录 / 云同步时：复制模板并填入 Supabase 凭据
+cp .env.example .env
+./run.sh
 ```
+
+`./run.sh` 会读取 `.env` 并注入 `--dart-define`；直接执行 `flutter run`
+不会读取 `.env`。不配置 Supabase 时也可以 `flutter run`，应用会跳过云服务初始化，
+本地订阅、播放与下载功能仍可使用。完整说明见
+[docs/supabase_setup.md](docs/supabase_setup.md)。
 
 项目编码约定、架构规范与领域文档索引见 [AGENTS.md](AGENTS.md)——这是所有开发者和 AI agent 的根级入口。
 

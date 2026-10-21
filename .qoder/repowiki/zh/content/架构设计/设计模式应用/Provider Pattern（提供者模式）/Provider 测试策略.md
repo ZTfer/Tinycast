@@ -10,7 +10,7 @@
 - [test/presentation/providers/podcast_provider_test.dart](file://test/presentation/providers/podcast_provider_test.dart)
 - [test/presentation/providers/unplayed_episodes_provider_test.dart](file://test/presentation/providers/unplayed_episodes_provider_test.dart)
 - [lib/presentation/providers/base_provider.dart](file://lib/presentation/providers/base_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/unplayed_episodes_provider.dart](file://lib/presentation/providers/unplayed_episodes_provider.dart)
 - [pubspec.yaml](file://pubspec.yaml)
@@ -63,7 +63,7 @@ SST["test/core/services/sync_service_test.dart"]
 end
 subgraph "应用代码"
 BP["lib/presentation/providers/base_provider.dart"]
-SP["lib/core/providers/sync_provider.dart"]
+SP["lib/presentation/providers/sync_provider.dart"]
 PP["lib/presentation/providers/podcast_provider.dart"]
 UEPP["lib/presentation/providers/unplayed_episodes_provider.dart"]
 end
@@ -87,7 +87,7 @@ SP --> UEPP
 - [test/presentation/providers/podcast_provider_test.dart:1-207](file://test/presentation/providers/podcast_provider_test.dart#L1-L207)
 - [test/presentation/providers/unplayed_episodes_provider_test.dart:1-307](file://test/presentation/providers/unplayed_episodes_provider_test.dart#L1-L307)
 - [lib/presentation/providers/base_provider.dart:1-27](file://lib/presentation/providers/base_provider.dart#L1-L27)
-- [lib/core/providers/sync_provider.dart:1-168](file://lib/core/providers/sync_provider.dart#L1-L168)
+- [lib/presentation/providers/sync_provider.dart:1-168](file://lib/presentation/providers/sync_provider.dart#L1-L168)
 - [lib/presentation/providers/podcast_provider.dart:1-264](file://lib/presentation/providers/podcast_provider.dart#L1-L264)
 - [lib/presentation/providers/unplayed_episodes_provider.dart:1-107](file://lib/presentation/providers/unplayed_episodes_provider.dart#L1-L107)
 
@@ -103,7 +103,7 @@ SP --> UEPP
 
 **章节来源**
 - [lib/presentation/providers/base_provider.dart:1-27](file://lib/presentation/providers/base_provider.dart#L1-L27)
-- [lib/core/providers/sync_provider.dart:1-168](file://lib/core/providers/sync_provider.dart#L1-L168)
+- [lib/presentation/providers/sync_provider.dart:1-168](file://lib/presentation/providers/sync_provider.dart#L1-L168)
 - [lib/presentation/providers/podcast_provider.dart:1-264](file://lib/presentation/providers/podcast_provider.dart#L1-L264)
 - [lib/presentation/providers/unplayed_episodes_provider.dart:1-107](file://lib/presentation/providers/unplayed_episodes_provider.dart#L1-L107)
 - [test/helpers/isar_test_env.dart:71-102](file://test/helpers/isar_test_env.dart#L71-L102)
@@ -170,12 +170,12 @@ Skip --> End
 ```
 
 **图表来源**
-- [lib/core/providers/sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [lib/presentation/providers/sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 - [test/core/providers/sync_provider_test.dart:232-259](file://test/core/providers/sync_provider_test.dart#L232-L259)
 
 **章节来源**
 - [test/core/providers/sync_provider_test.dart:1-367](file://test/core/providers/sync_provider_test.dart#L1-L367)
-- [lib/core/providers/sync_provider.dart:1-168](file://lib/core/providers/sync_provider.dart#L1-L168)
+- [lib/presentation/providers/sync_provider.dart:1-168](file://lib/presentation/providers/sync_provider.dart#L1-L168)
 
 ### 同步服务集成测试（SyncService）
 - 目标：验证完整同步流程，包括认证检查、拉取推送顺序、时间戳保存和进度回调。

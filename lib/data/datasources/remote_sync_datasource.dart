@@ -7,6 +7,11 @@ import 'package:tinycast/core/utils/logger.dart';
 /// defaults to 1000), so list fetches must page explicitly.
 const int syncPageSize = 1000;
 
+/// PostgREST also caps the rows echoed back by `upsert(...).select()`, so a
+/// large upsert would silently lose the returned ids for the tail. Push in
+/// chunks well below the server limit so every record's id is mapped back.
+const int syncUpsertChunkSize = 500;
+
 /// Fetches every page by repeatedly calling [fetchPage] until a short page
 /// is returned. Callers must pass a stable `order` (unique column) so pages
 /// do not overlap or skip rows.
@@ -30,10 +35,14 @@ Future<List<Map<String, dynamic>>> fetchAllSyncPages(
 /// 默认通过 [SupabaseService] 全局单例解析客户端；测试或集成环境可通过
 /// [clientResolver] 注入自定义客户端解析函数以替代全局状态。
 class RemoteSyncDataSource {
-  RemoteSyncDataSource({SupabaseClient? Function()? clientResolver})
-      : _clientResolver = clientResolver;
+  RemoteSyncDataSource({
+    SupabaseClient? Function()? clientResolver,
+    String? Function()? userIdResolver,
+  })  : _clientResolver = clientResolver,
+        _userIdResolver = userIdResolver;
 
   final SupabaseClient? Function()? _clientResolver;
+  final String? Function()? _userIdResolver;
 
   SupabaseClient get _client {
     final override = _clientResolver?.call();
@@ -41,12 +50,32 @@ class RemoteSyncDataSource {
     return SupabaseService().client;
   }
 
-  String? get _userId => _client.auth.currentUser?.id;
+  String? get _userId =>
+      _userIdResolver != null ? _userIdResolver() : _client.auth.currentUser?.id;
 
   void _ensureUserId() {
     if (_userId == null) {
       throw StateError('User is not authenticated');
     }
+  }
+
+  Future<List<Map<String, dynamic>>> _upsertChunked(
+    String table,
+    List<Map<String, dynamic>> rows,
+    String onConflict,
+  ) async {
+    final results = <Map<String, dynamic>>[];
+    for (var start = 0; start < rows.length; start += syncUpsertChunkSize) {
+      final end = start + syncUpsertChunkSize < rows.length
+          ? start + syncUpsertChunkSize
+          : rows.length;
+      final response = await _client
+          .from(table)
+          .upsert(rows.sublist(start, end), onConflict: onConflict)
+          .select();
+      results.addAll(List<Map<String, dynamic>>.from(response));
+    }
+    return results;
   }
 
   // ========== Podcasts ==========
@@ -57,12 +86,7 @@ class RemoteSyncDataSource {
     try {
       if (podcasts.isEmpty) return [];
 
-      final result = await _client
-          .from('podcasts')
-          .upsert(podcasts, onConflict: 'itunes_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked('podcasts', podcasts, 'itunes_id');
     } catch (e, stackTrace) {
       Logger.error('upsertPodcasts failed', error: e, stackTrace: stackTrace);
       rethrow;
@@ -81,7 +105,7 @@ class RemoteSyncDataSource {
         }
 
         return query
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });
@@ -122,12 +146,7 @@ class RemoteSyncDataSource {
     try {
       if (episodes.isEmpty) return [];
 
-      final result = await _client
-          .from('episodes')
-          .upsert(episodes, onConflict: 'guid,podcast_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked('episodes', episodes, 'guid,podcast_id');
     } catch (e, stackTrace) {
       Logger.error('upsertEpisodes failed', error: e, stackTrace: stackTrace);
       rethrow;
@@ -146,7 +165,7 @@ class RemoteSyncDataSource {
         }
 
         return query
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });
@@ -173,12 +192,11 @@ class RemoteSyncDataSource {
           .map((s) => {...s, 'user_id': _userId})
           .toList();
 
-      final result = await _client
-          .from('user_podcast_subscriptions')
-          .upsert(records, onConflict: 'user_id,podcast_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked(
+        'user_podcast_subscriptions',
+        records,
+        'user_id,podcast_id',
+      );
     } catch (e, stackTrace) {
       Logger.error(
         'upsertUserPodcastSubscriptions failed',
@@ -198,7 +216,7 @@ class RemoteSyncDataSource {
             .from('user_podcast_subscriptions')
             .select()
             .eq('user_id', _userId!)
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });
@@ -244,12 +262,11 @@ class RemoteSyncDataSource {
           .map((r) => {...r, 'user_id': _userId})
           .toList();
 
-      final result = await _client
-          .from('playback_history')
-          .upsert(items, onConflict: 'user_id,episode_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked(
+        'playback_history',
+        items,
+        'user_id,episode_id',
+      );
     } catch (e, stackTrace) {
       Logger.error(
         'upsertPlaybackHistory failed',
@@ -280,7 +297,7 @@ class RemoteSyncDataSource {
         }
 
         return query
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });
@@ -326,12 +343,7 @@ class RemoteSyncDataSource {
           .map((f) => {...f, 'user_id': _userId})
           .toList();
 
-      final result = await _client
-          .from('favorites')
-          .upsert(items, onConflict: 'user_id,episode_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked('favorites', items, 'user_id,episode_id');
     } catch (e, stackTrace) {
       Logger.error('upsertFavorites failed', error: e, stackTrace: stackTrace);
       rethrow;
@@ -347,7 +359,7 @@ class RemoteSyncDataSource {
             .from('favorites')
             .select()
             .eq('user_id', _userId!)
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });
@@ -385,12 +397,7 @@ class RemoteSyncDataSource {
           .map((i) => {...i, 'user_id': _userId})
           .toList();
 
-      final result = await _client
-          .from('queue_items')
-          .upsert(records, onConflict: 'user_id,episode_id')
-          .select();
-
-      return List<Map<String, dynamic>>.from(result);
+      return _upsertChunked('queue_items', records, 'user_id,episode_id');
     } catch (e, stackTrace) {
       Logger.error('upsertQueueItems failed', error: e, stackTrace: stackTrace);
       rethrow;
@@ -406,7 +413,7 @@ class RemoteSyncDataSource {
             .from('queue_items')
             .select()
             .eq('user_id', _userId!)
-            .order('id')
+            .order('id', ascending: true)
             .range(offset, offset + limit - 1)
             .then((rows) => List<Map<String, dynamic>>.from(rows));
       });

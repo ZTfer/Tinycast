@@ -259,7 +259,10 @@ void main() {
         expect(map['keywords'], equals(['tech', 'dart']));
         expect(map['rss_urls'], equals(['https://example.com/rss.xml']));
         expect(map['id'], equals(42));
-        expect(map['updated_at'], isNotNull);
+        expect(
+          DateTime.parse(map['updated_at'] as String).toUtc(),
+          equals(podcast.lastUpdated.toUtc()),
+        );
       });
 
       test('SS-004: podcastToCloudMap 可选字段为 null 时不应包含对应 key', () {
@@ -298,7 +301,10 @@ void main() {
         expect(map['podcast_itunes_id'], equals('12345'));
         expect(map['pub_date'], isNotNull);
         expect(map['id'], equals(99));
-        expect(map['updated_at'], isNotNull);
+        expect(
+          DateTime.parse(map['updated_at'] as String).toUtc(),
+          equals(episode.updatedAt.toUtc()),
+        );
       });
 
       test('SS-005: episodeToCloudMap 可选字段为 null 时不应包含对应 key', () {
@@ -538,8 +544,9 @@ void main() {
 
         expect(syncService.canSync, isFalse);
 
-        await syncService.sync();
+        final result = await syncService.sync();
 
+        expect(result.status, equals(SyncResultStatus.skipped));
         verifyZeroInteractions(mockRemoteDataSource);
       });
     });
@@ -671,7 +678,7 @@ void main() {
 
       String cursorKey() => 'last_sync_timestamp_$testUserId';
 
-      Future<void> seedPodcast({
+      Future<Podcast> seedPodcast({
         String title = 'Local Podcast',
         String rssUrl = 'https://example.com/consistency.xml',
         String itunesId = '9001',
@@ -695,6 +702,34 @@ void main() {
         await isarEnv.isar.writeTxn(() async {
           await isarEnv.isar.podcasts.put(podcast);
         });
+        return podcast;
+      }
+
+      Future<Episode> seedEpisode({
+        required int podcastId,
+        String guid = 'episode-guid-1',
+        String? supabaseId,
+      }) async {
+        final episode = Episode()
+          ..podcastId = podcastId
+          ..title = 'Local Episode'
+          ..description = 'Description'
+          ..audioUrl = 'https://example.com/audio.mp3'
+          ..audioType = 'audio/mpeg'
+          ..isExplicit = false
+          ..isPlayed = false
+          ..isDownloaded = false
+          ..downloadProgress = 0
+          ..playProgress = 0
+          ..pubDate = DateTime.utc(2025, 1, 1)
+          ..createdAt = DateTime.utc(2025, 1, 1)
+          ..updatedAt = DateTime.utc(2025, 1, 1)
+          ..guid = guid
+          ..supabaseId = supabaseId;
+        await isarEnv.isar.writeTxn(() async {
+          await isarEnv.isar.episodes.put(episode);
+        });
+        return episode;
       }
 
       Future<Podcast?> findLocalPodcast(String rssUrl) async {
@@ -758,8 +793,9 @@ void main() {
         when(mockRemoteDataSource.fetchPodcastsUpdatedAfter(any))
             .thenThrow(Exception('network down'));
 
-        await buildService().sync();
+        final result = await buildService().sync();
 
+        expect(result.status, equals(SyncResultStatus.pullFailed));
         verifyNever(mockRemoteDataSource.upsertPodcasts(any));
         verifyNever(mockRemoteDataSource.fetchEpisodesUpdatedAfter(any));
         final prefs = await SharedPreferences.getInstance();
@@ -780,10 +816,79 @@ void main() {
               },
             ]);
 
-        await buildService().sync();
+        final result = await buildService().sync();
 
+        expect(result.status, equals(SyncResultStatus.partial));
+        expect(result.failedSteps, contains('pull_podcasts'));
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(cursorKey()), isNull);
+      });
+
+      test('SS-020: 增量推送只上传游标之后变更的记录', () async {
+        final oldUpdatedAt = DateTime.utc(2025, 1, 1);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          cursorKey(),
+          DateTime.utc(2025, 1, 15).toIso8601String(),
+        );
+        await seedPodcast(
+          supabaseId: '42',
+          lastUpdated: oldUpdatedAt,
+        );
+        await seedPodcast(
+          title: 'New Podcast',
+          rssUrl: 'https://example.com/new.xml',
+          itunesId: '9002',
+          lastUpdated: oldUpdatedAt,
+        );
+        stubEmptyCloudResponses();
+
+        final result = await buildService().sync();
+
+        expect(result.status, equals(SyncResultStatus.success));
+        final pushed = verify(
+          mockRemoteDataSource.upsertPodcasts(captureAny),
+        ).captured.single as List<Map<String, dynamic>>;
+        expect(pushed.length, equals(1));
+        expect(pushed.single['itunes_id'], equals('9002'));
+      });
+
+      test('SS-021: 拉取云端队列时不应覆盖本地队列顺序', () async {
+        final podcast = await seedPodcast(supabaseId: '42');
+        final episode = await seedEpisode(
+          podcastId: podcast.id,
+          supabaseId: '99',
+        );
+        await isarEnv.isar.writeTxn(() async {
+          await isarEnv.isar.queues.put(
+            Queue()
+              ..episodeId = episode.id
+              ..episodeGuid = episode.guid
+              ..position = 5
+              ..supabaseId = '300',
+          );
+        });
+        stubEmptyCloudResponses();
+        when(mockRemoteDataSource.fetchQueueItems()).thenAnswer(
+          (_) async => [
+            {
+              'id': 300,
+              'episode_id': 99,
+              'episode_guid': episode.guid,
+              'position': 0,
+            },
+          ],
+        );
+
+        final result = await buildService().sync();
+
+        expect(result.status, equals(SyncResultStatus.success));
+        final local = await isarEnv.isar.queues
+            .filter()
+            .supabaseIdEqualTo('300')
+            .findFirst();
+        expect(local, isNotNull);
+        expect(local!.position, equals(5));
       });
 
       test('SS-017: 云端订阅为空时应按已推送快照传播退订', () async {

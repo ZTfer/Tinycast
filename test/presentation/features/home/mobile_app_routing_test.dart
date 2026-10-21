@@ -8,12 +8,12 @@ import 'package:tinycast/main.dart';
 void main() {
   Future<WidgetsApp> pumpMobileApp(WidgetTester tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: MyAppMobile(home: SizedBox())),
+      const ProviderScope(child: MyApp(home: SizedBox())),
     );
     return tester.widget<WidgetsApp>(find.byType(WidgetsApp));
   }
 
-  testWidgets('MyAppMobile 提供命名路由生成器', (tester) async {
+  testWidgets('MyApp 提供命名路由生成器', (tester) async {
     final app = await pumpMobileApp(tester);
 
     expect(app.onGenerateRoute, isNotNull);
@@ -24,7 +24,7 @@ void main() {
     expect(route, isNotNull);
   });
 
-  testWidgets('MyAppMobile 提供 Material 本地化代理', (tester) async {
+  testWidgets('MyApp 提供 Material 本地化代理', (tester) async {
     final app = await pumpMobileApp(tester);
 
     expect(

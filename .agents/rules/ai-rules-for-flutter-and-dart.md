@@ -59,7 +59,7 @@ You are an expert Flutter and Dart developer. Your goal is to build beautiful, p
 * **Naming:** Avoid abbreviations. Use `PascalCase` (classes), `camelCase` (members), `snake_case` (files).
 * **Conciseness:** Functions should be short (<20 lines) and single-purpose.
 * **Error Handling:** Anticipate and handle potential errors. Don't let code fail silently.
-* **Logging:** 统一使用项目 `Logger` 门面（`Logger.debug/info/warning/error`，`lib/core/utils/logger.dart`）。其实际输出通道为：`kDebugMode` 下经 `debugPrint` 输出到控制台（Release 静默），以及在调用 `initFileLogging()` 后追加写入按日期命名的日志文件。禁止使用 `print`，也不直接使用 `dart:developer`。
+* **Logging:** 统一使用项目 `Logger` 门面（`Logger.debug/info/warning/error`，`lib/core/utils/logger.dart`）。Debug / Profile 默认保留 `info` 及以上，Release 默认保留 `warning` 及以上；`Logger.debug` 默认被过滤，需显式调用 `Logger.setMinLevel(LogLevel.debug)`。控制台输出仅在 `kDebugMode` 下经 `debugPrint`；调用 `initFileLogging()` 后会追加写入应用支持目录下按日期命名的文件。禁止使用 `print`，也不直接使用 `dart:developer`。
 
 ## Dart Best Practices
 * **Effective Dart:** Follow official guidelines.
@@ -82,11 +82,21 @@ You are an expert Flutter and Dart developer. Your goal is to build beautiful, p
 * **Primary Solution:** Use Riverpod for state management.
 * **Provider Scope:** Always wrap the app with `ProviderScope`.
 * **Widget Ref:** Use `WidgetRef` for accessing providers in widgets.
-* **State Notifiers:** Use `StateNotifier` for complex state logic.
+* **State Notifiers:** 使用 Riverpod 3 的 `Notifier` / `AsyncNotifier` 及其对应
+  `NotifierProvider` / `AsyncNotifierProvider`；不要新增 `StateNotifier`。
 
 ```dart
-// Riverpod Example
-final counterProvider = StateProvider<int>((ref) => 0);
+// Riverpod 3 Notifier 示例
+final counterProvider = NotifierProvider<CounterNotifier, int>(
+  CounterNotifier.new,
+);
+
+class CounterNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void increment() => state++;
+}
 
 // In widget
 class CounterWidget extends ConsumerWidget {
@@ -126,7 +136,9 @@ class User {
 * **Typography:** Define your own typography scale using `TextStyle` and `DefaultTextStyle`. Avoid reliance on `TextTheme`.
 * **Color System:** Define a consistent color palette using constants or a dedicated `AppColors` class. Avoid `ColorScheme`.
 * **Shadows & Depth:** Use `BoxShadow` manually where needed for depth; avoid assumptions about elevation.
-* **Icons:** Use icon fonts (like Lucide Icons) or SVG assets as needed, but do not assume Material Icons are available.
+* **Icons:** 项目同时使用 Material Icons（`uses-material-design: true`）和
+  Lucide Icons（`lucide_icons_flutter`）。新增图标时优先沿用当前页面已有的图标集，
+  不要混入第三套图标库；不确定图标名是否存在时先查依赖源码或编译验证。
 * **Theming:** If theming is needed, implement it via inherited widgets or global config objects—not `ThemeData`.
 
 **Do not use**: `MaterialApp`, `ThemeData`, `MaterialColor`, `useMaterial3`, `ColorScheme.fromSeed`, or `GoogleFonts.outfitTextTheme()`.

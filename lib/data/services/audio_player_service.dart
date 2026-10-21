@@ -459,14 +459,13 @@ class AudioPlayerService {
   Future<void> seekForward({
     Duration duration = const Duration(seconds: 30),
   }) async {
-    final newPosition = _player.position + duration;
-    final maxPosition = _player.duration ?? Duration.zero;
-
-    if (newPosition > maxPosition) {
-      await seek(maxPosition);
-    } else {
-      await seek(newPosition);
-    }
+    await seek(
+      resolveSkipTarget(
+        position: _player.position,
+        duration: _player.duration,
+        offset: duration,
+      ),
+    );
 
     Logger.info('Seeked forward ${duration.inSeconds}s');
   }
@@ -474,13 +473,13 @@ class AudioPlayerService {
   Future<void> seekBackward({
     Duration duration = const Duration(seconds: 30),
   }) async {
-    final newPosition = _player.position - duration;
-
-    if (newPosition < Duration.zero) {
-      await seek(Duration.zero);
-    } else {
-      await seek(newPosition);
-    }
+    await seek(
+      resolveSkipTarget(
+        position: _player.position,
+        duration: _player.duration,
+        offset: -duration,
+      ),
+    );
 
     Logger.info('Seeked backward ${duration.inSeconds}s');
   }

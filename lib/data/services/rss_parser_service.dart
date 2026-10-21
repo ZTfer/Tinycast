@@ -91,8 +91,19 @@ class RssParserService {
           );
         }
 
-        final podcast = _extractPodcastFromRss(xmlContent, rssUrl);
-        final episodes = _extractEpisodesFromRss(xmlContent, podcast.id);
+        final XmlDocument document;
+        try {
+          document = XmlDocument.parse(xmlContent);
+        } catch (e, stackTrace) {
+          throw AppException.validation(
+            'RSS XML 解析失败',
+            originalError: e,
+            stackTrace: stackTrace,
+          );
+        }
+
+        final podcast = _extractPodcastFromRss(document, rssUrl);
+        final episodes = _extractEpisodesFromRss(document, podcast.id);
 
         Logger.info('RSS 解析完成: ${podcast.title}, ${episodes.length} 个节目');
 
@@ -134,10 +145,9 @@ class RssParserService {
     return data.toString();
   }
 
-  /// 从 RSS 内容提取播客元数据
-  Podcast _extractPodcastFromRss(String xmlContent, String rssUrl) {
+  /// 从已解析的 XML 文档提取播客元数据
+  Podcast _extractPodcastFromRss(XmlDocument document, String rssUrl) {
     try {
-      final document = XmlDocument.parse(xmlContent);
       final channel = document.findAllElements('channel').first;
 
       final now = DateTime.now();
@@ -185,15 +195,16 @@ class RssParserService {
     }
   }
 
-  /// 从 RSS 内容提取节目列表
-  List<Episode> _extractEpisodesFromRss(String xmlContent, int podcastId) {
+  /// 从已解析的 XML 文档提取节目列表
+  List<Episode> _extractEpisodesFromRss(XmlDocument document, int podcastId) {
     try {
-      final document = XmlDocument.parse(xmlContent);
       final channel = document.findAllElements('channel').first;
       final itemsList = channel.findAllElements('item').toList();
       final List<Episode> episodes = [];
+      final seenGuids = <String>{};
       final now = DateTime.now();
       int guidMissingCount = 0;
+      int duplicateGuidCount = 0;
 
       for (var i = 0; i < itemsList.length; i++) {
         final item = itemsList[i];
@@ -209,7 +220,13 @@ class RssParserService {
           }
           
           final fallbackGuid = guid ?? _generateGuidFromAudioUrl(enclosure?.getAttribute('url'), i);
-          
+
+          if (!seenGuids.add(fallbackGuid)) {
+            duplicateGuidCount++;
+            Logger.warning('⚠️ [RSS] 节目 GUID 重复，跳过: $fallbackGuid');
+            continue;
+          }
+
           episodes.add(
             Episode(
               id: now.millisecondsSinceEpoch + i,
@@ -253,7 +270,10 @@ class RssParserService {
       if (guidMissingCount > 0) {
         Logger.warning('⚠️ [RSS] 共 ${itemsList.length} 个节目中，$guidMissingCount 个缺少 GUID');
       }
-      Logger.info('✅ [RSS] 成功提取 ${episodes.length} 个节目（含 $guidMissingCount 个自动生成 GUID）');
+      Logger.info(
+        '✅ [RSS] 成功提取 ${episodes.length} 个节目'
+        '（含 $guidMissingCount 个自动生成 GUID，跳过 $duplicateGuidCount 个重复项）',
+      );
       return episodes;
     } catch (e, stackTrace) {
       Logger.error('❌ [RSS] 提取节目列表失败', error: e, stackTrace: stackTrace);

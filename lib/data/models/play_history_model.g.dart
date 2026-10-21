@@ -108,6 +108,19 @@ const PlayHistorySchema = CollectionSchema(
   deserializeProp: _playHistoryDeserializeProp,
   idName: r'id',
   indexes: {
+    r'supabaseId': IndexSchema(
+      id: 2753382765909358918,
+      name: r'supabaseId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'supabaseId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
     r'episodeId': IndexSchema(
       id: -5445487708405506290,
       name: r'episodeId',
@@ -444,6 +457,81 @@ extension PlayHistoryQueryWhere
           includeUpper: includeUpper,
         ),
       );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterWhereClause> supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'supabaseId', value: [null]),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterWhereClause>
+  supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'supabaseId',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterWhereClause> supabaseIdEqualTo(
+    String? supabaseId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'supabaseId', value: [supabaseId]),
+      );
+    });
+  }
+
+  QueryBuilder<PlayHistory, PlayHistory, QAfterWhereClause>
+  supabaseIdNotEqualTo(String? supabaseId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [],
+                upper: [supabaseId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [supabaseId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [supabaseId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [],
+                upper: [supabaseId],
+                includeUpper: false,
+              ),
+            );
+      }
     });
   }
 

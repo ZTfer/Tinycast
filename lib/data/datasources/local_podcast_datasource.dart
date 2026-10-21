@@ -21,21 +21,15 @@ class LocalPodcastDataSource {
     try {
       Logger.info('🕒 [DATASOURCE] getSubscribedPodcasts 开始');
 
-      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始 Isar findAll 查询');
-      final allPodcasts = await _isarService.isar.podcasts.where().findAll();
-      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] Isar findAll 完成, 共 ${allPodcasts.length} 个播客');
+      final podcasts = await _isarService.isar.podcasts
+          .filter()
+          .isSubscribedEqualTo(true)
+          .findAll();
 
-      for (final p in allPodcasts) {
-        Logger.info(
-          '播客: ${p.title}, isSubscribed: ${p.isSubscribed}, ID: ${p.id}',
-        );
-      }
-
-      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 开始过滤 isSubscribed');
-      final podcasts = allPodcasts.where((p) => p.isSubscribed).toList();
-      Logger.info('🕒 [DATASOURCE] [${stopwatch.elapsedMilliseconds}ms] 过滤完成, 已订阅 ${podcasts.length} 个');
-
-      Logger.info('成功获取 ${podcasts.length} 个已订阅播客, 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      Logger.info(
+        '成功获取 ${podcasts.length} 个已订阅播客, '
+        '总耗时 ${stopwatch.elapsedMilliseconds}ms',
+      );
       stopwatch.stop();
 
       return podcasts;
@@ -175,6 +169,71 @@ class LocalPodcastDataSource {
       Logger.error('保存节目失败', error: e, stackTrace: stackTrace);
       throw AppException.unknown(
         '保存节目失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// 在单个事务中保存播客、剧集并标记订阅，避免中途失败留下半成品数据
+  Future<model.Podcast> subscribePodcast(
+    Podcast podcast,
+    List<Episode> episodes,
+  ) async {
+    try {
+      Logger.info('事务保存订阅播客: ${podcast.title}, ${episodes.length} 个节目');
+
+      final podcastModel = PodcastMapper.toModel(podcast);
+      final episodeModels = EpisodeMapper.toModelList(episodes);
+      final isar = _isarService.isar;
+      final now = DateTime.now();
+
+      await isar.writeTxn(() async {
+        final existingPodcast = await isar.podcasts
+            .filter()
+            .rssUrlEqualTo(podcast.rssUrl)
+            .findFirst();
+
+        if (existingPodcast != null) {
+          podcastModel.id = existingPodcast.id;
+        }
+
+        podcastModel
+          ..isSubscribed = true
+          ..subscribedAt = now
+          ..episodeCount = episodeModels.length
+          ..lastUpdated = now;
+
+        final podcastId = await isar.podcasts.put(podcastModel);
+
+        for (final episodeModel in episodeModels) {
+          episodeModel.podcastId = podcastId;
+          if (episodeModel.podcastITunesId == null ||
+              episodeModel.podcastITunesId!.isEmpty) {
+            episodeModel.podcastITunesId = podcastModel.itunesId;
+          }
+        }
+
+        await isar.episodes.putAll(episodeModels);
+      });
+
+      Logger.info(
+        '成功事务保存订阅播客: ID=${podcastModel.id}, '
+        '节目数=${podcastModel.episodeCount}',
+      );
+
+      return podcastModel;
+    } on IsarError catch (e, stackTrace) {
+      Logger.error('保存订阅播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.storage(
+        '保存订阅播客失败',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      Logger.error('保存订阅播客失败', error: e, stackTrace: stackTrace);
+      throw AppException.unknown(
+        '保存订阅播客失败',
         originalError: e,
         stackTrace: stackTrace,
       );

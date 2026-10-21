@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:tinycast/data/database/isar_service.dart';
-import 'package:tinycast/data/models/episode_model.dart' as model;
+import 'package:tinycast/data/models/episode_model.dart' show GetEpisodeCollection;
 import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
 import 'package:tinycast/domain/entities/episode.dart';
 import 'package:tinycast/domain/entities/play_history.dart';
@@ -7,13 +8,23 @@ import 'package:tinycast/domain/repositories/play_history_repository.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 class PlayProgressService {
-  PlayProgressService._();
+  PlayProgressService._()
+    : _playHistoryRepository = PlayHistoryRepositoryImpl(),
+      _isarService = IsarService.instance;
+
+  @visibleForTesting
+  PlayProgressService.forTesting({
+    PlayHistoryRepository? playHistoryRepository,
+    IsarService? isarService,
+  }) : _playHistoryRepository =
+           playHistoryRepository ?? PlayHistoryRepositoryImpl(),
+       _isarService = isarService ?? IsarService.instance;
 
   static final PlayProgressService _instance = PlayProgressService._();
   static PlayProgressService get instance => _instance;
 
-  final PlayHistoryRepository _playHistoryRepository = PlayHistoryRepositoryImpl();
-  final IsarService _isarService = IsarService.instance;
+  final PlayHistoryRepository _playHistoryRepository;
+  final IsarService _isarService;
 
   Future<void> updatePlayProgress({
     required int episodeId,
@@ -30,8 +41,6 @@ class PlayProgressService {
         episodeGuid: episodeGuid,
         episodeITunesId: episodeITunesId,
       );
-
-      await _syncEpisodeProgress(episodeId, progressRatio);
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to update play progress for episode $episodeId',
@@ -58,8 +67,6 @@ class PlayProgressService {
         podcastGuid: podcastGuid,
         podcastITunesId: podcastITunesId,
       );
-
-      await _syncEpisodePlayedStatus(episodeId);
     } catch (e, stackTrace) {
       Logger.error(
         'Failed to mark episode $episodeId as played',
@@ -133,43 +140,4 @@ class PlayProgressService {
     }
   }
 
-  Future<void> _syncEpisodeProgress(int episodeId, double progressRatio) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(episodeId);
-        if (episode != null) {
-          episode.playProgress = progressRatio;
-          episode.lastPlayedAt = DateTime.now();
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Failed to sync episode progress for episode $episodeId',
-        error: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _syncEpisodePlayedStatus(int episodeId) async {
-    try {
-      await _isarService.isar.writeTxn(() async {
-        final episode = await _isarService.isar.episodes.get(episodeId);
-        if (episode != null) {
-          episode.isPlayed = true;
-          episode.playProgress = 1.0;
-          episode.updatedAt = DateTime.now();
-          await _isarService.isar.episodes.put(episode);
-        }
-      });
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Failed to sync episode played status for episode $episodeId',
-        error: e,
-        stackTrace: stackTrace,
-      );
-    }
-  }
 }

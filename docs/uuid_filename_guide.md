@@ -106,35 +106,39 @@ final fullPath = await fileStorageService.getFullFilePath(
 
 ### 订阅时的完整日志
 
-```text
-🎯 [DEBUG] ====== Auto-download triggered for new subscription ======
-🎯 [DEBUG] Podcast: 科技乱炖 (ID: 2)
-🎯 [DEBUG] Will download latest 3 episodes
+以下 `[DEBUG]` 行需要先临时调用 `Logger.setMinLevel(LogLevel.debug)`；默认最小
+级别为 INFO，debug 级日志会被过滤。
 
+```text
+⬇️ [AUTO-DOWNLOAD] 策略: latest3, 播客ID: 2
+📦 [DEBUG] ====== Starting podcast download: 2 ======
+📦 [DEBUG] Download limit: 3 episodes
+📦 [DEBUG] Episodes to download: 3
+📦 [DEBUG] Episode 1/3: ID=195, Title="这半年，我们又买了哪些科技好物？"
 📥 [DEBUG] Enqueuing download for episode: 195
    - Title: 这半年，我们又买了哪些科技好物？
    - Audio URL: https://example.com/audio.mp3
-📁 [DEBUG] Temporary Directory: /var/folders/xxx/T/tinycast
+📁 [DEBUG] Temporary Directory: /var/folders/xxx/T
 🆔 [DEBUG] Audio filename for episode 195:
-       a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3    ← 新！
+       a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
    - File name: a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
-                                                     ← 新！
    - Relative path: audio/a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
-                                                     ← 新！
-   - Temp path: /var/folders/xxx/T/tinycast/
-              a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3 ← 新！
+   - Temp path: /var/folders/xxx/T/
+              a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
 ✅ [DEBUG] Task enqueued, queue size: 1
+✅ [DEBUG] Episode added to queue successfully: 195
 
+🔄 [DEBUG] ====== Processing download queue ======
+🔄 [DEBUG] Dequeued task #1: 195 (status: queued)
 ⬇️ [DEBUG] ====== Starting queued download for episode: 195 ======
-✅ [DEBUG] Episode found: 这半年，我们又买了哪些科技好物？
-...
-💾 [DEBUG] File saved successfully:
-   - Path: /Users/.../audio/a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
-     ← 新！
-   - Size: 57.00 MB
-   - Relative path: audio/a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
-     ← 新！
+🆔 [DEBUG] Audio filename for episode 195:
+       a1b2c3d4-e5f6-4789-abcd-ef0123456789.mp3
+✅ 下载完成: 195 (57.00 MB)
 ```
+
+`🆔 [DEBUG]` 在入队生成文件名和开始下载前的“文件是否已存在”检查中各输出一次，
+两次名称相同。日志里的 `File name`、`Relative path` 与 `Temp path` 都来自同一个
+确定性文件名。
 
 ## 🗂️ 文件系统示例
 
@@ -158,19 +162,31 @@ final fullPath = await fileStorageService.getFullFilePath(
 
 - 数据库中已记录的路径会继续工作
 - 系统能正确读取和播放这些文件
-- 不需要立即迁移
+- 不需要立即迁移，也不会被自动改名
 
-**新下载的文件**将自动使用稳定 UUID 形状命名。由于名称由 episode ID
-派生，同一集重复下载（重新订阅、删除后重下）会得到与旧文件相同的名称；
-旧命名文件只要仍在 `downloadedPath` 中记录就继续有效。
+**新下载的文件**使用稳定 UUID 形状命名。旧文件不会因为新算法上线而改名：
+如果 `downloadedPath` 仍指向 `audio/195.mp3`，该集继续使用旧文件；只有删除记录后
+重新下载，才会生成新的 `audio/<uuid>.mp3`。因此同一集在迁移期可能先后出现过
+两种文件名，旧文件只有仍被 `downloadedPath` 引用时才有意义。
 
 ### 数据库兼容性
 
 Episode 模型的 `downloadedPath` 字段：
 
 - 存储相对路径（如 `audio/{filename}.mp3`）
-- 无论文件名是什么格式都能正常工作
+- 文件名可以旧格式或新格式，读取时都以该字段为准
 - 向后兼容，无需修改数据库结构
+- 清理旧文件时应通过数据库记录定位，不要按文件名格式批量删除
+
+### 如何识别是否需要迁移
+
+不需要主动迁移。判断某集是否可直接播放，只看：
+
+1. `episode.downloadedPath` 是否非空
+2. 该相对路径对应的文件是否存在
+
+旧文件存在则继续使用；文件缺失时重新下载，新文件会自然采用 UUID 形状名称。
+用户若想统一命名，可显式删除旧下载后重新下载，但这不是必需步骤。
 
 ## 🧪 测试验证
 
@@ -230,8 +246,9 @@ String generateAudioFileName(String episodeId) {
 音频文件名不再依赖随机数，而是依赖 SHA-256：
 
 - 同一 episode 在任何设备、任何时间生成的名字完全一致
-- 两个不同 episode 只有在 SHA-256 摘要前 128 位碰撞时才会同名，实际不可能发生
-- 即使手工构造极端输入，数据库中的 `downloadedPath` 仍是最终依据
+- 名称使用 SHA-256 摘要截取并改写得到的 32 个十六进制字符，两个不同 episode
+  只有在这些字符碰撞时才会同名，实际使用中可以忽略
+- 即使发生极端碰撞，数据库中的 `downloadedPath` 仍是最终依据
 
 ## 📝 最佳实践建议
 

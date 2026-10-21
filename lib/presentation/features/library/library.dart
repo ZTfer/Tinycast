@@ -2,24 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/core/router/app_routes.dart';
 import 'package:tinycast/data/services/audio_download_service.dart';
-import 'package:tinycast/data/repositories/play_history_repository_impl.dart';
-import 'package:tinycast/data/repositories/queue_repository_impl.dart';
 import 'package:tinycast/domain/entities/podcast.dart';
 import 'package:tinycast/presentation/features/library/library_list_item/library_list_item.dart';
 import 'package:tinycast/presentation/features/library/library_empty_page/library_empty_page.dart';
 import 'package:tinycast/presentation/providers/podcast_provider.dart';
 import 'package:tinycast/presentation/providers/navigation_provider.dart';
 import 'package:tinycast/presentation/providers/download_provider.dart';
-import 'package:tinycast/presentation/providers/queue_provider.dart';
-import 'package:tinycast/presentation/providers/play_history_provider.dart';
-import 'package:tinycast/presentation/providers/favorite_episodes_provider.dart';
-import 'package:tinycast/presentation/providers/unplayed_episodes_provider.dart';
-import 'package:tinycast/presentation/features/downloads/downloaded_episodes_provider.dart';
 import 'package:tinycast/presentation/providers/feed_refresh_provider.dart';
+import 'package:tinycast/presentation/providers/unfollow_podcast_provider.dart';
 import 'package:tinycast/presentation/widgets/common/error_toast.dart';
 import 'package:tinycast/core/utils/app_exception.dart';
 import 'package:tinycast/core/utils/logger.dart';
@@ -44,7 +37,7 @@ class _LibraryState extends ConsumerState<Library> {
     });
   }
 
-  Future<void> _loadPodcasts() async {
+  Future<bool> _loadPodcasts() async {
     final stopwatch = Stopwatch()..start();
     Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 被调用');
     try {
@@ -52,10 +45,21 @@ class _LibraryState extends ConsumerState<Library> {
       Logger.info(
         '🕒 [LIBRARY-UI] _loadPodcasts 完成, 总耗时 ${stopwatch.elapsedMilliseconds}ms',
       );
-      stopwatch.stop();
+      final state = ref.read(podcastProvider);
+      if (state.status == PodcastStatus.error) {
+        // 无数据时页面会展示内联错误页，只有保留旧数据时才用 toast 提示刷新失败
+        final hasExistingData = state.podcasts?.isNotEmpty ?? false;
+        if (hasExistingData && mounted) {
+          ErrorToast.showException(
+            context,
+            AppException.unknown(state.errorMessage ?? '加载播客列表失败'),
+          );
+        }
+        return false;
+      }
+      return true;
     } catch (e) {
       Logger.info('🕒 [LIBRARY-UI] _loadPodcasts 异常: $e');
-      stopwatch.stop();
       AppException exception;
       if (e is AppException) {
         exception = e;
@@ -66,29 +70,20 @@ class _LibraryState extends ConsumerState<Library> {
         );
       }
 
-      if (!context.mounted) return;
-      // ignore: use_build_context_synchronously
-      ErrorToast.showException(context, exception);
+      if (mounted) {
+        ErrorToast.showException(context, exception);
+      }
+      return false;
+    } finally {
+      stopwatch.stop();
     }
   }
 
   Future<void> _retryLoad() async {
-    try {
-      await _loadPodcasts();
-      if (!mounted) return;
+    final succeeded = await _loadPodcasts();
+    if (!mounted) return;
+    if (succeeded) {
       ToastUtils.showSuccessToast(context, message: '加载成功');
-    } catch (e) {
-      if (!mounted) return;
-      AppException exception;
-      if (e is AppException) {
-        exception = e;
-      } else {
-        exception = AppException.unknown(
-          '重新加载失败：${e.toString()}',
-          originalError: e,
-        );
-      }
-      ErrorToast.showException(context, exception);
     }
   }
 
@@ -104,50 +99,12 @@ class _LibraryState extends ConsumerState<Library> {
   }
 
   Future<void> _unfollow(Podcast podcast) async {
-    Logger.info(
-      '🚫 [LIBRARY-UNFOLLOW] 开始取消关注 podcast: ${podcast.title} (id: ${podcast.id})',
-    );
     try {
-      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 1/5: 清理播放历史记录...');
-      final playHistoryRepo = PlayHistoryRepositoryImpl();
-      await playHistoryRepo.removeByPodcastId(podcast.id);
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 播放历史记录清理完成');
-
-      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 2/5: 清理队列记录...');
-      final queueRepo = QueueRepositoryImpl();
-      await queueRepo.removeFromQueueByPodcast(
-        podcast.id,
-        podcastITunesId: podcast.itunesId,
-      );
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 队列记录清理完成');
-
-      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 3/5: 取消关注播客（删除文件和数据库）...');
-      final downloadService = AudioDownloadService.instance;
-      await downloadService.unfollowPodcast(podcast.id);
-      await ref.read(podcastProvider.notifier).unsubscribe(podcast.id);
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 取消关注完成');
-
-      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 4/5: 清理内存状态...');
-      ref.read(queueNotifierProvider.notifier).removeByPodcastId(podcast.id);
-      ref
-          .read(completedHistoriesProvider.notifier)
-          .removeByPodcastId(podcast.id);
-      ref.invalidate(queueNotifierProvider);
-      ref.invalidate(completedHistoriesProvider);
-      ref.invalidate(favoriteEpisodesNotifierProvider);
-      ref.invalidate(downloadedEpisodesNotifierProvider);
-      ref.invalidate(unplayedEpisodesNotifierProvider);
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 内存状态清理完成');
-
-      Logger.info('🚫 [LIBRARY-UNFOLLOW] 步骤 5/5: 重新加载播客列表...');
-      await ref.read(podcastProvider.notifier).loadSubscribedPodcasts();
-      ref.read(downloadNotifierProvider.notifier).manualRefresh();
+      await ref.read(unfollowPodcastProvider)(podcast);
       _invalidateDownloadStatus();
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 播客列表重新加载完成');
 
       if (!mounted) return;
       ToastUtils.showSuccessToast(context, message: '已取消关注');
-      Logger.info('✅ [LIBRARY-UNFOLLOW] 取消关注流程全部完成');
     } catch (e, stackTrace) {
       Logger.error(
         '❌ [LIBRARY-UNFOLLOW] 取消关注失败',
@@ -241,45 +198,33 @@ class _LibraryState extends ConsumerState<Library> {
       }
     });
 
-    return Localizations(
-      locale: const Locale('zh', 'CN'),
-      delegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      child: RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: const Color(0xFF000000),
-        child: FutureBuilder<Map<int, bool>>(
-          future: _downloadStatusFor(podcasts),
-          builder: (context, snapshot) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildContent(
-                state,
-                podcasts,
-                podcastsRaw,
-                snapshot.data ?? {},
-              ),
-            );
-          },
-        ),
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      color: const Color(0xFF000000),
+      child: FutureBuilder<Map<int, bool>>(
+        future: _downloadStatusFor(podcasts),
+        builder: (context, snapshot) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildContent(
+              state,
+              podcasts,
+              podcastsRaw,
+              snapshot.data ?? {},
+            ),
+          );
+        },
       ),
     );
   }
 
   Future<Map<int, bool>> _computeDownloadStatus(List<Podcast> podcasts) async {
-    final downloadService = AudioDownloadService.instance;
-    final entries = await Future.wait(
-      podcasts.map(
-        (podcast) async => MapEntry(
-          podcast.id,
-          await downloadService.hasDownloadedEpisodesForPodcast(podcast.id),
-        ),
-      ),
-    );
-    return {for (final entry in entries) entry.key: entry.value};
+    final downloadedPodcastIds = await AudioDownloadService.instance
+        .getPodcastIdsWithDownloadedEpisodes();
+    return {
+      for (final podcast in podcasts)
+        podcast.id: downloadedPodcastIds.contains(podcast.id),
+    };
   }
 
   Widget _buildContent(

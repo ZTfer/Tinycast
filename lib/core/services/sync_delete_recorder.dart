@@ -40,6 +40,28 @@ class SyncDeleteRecorder {
     }
   }
 
+  /// Records queue removals for multiple episodes with a single store write.
+  Future<void> recordQueueRemovals(Iterable<int> episodeIds) async {
+    final ids = episodeIds.where((id) => id > 0).toSet();
+    if (ids.isEmpty) return;
+    try {
+      final episodes = await IsarService.instance.isar.episodes.getAll(
+        ids.toList(),
+      );
+      final cloudIds = <String>{};
+      for (final episode in episodes) {
+        final cloudId = episode?.supabaseId;
+        if (cloudId != null && cloudId.isNotEmpty) {
+          cloudIds.add(cloudId);
+        }
+      }
+      if (cloudIds.isEmpty) return;
+      await _tombstones.recordQueueDeletes(cloudIds);
+    } catch (e) {
+      Logger.error('[SYNC] Failed to record queue tombstones', error: e);
+    }
+  }
+
   /// Records queue removals for all episodes of [podcastId].
   Future<void> recordQueueRemovalsByPodcast(int podcastId) async {
     try {
@@ -48,9 +70,7 @@ class SyncDeleteRecorder {
           .filter()
           .podcastIdEqualTo(podcastId)
           .findAll();
-      for (final item in queueItems) {
-        await recordQueueRemoval(item.episodeId);
-      }
+      await recordQueueRemovals(queueItems.map((item) => item.episodeId));
     } catch (e) {
       Logger.error(
         '[SYNC] Failed to record queue tombstones by podcast',

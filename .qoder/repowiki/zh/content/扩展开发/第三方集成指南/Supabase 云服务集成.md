@@ -6,7 +6,7 @@
 - [lib/core/services/supabase_service.dart](file://lib/core/services/supabase_service.dart)
 - [lib/core/services/supabase_auth_service.dart](file://lib/core/services/supabase_auth_service.dart)
 - [lib/core/services/sync_service.dart](file://lib/core/services/sync_service.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/data/datasources/remote_sync_datasource.dart](file://lib/data/datasources/remote_sync_datasource.dart)
 - [docs/supabase_setup.md](file://docs/supabase_setup.md)
 - [docs/database.md](file://docs/database.md)
@@ -51,7 +51,7 @@ TinyCast 的 Supabase 集成主要分布在以下位置：
 - 应用启动与配置：lib/main.dart
 - Supabase 客户端与服务：lib/core/services/supabase_service.dart
 - 认证服务：lib/core/services/supabase_auth_service.dart
-- 同步服务与 Provider：lib/core/services/sync_service.dart、lib/core/providers/sync_provider.dart
+- 同步服务与 Provider：lib/core/services/sync_service.dart、lib/presentation/providers/sync_provider.dart
 - 远程数据源封装：lib/data/datasources/remote_sync_datasource.dart
 - 文档与规范：docs/supabase_setup.md、docs/database.md、.trae/specs/*
 
@@ -72,7 +72,7 @@ D --> I["Supabase REST API<br/>Podcasts/Episodes/History/Favorites/Queue"]
 - [lib/core/services/supabase_service.dart:18-47](file://lib/core/services/supabase_service.dart#L18-L47)
 - [lib/core/services/supabase_auth_service.dart:13-33](file://lib/core/services/supabase_auth_service.dart#L13-L33)
 - [lib/core/services/sync_service.dart:68-113](file://lib/core/services/sync_service.dart#L68-L113)
-- [lib/core/providers/sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [lib/presentation/providers/sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 
 **章节来源**
 - [lib/main.dart:179-194](file://lib/main.dart#L179-L194)
@@ -89,7 +89,7 @@ D --> I["Supabase REST API<br/>Podcasts/Episodes/History/Favorites/Queue"]
 - [lib/core/services/supabase_service.dart:1-55](file://lib/core/services/supabase_service.dart#L1-L55)
 - [lib/core/services/supabase_auth_service.dart:1-39](file://lib/core/services/supabase_auth_service.dart#L1-L39)
 - [lib/core/services/sync_service.dart:1-113](file://lib/core/services/sync_service.dart#L1-L113)
-- [lib/core/providers/sync_provider.dart:1-168](file://lib/core/providers/sync_provider.dart#L1-L168)
+- [lib/presentation/providers/sync_provider.dart:1-168](file://lib/presentation/providers/sync_provider.dart#L1-L168)
 - [lib/data/datasources/remote_sync_datasource.dart](file://lib/data/datasources/remote_sync_datasource.dart)
 
 ## 架构总览
@@ -119,7 +119,7 @@ Sync-->>UI : 进度回调与完成通知
 **图表来源**
 - [lib/core/services/supabase_auth_service.dart:13-24](file://lib/core/services/supabase_auth_service.dart#L13-L24)
 - [lib/core/services/sync_service.dart:68-113](file://lib/core/services/sync_service.dart#L68-L113)
-- [lib/core/providers/sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [lib/presentation/providers/sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 
 ## 详细组件分析
 
@@ -246,10 +246,10 @@ SyncNotifier --> SyncState : "管理"
 ```
 
 **图表来源**
-- [lib/core/providers/sync_provider.dart:41-151](file://lib/core/providers/sync_provider.dart#L41-L151)
+- [lib/presentation/providers/sync_provider.dart:41-151](file://lib/presentation/providers/sync_provider.dart#L41-L151)
 
 **章节来源**
-- [lib/core/providers/sync_provider.dart:1-168](file://lib/core/providers/sync_provider.dart#L1-L168)
+- [lib/presentation/providers/sync_provider.dart:1-168](file://lib/presentation/providers/sync_provider.dart#L1-L168)
 
 ### 远程数据源（RemoteSyncDataSource）
 - 职责：封装所有 Supabase REST API 调用，包括 upsert、select（含增量查询）、delete 等。
@@ -294,7 +294,7 @@ Prov["SyncProvider"] --> Sync
 - [lib/main.dart:179-194](file://lib/main.dart#L179-L194)
 - [lib/core/services/supabase_service.dart:18-47](file://lib/core/services/supabase_service.dart#L18-L47)
 - [lib/core/services/sync_service.dart:68-113](file://lib/core/services/sync_service.dart#L68-L113)
-- [lib/core/providers/sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [lib/presentation/providers/sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 
 **章节来源**
 - [pubspec.yaml:138-143](file://pubspec.yaml#L138-L143)
@@ -389,7 +389,7 @@ TinyCast 的 Supabase 集成围绕"认证—同步—存储"三条主线展开�
 
 **章节来源**
 - [lib/core/services/sync_service.dart:68-113](file://lib/core/services/sync_service.dart#L68-L113)
-- [lib/core/providers/sync_provider.dart:110-141](file://lib/core/providers/sync_provider.dart#L110-L141)
+- [lib/presentation/providers/sync_provider.dart:110-141](file://lib/presentation/providers/sync_provider.dart#L110-L141)
 
 ### 依赖注入与测试策略（新增）
 - **RemoteSyncDataSource 客户端注入**：通过 `clientResolver` 参数支持测试环境自定义 Supabase 客户端
@@ -398,6 +398,6 @@ TinyCast 的 Supabase 集成围绕"认证—同步—存储"三条主线展开�
 
 **章节来源**
 - [lib/data/datasources/remote_sync_datasource.dart:9-19](file://lib/data/datasources/remote_sync_datasource.dart#L9-L19)
-- [lib/core/providers/sync_provider.dart:42-48](file://lib/core/providers/sync_provider.dart#L42-L48)
+- [lib/presentation/providers/sync_provider.dart:42-48](file://lib/presentation/providers/sync_provider.dart#L42-L48)
 - [integration/remote_sync_datasource_integration_test.dart:36-42](file://integration/remote_sync_datasource_integration_test.dart#L36-L42)
 - [test/core/providers/sync_provider_test.dart:295-304](file://test/core/providers/sync_provider_test.dart#L295-L304)

@@ -38,6 +38,12 @@ class DownloadTask {
   final DateTime createdAt;
   final int priority;
 
+  /// Completes when the task reaches a terminal state (completed, failed,
+  /// cancelled or paused), so callers can await the queued transfer.
+  final Completer<void> _completion = Completer<void>();
+  double lastNotifiedProgress = -1;
+  DateTime lastProgressNotifiedAt = DateTime.now();
+
   DownloadTask({
     required this.episodeId,
     required this.audioUrl,
@@ -52,6 +58,12 @@ class DownloadTask {
     DateTime? createdAt,
     this.priority = 0,
   }) : createdAt = createdAt ?? DateTime.now();
+
+  Future<void> get completion => _completion.future;
+
+  void complete() {
+    if (!_completion.isCompleted) _completion.complete();
+  }
 }
 
 class DownloadQueue {
@@ -161,9 +173,6 @@ class AudioDownloadService {
   // 进度信息保存在内存中的 DownloadTask 对象里
   // 只在下载完成或失败时才写入数据库
 
-  /// 正在下载中的 episode ID 集合（防止并发重复下载）
-  final Set<String> _activeDownloads = {};
-
   late final StreamController<AudioDownloadEvent> _globalEventController =
       StreamController<AudioDownloadEvent>.broadcast();
 
@@ -221,6 +230,7 @@ class AudioDownloadService {
         case DownloadStatus.downloading:
         case DownloadStatus.queued:
           Logger.info('⚠️ 下载已在进行中: $episodeId');
+          await existingTask.completion;
           return;
         case DownloadStatus.paused:
           Logger.info('⏸️ 恢复暂停的下载: $episodeId');
@@ -243,96 +253,83 @@ class AudioDownloadService {
       if (completedPath != null) {
         Logger.info('✅ 文件已存在, 标记完成: $episodeId');
         _downloadTasks.remove(episodeId);
-        await _isarService.updateEpisodeDownloadStatus(
-          episodeId: episode.id,
-          isDownloaded: true,
-          downloadedPath: completedPath,
-          downloadProgress: 1.0,
-        );
-        _notifyStatusChange(episodeId, DownloadStatus.completed);
-        await _downloadEpisodeArtwork(episode);
+        await _markCompletedFromExistingFile(episode, completedPath);
         return;
       }
     } catch (e) {
       Logger.warning('检查已存在文件失败: $e');
     }
 
-    DownloadTask? downloadTask;
+    // Direct downloads share the queue so concurrent requests never exceed
+    // the configured limit; await the task to preserve the synchronous
+    // completion semantics callers rely on.
+    final DownloadTask task;
     try {
-      final audioDir = await _fileStorageService.getAudioDirectory();
-      final tempDir = await _fileStorageService.getTemporaryDirectory();
-      final fileName = _fileStorageService.generateAudioFileName(episodeId);
-      final relativeFilePath = 'audio/$fileName';
-      final absoluteFilePath = '${audioDir.path}/$fileName';
-      final tempFilePath = '${tempDir.path}/$fileName';
-
-      if (!await audioDir.exists()) {
-        throw AppException.storage('Audio directory not found');
-      }
-
-      downloadTask = DownloadTask(
-        episodeId: episodeId,
-        audioUrl: episode.audioUrl,
-        relativeFilePath: relativeFilePath,
-        tempFilePath: tempFilePath,
-        cancelToken: CancelToken(),
-        status: DownloadStatus.downloading,
-        progress: 0.0,
-      );
-      _downloadTasks[episodeId] = downloadTask;
-
-      await _isarService.updateEpisodeDownloadStatus(
-        episodeId: episode.id,
-        isDownloaded: false,
-        downloadedPath: null,
-        downloadProgress: 0.0,
-      );
-
-      _notifyStatusChange(episodeId, DownloadStatus.downloading);
-
-      final startTime = DateTime.now();
-      await _transferToFile(downloadTask);
-      final duration = DateTime.now().difference(startTime);
-
-      downloadTask.status = DownloadStatus.completed;
-      downloadTask.progress = 1.0;
-
-      final finalFile = File(absoluteFilePath);
-      if (await finalFile.exists()) {
-        await finalFile.delete();
-      }
-
-      await File(tempFilePath).rename(absoluteFilePath);
-
-      final savedFile = File(absoluteFilePath);
-      if (await savedFile.exists()) {
-        final fileSize = await savedFile.length();
-        Logger.info(
-          '✅ 下载完成: $episodeId (${_formatFileSize(fileSize)}, ${duration.inSeconds}s)',
-        );
-      } else {
-        Logger.error('❌ 文件保存失败: $absoluteFilePath');
-      }
-
-      await _isarService.updateEpisodeDownloadStatus(
-        episodeId: episode.id,
-        isDownloaded: true,
-        downloadedPath: relativeFilePath,
-        downloadProgress: 1.0,
-      );
-
-      _notifyStatusChange(episodeId, DownloadStatus.completed);
-      await _downloadEpisodeArtwork(episode);
+      task = await _enqueueDownload(episode);
     } catch (e, stackTrace) {
-      _handleDownloadFailure(
-        episodeId: episodeId,
-        task: downloadTask,
+      Logger.error(
+        '加入下载队列失败: $episodeId',
         error: e,
         stackTrace: stackTrace,
       );
-    } finally {
-      _pruneTerminalTask(episodeId, downloadTask);
+      return;
     }
+    _processQueue();
+    await task.completion;
+  }
+
+  Future<void> _markCompletedFromExistingFile(
+    Episode episode,
+    String completedPath,
+  ) async {
+    await _isarService.updateEpisodeDownloadStatus(
+      episodeId: episode.id,
+      isDownloaded: true,
+      downloadedPath: completedPath,
+      downloadProgress: 1.0,
+    );
+    _notifyStatusChange(episode.id.toString(), DownloadStatus.completed);
+    await _downloadEpisodeArtwork(episode);
+  }
+
+  Future<void> _finalizeDownload(
+    Episode episode,
+    DownloadTask task,
+  ) async {
+    task.status = DownloadStatus.completed;
+    task.progress = 1.0;
+
+    final audioDir = await _fileStorageService.getAudioDirectory();
+    if (!await audioDir.exists()) {
+      throw AppException.storage('Audio directory not found');
+    }
+    final absoluteFilePath =
+        '${audioDir.path}/${task.relativeFilePath.replaceFirst('audio/', '')}';
+    final finalFile = File(absoluteFilePath);
+    if (await finalFile.exists()) {
+      await finalFile.delete();
+    }
+    await File(task.tempFilePath).rename(absoluteFilePath);
+
+    final savedFile = File(absoluteFilePath);
+    if (!await savedFile.exists()) {
+      throw AppException.storage('Downloaded file missing: $absoluteFilePath');
+    }
+    final fileSize = await savedFile.length();
+    Logger.info(
+      '✅ 下载完成: ${task.episodeId} (${_formatFileSize(fileSize)})',
+    );
+
+    await _isarService.updateEpisodeDownloadStatus(
+      episodeId: episode.id,
+      isDownloaded: true,
+      downloadedPath: task.relativeFilePath,
+      downloadProgress: 1.0,
+    );
+
+    _downloadQueue.markAsCompleted(task.episodeId);
+    _notifyStatusChange(task.episodeId, DownloadStatus.completed);
+    await _downloadEpisodeArtwork(episode);
   }
 
   /// 把音频流写入任务对应的临时文件，支持 206 续传。
@@ -397,7 +394,18 @@ class AudioDownloadService {
             lastLoggedQuarter = quarter;
             Logger.debug('📊 ${(progress * 100).toInt()}%');
           }
-          _notifyProgressChange(task.episodeId, progress);
+          // Chunks arrive far faster than the UI needs; keep the stream
+          // responsive without flooding it with one event per chunk.
+          final elapsed = DateTime.now().difference(
+            task.lastProgressNotifiedAt,
+          );
+          if (progress >= 1.0 ||
+              progress - task.lastNotifiedProgress >= 0.01 ||
+              elapsed >= const Duration(milliseconds: 200)) {
+            task.lastNotifiedProgress = progress;
+            task.lastProgressNotifiedAt = DateTime.now();
+            _notifyProgressChange(task.episodeId, progress);
+          }
         }
       }
     } finally {
@@ -479,7 +487,6 @@ class AudioDownloadService {
     required DownloadTask? task,
     required Object error,
     required StackTrace stackTrace,
-    bool fromQueue = false,
   }) {
     final isCurrent =
         task != null && identical(_downloadTasks[episodeId], task);
@@ -515,8 +522,8 @@ class AudioDownloadService {
       }
     }
 
-    if (fromQueue) {
-      if (cancelled || task!.pauseRequested) {
+    if (task != null) {
+      if (cancelled || task.pauseRequested) {
         _downloadQueue.removeActive(episodeId);
       } else {
         _downloadQueue.markAsFailed(episodeId);
@@ -615,31 +622,13 @@ class AudioDownloadService {
   }
 
   Future<void> downloadEpisodeById(int episodeId) async {
-    final idStr = episodeId.toString();
+    final episode = await _isarService.isar.episodes.get(episodeId);
 
-    if (_activeDownloads.contains(idStr)) {
-      return;
+    if (episode == null) {
+      throw AppException.unknown('Episode not found: $episodeId');
     }
-    _activeDownloads.add(idStr);
 
-    try {
-      final episode = await _isarService.isar.episodes.get(episodeId);
-
-      if (episode == null) {
-        throw AppException.unknown('Episode not found: $episodeId');
-      }
-
-      await downloadEpisode(episode);
-    } catch (e, stackTrace) {
-      Logger.error(
-        'Error downloading episode by ID: $episodeId',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      rethrow;
-    } finally {
-      _activeDownloads.remove(idStr);
-    }
+    await downloadEpisode(episode);
   }
 
   Future<void> cancelDownload(String episodeId) async {
@@ -677,6 +666,7 @@ class AudioDownloadService {
 
       _notifyStatusChange(episodeId, DownloadStatus.cancelled);
       _downloadTasks.remove(episodeId);
+      task.complete();
       Logger.info('Download cancelled for episode: $episodeId');
     } catch (e, stackTrace) {
       Logger.error(
@@ -765,6 +755,7 @@ class AudioDownloadService {
             await tempFile.delete();
           }
         }
+        task.complete();
         _processQueue();
       }
 
@@ -809,6 +800,15 @@ class AudioDownloadService {
         .isDownloadedEqualTo(true)
         .count();
     return count > 0;
+  }
+
+  /// 一次性返回所有存在已下载节目的播客 ID，避免列表页逐条查询。
+  Future<Set<int>> getPodcastIdsWithDownloadedEpisodes() async {
+    final episodes = await _isarService.isar.episodes
+        .filter()
+        .isDownloadedEqualTo(true)
+        .findAll();
+    return episodes.map((episode) => episode.podcastId).toSet();
   }
 
   Future<void> removeAllDownloadsForPodcast(int podcastId) async {
@@ -900,6 +900,7 @@ class AudioDownloadService {
       }
 
       _notifyStatusChange(episodeId, DownloadStatus.cancelled);
+      task.complete();
       _disposeControllers(episodeId);
     }
 
@@ -1042,7 +1043,7 @@ class AudioDownloadService {
     }
   }
 
-  Future<void> _enqueueDownload(Episode episode) async {
+  Future<DownloadTask> _enqueueDownload(Episode episode) async {
     final episodeId = episode.id.toString();
 
     Logger.info('📥 [DEBUG] Enqueuing download for episode: $episodeId');
@@ -1080,15 +1081,9 @@ class AudioDownloadService {
 
       // 优化：入队时不写数据库，只更新内存状态
       // 避免在订阅后立即占用写锁，导致 Library 页面查询被阻塞
-      // await _updateEpisodeDownloadStatus(
-      //   episodeId: episodeId,
-      //   isDownloaded: false,
-      //   downloadedPath: null,
-      //   downloadProgress: 0.0,
-      // );
-
       _notifyStatusChange(episodeId, DownloadStatus.queued);
       Logger.info('✅ [DEBUG] Episode added to queue successfully: $episodeId');
+      return downloadTask;
     } catch (e, stackTrace) {
       Logger.error('加入下载队列失败: $episodeId', error: e, stackTrace: stackTrace);
       rethrow;
@@ -1187,32 +1182,8 @@ class AudioDownloadService {
         return;
       }
 
-      final audioDir = await _fileStorageService.getAudioDirectory();
-      final absoluteFilePath =
-          '${audioDir.path}/${downloadTask.relativeFilePath.replaceFirst('audio/', '')}';
-
       await _transferToFile(downloadTask);
-
-      downloadTask.status = DownloadStatus.completed;
-      downloadTask.progress = 1.0;
-
-      final finalFile = File(absoluteFilePath);
-      if (await finalFile.exists()) {
-        await finalFile.delete();
-      }
-
-      await File(downloadTask.tempFilePath).rename(absoluteFilePath);
-
-      await _isarService.updateEpisodeDownloadStatus(
-        episodeId: episode.id,
-        isDownloaded: true,
-        downloadedPath: downloadTask.relativeFilePath,
-        downloadProgress: 1.0,
-      );
-
-      _downloadQueue.markAsCompleted(episodeId);
-      _notifyStatusChange(episodeId, DownloadStatus.completed);
-      await _downloadEpisodeArtwork(episode);
+      await _finalizeDownload(episode, downloadTask);
       _processQueue();
 
       Logger.info('下载完成: $episodeId');
@@ -1222,17 +1193,18 @@ class AudioDownloadService {
         task: downloadTask,
         error: e,
         stackTrace: stackTrace,
-        fromQueue: true,
       );
     } finally {
+      downloadTask.complete();
       _pruneTerminalTask(episodeId, downloadTask);
     }
   }
 
   Future<void> cancelQueuedDownload(String episodeId) async {
+    final task = _downloadTasks.remove(episodeId);
     _downloadQueue.removeQueued(episodeId);
-    _downloadTasks.remove(episodeId);
     _disposeControllers(episodeId);
+    task?.complete();
 
     await _isarService.updateEpisodeDownloadStatus(
       episodeId: int.parse(episodeId),

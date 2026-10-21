@@ -12,7 +12,7 @@ source_files:
     - lib/core/theme/app_text_styles.dart
     - lib/core/theme/app_theme.dart
     - lib/core/theme/theme_loader.dart
-    - lib/core/providers/theme_provider.dart
+    - lib/core/theme/theme_loader.dart
     - docs/theme/overview.md
     - docs/theme/colors.md
     - docs/theme/typography.md

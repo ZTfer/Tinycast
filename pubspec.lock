@@ -353,14 +353,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.9.2"
-  dio_http2_adapter:
-    dependency: "direct main"
-    description:
-      name: dio_http2_adapter
-      sha256: "79f3d69b155b92a786c8734bd11860390b986210d4e07cbb6a5c8c806a7187b2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.7.0"
   dio_web_adapter:
     dependency: transitive
     description:
@@ -654,21 +646,13 @@ packages:
     source: hosted
     version: "0.15.6"
   http:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
-  http2:
-    dependency: transitive
-    description:
-      name: http2
-      sha256: "382d3aefc5bd6dc68c6b892d7664f29b5beb3251611ae946a98d35158a82bbfa"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.3.1"
   http_multi_server:
     dependency: transitive
     description:
@@ -726,7 +710,7 @@ packages:
     source: hosted
     version: "3.3.2"
   jni:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: jni
       sha256: c2230682d5bc2362c1c9e8d3c7f406d9cbba23ab3f2e203a025dd47e0fb2e68f
@@ -734,7 +718,7 @@ packages:
     source: hosted
     version: "1.0.0"
   jni_flutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: jni_flutter
       sha256: "8b59e590786050b1cd866677dddaf76b1ade5e7bc751abe04b86e84d379d3ba6"
@@ -1110,21 +1094,13 @@ packages:
     source: hosted
     version: "3.1.2"
   riverpod:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: riverpod
       sha256: "8c22216be8ad3ef2b44af3a329693558c98eca7b8bd4ef495c92db0bba279f83"
       url: "https://pub.dev"
     source: hosted
     version: "3.2.1"
-  rss_dart:
-    dependency: "direct main"
-    description:
-      name: rss_dart
-      sha256: "09c0123427e9557d74562e07f9d22effe3fd493893602e8a8d24b961490f2c30"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.14"
   rxdart:
     dependency: transitive
     description:
@@ -1419,7 +1395,7 @@ packages:
     source: hosted
     version: "1.2.2"
   test:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: test
       sha256: "8d9ceddbab833f180fbefed08afa76d7c03513dfdba87ffcec2718b02bbcbf20"

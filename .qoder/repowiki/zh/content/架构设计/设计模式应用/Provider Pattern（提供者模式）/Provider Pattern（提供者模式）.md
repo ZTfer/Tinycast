@@ -3,7 +3,7 @@
 <cite>
 **本文引用的文件**   
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
@@ -87,7 +87,7 @@ K --> M
 
 **图表来源**
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
@@ -119,7 +119,7 @@ K --> M
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)
 - [lib/presentation/providers/settings_provider.dart](file://lib/presentation/providers/settings_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/favorite_provider.dart](file://lib/presentation/providers/favorite_provider.dart)
 - [lib/presentation/providers/unplayed_episodes_provider.dart](file://lib/presentation/providers/unplayed_episodes_provider.dart)
 - [lib/presentation/providers/favorite_episodes_provider.dart](file://lib/presentation/providers/favorite_episodes_provider.dart)
@@ -147,7 +147,7 @@ Unplayed --> History
 
 **图表来源**
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
@@ -213,12 +213,12 @@ Sync-->>UI : 更新同步状态/时间
 ```
 
 **图表来源**
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
 - [lib/core/services/sync_tombstone_store.dart](file://lib/core/services/sync_tombstone_store.dart)
 
 **章节来源**
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/core/services/sync_tombstone_store.dart](file://lib/core/services/sync_tombstone_store.dart)
 
 ### 收藏提供者（FavoriteProvider）
@@ -502,7 +502,7 @@ Unplayed --> History
 
 **图表来源**
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
@@ -515,7 +515,7 @@ Unplayed --> History
 
 **章节来源**
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/podcast_provider.dart](file://lib/presentation/providers/podcast_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
@@ -561,7 +561,7 @@ Unplayed --> History
 
 **章节来源**
 - [lib/core/providers/auth_provider.dart](file://lib/core/providers/auth_provider.dart)
-- [lib/core/providers/sync_provider.dart](file://lib/core/providers/sync_provider.dart)
+- [lib/presentation/providers/sync_provider.dart](file://lib/presentation/providers/sync_provider.dart)
 - [lib/presentation/providers/playback_provider.dart](file://lib/presentation/providers/playback_provider.dart)
 - [lib/presentation/providers/download_provider.dart](file://lib/presentation/providers/download_provider.dart)
 - [lib/presentation/providers/queue_provider.dart](file://lib/presentation/providers/queue_provider.dart)

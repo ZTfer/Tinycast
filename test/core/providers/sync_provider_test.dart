@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tinycast/core/providers/auth_provider.dart';
-import 'package:tinycast/core/providers/sync_provider.dart';
+import 'package:tinycast/presentation/providers/sync_provider.dart';
 import 'package:tinycast/core/services/local_account_data_service.dart';
 import 'package:tinycast/core/services/sync_service.dart';
 import 'package:tinycast/data/database/isar_service.dart';
@@ -15,10 +15,15 @@ import '../../helpers/isar_test_env.dart';
 
 /// 手写 fake：只实现 SyncNotifier 依赖的成员，其余调用 fail fast。
 class _FakeSyncService implements SyncService {
-  _FakeSyncService({this.canSyncResult = false, this.lastSyncTimeResult});
+  _FakeSyncService({
+    this.canSyncResult = false,
+    this.lastSyncTimeResult,
+    this.syncResult,
+  });
 
   bool canSyncResult;
   DateTime? lastSyncTimeResult;
+  SyncResult? syncResult;
   int syncCallCount = 0;
   final Completer<void> syncGate = Completer<void>();
 
@@ -29,9 +34,11 @@ class _FakeSyncService implements SyncService {
   bool get canSync => canSyncResult;
 
   @override
-  Future<void> sync() {
+  Future<SyncResult> sync() async {
     syncCallCount++;
-    return syncGate.future;
+    await syncGate.future;
+    return syncResult ??
+        SyncResult.success(lastSyncTimeResult ?? DateTime(2025, 1, 15));
   }
 
   @override
@@ -304,6 +311,76 @@ void main() {
 
       expect(fake.syncCallCount, equals(1));
       expect(container.read(syncProvider).status, equals(SyncStatus.idle));
+    });
+
+    test('SP-009: partial 结果应显示失败步骤且不推进 lastSyncTime', () async {
+      final fake = _FakeSyncService(
+        canSyncResult: true,
+        lastSyncTimeResult: DateTime(2025, 1, 15),
+        syncResult: const SyncResult.partial(['push_episodes']),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final syncFuture = container.read(syncProvider.notifier).syncNow();
+      fake.syncGate.complete();
+      await syncFuture;
+
+      final state = container.read(syncProvider);
+      expect(state.status, equals(SyncStatus.error));
+      expect(state.errorMessage, contains('push_episodes'));
+      expect(state.lastSyncTime, isNull);
+    });
+
+    test('SP-010: failed 结果应暴露错误信息', () async {
+      final fake = _FakeSyncService(
+        canSyncResult: true,
+        syncResult: SyncResult.failed(StateError('network down')),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final syncFuture = container.read(syncProvider.notifier).syncNow();
+      fake.syncGate.complete();
+      await syncFuture;
+
+      final state = container.read(syncProvider);
+      expect(state.status, equals(SyncStatus.error));
+      expect(state.errorMessage, contains('network down'));
+    });
+
+    test('SP-011: skipped 结果应回到 idle 且不更新 lastSyncTime', () async {
+      final fake = _FakeSyncService(
+        canSyncResult: true,
+        lastSyncTimeResult: DateTime(2025, 1, 15),
+        syncResult: const SyncResult.skipped(),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          syncServiceProvider.overrideWithValue(fake),
+          authStateProvider.overrideWithValue(const AsyncData<User?>(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final syncFuture = container.read(syncProvider.notifier).syncNow();
+      fake.syncGate.complete();
+      await syncFuture;
+
+      final state = container.read(syncProvider);
+      expect(state.status, equals(SyncStatus.idle));
+      expect(state.lastSyncTime, isNull);
+      expect(state.errorMessage, isNull);
     });
 
     test('Auth 状态变化应该触发同步启停', () async {

@@ -2,147 +2,176 @@
 
 ## 概述
 
-本规则定义 TinyCast 播客应用中设置模块的存储策略、状态管理集成以及最佳实践。
+TinyCast 的设置分为三类：用户可调设置、同步簿记数据、敏感凭证。三者使用不同的
+存储介质，不能混用。
 
 ## 存储策略
 
-### 普通设置 - shared_preferences
+### 用户设置 —— Isar `AppSettingsModel`
 
-**适用范围**：
-- 主题设置（深色/浅色模式）
-- 播放设置（倍速、跳转时间、连续播放）
-- 下载设置（收藏时下载、播放完自动删除、自动下载策略）
-- 通用开关和枚举值
-- 复杂设置组（通过 JSON 序列化存储）
+**唯一主存储**：所有用户可调设置都保存在 Isar 的 `AppSettingsModel` 集合中，
+固定使用单例 `id = 0`，读写统一经过 `SettingsService`
+（`lib/data/services/settings_service.dart`）。
 
-**使用规范**：
+适用范围：
+
+- 播放设置：倍速、音量、快进 / 快退秒数、连续播放；
+- 下载设置：收藏时下载、播放完移除下载、自动下载策略；
+- Feed 刷新：刷新间隔、蜂窝网络刷新、新剧集通知、后台刷新；
+- 睡眠定时器及其结束时间。
+
+使用规范：
+
 ```dart
-// 1. 基础类型直接存储
-final prefs = await SharedPreferences.getInstance();
-await prefs.setBool('downloadOnFavorite', value);
-await prefs.setString('autoDownloadPolicy', policy.name);
+// 读：加载完整设置
+final settings = await SettingsService.instance.loadSettings();
 
-// 2. 复杂设置组转 JSON 存储
-final settings = DownloadSettings(...);
-await prefs.setString('downloadSettings', jsonEncode(settings.toJson()));
+// 读：监听变更（多窗口自动同步）
+final stream = SettingsService.instance.watchSettings();
+
+// 写：通过具名 setter，内部在 writeTxn 中更新 id=0 的记录
+await SettingsService.instance.setDownloadOnFavorite(true);
+await SettingsService.instance.setAutoDownloadPolicy(AutoDownloadPolicy.latest3);
 ```
 
-**禁止事项**：
-- 不要使用 shared_preferences 存储敏感信息（如用户密码、Auth Token）
+`AppSettingsModel` 中的枚举（`AutoDownloadPolicyEnum`、`FeedRefreshIntervalEnum`、
+`SleepTimerEnum`）与 Domain 层枚举通过 `name` 一一映射；新增枚举值时两边都要加，
+否则 `byName` 会抛错。
 
-### 敏感信息 - flutter_secure_storage
+### 同步簿记 —— shared_preferences
 
-**适用范围**：
-- Auth Token
-- 用户密码
-- API Keys
-- 其他敏感凭证
+`shared_preferences` **不再承载用户设置**，只用于两类数据：
 
-**使用规范**：
+1. **历史设置迁移**：`SettingsService.migrateFromSharedPreferences()` 在首次启动
+   （Isar 中没有设置记录时）读取旧键并写入 Isar，之后不再写回；
+2. **云同步簿记**：`last_sync_timestamp_<userId>`、墓碑
+   `sync_tombstone_*_<userId>`、`sync_pushed_subscription_ids_<userId>`，
+   由 `SyncService` / `SyncTombstoneStore` 维护。
+
+禁止事项：
+
+- 不要把新的用户设置写入 `shared_preferences`；
+- 不要把敏感信息（密码、Auth Token、API Key）写入 `shared_preferences`。
+
+主题是例外中的例外：它**不持久化**。应用跟随系统亮暗模式，没有“主题设置”项，
+也不要为它新增 `shared_preferences` 键或 Isar 字段。
+
+### 敏感凭证 —— flutter_secure_storage
+
+Supabase 会话（access token + refresh token）通过 `SecureLocalStorage`
+（`lib/core/services/secure_local_storage.dart`）写入系统安全存储：
+
 ```dart
-final secureStorage = FlutterSecureStorage();
-await secureStorage.write(key: 'auth_token', value: token);
-final token = await secureStorage.read(key: 'auth_token');
+final secureStorage = SecureLocalStorage(
+  persistSessionKey: 'supabase_session',
+);
+await secureStorage.initialize();
+await secureStorage.persistSession(sessionJson);
 ```
 
-**安全保证**：
-- iOS: 数据存储于 Keychain
-- Android: 数据存储于 Keystore
+安全保证：
 
-## 状态管理集成 (Riverpod)
+- iOS / macOS：Keychain；
+- Android：Keystore 支持的加密存储；
+- Linux：依赖系统 keyring，缺少 keyring 时降级为**仅内存**保存，用户重启后需要
+  重新登录。
 
-### 为什么需要状态管理
+`SecureLocalStorage` 还有两个必须保留的行为：
 
-为了让 UI 能够**实时响应**设置的变化（比如切换了深色模式，界面立马变黑），必须将设置项放入状态管理中。
+1. **旧数据迁移**：首次初始化时把旧版本写在 `shared_preferences` 中的会话迁移到
+   安全存储，并删除明文副本；
+2. **失败降级**：安全存储读写失败时记录 `Logger.error`，会话保留在内存中，
+   不把 token 回写到 `shared_preferences`。
 
-### 实现模式
+## 状态管理集成（Riverpod 3）
+
+设置通过 `AsyncNotifierProvider` 暴露，`SettingsNotifier.build()` 负责迁移旧数据、
+订阅 Isar 的 `watchSettings()` 流，并返回当前设置。Isar 写入后，
+`watchSettings()` 会自动推送新值，UI 不需要手动刷新。
 
 ```dart
-// 1. 定义 Notifier
-class SettingsNotifier extends Notifier<AppSettings> {
-  final SettingsService _service = SettingsService();
+// lib/presentation/providers/settings_provider.dart
+final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(
+  SettingsNotifier.new,
+);
+
+class SettingsNotifier extends AsyncNotifier<AppSettings> {
+  final SettingsService _service = SettingsService.instance;
 
   @override
-  AppSettings build() {
-    // 初始化时加载设置
+  Future<AppSettings> build() async {
+    await _service.migrateFromSharedPreferences();
+    // 订阅变更，写入 state
     return _service.loadSettings();
   }
 
-  // 2. 提供修改设置的方法
   Future<void> updateDownloadOnFavorite(bool value) async {
-    await _service.saveDownloadOnFavorite(value);
-    state = state.copyWith(downloadOnFavorite: value);
+    await _service.setDownloadOnFavorite(value);
   }
 }
+```
 
-// 3. 定义 Provider
-final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
-  SettingsNotifier.new,
+UI 中读取 `AsyncValue`：
+
+```dart
+final settingsAsync = ref.watch(settingsProvider);
+
+settingsAsync.when(
+  data: (settings) => Switch(
+    value: settings.downloadOnFavorite,
+    onChanged: (value) {
+      ref.read(settingsProvider.notifier).updateDownloadOnFavorite(value);
+    },
+  ),
+  loading: () => const SizedBox(),
+  error: (error, stackTrace) => const Text('设置加载失败'),
 );
 ```
 
-### UI 中使用
+注意：
 
-```dart
-// 监听设置变化，UI 自动更新
-Consumer(
-  builder: (context, ref, child) {
-    final settings = ref.watch(settingsProvider);
-    return Switch(
-      value: settings.downloadOnFavorite,
-      onChanged: (value) {
-        ref.read(settingsProvider.notifier).updateDownloadOnFavorite(value);
-      },
-    );
-  },
-)
-```
+- 不要在 Widget 中直接 `await SettingsService.loadSettings()`；这会绕开 Provider
+  的缓存和跨窗口同步；
+- `updateFeedRefreshInterval` / `updateBackgroundRefreshEnabled` 会重启
+  `FeedRefreshScheduler`，且只在主窗口生效（`AppWindowContext.isMainWindow`）。
 
 ## 自动下载策略
 
-### AutoDownloadPolicy 枚举
+Domain 枚举 `AutoDownloadPolicy` 定义在 `lib/domain/entities/app_settings.dart`，
+持久化时映射为 Isar 的 `AutoDownloadPolicyEnum`（同名字符串）。
 
 | 枚举值 | 说明 |
 |--------|------|
-| `off` | 关闭：订阅新播客时，不自动下载音频文件 |
-| `latest1` | 最新 1 集：自动下载最新1集 |
-| `latest2` | 最新 2 集：自动下载最新2集 |
-| `latest3` | 最新 3 集（默认）：自动下载最新3集 |
-| `latest5` | 最新 5 集：自动下载最新5集 |
-| `latest10` | 最新 10 集：自动下载最新10集 |
-| `past24h` | 过去 24 小时：下载过去24小时内的所有episode |
-| `past7d` | 过去 7 天：下载过去7天内的所有episode |
-| `past14d` | 过去 14 天：下载过去14天内的所有episode |
-| `past30d` | 过去 30 天：下载过去30天内的所有episode |
-| `all` | 所有单集：下载所有episode |
+| `off` | 关闭：订阅新播客时不自动下载 |
+| `latest1` | 最新 1 集 |
+| `latest2` | 最新 2 集 |
+| `latest3` | 最新 3 集（默认） |
+| `latest5` | 最新 5 集 |
+| `latest10` | 最新 10 集 |
+| `past24h` | 过去 24 小时内发布的剧集 |
+| `past7d` | 过去 7 天内发布的剧集 |
+| `past14d` | 过去 14 天内发布的剧集 |
+| `past30d` | 过去 30 天内发布的剧集 |
+| `all` | 全部剧集 |
 
-### 订阅时执行逻辑
+执行时机（`lib/presentation/features/search/podcast_search_provider.dart`）：
 
-```dart
-Future<void> onSubscribe(Podcast podcast, AutoDownloadPolicy policy) async {
-  if (policy == AutoDownloadPolicy.off) return;
-  
-  final episodes = await fetchEpisodes(podcast);
-  final toDownload = switch (policy) {
-    AutoDownloadPolicy.latest1 => episodes.take(1),
-    AutoDownloadPolicy.latest3 => episodes.take(3),
-    AutoDownloadPolicy.past7d => episodes.where((e) => e.pubDate.isAfter(DateTime.now().subtract(Duration(days: 7)))),
-    AutoDownloadPolicy.all => episodes,
-    // ... 其他策略
-  };
-  
-  for (final episode in toDownload) {
-    await downloadService.download(episode);
-  }
-}
-```
+- 仅在**新订阅**时触发，已订阅播客不会重复执行；
+- `off` 直接跳过；
+- `latest*` 策略调用 `downloadPodcastEpisodes`；
+- 时间范围策略按剧集并发调用 `downloadEpisodeById`；
+- 收藏触发下载由 `downloadOnFavorite` 单独控制，与 `AutoDownloadPolicy` 无关。
+
+自动下载只是把任务放入下载队列（最大并发 3），不会等待全部完成。
 
 ## 项目依赖
 
 ```yaml
 dependencies:
-  shared_preferences: ^2.5.5
-  flutter_secure_storage: ^9.2.2
-  flutter_riverpod: ^3.3.1
-  riverpod: ^3.2.1
+  shared_preferences: ^2.5.5        # 仅旧设置迁移 + 同步簿记
+  flutter_secure_storage: ^10.0.0   # Supabase 会话
+  flutter_riverpod: ^3.3.1          # 状态管理
 ```
+
+Isar 使用 `isar_community: ^3.3.2`，设置模型位于
+`lib/data/models/app_settings_model.dart`。

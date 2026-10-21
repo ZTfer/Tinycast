@@ -97,7 +97,7 @@ M --> J
 - [macos/Runner/Configs/AppInfo.xcconfig:1-15](file://macos/Runner/Configs/AppInfo.xcconfig#L1-L15)
 - [macos/Runner/DebugProfile.entitlements:1-15](file://macos/Runner/DebugProfile.entitlements#L1-L15)
 - [macos/Runner/Release.entitlements:1-11](file://macos/Runner/Release.entitlements#L1-L11)
-- [macos/Flutter/GeneratedPluginRegistrant.swift:1-49](file://macos/Flutter/Flutter/GeneratedPluginRegistrant.swift#L1-L49)
+- [macos/Flutter/GeneratedPluginRegistrant.swift:1-49](file://macos/Flutter/GeneratedPluginRegistrant.swift#L1-L49)
 - [macos/Podfile:1-43](file://macos/Podfile#L1-L43)
 
 ## 架构总览

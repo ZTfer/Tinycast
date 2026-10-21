@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tinycast/core/theme/app_colors.dart';
 import 'package:tinycast/core/theme/app_text_styles.dart';
@@ -60,7 +61,27 @@ class AppThemeData {
 
   bool get _isHocon => !_useHardcoded;
 
+  bool get _isDark => mode == AppThemeMode.dark;
+
   AppThemeConfig get _config => ThemeLoader.cachedThemeConfigs[_brightnessKey]!;
+
+  String get _textVariant {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+        return 'desktop';
+      default:
+        break;
+    }
+    final views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isNotEmpty) {
+      final view = views.first;
+      final shortestSide = view.physicalSize.shortestSide / view.devicePixelRatio;
+      if (shortestSide >= 600) return 'tablet';
+    }
+    return 'mobile';
+  }
 
   TextStyle? _parseTextStyle(String path) {
     if (!_isHocon) return null;
@@ -95,15 +116,23 @@ class AppThemeData {
     if (!_isHocon) return null;
     final styles = ThemeLoader.cachedWidgetStyles['textStyles'];
     if (styles == null) return null;
-    final suffix = mode == AppThemeMode.light ? 'light' : 'dark';
-    return styles['${key}_$suffix'] as TextStyle?;
+    final suffix = _isDark ? 'dark' : 'light';
+    for (final styleKey in [
+      '${key}_${_textVariant}_$suffix',
+      '${key}_desktop_$suffix',
+      '${key}_$suffix',
+    ]) {
+      final style = styles[styleKey];
+      if (style is TextStyle) return style;
+    }
+    return null;
   }
 
   TextStyle? _widgetStyle(String key) {
     if (!_isHocon) return null;
     final styles = ThemeLoader.cachedWidgetStyles['widgetTextStyles'];
     if (styles == null) return null;
-    final suffix = mode == AppThemeMode.light ? 'light' : 'dark';
+    final suffix = _isDark ? 'dark' : 'light';
     return styles['${key}_$suffix'] as TextStyle?;
   }
 
@@ -231,7 +260,7 @@ class AppThemeData {
             : AppTextStyles.bodySmallDark);
 
   TextStyle get caption => _isHocon
-      ? (_widgetTextStyle('caption') ??
+      ? (_widgetTextStyle('caption1') ??
             _hardcodedTextStyle(
               AppTextStyles.captionLight,
               AppTextStyles.captionDark,
@@ -324,7 +353,8 @@ class AppThemeData {
 
   Map<String, dynamic>? _layoutStyle(String path) {
     if (!_isHocon) return null;
-    final stylesJson = ThemeLoader.cachedWidgetStyles['styles'];
+    final stylesJson =
+        ThemeLoader.cachedWidgetStyles[_isDark ? 'stylesDark' : 'styles'];
     if (stylesJson == null) return null;
 
     final parts = path.split('.');
@@ -781,20 +811,32 @@ class AppThemeData {
   // ===== Multi Window =====
 
   Size get mainWindowSize {
-    if (!_isHocon) return const Size(400, 750);
-    final style = _layoutStyle('multi_window.main_window');
-    if (style == null) return const Size(400, 750);
-    final width = double.tryParse(style['width']?.toString() ?? '400') ?? 400;
-    final height = double.tryParse(style['height']?.toString() ?? '750') ?? 750;
-    return Size(width, height);
+    return _windowSize('multi_window.main_window', const Size(400, 750));
   }
 
   Size get settingsWindowSize {
-    if (!_isHocon) return const Size(600, 380);
-    final style = _layoutStyle('multi_window.settings_window');
-    if (style == null) return const Size(600, 380);
-    final width = double.tryParse(style['width']?.toString() ?? '600') ?? 600;
-    final height = double.tryParse(style['height']?.toString() ?? '380') ?? 380;
+    return _windowSize('multi_window.settings_window', const Size(600, 380));
+  }
+
+  Size get subscribeWindowSize {
+    return _windowSize('multi_window.subscribe_window', const Size(500, 600));
+  }
+
+  Size get episodeDetailWindowSize {
+    return _windowSize(
+      'multi_window.episode_detail_window',
+      const Size(600, 700),
+    );
+  }
+
+  Size _windowSize(String path, Size fallback) {
+    if (!_isHocon) return fallback;
+    final style = _layoutStyle(path);
+    if (style == null) return fallback;
+    final width =
+        double.tryParse(style['width']?.toString() ?? '') ?? fallback.width;
+    final height =
+        double.tryParse(style['height']?.toString() ?? '') ?? fallback.height;
     return Size(width, height);
   }
 }

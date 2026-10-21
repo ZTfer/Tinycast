@@ -6,6 +6,7 @@ part 'podcast_model.g.dart';
 class Podcast {
   Id id = Isar.autoIncrement;
 
+  @Index()
   String? supabaseId;
 
   @Index()
@@ -55,6 +56,7 @@ class Podcast {
 
   final DateTime createdAt = DateTime.now();
 
+  @Index()
   String? itunesId;
 
   String? itunesArtworkUrl;

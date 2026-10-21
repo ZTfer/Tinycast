@@ -172,6 +172,49 @@ void main() {
     });
   });
 
+  group('并发控制', () {
+    test('直接下载走队列，并发数不超过上限', () async {
+      final episodes = <Episode>[];
+      for (var i = 0; i < 4; i++) {
+        episodes.add(await seedEpisode());
+      }
+      final controllers = <StreamController<Uint8List>>[];
+      final adapter = _FakeHttpClientAdapter((options, cancelFuture) async {
+        final controller = StreamController<Uint8List>();
+        controllers.add(controller);
+        return ResponseBody(
+          controller.stream,
+          200,
+          headers: {
+            'content-length': ['1'],
+          },
+        );
+      });
+      final service = buildService(adapter);
+
+      final downloads = [
+        for (final episode in episodes) service.downloadEpisode(episode),
+      ];
+
+      await _waitFor(() => controllers.length == 3);
+      expect(adapter.callCount, equals(3));
+
+      controllers[0].add(Uint8List.fromList([1]));
+      await controllers[0].close();
+      await _waitFor(() => controllers.length == 4);
+      expect(adapter.callCount, equals(4));
+
+      for (var i = 1; i < controllers.length; i++) {
+        controllers[i].add(Uint8List.fromList([1]));
+        await controllers[i].close();
+      }
+      await Future.wait(downloads);
+
+      expect(service.getActiveDownloadsCount(), equals(0));
+      expect(service.getQueueLength(), equals(0));
+    });
+  });
+
   group('暂停、恢复与取消', () {
     test('暂停后状态保持 paused，恢复时用 Range 续传同一临时文件', () async {
       final episode = await seedEpisode();

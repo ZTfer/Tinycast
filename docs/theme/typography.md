@@ -1,49 +1,52 @@
 # 字体排版使用指南
 
-本文档详细介绍 TinyCast 字体排版系统的配置和使用方法。
+TinyCast 的文字样式定义在 `assets/themes/typography.conf`，由 `ThemeLoader`
+在启动时展平为 `TextStyle` 并缓存，UI 通过 `AppThemeData` 读取。
+`lib/core/theme/app_text_styles.dart` 中的 `AppTextStyles` 是硬编码兜底，
+同时提供全局字体 fallback 列表。
 
 ---
 
 ## 1. 排版配置
 
-### 1.1 HOCON 配置文件
+### 1.1 基本结构
 
-字体排版定义位于 `assets/themes/typography.conf`：
+文字样式统一放在 `textstyles` 节点下：
 
 ```hocon
-heading {
-  # largetitle: 页面主标题
-  largetitle {
-    desktop {
-      fontsize = "12"
-      fontweight = "bold"
-      lineheight = "16/12"
-    }
-    tablet {
-      fontsize = "16"
-      fontweight = "bold"
-      lineheight = "16/12"
-    }
-    mobile {
-      fontsize = "14"
-      fontweight = "bold"
-      lineheight = "14/12"
+{
+  version = 0.1
+  name = "Typography"
+
+  textstyles {
+    h1 {
+      fontsize = "34"
+      fontweight = "700"
+      lineheight = "1.2"
+      letterspacing = "0.37"
+      color = "labelPrimary"
     }
   }
 }
 ```
 
-### 1.2 配置项说明
+### 1.2 配置项
 
-| 配置项 | 说明 | 示例值 |
-|---|---|---|
-| `fontsize` | 字号（pt） | `"16"` |
-| `fontweight` | 字重 | `"bold"`, `"regular"`, `"semibold"` |
-| `lineheight` | 行高（格式：`行高/字号`） | `"16/12"` |
+- `fontsize`：字号，单位 pt；
+- `fontweight`：**数值**，对应 `FontWeight.w100` 到 `w900`，例如 `"400"`、`"600"`、
+  `"700"`。写成 `"bold"` / `"semibold"` 无法解析，会回退到 `w400`；
+- `lineheight`：行高**倍数**，例如 `"1.2"`、`"1.4"`，直接传给 `TextStyle.height`。
+  不要写成 `"16/12"` 这类“行高/字号”格式，解析失败会使用默认值 `1.4`；
+- `letterspacing`：字间距，单位逻辑像素（pt），可为负值；
+- `color`：颜色 key，只能是固定集合中的名字：
+  `labelPrimary`、`labelSecondary`、`labelTertiary`、`labelQuaternary`、
+  `brandPrimary`、`brandSecondary`、`backgroundPrimary`、`backgroundSecondary`。
+  写成未知 key 会静默回退到 `labelPrimary`，不会报错。
 
-### 1.3 响应式变体（desktop / tablet / mobile）
+### 1.3 响应式变体
 
-部分文字样式（如 `h3`、`caption`）支持按设备类型定义不同的排版参数。在 HOCON 中使用嵌套对象表达：
+带 `desktop` / `tablet` / `mobile` 子节点的样式会按设备类型选择字号等参数；
+`color` 写在顶层，三个变体共用：
 
 ```hocon
 h3 {
@@ -69,80 +72,89 @@ h3 {
 }
 ```
 
-每个设备变体包含独立的 `fontsize`、`fontweight`、`lineheight`、`letterspacing` 配置，`color` 在顶层统一指定，引用 `colors.conf` 中的颜色 key。
+变体选择规则（`AppThemeData._textVariant`）：
 
-目前支持响应式变体的样式：
+1. `macOS` / `Windows` / `Linux` 一律使用 `desktop`；
+2. 其余平台取第一个窗口的短边逻辑像素，`>= 600` 使用 `tablet`；
+3. 否则使用 `mobile`。
 
-| 样式名 | desktop | tablet | mobile |
-|---|---|---|---|
-| `h3` | 14pt / w500 | 22pt / w600 | 22pt / w600 |
-| `caption` | 12pt / w400 | 12pt / w400 | 12pt / w400 |
+也就是说，iPad 或横屏大屏手机按短边判断，不按当前窗口宽度判断。
+若只定义了 `desktop`，其他平台会回退到 `desktop` 值。
+
+### 1.4 当前样式速查
+
+| HOCON key | 变体 | 字号 | 字重 | 行高 | 字间距 | 颜色 key | 用途 |
+|---|---|---|---|---|---|---|---|
+| `h1` | 无 | 34 | w700 | 1.2 | 0.37 | `labelPrimary` | 大标题 |
+| `h2` | 无 | 28 | w700 | 1.2 | 0.35 | `labelPrimary` | 中标题 |
+| `h3` | desktop | 14 | w500 | 1.3 | 0.35 | `labelPrimary` | 小标题 / Episode 标题 |
+| | tablet / mobile | 22 | w600 | 1.3 | 0.35 | | |
+| `bodylarge` | 无 | 17 | w400 | 1.5 | -0.41 | `labelPrimary` | 大正文 |
+| `bodymedium` | 无 | 15 | w400 | 1.4 | -0.24 | `labelPrimary` | 标准正文 |
+| `bodysmall` | 无 | 13 | w400 | 1.4 | -0.08 | `labelSecondary` | 小正文 |
+| `caption1` | desktop / tablet / mobile | 12 | w400 | 1.3 | 0 | `labelTertiary` | 注释、说明 |
+| `caption2` | desktop | 10 | w400 | 1.3 | 0 | `labelTertiary` | 更小的辅助文字 |
+| | tablet / mobile | 12 | w400 | 1.3 | 0 | | |
+| `button` | 无 | 17 | w600 | 1.3 | -0.41 | `labelPrimary` | 按钮文字 |
+
+HOCON key 使用小写（`bodylarge` / `bodymedium` / `bodysmall`），
+`AppThemeData` 的 getter 使用驼峰（`bodyLarge` / `bodyMedium` / `bodySmall`），
+两者通过固定 key 对应，改名时需要同步修改 `theme_data.dart`。
+
+注意：
+
+- `AppThemeData.caption` 实际读取的是 `caption1`；
+- `caption2` 没有对应的 `AppThemeData` getter，目前只在 `styles.conf` 中使用
+  （Episode 发布时间、进度条时间标签）；
+- `h3` 在桌面端是 14pt / w500，在移动端和平板是 22pt / w600，跨平台视觉差异
+  是当前配置的预期行为。
 
 ---
 
-## 2. Dart 文字样式
+## 2. Dart 侧的文字入口
 
-### 2.1 AppTextStyles 类
+### 2.1 全局字体 fallback
 
-文字样式在 `lib/core/theme/app_text_styles.dart` 中定义：
+项目**没有**统一的主 `fontFamily`。`main.dart` 在 `WidgetsApp.textStyle` 中注入
+字体 fallback 列表：
 
 ```dart
-class AppTextStyles {
-  static const String _fontFamily = '.SF Pro Text';
-
-  // H1 - 大标题
-  static const TextStyle h1Light = TextStyle(
-    fontFamily: _fontFamily,
-    fontSize: 34,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 0.37,
-    height: 1.2,
-    color: AppColors.labelPrimaryLight,
-  );
-
-  static const TextStyle h1Dark = TextStyle(
-    fontFamily: _fontFamily,
-    fontSize: 34,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 0.37,
-    height: 1.2,
-    color: AppColors.labelPrimaryDark,
-  );
-
-  // 更多样式...
-}
+textStyle: TextStyle(
+  fontFamilyFallback: AppTextStyles.fontFamilyFallback,
+  color: _platformBrightness == Brightness.dark
+      ? const Color(0xFFFFFFFF)
+      : const Color(0xFF000000),
+  fontSize: 14,
+  fontWeight: FontWeight.normal,
+),
 ```
 
-### 2.2 文字样式速查
+`AppTextStyles.fontFamilyFallback` 覆盖 macOS / Windows / Linux / Android / iOS
+的中、繁、日、韩文字体，以及泰语、阿拉伯语、印地语等，最后以 `sans-serif`
+收尾。`TextStyle` 默认 `inherit: true`，未显式指定 `fontFamily` 的文字样式会
+继承这份 fallback；HOCON 目前也不支持配置字体家族。
 
-| 样式名 | 字号 | 字重 | 行高 | 字间距 | 用途 |
-|---|---|---|---|---|---|
-| `h1` | 34 | w700 (Bold) | 1.2 | 0.37 | 大标题 |
-| `h2` | 28 | w700 (Bold) | 1.2 | 0.35 | 中标题 |
-| `h3` | 22 | w600 (SemiBold) | 1.3 | 0.35 | 小标题 |
-| `bodyLarge` | 17 | w400 (Regular) | 1.5 | -0.41 | 大正文 |
-| `bodyMedium` | 15 | w400 (Regular) | 1.4 | -0.24 | 标准正文 |
-| `bodySmall` | 13 | w400 (Regular) | 1.4 | -0.08 | 小正文 |
-| `caption` | 12 | w400 (Regular) | 1.3 | 0 | 注释、说明文字 |
-| `button` | 17 | w600 (SemiBold) | 1.3 | -0.41 | 按钮文字 |
+### 2.2 AppTextStyles（兜底常量）
 
-每个样式都有 `Light` 和 `Dark` 两个变体，自动使用对应主题的文字颜色。
+`AppTextStyles` 提供与 HOCON 对应的 `const` 常量：
+
+- `h1Light` / `h1Dark`、`h2Light` / `h2Dark`、`h3Light` / `h3Dark`；
+- `h3DesktopLight` / `h3DesktopDark`；
+- `bodyLargeLight` / `bodyLargeDark`、`bodyMediumLight` / `bodyMediumDark`、
+  `bodySmallLight` / `bodySmallDark`；
+- `captionLight` / `captionDark`、`buttonLight` / `buttonDark`。
+
+这些常量不含 `fontFamily`，依赖上文的全局 fallback。它们只在
+`ThemeSource.useHardcoded == true` 或 HOCON 加载失败时生效。
+
+`caption2` 没有对应的 `AppTextStyles` 常量，硬编码模式下使用 `captionLight` /
+`captionDark` 作为替代。
 
 ---
 
 ## 3. 使用方式
 
-### 3.1 直接使用 AppTextStyles
-
-```dart
-Text('大标题', style: AppTextStyles.h1Light)
-Text('正文', style: AppTextStyles.bodyMediumDark)
-Text('注释', style: AppTextStyles.captionLight)
-```
-
-### 3.2 通过 AppThemeData（推荐）
-
-自动跟随亮色/暗色切换：
+### 3.1 通过 AppThemeData（推荐）
 
 ```dart
 final theme = AppTheme.fromBrightness(
@@ -156,19 +168,34 @@ Column(
     SizedBox(height: theme.spacingXs),
     Text('副标题', style: theme.h2),
     SizedBox(height: theme.spacingSm),
-    Text('正文内容很长...', style: theme.bodyLarge),
+    Text('正文内容', style: theme.bodyLarge),
     SizedBox(height: theme.spacingXs),
     Text('注：这是补充说明', style: theme.caption),
   ],
-)
+);
 ```
 
-### 3.3 自定义文字样式
+`AppThemeData` 还提供 Widget 专用样式：`episodeItemTitle`、
+`episodeItemDescription`、`episodeItemPubDate`、`libraryShowTitle`、
+`episodeInfoEpisodeTitle`、`episodeInfoPodcastTitle`、
+`episodeProgressTimeLabelStyle`。这些样式由 `styles.conf` 与
+`typography.conf` 组合而来，优先使用它们而不是在页面里重新拼样式。
 
-基于已有样式进行微调：
+### 3.2 直接使用 AppTextStyles
+
+仅用于不跟随主题或兜底场景：
 
 ```dart
-final theme = AppTheme.light;
+Text('大标题', style: AppTextStyles.h1Light);
+Text('正文', style: AppTextStyles.bodyMediumDark);
+```
+
+### 3.3 基于现有样式微调
+
+```dart
+final theme = AppTheme.fromBrightness(
+  MediaQuery.platformBrightnessOf(context),
+);
 
 Text(
   '自定义样式',
@@ -176,193 +203,76 @@ Text(
     color: theme.brandPrimary,
     fontWeight: FontWeight.w600,
   ),
-)
+);
 ```
 
 ---
 
-## 4. 在 Widget 中组合使用
+## 4. 添加新文字样式
 
-### 4.1 卡片示例
+1. 在 `typography.conf` 的 `textstyles` 下添加新 key。普通样式直接写
+   `fontsize` / `fontweight` / `lineheight` / `letterspacing` / `color`；
+   需要响应式时添加 `desktop` / `tablet` / `mobile` 子节点。
+2. 如需在硬编码模式和加载失败时可用，在 `AppTextStyles` 中添加对应的
+   `Light` / `Dark` 常量。
+3. 在 `AppThemeData` 中添加 getter：
 
-```dart
-class ArticleCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String content;
+   ```dart
+   TextStyle get caption2 => _isHocon
+       ? (_widgetTextStyle('caption2') ??
+             _hardcodedTextStyle(
+               AppTextStyles.captionLight,
+               AppTextStyles.captionDark,
+             ))
+       : (mode == AppThemeMode.light
+             ? AppTextStyles.captionLight
+             : AppTextStyles.captionDark);
+   ```
 
-  const ArticleCard({
-    required this.title,
-    required this.subtitle,
-    required this.content,
-  });
+4. 运行 `flutter test test/core/theme/`，并在亮 / 暗模式和不同平台变体下检查效果。
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.fromBrightness(
-      MediaQuery.platformBrightnessOf(context),
-    );
-
-    return Container(
-      padding: EdgeInsets.all(theme.spacingMd),
-      decoration: BoxDecoration(
-        color: theme.backgroundSecondary,
-        borderRadius: BorderRadius.circular(theme.borderRadiusMd),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.h3),
-          SizedBox(height: theme.spacingXs),
-          Text(subtitle, style: theme.bodyMedium),
-          SizedBox(height: theme.spacingSm),
-          Text(content, style: theme.bodySmall),
-        ],
-      ),
-    );
-  }
-}
-```
-
-### 4.2 列表项示例
-
-```dart
-class ListItem extends StatelessWidget {
-  final String title;
-  final String description;
-
-  const ListItem({required this.title, required this.description});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.fromBrightness(
-      MediaQuery.platformBrightnessOf(context),
-    );
-
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: theme.spacingMd,
-        vertical: theme.spacingSm,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.bodyLarge),
-          SizedBox(height: theme.spacingXxs),
-          Text(description, style: theme.bodySmall),
-        ],
-      ),
-    );
-  }
-}
-```
+key 命名约定：HOCON key 全小写，`AppThemeData` getter 使用驼峰；
+如果新 key 带响应式变体，`_widgetTextStyle` 会依次尝试
+`{key}_{variant}_{light|dark}`、`{key}_desktop_{light|dark}`、
+`{key}_{light|dark}`。
 
 ---
 
-## 5. 添加新文字样式
+## 5. 最佳实践
 
-### 步骤 1：在 typography.conf 中添加配置
-
-```hocon
-heading {
-  title4 {
-    desktop {
-      fontsize = "14"
-      fontweight = "regular"
-      lineheight = "14/12"
-    }
-  }
-}
-```
-
-### 步骤 2：在 app_text_styles.dart 中添加样式
+### 5.1 优先使用 AppThemeData
 
 ```dart
-class AppTextStyles {
-  static const String _fontFamily = '.SF Pro Text';
-
-  // ... 现有样式
-
-  // H4 - 四级标题
-  static const TextStyle h4Light = TextStyle(
-    fontFamily: _fontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-    height: 1.2,
-    color: AppColors.labelPrimaryLight,
-  );
-
-  static const TextStyle h4Dark = TextStyle(
-    fontFamily: _fontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-    height: 1.2,
-    color: AppColors.labelPrimaryDark,
-  );
-}
+Text('标题', style: theme.h1);
+Text('正文', style: theme.bodyLarge);
 ```
 
-### 步骤 3：在 AppThemeData 中添加 getter
+不要在页面里手写 `TextStyle(fontSize: 34, fontWeight: FontWeight.w700)`，
+否则会绕过 HOCON、响应式变体和全局字体 fallback。
+
+### 5.2 不要手动指定 fontFamily
+
+项目通过 `fontFamilyFallback` 处理跨平台字体。除非有明确的品牌字体需求，
+不要在 Widget 里写 `fontFamily: '.SF Pro Text'` 之类的值，否则会破坏
+中文 / 日文 / 韩文的 fallback 链。
+
+### 5.3 用 copyWith 做局部调整
 
 ```dart
-// 在 lib/core/theme/theme_data.dart 的 AppThemeData 类中添加
-TextStyle get h4 =>
-    mode == AppThemeMode.light
-        ? AppTextStyles.h4Light
-        : AppTextStyles.h4Dark;
+Text('强调正文', style: theme.bodyLarge.copyWith(color: theme.brandPrimary));
 ```
 
-### 步骤 4：使用新样式
+`copyWith` 会保留字号、行高和 fallback 继承关系，比从头构造 `TextStyle` 更安全。
 
-```dart
-final theme = AppTheme.light;
-Text('四级标题', style: theme.h4)
-```
+### 5.4 颜色只写 key
+
+`typography.conf` 的 `color` 必须是 `labelPrimary` 等已知 key。
+需要十六进制色值时，放到 `colors.conf` 中定义，再通过 key 或
+`styles.conf` 的 `${palettes...}` 引用。
 
 ---
 
-## 6. 最佳实践
+## 6. 相关文档
 
-### 6.1 统一使用 AppTextStyles 或 AppThemeData
-
-**推荐**：
-```dart
-Text('标题', style: AppTheme.light.h1)
-Text('正文', style: AppTextStyles.bodyLargeLight)
-```
-
-**不推荐**：
-```dart
-// 不要手动定义 TextStyle
-Text('标题', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700))
-```
-
-### 6.2 优先使用 AppThemeData
-
-当需要跟随主题切换时：
-
-```dart
-// 推荐：自动跟随
-final theme = AppTheme.fromBrightness(brightness);
-Text('标题', style: theme.h1)
-
-// 不推荐：手动判断
-Text(
-  '标题',
-  style: brightness == Brightness.light
-      ? AppTextStyles.h1Light
-      : AppTextStyles.h1Dark,
-)
-```
-
-### 6.3 使用 copyWith 进行微调
-
-```dart
-// 推荐：基于已有样式修改
-Text('红色正文', style: theme.bodyLarge.copyWith(color: theme.brandPrimary))
-
-// 不推荐：从头定义
-Text('红色正文', style: TextStyle(fontSize: 17, color: Color(0xFF6200EE)))
-```
+- [主题系统概述](./overview.md)
+- [颜色系统使用指南](./colors.md)

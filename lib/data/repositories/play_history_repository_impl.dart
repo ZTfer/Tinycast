@@ -110,19 +110,30 @@ class PlayHistoryRepositoryImpl implements PlayHistoryRepository {
   }
 
   /// 更新播放进度（同时更新 lastPlayedPositionMs 和 playProgress）
-  /// PlayHistory 是播放状态的唯一数据源，Episode 中的对应字段为缓存
+  /// PlayHistory 是播放状态的唯一数据源，Episode 中的对应字段为缓存。
+  /// 两者在同一事务内写入，避免历史与缓存进度不一致。
   @override
   Future<void> updatePlayProgress(int episodeId, int positionMs, double progressRatio, {String? episodeGuid, String? episodeITunesId}) async {
     final isar = _isarService.isar;
-    final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
-    if (history != null) {
-      history.lastPlayedPositionMs = positionMs;
-      history.playProgress = progressRatio;
-      history.lastUpdateTime = DateTime.now();
-      await isar.writeTxn(() async {
+    final now = DateTime.now();
+
+    await isar.writeTxn(() async {
+      final history = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+      if (history != null) {
+        history.lastPlayedPositionMs = positionMs;
+        history.playProgress = progressRatio;
+        history.lastUpdateTime = now;
         await isar.playHistorys.put(history);
-      });
-    }
+      }
+
+      final episode = _findEpisodeByFallback(isar, episodeId, episodeGuid, episodeITunesId);
+      if (episode != null) {
+        episode.playProgress = progressRatio;
+        episode.lastPlayedAt = now;
+        episode.updatedAt = now;
+        await isar.episodes.put(episode);
+      }
+    });
   }
 
   /// 获取 episode 的播放进度（playProgress）
@@ -142,7 +153,7 @@ class PlayHistoryRepositoryImpl implements PlayHistoryRepository {
   }
 
   /// 标记 episode 为已播放并设置 playProgress
-  /// PlayHistory 是唯一数据源，调用方应同时更新 Episode 缓存字段
+  /// PlayHistory 是唯一数据源，Episode 缓存字段在同一事务内同步更新
   @override
   Future<void> markAsPlayedWithProgress(int episodeId, double progressRatio, {String? episodeGuid, String? episodeITunesId, String? podcastGuid, String? podcastITunesId}) async {
     await _updateOrCreateCompletedHistory(
@@ -166,49 +177,89 @@ class PlayHistoryRepositoryImpl implements PlayHistoryRepository {
     double? progressRatio,
   }) async {
     final isar = _isarService.isar;
-    final existing = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
-
-    if (existing != null) {
-      existing.isPlayed = true;
-      existing.status = PlayHistoryStatus.completed;
-      if (progressRatio != null) {
-        existing.playProgress = progressRatio;
-      }
-      existing.lastUpdateTime = DateTime.now();
-      await isar.writeTxn(() async {
-        await isar.playHistorys.put(existing);
-      });
-      Logger.info('[HISTORY] episodeId=$episodeId 已更新为 completed，playProgress=${existing.playProgress}');
-      return;
-    }
-
-    final episode = _findEpisodeByFallback(isar, episodeId, episodeGuid, episodeITunesId);
-    if (episode == null) {
-      Logger.warning('[HISTORY] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
-      return;
-    }
-
-    final newHistory = PlayHistory()
-      ..episodeId = episodeId
-      ..episodeGuid = episodeGuid
-      ..episodeITunesId = episodeITunesId
-      ..podcastId = episode.podcastId
-      ..podcastGuid = podcastGuid
-      ..podcastITunesId = podcastITunesId
-      ..title = episode.title
-      ..description = episode.description
-      ..artworkUrl = episode.artworkUrl
-      ..isPlayed = true
-      ..playProgress = progressRatio ?? 0.0
-      ..status = PlayHistoryStatus.completed
-      ..playedDuration = 0
-      ..lastUpdateTime = DateTime.now()
-      ..isDeleted = false;
 
     await isar.writeTxn(() async {
+      final now = DateTime.now();
+      final existing = _findHistoryByEpisode(isar, episodeId, episodeGuid, episodeITunesId);
+
+      if (existing != null) {
+        existing.isPlayed = true;
+        existing.status = PlayHistoryStatus.completed;
+        if (progressRatio != null) {
+          existing.playProgress = progressRatio;
+        }
+        existing.lastUpdateTime = now;
+        await isar.playHistorys.put(existing);
+
+        await _syncEpisodePlayedCache(
+          isar,
+          episodeId,
+          episodeGuid,
+          episodeITunesId,
+          progressRatio ?? existing.playProgress,
+          now,
+        );
+
+        Logger.info('[HISTORY] episodeId=$episodeId 已更新为 completed，playProgress=${existing.playProgress}');
+        return;
+      }
+
+      final episode = _findEpisodeByFallback(isar, episodeId, episodeGuid, episodeITunesId);
+      if (episode == null) {
+        Logger.warning('[HISTORY] 未找到 episode: $episodeId，无法创建 PlayHistory 记录');
+        return;
+      }
+
+      final newHistory = PlayHistory()
+        ..episodeId = episodeId
+        ..episodeGuid = episodeGuid
+        ..episodeITunesId = episodeITunesId
+        ..podcastId = episode.podcastId
+        ..podcastGuid = podcastGuid
+        ..podcastITunesId = podcastITunesId
+        ..title = episode.title
+        ..description = episode.description
+        ..artworkUrl = episode.artworkUrl
+        ..isPlayed = true
+        ..playProgress = progressRatio ?? 0.0
+        ..status = PlayHistoryStatus.completed
+        ..playedDuration = 0
+        ..lastUpdateTime = now
+        ..isDeleted = false;
+
       await isar.playHistorys.put(newHistory);
+
+      episode.isPlayed = true;
+      if (progressRatio != null) {
+        episode.playProgress = progressRatio;
+      }
+      episode.updatedAt = now;
+      await isar.episodes.put(episode);
+
+      Logger.info('[HISTORY] 已创建新的 completed 记录 episodeId=$episodeId');
     });
-    Logger.info('[HISTORY] 已创建新的 completed 记录 episodeId=$episodeId');
+  }
+
+  Future<void> _syncEpisodePlayedCache(
+    Isar isar,
+    int episodeId,
+    String? episodeGuid,
+    String? episodeITunesId,
+    double progressRatio,
+    DateTime now,
+  ) async {
+    final episode = _findEpisodeByFallback(
+      isar,
+      episodeId,
+      episodeGuid,
+      episodeITunesId,
+    );
+    if (episode == null) return;
+    episode
+      ..isPlayed = true
+      ..playProgress = progressRatio
+      ..updatedAt = now;
+    await isar.episodes.put(episode);
   }
 
   /// 按 Fallback 优先级查找 Episode：guid > iTunesId > episodeId

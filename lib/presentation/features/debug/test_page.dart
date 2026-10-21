@@ -7,8 +7,8 @@ import 'package:tinycast/presentation/features/subscribe/subscribe_search_result
 import 'package:tinycast/presentation/features/settings/cloud_sync_settings/login_widgets/login_button/apple_login_button.dart';
 import 'package:tinycast/presentation/features/search/search_page.dart';
 import 'package:tinycast/presentation/widgets/organisms/mini_player/volume_control_bar/volume_control_bar.dart';
+import 'package:tinycast/core/router/app_router.dart';
 import 'package:tinycast/presentation/widgets/atoms/buttons/primary_button.dart';
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:tinycast/presentation/features/search/search_input.dart';
 import 'package:tinycast/presentation/widgets/molecules/episode_item/download_status_icon.dart';
 
@@ -21,12 +21,7 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  Future<void> _openSettingsWindow() async {
-    final controller = await WindowController.create(
-      WindowConfiguration(hiddenAtLaunch: true, arguments: 'settings'),
-    );
-    await controller.show();
-  }
+  Future<void> _openSettingsWindow() => AppRouter.openSettingsWindow();
 
   @override
   Widget build(BuildContext context) {

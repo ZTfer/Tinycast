@@ -115,37 +115,40 @@ File.dart 和 file.dart 在 Linux 是两个文件
 
 ## 5. IDE 生成的临时文件
 
-### 规则
+### 当前实际状态
 
-以下 IDE/工具生成的临时文件**不应提交到 Git**：
+`.gitignore` 已忽略以下 IDE / 工具目录：
 
 ```gitignore
-# Trae IDE
-.trae/log/
-.trae/summary/
-.trae/specs/
-.trae/mcp.json
-
-# AI Agents
-.agent/
-.agents/
-
 # VS Code
 .vscode/
 
-# Cursor
-.cursor/
-.cursorrules
+# Trae IDE 的日志与 MCP 本地配置
+.trae/log/
+.trae/mcp.json
 
-# Claude
-.claude/
+# Qoder Harness 运行产物
+.qoder/better-harness/
+.qoder/better-harness-runs/
 ```
+
+### 必须跟踪的文件
+
+- `.agents/rules/` 是项目编码约定的 canonical 内容源，**必须提交**，
+  不能被 `.gitignore` 忽略；`CLAUDE.md` / `GEMINI.md` / `.windsurfrules`
+  是指向 `AGENTS.md` 的 symlink，同样需要跟踪。
+- `.trae/specs/`、`.trae/summary/`、`.trae/prompt/`、`.trae/rules/`
+  在当前仓库中已被跟踪，属于项目既有约定。新增这些目录下的文件时，遵循
+  第 1 节的文件命名规则（时间戳不用冒号），不要把它们加入忽略列表。
+- `.gitattributes` 已统一文本换行为 LF，并声明了图片、音频、字体等二进制类型；
+  新增二进制资产时记得补充 `binary` 标记。
 
 ### 原因
 
-- 这些文件通常包含时间戳（可能含冒号）
-- 不同开发者可能有不同的 IDE 配置
-- 增大仓库体积
+- IDE 日志、MCP 本地配置和 Harness 运行产物因机器而异，提交后会制造无意义 diff；
+- 规则文件是团队共享的约束，必须随仓库分发；
+- 规范文档与 spec 是项目历史的一部分，是否跟踪应由项目决定，而不是由
+  IDE 默认目录名决定。
 
 ---
 

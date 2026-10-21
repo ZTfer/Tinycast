@@ -1,14 +1,16 @@
 # 颜色系统使用指南
 
-本文档详细介绍 TinyCast 颜色系统的配置、使用和扩展方法。
+TinyCast 的颜色定义在 `assets/themes/colors.conf`，默认由 `ThemeLoader` 在启动时
+解析成 `AppThemeConfig`，再通过 `AppThemeData` 暴露给 UI。
+`lib/core/theme/app_colors.dart` 中的 `AppColors` 是硬编码兜底，不是主数据源。
 
 ---
 
 ## 1. 颜色配置
 
-### 1.1 HOCON 配置文件
+### 1.1 文件结构
 
-颜色定义位于 `assets/themes/colors.conf`：
+`colors.conf` 使用嵌套对象组织调色板：
 
 ```hocon
 {
@@ -16,7 +18,6 @@
   name = "Colors"
 
   palettes {
-    # 品牌色
     brand {
       primary {
         light = "#FF6200EE"
@@ -27,102 +28,119 @@
 }
 ```
 
+每个颜色必须有 `light` 和 `dark` 两个值。`ThemeLoader` 按当前亮度分别构建
+`AppThemeConfig`，缺失对应变体会导致解析失败。
+
 ### 1.2 颜色格式
 
-使用 `#AARRGGBB` 格式（ARGB 十六进制）：
-- `AA` = Alpha 透明度（00-FF）
-- `RR` = 红色通道
-- `GG` = 绿色通道
-- `BB` = 蓝色通道
+统一使用 `#AARRGGBB`（ARGB 十六进制）：
 
-```hocon
-primary {
-  light = "#FF6200EE"   // 完全不透明，紫色
-  dark = "#FFBB86FC"    // 完全不透明，浅紫色
-}
-label-primary {
-  light = "#95000000"   // 95% 透明度黑色
-  dark = "#95FFFFFF"    // 95% 透明度白色
-}
-```
+- `AA`：Alpha，`00` 全透明，`FF` 不透明；
+- `RR` / `GG` / `BB`：红、绿、蓝通道。
 
-### 1.3 调色板分类
+Alpha 是十六进制字节，不是百分比。例如：
 
-| 调色板 | 颜色名 | 亮色值 | 暗色值 | 用途 |
+- `#E6000000`：Alpha `0xE6` ≈ 90% 不透明的黑色；
+- `#95FFFFFF`：Alpha `0x95` ≈ 58% 不透明的白色；
+- `#803C3C43`：Alpha `0x80` = 50% 不透明；
+- `#FF3C3C43`：完全不透明。
+
+### 1.3 调色板一览
+
+| 调色板 | 颜色名 | light | dark | 用途 |
 |---|---|---|---|---|
-| **brand** | primary | `#FF6200EE` | `#FFBB86FC` | 主品牌色（按钮、高亮） |
-| | secondary | `#FF03DAC6` | `#FF03DAC6` | 辅助品牌色 |
-| | blue | `#FF0088FF` | `#FF0091FF` | 蓝色强调色 |
-| **background** | primary | `#FFFFFFFF` | `#FF000000` | 主背景 |
-| | secondary | `#FFF2F2F7` | `#FF1C1C1E` | 次级背景（卡片） |
-| | tertiary | `#FFFFFFFF` | `#FF2C2C2E` | 第三背景（对话框） |
-| **gray** | black | `#FF000000` | `#FF000000` | 纯黑（阴影） |
-| | gray-30 | `#30000000` | `#30FFFFFF` | 30% 透明灰（分隔线） |
-| **label** | primary | `#95000000` | `#95FFFFFF` | 主要文字 |
-| | secondary | `#603C3C43` | `#70EBEBF5` | 次要文字 |
-| | tertiary | `#303C3C43` | `#30EBEBF5` | 辅助文字 |
-| | quaternary | `#183C3C43` | `#16EBEBF5` | 占位文字 |
-| **overlay** | default | `#20000000` | `#48000000` | 默认遮罩 |
-| | transparent | `#00000000` | `#00FFFFFF` | 透明遮罩 |
+| **brand** | `primary` | `#FF6200EE` | `#FFBB86FC` | 主品牌色、按钮、高亮 |
+| | `secondary` | `#FF03DAC6` | `#FF03DAC6` | 辅助品牌色 |
+| | `blue` | `#FF0088FF` | `#FF0091FF` | 蓝色强调色 |
+| **background** | `primary` | `#FFFFFFFF` | `#FF000000` | 页面主背景 |
+| | `secondary` | `#FFF2F2F7` | `#FF1C1C1E` | 卡片、侧栏等次级背景 |
+| | `tertiary` | `#FFFFFFFF` | `#FF2C2C2E` | 对话框等第三级背景 |
+| | `transparent` | `#00FFFFFF` | `#00FFFFFF` | 完全透明的背景占位 |
+| **gray** | `black` | `#FF000000` | `#FF000000` | 纯黑 |
+| | `gray-0` | `#00000000` | `#00FFFFFF` | 0% 灰（透明） |
+| | `gray-10` | `#10000000` | `#10FFFFFF` | 6% 灰，悬停背景 |
+| | `gray-20` | `#20000000` | `#20FFFFFF` | 12% 灰，分隔线 |
+| | `gray-30` | `#30000000` | `#30FFFFFF` | 19% 灰，按下背景 |
+| | `gray-40` | `#40000000` | `#40FFFFFF` | 25% 灰 |
+| | `gray-50` | `#50000000` | `#50FFFFFF` | 31% 灰 |
+| **label** | `primary` | `#E6000000` | `#95FFFFFF` | 主要文字 |
+| | `secondary` | `#FF3C3C43` | `#70EBEBF5` | 次要文字 |
+| | `tertiary` | `#803C3C43` | `#30EBEBF5` | 辅助文字 |
+| | `quaternary` | `#183C3C43` | `#16EBEBF5` | 最弱层级文字 |
+| **overlay** | `default` | `#20000000` | `#48000000` | 弹窗 / 加载遮罩 |
+| | `transparent` | `#00000000` | `#00FFFFFF` | 透明遮罩 |
+
+注意 gray 系列的“百分比”来自 Alpha 字节：`0x10` ≈ 6%，`0x20` ≈ 12%，
+`0x30` ≈ 19%，`0x40` ≈ 25%，`0x50` ≈ 31%。
 
 ---
 
-## 2. Dart 颜色常量
+## 2. Dart 侧的颜色入口
 
-### 2.1 AppColors 类
+### 2.1 AppThemeData（推荐）
 
-所有颜色在 `lib/core/theme/app_colors.dart` 中定义为 `const Color` 常量：
+UI 代码应通过 `AppThemeData` 读取颜色，它会跟随系统亮暗模式：
 
 ```dart
-class AppColors {
-  AppColors._();
+final theme = AppTheme.fromBrightness(
+  MediaQuery.platformBrightnessOf(context),
+);
 
-  // 品牌色
-  static const Color brandPrimaryLight = Color(0xFF6200EE);
-  static const Color brandPrimaryDark = Color(0xFFBB86FC);
-
-  // 背景色
-  static const Color backgroundPrimaryLight = Color(0xFFFFFFFF);
-  static const Color backgroundPrimaryDark = Color(0xFF000000);
-
-  // 文字色
-  static const Color labelPrimaryLight = Color(0x95000000);
-  static const Color labelPrimaryDark = Color(0x95FFFFFF);
-  // ... 更多颜色
-}
+Container(color: theme.backgroundPrimary);
+Text('正文', style: TextStyle(color: theme.labelPrimary));
 ```
 
-### 2.2 命名规则
+`AppThemeData` 当前暴露的颜色 getter：
 
-`{调色板}{颜色名}{主题}`，首字母大写驼峰命名：
+- `backgroundPrimary` / `backgroundSecondary` / `backgroundTertiary`
+- `labelPrimary` / `labelSecondary` / `labelTertiary` / `labelQuaternary`
+- `brandPrimary` / `brandSecondary` / `brandBlue`
+- `overlayDefault`
+- `gray30`
 
-| 调色板 | 颜色名 | 主题 | Dart 常量名 |
-|---|---|---|---|
-| brand | primary | Light | `brandPrimaryLight` |
-| label | secondary | Dark | `labelSecondaryDark` |
-| background | primary | Light | `backgroundPrimaryLight` |
+`background.transparent` 和 `gray-0/10/20/40/50` 没有对应的 `AppThemeData`
+getter，目前只在 `styles.conf` 内部通过 `${palettes...}` 引用（例如按钮悬停
+背景、分隔线）。如果业务代码需要这些值，按第 4 节扩展。
+
+### 2.2 AppColors（兜底常量）
+
+`lib/core/theme/app_colors.dart` 定义 `const Color` 常量，仅在以下情况生效：
+
+- `ThemeSource.useHardcoded` 被改为 `true`；
+- `colors.conf` 预加载失败，`ThemeLoader` 回退到编译时常量。
+
+命名规则为 `{调色板}{颜色名}{Light|Dark}`，例如 `brandPrimaryLight`、
+`labelSecondaryDark`。
+
+**当前 `AppColors` 与 `colors.conf` 并不一致**，默认（HOCON）模式下以
+`colors.conf` 为准：
+
+- `labelPrimaryLight`：`AppColors` 是 `0xFF000000`，HOCON 是 `#E6000000`；
+- `labelSecondaryLight`：`AppColors` 是 `0x603C3C43`，HOCON 是 `#FF3C3C43`；
+- `labelTertiaryLight`：`AppColors` 是 `0x303C3C43`，HOCON 是 `#803C3C43`；
+- `AppColors` 没有 `background.transparent` 与 `gray-0/10/20/40/50`。
+
+把 `useHardcoded` 切成 `true` 会改变文字颜色和透明度，不是“无文件模式的等价结果”。
+修改颜色时若要同时维护兜底常量，需要手动同步并验证两种模式。
+
+### 2.3 AppThemeConfig（运行时快照）
+
+`AppThemeConfig` 是单套亮或暗调色板的快照，只包含 14 个颜色字段：
+品牌色 3 个、背景色 3 个、gray `black` / `gray-30`、label 4 个、overlay 2 个。
+
+```dart
+final config = await ThemeLoader.loadThemeConfig(isDark: true);
+Container(color: config.backgroundPrimary);
+```
+
+日常 UI 不建议直接使用它：直接在 Widget 中异步加载会绕开启动缓存，也拿不到
+`styles.conf` 中的 Widget 布局样式。优先使用 `AppThemeData`。
 
 ---
 
 ## 3. 使用方式
 
-### 3.1 直接使用颜色常量
-
-适用于不需要跟随主题切换的固定颜色：
-
-```dart
-Container(
-  color: AppColors.backgroundPrimaryLight,
-  child: Text(
-    'Hello',
-    style: TextStyle(color: AppColors.labelPrimaryDark),
-  ),
-)
-```
-
-### 3.2 通过 AppThemeData（推荐）
-
-自动跟随亮色/暗色切换：
+### 3.1 跟随主题（推荐）
 
 ```dart
 final theme = AppTheme.fromBrightness(
@@ -130,177 +148,97 @@ final theme = AppTheme.fromBrightness(
 );
 
 Container(
-  color: theme.backgroundPrimary,
+  color: theme.backgroundSecondary,
   child: Text(
     'Hello',
     style: TextStyle(color: theme.labelPrimary),
   ),
-)
+);
 ```
 
-### 3.3 通过 AppThemeConfig（运行时）
+### 3.2 固定颜色
 
-从 HOCON 文件动态加载：
+只有确实不随主题变化的场景才直接使用 `AppColors`：
 
 ```dart
-// 方式 1：直接加载
-final config = await ThemeLoader.loadThemeConfig(isDark: false);
-Container(color: config.backgroundPrimary)
-
-// 方式 2：通过 Riverpod Provider
-class MyWidget extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(themeProvider);
-
-    return themeState.when(
-      data: (state) {
-        final brightness = MediaQuery.platformBrightnessOf(context);
-        final config = state.forBrightness(brightness);
-
-        return Container(color: config.backgroundPrimary);
-      },
-      loading: () => const CircularProgressIndicator(),
-      error: (e, _) => const Text('主题加载失败'),
-    );
-  }
-}
+Container(color: AppColors.brandPrimaryLight);
 ```
+
+这类用法在暗色模式下不会自动换色，使用前确认视觉上可接受。
+
+### 3.3 使用 const 常量
+
+```dart
+static const Color brandPrimary = Color(0xFF6200EE);
+```
+
+`const Color(0x...)` 是编译时常量，支持 Widget 树的 const 优化；
+`Color.fromARGB(...)` 是运行时构造，不建议在常量定义中使用。
 
 ---
 
 ## 4. 添加新颜色
 
-### 步骤 1：修改 colors.conf
+### 场景 A：只给 `styles.conf` 使用
 
-在 `assets/themes/colors.conf` 中添加新颜色：
+1. 在 `colors.conf` 的对应调色板中添加 `light` / `dark`；
+2. 在 `styles.conf` 中用引用取值，例如
+   `${palettes.semantic.success.light}`；
+3. 加载 dark 版 `styles.conf` 时引用会自动切换为 `.dark`，不需要写两套。
 
-```hocon
-palettes {
-  semantic {
-    success {
-      light = "#FF34C759"
-      dark = "#FF30D158"
-    }
-    error {
-      light = "#FFFF3B30"
-      dark = "#FFFF453A"
-    }
-    warning {
-      light = "#FFFF9500"
-      dark = "#FFFF9F0A"
-    }
-  }
-}
-```
+不需要改 Dart 代码。适合只用于某个 Widget 的背景、边框等布局样式。
 
-### 步骤 2：在 app_colors.dart 中添加常量
+### 场景 B：需要通过 `AppThemeData` 暴露给业务代码
 
-```dart
-class AppColors {
-  // ... 现有颜色
+按顺序修改：
 
-  // 新增语义色
-  static const Color semanticSuccessLight = Color(0xFF34C759);
-  static const Color semanticSuccessDark = Color(0xFF30D158);
-  static const Color semanticErrorLight = Color(0xFFFF3B30);
-  static const Color semanticErrorDark = Color(0xFFFF453A);
-  static const Color semanticWarningLight = Color(0xFFFF9500);
-  static const Color semanticWarningDark = Color(0xFFFF9F0A);
-}
-```
+1. `assets/themes/colors.conf`：添加颜色对；
+2. `lib/core/theme/app_theme_config.dart`：加字段，并在 `fromJsonWithMode`、
+   `copyWith` 中补上解析和拷贝；
+3. `lib/core/theme/theme_data.dart`：在 `AppThemeData` 中加 getter，
+   HOCON 分支读 `_config`，硬编码分支读 `AppColors`；
+4. `lib/core/theme/app_colors.dart`：加 `Light` / `Dark` 兜底常量，
+   保证 `useHardcoded == true` 和加载失败时仍可用；
+5. 运行 `flutter test test/core/theme/`，并在亮 / 暗两种模式下各看一次效果。
 
-### 步骤 3（可选）：在 AppThemeData 中添加 getter
-
-```dart
-// 在 lib/core/theme/theme_data.dart 的 AppThemeData 类中添加
-Color get semanticSuccess =>
-    mode == AppThemeMode.light
-        ? AppColors.semanticSuccessLight
-        : AppColors.semanticSuccessDark;
-
-Color get semanticError =>
-    mode == AppThemeMode.light
-        ? AppColors.semanticErrorLight
-        : AppColors.semanticErrorDark;
-```
-
-### 步骤 4：使用新颜色
-
-```dart
-// 方式一：直接使用常量
-Icon(Icons.check, color: AppColors.semanticSuccessLight)
-
-// 方式二：通过 AppThemeData（自动跟随主题）
-final theme = AppTheme.light;
-Icon(Icons.check, color: theme.semanticSuccess)
-```
+`AppThemeConfig.fromJson` 只读取 `light` 值，实际应用走的是
+`fromJsonWithMode`；新增字段时两个工厂都要改，否则某个入口会取不到颜色。
 
 ---
 
 ## 5. 最佳实践
 
-### 5.1 始终使用主题系统
+### 5.1 优先使用 AppThemeData
 
-**推荐**：
-```dart
-Text('标题', style: TextStyle(color: AppTheme.light.labelPrimary))
-Container(color: AppColors.backgroundPrimaryLight)
-```
-
-**不推荐**：
-```dart
-// 不要硬编码颜色值
-Text('标题', style: TextStyle(color: Color(0xFF000000)))
-```
-
-### 5.2 使用 const Color(0x...) 格式
+需要跟随亮暗模式时：
 
 ```dart
-// 推荐：使用 const，编译器优化
-static const Color brandPrimary = Color(0xFF6200EE);
-
-// 不推荐：使用 Color.fromARGB，性能较差
-static final Color brandPrimary = Color.fromARGB(255, 98, 0, 238);
-```
-
-`const Color(0x...)` 的优势：
-- 编译时常量，零运行时开销
-- 支持 Widget 树的 const 优化
-- 与 HOCON 格式直接对应，易于维护
-
-### 5.3 使用语义化命名
-
-颜色命名应反映**用途**而非**颜色本身**：
-
-```dart
-// 推荐：labelPrimary 表示主要文字颜色
-static const Color labelPrimaryLight = Color(0x95000000);
-
-// 不推荐：black95 只是描述了颜色值
-static const Color black95 = Color(0x95000000);
-```
-
-### 5.4 优先使用 AppThemeData
-
-当 Widget 需要根据主题自动切换时：
-
-```dart
-// 推荐：自动跟随亮色/暗色
 final theme = AppTheme.fromBrightness(brightness);
-Container(color: theme.backgroundPrimary)
-
-// 不推荐：需要手动判断
-Container(
-  color: brightness == Brightness.light
-      ? AppColors.backgroundPrimaryLight
-      : AppColors.backgroundPrimaryDark,
-)
+Container(color: theme.backgroundPrimary);
 ```
 
-### 5.5 HOCON 与 Dart 保持一致
+不要手写 `brightness == Brightness.light ? ... : ...` 的三元表达式，
+除非是在主题系统之外做一次性计算。
 
-每次修改 `colors.conf` 后，必须同步更新 `app_colors.dart`。建议：
-- 保持命名规则一致
-- 确保 ARGB 格式完全对应
-- 不要遗漏任何 light/dark 配对
+### 5.2 语义化命名
+
+命名反映用途而不是颜色值：用 `labelPrimary`，不要用 `black95`；
+用 `overlayDefault`，不要用 `black12`。
+
+### 5.3 不要假设两套颜色自动同步
+
+`colors.conf` 与 `app_colors.dart` 是两套独立定义。默认运行时使用前者，
+后者只在兜底或显式切换时生效。当前两者已经存在差异（见 2.2），
+新增或修改颜色时不要把“同步”当成自动行为。
+
+### 5.4 用引用而不是复制色值
+
+`styles.conf` 中引用 `${palettes...}`，不要在 Widget 样式里重复写十六进制色值，
+否则调色板调整后会出现遗漏。
+
+---
+
+## 6. 相关文档
+
+- [主题系统概述](./overview.md)
+- [字体排版使用指南](./typography.md)

@@ -118,7 +118,18 @@ class FeedRefreshNotifier extends Notifier<FeedRefreshState> {
       final result = await _repository.refreshPodcastFeed(podcastId);
       if (requestId != _refreshRequestId) return;
 
-      if (result.success) {
+      if (result.skipped) {
+        state = state.copyWith(
+          status: FeedRefreshStatus.success,
+          totalNewEpisodes: 0,
+          successCount: 0,
+          failureCount: 0,
+        );
+        Logger.info(
+          '🔄 [FEED-REFRESH] refreshSingle 跳过, podcastId: $podcastId '
+          '(冷却或退化策略)',
+        );
+      } else if (result.success) {
         state = state.copyWith(
           status: FeedRefreshStatus.success,
           totalNewEpisodes: result.newEpisodesCount,

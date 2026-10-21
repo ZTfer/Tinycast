@@ -10,7 +10,7 @@
 - [play_history_mapper.dart](file://lib/data/mappers/play_history_mapper.dart)
 - [play_progress_service.dart](file://lib/core/services/play_progress_service.dart)
 - [play_history_repository_impl.dart](file://lib/data/repositories/play_history_repository_impl.dart)
-- [play_history_repository.dart](file://lib/domain/repositories/play_history_repository.dart)
+- [play_history_repository_impl.dart](file://lib/domain/repositories/play_history_repository.dart)
 - [play_history_model.dart](file://lib/data/models/play_history_model.dart)
 - [play_history.dart](file://lib/domain/entities/play_history.dart)
 - [podcast.dart](file://lib/domain/entities/podcast.dart)

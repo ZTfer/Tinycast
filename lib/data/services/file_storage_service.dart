@@ -236,13 +236,15 @@ class FileStorageService {
     }
   }
 
-  Future<void> deleteFileSafely(String relativePath, {String? context}) async {
+  /// 返回文件是否已不存在（删除成功或本来就不存在）
+  Future<bool> deleteFileSafely(String relativePath, {String? context}) async {
     try {
       final fullPath = await getFullFilePath(relativePath);
       await StorageErrorHandler.deleteFileSafely(fullPath);
 
       final contextStr = context != null ? ' ($context)' : '';
       Logger.info('文件删除成功: $relativePath$contextStr');
+      return true;
     } catch (e, stackTrace) {
       final contextStr = context != null ? ' ($context)' : '';
       Logger.error(
@@ -250,6 +252,7 @@ class FileStorageService {
         error: e,
         stackTrace: stackTrace,
       );
+      return false;
     }
   }
 
@@ -260,11 +263,8 @@ class FileStorageService {
     int successCount = 0;
 
     for (final path in relativePaths) {
-      try {
-        await deleteFileSafely(path, context: context);
+      if (await deleteFileSafely(path, context: context)) {
         successCount++;
-      } catch (e) {
-        // 错误已经在 deleteFileSafely 中记录
       }
     }
 

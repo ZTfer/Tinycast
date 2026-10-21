@@ -104,8 +104,9 @@ void main() {
       localDataSource: localDataSource,
     );
 
-    await dataSource.getPodcastFromRss(_rssUrl);
-    await dataSource.getITunesSearchFuture();
+    final result = await dataSource.getPodcastFromRss(_rssUrl);
+    await (result[RemotePodcastDataSource.itunesSearchFutureKey]
+        as Future<void>?);
   }
 
   test('关键词结果无精确匹配时不写入无关的 iTunes ID', () async {

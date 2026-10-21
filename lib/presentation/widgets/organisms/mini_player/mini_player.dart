@@ -11,8 +11,7 @@ class MiniPlayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(playbackProvider);
-    final episode = playerState.currentEpisode;
+    final episode = ref.watch(currentEpisodeProvider);
     final theme = AppTheme.fromBrightness(
       MediaQuery.platformBrightnessOf(context),
     );
@@ -30,24 +29,45 @@ class MiniPlayer extends ConsumerWidget {
               podcastId: episode?.podcastId,
             ),
           ),
-          EpisodeControlBar(
-            isPlaying: playerState.isPlaying,
-            onPlayPause: () =>
-                ref.read(playbackProvider.notifier).togglePlayPause(),
-            onSeekForward: () =>
-                ref.read(playbackProvider.notifier).seekForward(),
-            onSeekBackward: () =>
-                ref.read(playbackProvider.notifier).seekBackward(),
-          ),
-          EpisodeProgress(
-            position: playerState.currentPosition,
-            duration: playerState.duration,
-            onSeek: (position) {
-              ref.read(playbackProvider.notifier).seekTo(position);
-            },
-          ),
+          const _PlaybackControls(),
+          const _PlaybackProgress(),
         ],
       ),
+    );
+  }
+}
+
+/// 只订阅播放状态，避免进度更新时重建控制栏。
+class _PlaybackControls extends ConsumerWidget {
+  const _PlaybackControls();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPlaying = ref.watch(isPlayingProvider);
+    return EpisodeControlBar(
+      isPlaying: isPlaying,
+      onPlayPause: () => ref.read(playbackProvider.notifier).togglePlayPause(),
+      onSeekForward: () => ref.read(playbackProvider.notifier).seekForward(),
+      onSeekBackward: () =>
+          ref.read(playbackProvider.notifier).seekBackward(),
+    );
+  }
+}
+
+/// 只订阅进度与时长，播放进度更新时仅重建进度条。
+class _PlaybackProgress extends ConsumerWidget {
+  const _PlaybackProgress();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final position = ref.watch(currentPositionProvider);
+    final duration = ref.watch(durationProvider);
+    return EpisodeProgress(
+      position: position,
+      duration: duration,
+      onSeek: (position) {
+        ref.read(playbackProvider.notifier).seekTo(position);
+      },
     );
   }
 }

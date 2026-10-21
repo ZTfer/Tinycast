@@ -39,10 +39,8 @@ class FeedRefreshService {
       if (!force && lastRefresh != null && now.difference(lastRefresh) < _cooldownDuration) {
         final remaining = _cooldownDuration.inSeconds - now.difference(lastRefresh).inSeconds;
         Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新冷却中，剩余 $remaining秒，跳过');
-        return FeedRefreshResult(podcastId: podcastId, success: true);
+        return FeedRefreshResult(podcastId: podcastId, skipped: true);
       }
-
-      _lastRefreshTimes[podcastId] = now;
 
       final podcastModel = await _localDataSource.getPodcastById(podcastId);
       if (podcastModel == null || podcastModel.rssUrl.isEmpty) {
@@ -67,7 +65,7 @@ class FeedRefreshService {
           );
           if (now.difference(lastFetched) < extendedInterval) {
             Logger.info('🔄 [REFRESH] 播客 $podcastId 退化模式中，跳过刷新');
-            return FeedRefreshResult(podcastId: podcastId, success: true);
+            return FeedRefreshResult(podcastId: podcastId, skipped: true);
           }
         }
       }
@@ -131,6 +129,10 @@ class FeedRefreshService {
         await _localDataSource.updateRefreshFailedCount(podcastId, 0);
       }
 
+      // Only a completed refresh starts the cooldown; failures and
+      // degraded skips must remain retryable.
+      _lastRefreshTimes[podcastId] = now;
+
       Logger.info('🔄 [REFRESH] 播客 $podcastId 刷新成功');
 
       return FeedRefreshResult(
@@ -182,17 +184,20 @@ class FeedRefreshService {
     }
 
     final successCount = results.where((r) => r.success).length;
-    final failureCount = results.length - successCount;
+    final skippedCount = results.where((r) => r.skipped).length;
+    final failureCount =
+        results.where((r) => !r.success && !r.skipped).length;
     final totalNewEpisodes = results.fold<int>(0, (sum, r) => sum + r.newEpisodesCount);
 
     Logger.info(
       '批量刷新完成: 总数 ${results.length}, 成功 $successCount, '
-      '失败 $failureCount, 新剧集 $totalNewEpisodes',
+      '跳过 $skippedCount, 失败 $failureCount, 新剧集 $totalNewEpisodes',
     );
 
     return BatchRefreshResult(
       totalNewEpisodes: totalNewEpisodes,
       successCount: successCount,
+      skippedCount: skippedCount,
       failureCount: failureCount,
       results: results,
     );

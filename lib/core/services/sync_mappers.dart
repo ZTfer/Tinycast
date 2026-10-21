@@ -21,7 +21,10 @@ Map<String, dynamic> podcastToCloudMap(Podcast p) {
     'owner_name': p.ownerName,
     'subtitle': p.subtitle,
     'website_url': p.websiteUrl,
-    'updated_at': DateTime.now().toUtc().toIso8601String(),
+    // Preserve the entity timestamp instead of restamping on every push:
+    // remote pull uses `updated_at > since`, so a write-time stamp would
+    // make every device re-pull the full library after any upload.
+    'updated_at': p.lastUpdated.toUtc().toIso8601String(),
   };
 
   if (p.itunesId != null) map['itunes_id'] = p.itunesId;
@@ -67,7 +70,7 @@ Map<String, dynamic> episodeToCloudMap(Episode e) {
     'description': e.description,
     'audio_url': e.audioUrl,
     'is_explicit': e.isExplicit,
-    'updated_at': DateTime.now().toUtc().toIso8601String(),
+    'updated_at': e.updatedAt.toUtc().toIso8601String(),
   };
 
   if (e.guid != null) map['guid'] = e.guid;

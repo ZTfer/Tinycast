@@ -178,6 +178,19 @@ const PodcastSchema = CollectionSchema(
   deserializeProp: _podcastDeserializeProp,
   idName: r'id',
   indexes: {
+    r'supabaseId': IndexSchema(
+      id: 2753382765909358918,
+      name: r'supabaseId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'supabaseId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
     r'title': IndexSchema(
       id: -7636685945352118059,
       name: r'title',
@@ -214,6 +227,19 @@ const PodcastSchema = CollectionSchema(
           name: r'lastUpdated',
           type: IndexType.value,
           caseSensitive: false,
+        ),
+      ],
+    ),
+    r'itunesId': IndexSchema(
+      id: -7698317073018689648,
+      name: r'itunesId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'itunesId',
+          type: IndexType.hash,
+          caseSensitive: true,
         ),
       ],
     ),
@@ -692,6 +718,81 @@ extension PodcastQueryWhere on QueryBuilder<Podcast, Podcast, QWhereClause> {
     });
   }
 
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> supabaseIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'supabaseId', value: [null]),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> supabaseIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'supabaseId',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> supabaseIdEqualTo(
+    String? supabaseId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'supabaseId', value: [supabaseId]),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> supabaseIdNotEqualTo(
+    String? supabaseId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [],
+                upper: [supabaseId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [supabaseId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [supabaseId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'supabaseId',
+                lower: [],
+                upper: [supabaseId],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
   QueryBuilder<Podcast, Podcast, QAfterWhereClause> titleEqualTo(String title) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -903,6 +1004,81 @@ extension PodcastQueryWhere on QueryBuilder<Podcast, Podcast, QWhereClause> {
           includeUpper: includeUpper,
         ),
       );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> itunesIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'itunesId', value: [null]),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> itunesIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'itunesId',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> itunesIdEqualTo(
+    String? itunesId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'itunesId', value: [itunesId]),
+      );
+    });
+  }
+
+  QueryBuilder<Podcast, Podcast, QAfterWhereClause> itunesIdNotEqualTo(
+    String? itunesId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'itunesId',
+                lower: [],
+                upper: [itunesId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'itunesId',
+                lower: [itunesId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'itunesId',
+                lower: [itunesId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'itunesId',
+                lower: [],
+                upper: [itunesId],
+                includeUpper: false,
+              ),
+            );
+      }
     });
   }
 }

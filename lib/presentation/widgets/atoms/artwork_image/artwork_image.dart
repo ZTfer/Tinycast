@@ -4,11 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tinycast/domain/entities/episode.dart' as domain;
 import 'package:tinycast/domain/entities/podcast.dart' as domain_podcast;
-import 'package:tinycast/data/models/episode_model.dart' as data;
-import 'package:tinycast/data/models/podcast_model.dart' as data_podcast;
 import 'package:tinycast/data/services/file_storage_service.dart';
 import 'package:tinycast/data/services/image_cache_service.dart';
-import 'package:tinycast/data/database/isar_service.dart';
 import 'package:tinycast/core/utils/logger.dart';
 
 class ArtworkImage extends StatefulWidget {
@@ -186,43 +183,44 @@ class _ArtworkImageState extends State<ArtworkImage> {
     Future.microtask(() async {
       try {
         final imageCacheService = ImageCacheService.instance;
-        final isarService = IsarService.instance;
 
         if (widget.episode != null && widget.episode!.artworkUrl != null) {
           Logger.info('🎯 [ArtworkImage] 开始下载 Episode 封面图: ${widget.episode!.title}');
           Logger.info('   URL: ${widget.episode!.artworkUrl}');
           Logger.info('   Episode ID: ${widget.episode!.id}');
 
-          final dataEpisode = await isarService.isar.episodes.get(widget.episode!.id);
-          if (dataEpisode != null) {
-            final downloadedFile = await imageCacheService.downloadAndSaveEpisodeArtwork(dataEpisode);
+          final downloadedFile = await imageCacheService
+              .downloadAndSaveEpisodeArtworkFor(
+                episodeId: widget.episode!.id,
+                title: widget.episode!.title,
+                artworkUrl: widget.episode!.artworkUrl,
+                currentArtworkPath: widget.episode!.artworkPath,
+              );
 
-            if (downloadedFile != null && mounted) {
-              setState(() {
-                _localFile = downloadedFile;
-              });
-              Logger.info('✅ [ArtworkImage] Episode 封面图下载完成并更新UI: ${downloadedFile.path}');
-            }
-          } else {
-            Logger.warning('⚠️ [ArtworkImage] 未找到 Episode 数据模型，ID: ${widget.episode!.id}');
+          if (downloadedFile != null && mounted) {
+            setState(() {
+              _localFile = downloadedFile;
+            });
+            Logger.info('✅ [ArtworkImage] Episode 封面图下载完成并更新UI: ${downloadedFile.path}');
           }
         } else if (widget.podcast != null && widget.podcast!.artworkUrl.isNotEmpty) {
           Logger.info('🎯 [ArtworkImage] 开始下载 Podcast 封面图: ${widget.podcast!.title}');
           Logger.info('   URL: ${widget.podcast!.artworkUrl}');
           Logger.info('   Podcast ID: ${widget.podcast!.id}');
 
-          final dataPodcast = await isarService.isar.podcasts.get(widget.podcast!.id);
-          if (dataPodcast != null) {
-            final downloadedFile = await imageCacheService.downloadAndSavePodcastArtwork(dataPodcast);
+          final downloadedFile = await imageCacheService
+              .downloadAndSavePodcastArtworkFor(
+                podcastId: widget.podcast!.id,
+                title: widget.podcast!.title,
+                artworkUrl: widget.podcast!.artworkUrl,
+                currentArtworkPath: widget.podcast!.artworkPath,
+              );
 
-            if (downloadedFile != null && mounted) {
-              setState(() {
-                _localFile = downloadedFile;
-              });
-              Logger.info('✅ [ArtworkImage] Podcast 封面图下载完成并更新UI: ${downloadedFile.path}');
-            }
-          } else {
-            Logger.warning('⚠️ [ArtworkImage] 未找到 Podcast 数据模型，ID: ${widget.podcast!.id}');
+          if (downloadedFile != null && mounted) {
+            setState(() {
+              _localFile = downloadedFile;
+            });
+            Logger.info('✅ [ArtworkImage] Podcast 封面图下载完成并更新UI: ${downloadedFile.path}');
           }
         } else {
           Logger.warning('⚠️ [ArtworkImage] 无法下载：缺少 episode/podcast 对象或 artworkUrl');
@@ -235,6 +233,9 @@ class _ArtworkImageState extends State<ArtworkImage> {
 
   @override
   Widget build(BuildContext context) {
+    final cacheWidth = _cacheExtent(widget.width, context);
+    final cacheHeight = _cacheExtent(widget.height, context);
+
     return _wrapWithBorderRadius(
       _localFile != null
           ? Image.file(
@@ -242,16 +243,26 @@ class _ArtworkImageState extends State<ArtworkImage> {
               width: widget.width,
               height: widget.height,
               fit: widget.fit,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
               errorBuilder: (_, error, stack) {
                 Logger.warning('⚠️ [ArtworkImage] 本地文件加载失败: $error');
-                return _buildNetworkImage();
+                return _buildNetworkImage(context);
               },
             )
-          : _buildNetworkImage(),
+          : _buildNetworkImage(context),
     );
   }
 
-  Widget _buildNetworkImage() {
+  int? _cacheExtent(double? logicalSize, BuildContext context) {
+    if (logicalSize == null || !logicalSize.isFinite || logicalSize <= 0) {
+      return null;
+    }
+    final devicePixelRatio = MediaQuery.maybeOf(context)?.devicePixelRatio ?? 1.0;
+    return (logicalSize * devicePixelRatio).round();
+  }
+
+  Widget _buildNetworkImage(BuildContext context) {
     if (widget.artworkUrl != null && widget.artworkUrl!.isNotEmpty) {
       Logger.debug('🌐 [ArtworkImage] 使用网络图片: ${widget.artworkUrl}');
       return CachedNetworkImage(
@@ -259,6 +270,8 @@ class _ArtworkImageState extends State<ArtworkImage> {
         width: widget.width,
         height: widget.height,
         fit: widget.fit,
+        memCacheWidth: _cacheExtent(widget.width, context),
+        memCacheHeight: _cacheExtent(widget.height, context),
         placeholder: (context, url) {
           Logger.debug('⏳ [ArtworkImage] 网络图片加载中...');
           return _buildPlaceholder();
