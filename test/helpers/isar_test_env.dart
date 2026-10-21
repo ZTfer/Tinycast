@@ -23,21 +23,20 @@ Future<void> initializeIsarCoreForTests() async {
     throw StateError('Pub cache not found at ${hostedDir.path}');
   }
 
-  final libDirs = hostedDir
-      .listSync()
-      .whereType<Directory>()
-      .where((d) => d.path.contains('isar_community_flutter_libs-'))
-      .toList()
-    ..sort((a, b) => b.path.compareTo(a.path));
-  if (libDirs.isEmpty) {
+  // The native core must match the resolved Dart package exactly; picking the
+  // highest cached version breaks whenever another version is also cached.
+  final libDir = Directory(
+    '${hostedDir.path}/isar_community_flutter_libs-${Isar.version}',
+  );
+  if (!libDir.existsSync()) {
     throw StateError(
-      'isar_community_flutter_libs not found in pub cache; '
+      'isar_community_flutter_libs ${Isar.version} not found in pub cache; '
       'run flutter pub get first',
     );
   }
 
   final libraryFile = File(
-    '${libDirs.first.path}/${_libraryPathFor(Abi.current())}',
+    '${libDir.path}/${_libraryPathFor(Abi.current())}',
   );
   if (!libraryFile.existsSync()) {
     throw StateError('Isar core binary not found at ${libraryFile.path}');
