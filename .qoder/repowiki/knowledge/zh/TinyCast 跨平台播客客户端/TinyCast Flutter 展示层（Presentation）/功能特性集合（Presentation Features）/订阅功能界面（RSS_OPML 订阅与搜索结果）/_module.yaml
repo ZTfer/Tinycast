@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: presentation/features/subscribe
-title: 订阅功能界面（RSS/OPML 订阅与搜索结果）
-scope:
-    - lib/presentation/features/subscribe/
-source_files: []
-depends_on: []
-related_to:
-    - path: presentation/providers

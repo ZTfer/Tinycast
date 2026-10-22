@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: presentation/features/settings
-title: 设置中心与子功能模块
-scope:
-    - lib/presentation/features/settings/
-source_files: []
-depends_on: []
-related_to: []

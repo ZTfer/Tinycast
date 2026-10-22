@@ -1,8 +1,0 @@
-schema_version: 1
-module_path: assets
-title: 静态资源与主题配置中心
-scope:
-    - assets/
-source_files: []
-depends_on: []
-related_to: []
