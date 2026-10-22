@@ -1,93 +1,95 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # Tinycast
 
-基于 Flutter 的跨平台播客客户端，支持 Android、iOS、macOS、Windows 和 Linux。
+A cross-platform podcast client built with Flutter, available on Android, iOS, macOS, Windows, and Linux.
 
-## 功能特性
+## Features
 
-- **订阅**：通过 RSS 地址订阅并预览、选择剧集，支持 OPML 文件导入；已订阅播客的 Feed 可按设定间隔定时刷新。
-- **播放**：后台播放与锁屏控制，支持 0.5×–2.0× 倍速、自定义快进/快退时长、连续播放、睡眠定时和播放队列。
-- **离线下载**：单集、批量或按播客下载，支持暂停、恢复、取消与断点续传；可配置自动下载策略，并按类型、播客或保留数量清理缓存。
-- **内容管理**：本地内容搜索、收藏、播放历史、搜索历史和已下载列表。
-- **云同步**：使用 Supabase 登录后，订阅、播放历史、收藏和播放队列在多设备间增量同步。
-- **主题**：HOCON 配置驱动的自定义设计系统，跟随系统亮色/暗色模式，不使用 Material `ThemeData`。
+- **Subscriptions**: subscribe by RSS URL with episode preview and selection, and import OPML files; subscribed feeds refresh on a configurable schedule.
+- **Playback**: background playback and lock-screen controls, 0.5×–2.0× speed, configurable skip durations, continuous play, sleep timer, and a play queue.
+- **Offline downloads**: download individual episodes, batches, or an entire podcast; pause, resume, and cancel downloads, with support for resuming partial downloads; configure automatic download policies and clean up cached files by type, podcast, or retention count.
+- **Library**: local search, favorites, playback history, search history, and downloaded episodes.
+- **Cloud sync**: after signing in with Supabase, subscriptions, playback history, favorites, and the play queue sync incrementally across devices.
+- **Theming**: a custom HOCON-driven design system that follows the system light/dark mode and does not use Material `ThemeData`.
 
-## 技术栈
+## Tech stack
 
-Flutter + Riverpod 3 + Isar。音频播放使用 `just_audio` 与 `audio_service`，网络请求使用 Dio，云同步基于 Supabase。导航统一走项目自定义的 `AppRouter`，主题由 `assets/themes/*.conf` 在启动时加载。
+Flutter + Riverpod 3 + Isar. Audio playback uses `just_audio` and `audio_service`, networking uses Dio, and cloud sync is powered by Supabase. Navigation goes through the project's custom `AppRouter`; themes are loaded from `assets/themes/*.conf` at startup.
 
-## 快速开始
+## Getting started
 
-环境要求：Flutter，Dart SDK `^3.9.2`。
+Requirements: Flutter with Dart SDK `^3.9.2`.
 
 ```bash
 flutter pub get
 
-# 需要登录 / 云同步时：复制模板并填入 Supabase 凭据
+# For sign-in / cloud sync: copy the template and fill in your Supabase credentials
 cp .env.example .env
 ./run.sh
 ```
 
-`./run.sh` 会读取 `.env` 并注入 `--dart-define`，默认在当前桌面平台启动。传入平台参数可改为 iOS 或 Android：
+`./run.sh` reads `.env` and passes the values as `--dart-define` arguments. It launches on the current desktop platform by default; pass a platform argument to target iOS or Android:
 
 ```bash
 ./run.sh ios
 ./run.sh android
 ```
 
-iOS / Android 的目标设备取自 `.env` 中的 `iOS_Device_ID` 和 `Android_Device_ID`，可先用 `flutter devices` 查看可用设备。
+For iOS and Android, the target device comes from `iOS_Device_ID` and `Android_Device_ID` in `.env`. Run `flutter devices` to list available devices.
 
-直接执行 `flutter run` 不会读取 `.env`。不配置 Supabase 时也可以 `flutter run`，应用会跳过云服务初始化，本地订阅、播放与下载功能仍可使用。完整说明见 [docs/supabase_setup.md](docs/supabase_setup.md)。
+Running `flutter run` directly does not read `.env`. You can also run `flutter run` without Supabase configured; the app skips cloud service initialization, and local subscriptions, playback, and downloads remain available. See [docs/supabase_setup.md](docs/supabase_setup.md) for details.
 
-## 项目结构
+## Project structure
 
 ```text
 lib/
-├── core/           # 路由、主题、认证、同步、刷新调度与日志等基础能力
-├── data/           # Isar 数据库、数据源、模型、仓储实现、下载与 RSS 服务
-├── domain/         # 实体、仓储接口与用例
-├── presentation/   # 页面、通用组件与 Riverpod providers
-├── main.dart       # 应用入口与多窗口启动分发
+├── core/           # Routing, theming, auth, sync, refresh scheduling, and logging
+├── data/           # Isar database, data sources, models, repositories, download and RSS services
+├── domain/         # Entities, repository interfaces, and use cases
+├── presentation/   # Pages, shared widgets, and Riverpod providers
+├── main.dart       # App entry point and multi-window bootstrap
 ├── multi_window.dart
 └── window_utils.dart
 assets/themes/      # colors.conf / typography.conf / styles.conf
-docs/               # 数据库、同步、下载、主题等专题文档
-test/               # 单元测试、Widget 测试与数据源测试
+docs/               # Database, sync, downloads, theming, and other guides
+test/               # Unit, widget, and data source tests
 ```
 
-修改 Isar Collection 或带 `@JsonSerializable` 的模型后，需要重新生成代码：
+After changing an Isar collection definition, regenerate the model code:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-## 文档
+## Documentation
 
-- [AGENTS.md](AGENTS.md)：编码约定、架构规范与完整文档索引，所有开发者和 AI agent 的根级入口
-- [docs/database.md](docs/database.md)：Isar Collection 定义、关联关系与代码生成
-- [docs/supabase_setup.md](docs/supabase_setup.md)：Supabase 凭据配置与初始化排查
-- [docs/sync_debug_guide.md](docs/sync_debug_guide.md)：云同步触发条件、日志与排查路径
-- [docs/audio_download_usage.md](docs/audio_download_usage.md)：下载与缓存清理 API
-- [docs/theme/overview.md](docs/theme/overview.md)：HOCON 主题系统的加载流程与使用方式
-- [docs/PLATFORM_PERMISSIONS.md](docs/PLATFORM_PERMISSIONS.md)：各平台权限、沙盒与文件访问说明
+- [AGENTS.md](AGENTS.md): coding conventions, architecture rules, and the full documentation index; the root entry point for developers and AI agents
+- [docs/database.md](docs/database.md): Isar collection definitions, relationships, and code generation
+- [docs/supabase_setup.md](docs/supabase_setup.md): Supabase credential setup and initialization troubleshooting
+- [docs/sync_debug_guide.md](docs/sync_debug_guide.md): cloud sync triggers, logs, and troubleshooting
+- [docs/audio_download_usage.md](docs/audio_download_usage.md): download and cache cleanup APIs
+- [docs/theme/overview.md](docs/theme/overview.md): HOCON theme loading and usage
+- [docs/PLATFORM_PERMISSIONS.md](docs/PLATFORM_PERMISSIONS.md): platform permissions, sandboxing, and file access
 
-## 交付前检查
+## Pre-delivery checks
 
-交付代码前**必须**运行以下命令，确认全部通过后方可提交：
+Before delivering code, **you must** run the following commands and confirm they pass:
 
 ```bash
-flutter analyze   # 静态分析，要求零警告
-flutter test       # 全量测试
+flutter analyze   # static analysis; zero warnings required
+flutter test      # full test suite
 ```
 
-通过标准（预期输出）：
+Pass criteria:
 
-- `flutter analyze`：末行 `No issues found!`，退出码 `0`；出现任何 issue 条目即未通过
-- `flutter test`：末行 `All tests passed!`，退出码 `0`；出现 `Some tests failed.` 即未通过
+- `flutter analyze`: final line `No issues found!`, exit code `0`; any reported issue means failure
+- `flutter test`: final line `All tests passed!`, exit code `0`; `Some tests failed.` means failure
 
-AI agent 会话的收尾交付门（必须实际运行并把结果记入交付总结）见 [AGENTS.md](AGENTS.md#交付前检查)。
+For the AI-agent end-of-session delivery gate (run the commands and record the results in the delivery summary), see [AGENTS.md](AGENTS.md#交付前检查).
 
-### CI 策略
+### CI policy
 
-本项目当前**未接入托管 CI**（无 GitHub Actions / GitLab CI 流水线），交付验收以开发者本地手动执行上述两条命令为准。
+The project currently has **no hosted CI** (no GitHub Actions or GitLab CI pipeline). Delivery verification relies on developers running the two commands above locally.
 
-该取舍为有意保留：项目处于早期迭代阶段，测试套件与多平台构建矩阵尚未完全稳定，强制 CI 门会引入过高维护成本。如未来接入 CI，最小流水线应直接调用 `flutter analyze` 与 `flutter test` 两条命令作为通过条件。
+This is intentional: the project is in early iteration, and the test suite and multi-platform build matrix are not yet fully stable, so a mandatory CI gate would add excessive maintenance cost. If CI is added later, the minimal pipeline should use `flutter analyze` and `flutter test` as its pass criteria.
