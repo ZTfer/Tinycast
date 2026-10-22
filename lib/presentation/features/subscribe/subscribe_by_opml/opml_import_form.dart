@@ -254,7 +254,7 @@ class _OpmlImportFormState extends State<OpmlImportForm> {
   Future<void> _handleTap() async {
     try {
       /// 使用文件选择器选择文件
-      final result = await FilePicker.pickFiles(
+      final picked = await FilePicker.pickFile(
         /// 文件类型：自定义
         type: FileType.custom,
 
@@ -263,9 +263,9 @@ class _OpmlImportFormState extends State<OpmlImportForm> {
       );
 
       /// 如果选择了文件且文件路径不为空
-      if (result != null && result.files.single.path != null) {
+      if (picked?.path != null) {
         /// 创建文件对象
-        final file = File(result.files.single.path!);
+        final file = File(picked!.path!);
 
         /// 触发文件选择回调
         widget.onFileSelected?.call(file);

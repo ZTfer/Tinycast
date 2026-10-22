@@ -30,6 +30,12 @@ class NetworkErrorHandler {
           originalError: e,
         );
 
+      case dio.DioExceptionType.transformTimeout:
+        return AppException.network(
+          '数据处理超时，请重试',
+          originalError: e,
+        );
+
       case dio.DioExceptionType.badResponse:
         return _handleBadResponse(e);
 

@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tinycast/data/services/rss_parser_service.dart';
 import 'package:tinycast/domain/entities/episode.dart';
+import 'package:tinycast/domain/entities/podcast.dart';
 
 class _FakeHttpClientAdapter implements HttpClientAdapter {
   _FakeHttpClientAdapter(this._body);
@@ -48,6 +49,38 @@ String _feedWith({required String pubDate, String lastBuildDate = ''}) {
 </rss>
 ''';
 }
+
+const _namespaceFeed = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Namespace Podcast</title>
+    <description>Channel description</description>
+    <link>https://example.com</link>
+    <language>en</language>
+    <dc:creator>DC Channel Creator</dc:creator>
+    <dc:rights>Copyright 2026</dc:rights>
+    <itunes:subtitle>Namespace subtitle</itunes:subtitle>
+    <itunes:image href="https://example.com/artwork.jpg" />
+    <itunes:category text="Technology" />
+    <itunes:keywords>flutter, podcast</itunes:keywords>
+    <itunes:explicit>yes</itunes:explicit>
+    <item>
+      <title>Episode 1</title>
+      <guid>ep-1</guid>
+      <enclosure url="https://example.com/ep1.mp3" type="audio/mpeg" />
+      <pubDate>Mon, 06 Sep 2021 04:00:00 GMT</pubDate>
+      <itunes:author>Episode Author</itunes:author>
+      <itunes:summary>Episode summary</itunes:summary>
+      <itunes:duration>01:02:03</itunes:duration>
+      <itunes:image href="https://example.com/episode.jpg" />
+      <itunes:explicit>yes</itunes:explicit>
+    </item>
+  </channel>
+</rss>
+''';
 
 Future<Map<String, dynamic>> _parse(String xml) {
   final dio = Dio()..httpClientAdapter = _FakeHttpClientAdapter(xml);
@@ -108,6 +141,29 @@ void main() {
       final podcast = result['podcast'];
 
       expect(podcast.lastUpdated.toUtc(), DateTime.utc(2021, 9, 7, 4));
+    });
+  });
+
+  group('RssParserService 命名空间解析', () {
+    test('解析 iTunes 与 Dublin Core 字段', () async {
+      final result = await _parse(_namespaceFeed);
+      final podcast = result['podcast'] as Podcast;
+      final episode = _firstEpisode(result);
+
+      expect(podcast.subtitle, 'Namespace subtitle');
+      expect(podcast.author, 'DC Channel Creator');
+      expect(podcast.copyright, 'Copyright 2026');
+      expect(podcast.artworkUrl, 'https://example.com/artwork.jpg');
+      expect(podcast.categories, ['Technology']);
+      expect(podcast.keywords, ['flutter', 'podcast']);
+      expect(podcast.isExplicit, isTrue);
+
+      expect(episode.description, 'Episode summary');
+      expect(episode.author, 'Episode Author');
+      expect(episode.duration, 3723);
+      expect(episode.artworkUrl, 'https://example.com/episode.jpg');
+      expect(episode.itunesArtworkUrl, 'https://example.com/episode.jpg');
+      expect(episode.isExplicit, isTrue);
     });
   });
 }

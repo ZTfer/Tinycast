@@ -10,7 +10,7 @@ import audio_service
 import audio_session
 import connectivity_plus
 import desktop_multi_window
-import file_picker
+import file_picker_darwin
 import flutter_secure_storage_darwin
 import isar_community_flutter_libs
 import just_audio

@@ -28,7 +28,7 @@ class SupabaseService {
 
     await Supabase.initialize(
       url: supabaseUrl,
-      anonKey: supabaseAnonKey,
+      publishableKey: supabaseAnonKey,
       authOptions: FlutterAuthClientOptions(
         localStorage: SecureLocalStorage(
           persistSessionKey: 'sb-$projectRef-auth-token',

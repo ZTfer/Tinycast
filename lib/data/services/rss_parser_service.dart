@@ -13,6 +13,9 @@ import 'package:tinycast/core/utils/network_error_handler.dart';
 /// 负责解析 RSS 订阅源，提取播客元数据和节目列表
 /// 使用 XML 库直接解析以完全掌控数据提取过程
 class RssParserService {
+  static const _itunesNamespace = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
+  static const _dublinCoreNamespace = 'http://purl.org/dc/elements/1.1/';
+
   /// Dio 实例
   final dio.Dio _dio;
 
@@ -309,7 +312,7 @@ class RssParserService {
   /// 获取 iTunes 命名空间元素文本
   String? _getITunesElementText(XmlElement parent, String tagName, [String? subTag]) {
     try {
-      final element = parent.getElement(tagName, namespace: 'itunes');
+      final element = parent.getElement(tagName, namespaceUri: _itunesNamespace);
       if (element == null) {
         return parent.getElement('itunes:$tagName')?.innerText;
       }
@@ -325,7 +328,7 @@ class RssParserService {
   /// 获取 Dublin Core 命名空间元素文本
   String? _getDublinCoreElementText(XmlElement parent, String tagName) {
     try {
-      return parent.getElement(tagName, namespace: 'dc')?.innerText ??
+      return parent.getElement(tagName, namespaceUri: _dublinCoreNamespace)?.innerText ??
           parent.getElement('dc:$tagName')?.innerText;
     } catch (e) {
       return null;
@@ -335,7 +338,7 @@ class RssParserService {
   /// 获取 iTunes 图片 URL
   String? _getITunesImageHref(XmlElement parent) {
     try {
-      return parent.getElement('image', namespace: 'itunes')?.getAttribute('href') ??
+      return parent.getElement('image', namespaceUri: _itunesNamespace)?.getAttribute('href') ??
           parent.getElement('itunes:image')?.getAttribute('href');
     } catch (e) {
       return null;
@@ -346,7 +349,7 @@ class RssParserService {
   List<String> _extractITunesCategories(XmlElement channel) {
     try {
       final categories = <String>[];
-      for (final element in channel.findAllElements('category', namespace: 'itunes')) {
+      for (final element in channel.findAllElements('category', namespaceUri: _itunesNamespace)) {
         final cat = element.getAttribute('text');
         if (cat != null && cat.isNotEmpty) {
           categories.add(cat);
@@ -361,7 +364,7 @@ class RssParserService {
   /// 提取 iTunes 关键词
   List<String>? _extractITunesKeywordsList(XmlElement channel) {
     try {
-      final keywords = channel.getElement('keywords', namespace: 'itunes')?.innerText ??
+      final keywords = channel.getElement('keywords', namespaceUri: _itunesNamespace)?.innerText ??
           channel.getElement('itunes:keywords')?.innerText;
       if (keywords == null) return null;
       return keywords.split(',').map((k) => k.trim()).where((k) => k.isNotEmpty).toList();
