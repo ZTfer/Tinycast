@@ -341,7 +341,7 @@ grep -R 'File logging initialized' <日志目录>/*.log
    通常是并发已满（默认 3）
 4. 进入下载后立即失败，会继续处理队列；失败原因见 `❌ 下载失败`
 5. 完整的调用链与状态诊断见
-   [docs/download_queue_debug.md](download_queue_debug.md)
+   [docs/debugging/download_queue_debug.md](download_queue_debug.md)
 
 ### 问题6：暂停/恢复没有按预期工作
 

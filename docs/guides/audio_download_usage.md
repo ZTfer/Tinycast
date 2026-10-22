@@ -130,7 +130,7 @@ final status = downloadService.getDownloadStatus(episodeId); // 可能为 null
 | 播放完成后的清理 | `lib/presentation/providers/playback_provider.dart` | 设置中的 `removePlayedDownloads` 为 `true`（这是删除，不是下载） |
 
 `autoDownloadPolicy` 的可选值见
-[docs/database.md](database.md#27-appsettingsmodel应用设置)。按时间范围的策略（`past24h` / `past7d` / `past14d` / `past30d`）会筛选 `pubDate` 晚于截止时间的剧集；`all` 下载全部。
+[docs/reference/database.md](../reference/database.md#27-appsettingsmodel应用设置)。按时间范围的策略（`past24h` / `past7d` / `past14d` / `past30d`）会筛选 `pubDate` 晚于截止时间的剧集；`all` 下载全部。
 
 ## 缓存清理功能
 
@@ -214,7 +214,7 @@ images/3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b.jpg
 ```
 
 音频文件名不再使用 `{episodeId}.mp3`，也不再由每次下载随机生成。算法与旧文件兼容方式见
-[docs/uuid_filename_guide.md](uuid_filename_guide.md)。
+[docs/reference/uuid_filename_guide.md](../reference/uuid_filename_guide.md)。
 
 ### 下载完成时的文件流转
 

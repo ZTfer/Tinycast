@@ -2,7 +2,7 @@
 
 本文档是云同步域（Supabase 同步）的最小排查手册：先确认前置条件，
 再按日志序列定位失败步骤。Supabase 凭据配置与初始化问题见
-[supabase_setup.md](supabase_setup.md)；文件日志的位置与读取方式见
+[supabase_setup.md](../guides/supabase_setup.md)；文件日志的位置与读取方式见
 [download_debug_guide.md](download_debug_guide.md#文件日志位置与读取方式)
 ——同步日志同样写入该文件，可用 `grep '\[SYNC\]' <日志文件>` 检索。
 

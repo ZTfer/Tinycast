@@ -15,7 +15,7 @@ import 'package:tinycast/data/datasources/remote_sync_datasource.dart';
 /// flutter test integration/remote_sync_datasource_integration_test.dart
 /// ```
 ///
-/// 凭据约定与 [docs/supabase_setup.md] 一致；未配置时用例被跳过并说明原因。
+/// 凭据约定与 [docs/guides/supabase_setup.md] 一致；未配置时用例被跳过并说明原因。
 /// 注意：若项目的 RLS 策略限制匿名写入 podcasts 表，测试会以真实的
 /// Supabase 错误失败——这本身就是集成验证的一部分。
 void main() {
@@ -24,7 +24,7 @@ void main() {
   final hasCredentials =
       supabaseUrl != null && supabaseUrl.isNotEmpty && supabaseAnonKey != null && supabaseAnonKey.isNotEmpty;
   const skipReason =
-      '需要 SUPABASE_URL 与 SUPABASE_ANON_KEY 环境变量（见 docs/supabase_setup.md）';
+      '需要 SUPABASE_URL 与 SUPABASE_ANON_KEY 环境变量（见 docs/guides/supabase_setup.md）';
 
   group('RemoteSyncDataSource 与真实 Supabase 通信', () {
     // 无凭据时用例被 skip，但 group 级钩子仍会执行，因此钩子内部

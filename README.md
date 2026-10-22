@@ -38,7 +38,7 @@ cp .env.example .env
 
 For iOS and Android, the target device comes from `iOS_Device_ID` and `Android_Device_ID` in `.env`. Run `flutter devices` to list available devices.
 
-Running `flutter run` directly does not read `.env`. You can also run `flutter run` without Supabase configured; the app skips cloud service initialization, and local subscriptions, playback, and downloads remain available. See [docs/supabase_setup.md](docs/supabase_setup.md) for details.
+Running `flutter run` directly does not read `.env`. You can also run `flutter run` without Supabase configured; the app skips cloud service initialization, and local subscriptions, playback, and downloads remain available. See [docs/guides/supabase_setup.md](docs/guides/supabase_setup.md) for details.
 
 ## Project structure
 
@@ -65,12 +65,13 @@ dart run build_runner build --delete-conflicting-outputs
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): coding conventions, architecture rules, and the full documentation index; the root entry point for developers and AI agents
-- [docs/database.md](docs/database.md): Isar collection definitions, relationships, and code generation
-- [docs/supabase_setup.md](docs/supabase_setup.md): Supabase credential setup and initialization troubleshooting
-- [docs/sync_debug_guide.md](docs/sync_debug_guide.md): cloud sync triggers, logs, and troubleshooting
-- [docs/audio_download_usage.md](docs/audio_download_usage.md): download and cache cleanup APIs
+- [docs/README.md](docs/README.md): documentation index organized by task
+- [docs/reference/database.md](docs/reference/database.md): Isar collection definitions, relationships, and code generation
+- [docs/guides/supabase_setup.md](docs/guides/supabase_setup.md): Supabase credential setup and initialization troubleshooting
+- [docs/debugging/sync_debug_guide.md](docs/debugging/sync_debug_guide.md): cloud sync triggers, logs, and troubleshooting
+- [docs/guides/audio_download_usage.md](docs/guides/audio_download_usage.md): download and cache cleanup APIs
 - [docs/theme/overview.md](docs/theme/overview.md): HOCON theme loading and usage
-- [docs/PLATFORM_PERMISSIONS.md](docs/PLATFORM_PERMISSIONS.md): platform permissions, sandboxing, and file access
+- [docs/reference/platform_permissions.md](docs/reference/platform_permissions.md): platform permissions, sandboxing, and file access
 
 ## Pre-delivery checks
 

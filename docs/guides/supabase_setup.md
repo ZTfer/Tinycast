@@ -135,7 +135,7 @@ factory AppConfig.fromEnvironment() {
 跳过初始化不会阻塞应用启动，本地订阅、播放、下载等功能仍可使用；登录与云同步相关入口不可用。
 
 需要确认实际取值时，查看文件日志（位置见
-[docs/download_debug_guide.md](download_debug_guide.md#文件日志位置与读取方式)）：
+[docs/debugging/download_debug_guide.md](../debugging/download_debug_guide.md#文件日志位置与读取方式)）：
 
 ```bash
 grep 'Supabase' "<应用支持目录>/log/$(date +%F).log"

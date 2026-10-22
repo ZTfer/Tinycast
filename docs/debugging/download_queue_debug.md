@@ -209,5 +209,5 @@ ls -la /var/folders/*/*/T/ | grep '\.mp3'
 
 - 文件日志位置、日志级别与完整下载日志：见
   [download_debug_guide.md](download_debug_guide.md)
-- 文件名与路径规则：见 [uuid_filename_guide.md](uuid_filename_guide.md)
+- 文件名与路径规则：见 [uuid_filename_guide.md](../reference/uuid_filename_guide.md)
 - 核心实现：`lib/data/services/audio_download_service.dart`

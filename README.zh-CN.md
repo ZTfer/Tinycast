@@ -38,7 +38,7 @@ cp .env.example .env
 
 iOS / Android 的目标设备取自 `.env` 中的 `iOS_Device_ID` 和 `Android_Device_ID`，可先用 `flutter devices` 查看可用设备。
 
-直接执行 `flutter run` 不会读取 `.env`。不配置 Supabase 时也可以 `flutter run`，应用会跳过云服务初始化，本地订阅、播放与下载功能仍可使用。完整说明见 [docs/supabase_setup.md](docs/supabase_setup.md)。
+直接执行 `flutter run` 不会读取 `.env`。不配置 Supabase 时也可以 `flutter run`，应用会跳过云服务初始化，本地订阅、播放与下载功能仍可使用。完整说明见 [docs/guides/supabase_setup.md](docs/guides/supabase_setup.md)。
 
 ## 项目结构
 
@@ -65,12 +65,13 @@ dart run build_runner build --delete-conflicting-outputs
 ## 文档
 
 - [AGENTS.md](AGENTS.md)：编码约定、架构规范与完整文档索引，所有开发者和 AI agent 的根级入口
-- [docs/database.md](docs/database.md)：Isar Collection 定义、关联关系与代码生成
-- [docs/supabase_setup.md](docs/supabase_setup.md)：Supabase 凭据配置与初始化排查
-- [docs/sync_debug_guide.md](docs/sync_debug_guide.md)：云同步触发条件、日志与排查路径
-- [docs/audio_download_usage.md](docs/audio_download_usage.md)：下载与缓存清理 API
+- [docs/README.md](docs/README.md)：按任务组织的完整文档索引
+- [docs/reference/database.md](docs/reference/database.md)：Isar Collection 定义、关联关系与代码生成
+- [docs/guides/supabase_setup.md](docs/guides/supabase_setup.md)：Supabase 凭据配置与初始化排查
+- [docs/debugging/sync_debug_guide.md](docs/debugging/sync_debug_guide.md)：云同步触发条件、日志与排查路径
+- [docs/guides/audio_download_usage.md](docs/guides/audio_download_usage.md)：下载与缓存清理 API
 - [docs/theme/overview.md](docs/theme/overview.md)：HOCON 主题系统的加载流程与使用方式
-- [docs/PLATFORM_PERMISSIONS.md](docs/PLATFORM_PERMISSIONS.md)：各平台权限、沙盒与文件访问说明
+- [docs/reference/platform_permissions.md](docs/reference/platform_permissions.md)：各平台权限、沙盒与文件访问说明
 
 ## 交付前检查
 

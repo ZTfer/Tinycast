@@ -682,7 +682,7 @@ UI：
 测试：
 
 - Swift Testing 单元测试；GRDB 内存数据库；契约夹具；UI 测试覆盖关键路径；真机测试覆盖后台播放、后台下载、锁屏控制与 CarPlay（阶段 P4）。
-- macOS 需要沙盒 entitlements：网络客户端、用户选择文件读写（OPML）、应用容器内文件读写。参考现有 `docs/PLATFORM_PERMISSIONS.md`，但原生工程的 entitlement 需重新配置。
+- macOS 需要沙盒 entitlements：网络客户端、用户选择文件读写（OPML）、应用容器内文件读写。参考现有 `docs/reference/platform_permissions.md`，但原生工程的 entitlement 需重新配置。
 
 ### 4.2 Android
 
@@ -1054,7 +1054,7 @@ Apple job 需要 macOS runner；Android 与桌面的分析与测试可在 Linux 
 - 云字段映射：`lib/core/services/sync_mappers.dart`。
 - RSS 解析与归一化：`lib/data/services/rss_parser_service.dart`。
 - 主题解析：`lib/core/theme/theme_loader.dart`。
-- 数据库与同步文档：`docs/database.md`、`docs/sync_debug_guide.md`。
+- 数据库与同步文档：`docs/reference/database.md`、`docs/debugging/sync_debug_guide.md`。
 - 现有同步测试：`test/core/services/sync_service_test.dart`、`test/data/datasources/remote_sync_datasource_test.dart`、`test/data/datasources/remote_sync_datasource_pagination_test.dart`。
 - 现有 RSS 测试与样本：`test/data/services/rss_parser_service_test.dart`、`test/test-data/anyway_rss.xml`。
 
